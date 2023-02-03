@@ -17,7 +17,7 @@ import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
-    show Runtime, StackTraceMapper, SuitePlatform;
+    show Compiler, Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
@@ -215,6 +215,14 @@ class BrowserPlatform extends PlatformPlugin
       throw ArgumentError('$browser is not a browser.');
     }
 
+    var compiler = platform.compiler;
+    // Technically, ddc is supported through --precompiled. But we don't expect
+    // any specific compiler setting in that case.
+    if (compiler != Compiler.dart2js) {
+      throw StateError('Unsupported compiler for $browser platform '
+          '$compiler');
+    }
+
     var htmlPathFromTestPath = '${p.withoutExtension(path)}.html';
     if (File(htmlPathFromTestPath).existsSync()) {
       if (_config.customHtmlTemplatePath != null &&
@@ -251,7 +259,8 @@ class BrowserPlatform extends PlatformPlugin
       var dartUrl =
           _config.pubServeUrl!.resolve('$suitePrefix.dart.browser_test.dart');
 
-      await _pubServeSuite(path, dartUrl, browser, suiteConfig);
+      await _pubServeSuite(
+          path, dartUrl, browser, platform.compiler, suiteConfig);
       suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (suiteConfig.precompiledPath == null) {
@@ -271,7 +280,8 @@ class BrowserPlatform extends PlatformPlugin
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
-    var suite = await browserManager.load(path, suiteUrl, suiteConfig, message,
+    var suite = await browserManager.load(
+        path, suiteUrl, suiteConfig, message, platform.compiler,
         mapper: _mappers[path]);
     if (_closed) return null;
     return suite;
@@ -291,7 +301,7 @@ class BrowserPlatform extends PlatformPlugin
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
   Future<void> _pubServeSuite(String path, Uri dartUrl, Runtime browser,
-      SuiteConfiguration suiteConfig) {
+      Compiler compiler, SuiteConfiguration suiteConfig) {
     return _pubServePool.withResource(() async {
       var timer = Timer(Duration(seconds: 1), () {
         print('"pub serve" is compiling $path...');

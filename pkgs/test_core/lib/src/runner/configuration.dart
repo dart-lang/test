@@ -196,6 +196,9 @@ class Configuration {
   ///
   /// This can make more sense than the default strategy in systems such as
   /// `bazel` where only a single test suite is ran at a time.
+  ///
+  /// Note that this will also override any compiler settings, it will
+  /// effectively use `Compiler.none` regardless of setting.
   bool get useDataIsolateStrategy => _useDataIsolateStrategy ?? false;
   final bool? _useDataIsolateStrategy;
 

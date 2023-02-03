@@ -32,7 +32,7 @@ import 'package:test_core/src/runner/runtime_selection.dart';
 import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
-final suitePlatform = SuitePlatform(Runtime.vm);
+final suitePlatform = SuitePlatform(Runtime.vm, compiler: null);
 
 // The last state change detected via [expectStates].
 State? lastState;

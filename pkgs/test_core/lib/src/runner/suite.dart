@@ -107,8 +107,8 @@ class SuiteConfiguration {
   final Set<TestSelection> testSelections;
 
   /// The set of compilers with which to run tests.
-  List<String> get compilers => _compilers == null
-      ? const ['kernel', 'dart2js']
+  List<String>? get compilers => _compilers == null
+      ? null
       : List.unmodifiable(_compilers!.map((compiler) => compiler.name));
   final List<CompilerSelection>? _compilers;
 

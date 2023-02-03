@@ -82,6 +82,7 @@ class PlatformSelector {
       if (variable == platform.runtime.identifier) return true;
       if (variable == platform.runtime.parent?.identifier) return true;
       if (variable == platform.os.identifier) return true;
+      if (variable == platform.compiler.identifier) return true;
       switch (variable) {
         case 'dart-vm':
           return platform.runtime.isDartVM;

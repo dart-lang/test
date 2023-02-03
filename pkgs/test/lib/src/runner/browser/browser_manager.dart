@@ -9,7 +9,7 @@ import 'package:async/async.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
 // ignore: deprecated_member_use
-import 'package:test_api/backend.dart' show Runtime, StackTraceMapper;
+import 'package:test_api/backend.dart' show Compiler, Runtime, StackTraceMapper;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
@@ -219,12 +219,13 @@ class BrowserManager {
   /// If [mapper] is passed, it's used to map stack traces for errors coming
   /// from this test suite.
   Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
-      Map<String, Object?> message,
+      Map<String, Object?> message, Compiler compiler,
       {StackTraceMapper? mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
       'metadata': suiteConfig.metadata.serialize(),
-      'browser': _runtime.identifier
+      'browser': _runtime.identifier,
+      'compiler': compiler.serialize(),
     })));
 
     var suiteID = _suiteID++;
@@ -256,7 +257,7 @@ class BrowserManager {
       try {
         controller = deserializeSuite(
             path,
-            currentPlatform(_runtime),
+            currentPlatform(_runtime, compiler),
             suiteConfig,
             await _environment,
             suiteChannel.cast(),

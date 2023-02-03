@@ -140,14 +140,16 @@ void main() {
       });
 
       var key = metadata.onPlatform.keys.first;
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isFalse);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isTrue);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
       key = metadata.onPlatform.keys.last;
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isTrue);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isFalse);
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));

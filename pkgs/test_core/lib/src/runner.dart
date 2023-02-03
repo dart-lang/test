@@ -12,6 +12,7 @@ import 'package:stack_trace/stack_trace.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
+import 'package:test_api/src/backend/compiler.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
@@ -166,17 +167,27 @@ class Runner {
     var testOn = _config.suiteDefaults.metadata.testOn;
     if (testOn == PlatformSelector.all) return;
 
-    var unsupportedRuntimes = _config.suiteDefaults.runtimes
+    var runtimes = _config.suiteDefaults.runtimes
         .map(_loader.findRuntime)
-        .whereType<Runtime>()
-        .where((runtime) => !testOn.evaluate(currentPlatform(runtime)))
-        .toList();
+        .whereType<Runtime>();
+
+    Iterable<Compiler?> compilers = _config.suiteDefaults.compilers?.map(
+            (identifier) => Compiler.builtIn
+                .firstWhere((compiler) => compiler.identifier == identifier)) ??
+        [null];
+    var unsupportedRuntimes = [
+      for (var runtime in runtimes)
+        if (!compilers.any((compiler) =>
+            !runtime.supportedCompilers.contains(compiler) ||
+            !testOn.evaluate(currentPlatform(runtime, compiler))))
+          runtime,
+    ];
     if (unsupportedRuntimes.isEmpty) return;
 
     // Human-readable names for all unsupported runtimes.
     var unsupportedNames = [];
 
-    // If the user tried to run on one or moe unsupported browsers, figure out
+    // If the user tried to run on one or more unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
     // browsers are unsupported.
     var unsupportedBrowsers =
@@ -184,7 +195,9 @@ class Runner {
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = _loader.allRuntimes
           .where((runtime) => runtime.isBrowser)
-          .any((runtime) => testOn.evaluate(currentPlatform(runtime)));
+          .any((runtime) => compilers.any((compiler) =>
+              runtime.supportedCompilers.contains(compiler) &&
+              testOn.evaluate(currentPlatform(runtime, compiler))));
 
       if (supportsAnyBrowser) {
         unsupportedNames
@@ -197,8 +210,9 @@ class Runner {
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
     if (unsupportedRuntimes.contains(Runtime.vm)) {
-      var supportsAnyOS = OperatingSystem.all.any((os) => testOn
-          .evaluate(SuitePlatform(Runtime.vm, os: os, inGoogle: inGoogle)));
+      var supportsAnyOS = OperatingSystem.all.any((os) => compilers.any(
+          (compiler) => testOn.evaluate(SuitePlatform(Runtime.vm,
+              compiler: compiler, os: os, inGoogle: inGoogle))));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);
@@ -207,8 +221,15 @@ class Runner {
       }
     }
 
-    warn("this package doesn't support running tests on "
-        '${toSentence(unsupportedNames, conjunction: 'or')}.');
+    var message = StringBuffer("this package doesn't support running tests on ")
+      ..write(toSentence(unsupportedNames, conjunction: 'or'));
+    if (_config.suiteDefaults.compilers != null) {
+      message
+        ..write(' with any of the given compilers: ')
+        ..write(toSentence(compilers, conjunction: 'or'));
+    }
+
+    warn(message.toString());
   }
 
   /// Closes the runner.
