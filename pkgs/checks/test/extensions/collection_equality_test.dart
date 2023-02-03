@@ -82,18 +82,24 @@ void main() {
         ['a']
       ], [
         {'a'}
-      ])).isNotNull().deepEquals(['at [<0>] is not a Set']);
+      ])).isNotNull().returnsNormally().deepEquals(['at [<0>] is not a Set']);
     });
 
     test('reports long iterables', () {
-      check(deepCollectionEquals([0], [])).isNotNull().deepEquals([
+      check(deepCollectionEquals([0], []))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals([
         'has more elements than expected',
         'expected an iterable with 0 element(s)'
       ]);
     });
 
     test('reports short iterables', () {
-      check(deepCollectionEquals([], [0])).isNotNull().deepEquals([
+      check(deepCollectionEquals([], [0]))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals([
         'has too few elements',
         'expected an iterable with at least 1 element(s)'
       ]);
@@ -102,12 +108,14 @@ void main() {
     test('reports unequal elements in iterables', () {
       check(deepCollectionEquals([0], [1]))
           .isNotNull()
+          .returnsNormally()
           .deepEquals(['at [<0>] is <0>', 'which does not equal <1>']);
     });
 
     test('reports unmet conditions in iterables', () {
       check(deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]))
           .isNotNull()
+          .returnsNormally()
           .deepEquals([
         'has an element at [<0>] that:',
         '  Actual: <0>',
@@ -119,6 +127,7 @@ void main() {
       check(deepCollectionEquals(
               {'a': 'b'}, {'a': it()..isA<String>().startsWith('a')}))
           .isNotNull()
+          .returnsNormally()
           .deepEquals([
         "has no entry to match 'a': <A value that:",
         '  is a String',
@@ -130,6 +139,7 @@ void main() {
       check(deepCollectionEquals(
               {'b': 'a'}, {it()..isA<String>().startsWith('a'): 'a'}))
           .isNotNull()
+          .returnsNormally()
           .deepEquals([
         'has no entry to match <A value that:',
         '  is a String',
@@ -142,6 +152,7 @@ void main() {
       l.add(l);
       check(deepCollectionEquals(l, l))
           .isNotNull()
+          .returnsNormally()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
 
@@ -150,6 +161,7 @@ void main() {
       s.add(s);
       check(deepCollectionEquals(s, s))
           .isNotNull()
+          .returnsNormally()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
 
@@ -158,6 +170,7 @@ void main() {
       m[m] = 0;
       check(deepCollectionEquals(m, m))
           .isNotNull()
+          .returnsNormally()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
 
@@ -166,6 +179,7 @@ void main() {
       m[0] = m;
       check(deepCollectionEquals(m, m))
           .isNotNull()
+          .returnsNormally()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
   });

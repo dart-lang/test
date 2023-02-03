@@ -15,7 +15,7 @@ extension CoreChecks<T> on Subject<T> {
         return Extracted.value(extract(value));
       } catch (_) {
         return Extracted.rejection(
-            which: ['threw while trying to read property']);
+            which: () => ['threw while trying to read property']);
       }
     });
   }
@@ -45,7 +45,7 @@ extension CoreChecks<T> on Subject<T> {
       (actual) {
         if (softCheck(actual, condition) != null) return null;
         return Rejection(
-          which: ['is a value that: ', ...indent(describe(condition))],
+          which: () => ['is a value that: ', ...indent(describe(condition))],
         );
       },
     );
@@ -62,7 +62,7 @@ extension CoreChecks<T> on Subject<T> {
       for (final condition in conditions) {
         if (softCheck(actual, condition) == null) return null;
       }
-      return Rejection(which: ['did not match any condition']);
+      return Rejection(which: () => ['did not match any condition']);
     });
   }
 
@@ -72,7 +72,7 @@ extension CoreChecks<T> on Subject<T> {
   Subject<R> isA<R>() {
     return context.nest<R>(() => ['is a $R'], (actual) {
       if (actual is! R) {
-        return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
+        return Extracted.rejection(which: () => ['Is a ${actual.runtimeType}']);
       }
       return Extracted.value(actual);
     }, atSameLevel: true);
@@ -82,7 +82,7 @@ extension CoreChecks<T> on Subject<T> {
   void equals(T other) {
     context.expect(() => prefixFirst('equals ', literal(other)), (actual) {
       if (actual == other) return null;
-      return Rejection(which: ['are not equal']);
+      return Rejection(which: () => ['are not equal']);
     });
   }
 
@@ -91,7 +91,7 @@ extension CoreChecks<T> on Subject<T> {
     context.expect(() => prefixFirst('is identical to ', literal(other)),
         (actual) {
       if (identical(actual, other)) return null;
-      return Rejection(which: ['is not identical']);
+      return Rejection(which: () => ['is not identical']);
     });
   }
 }
