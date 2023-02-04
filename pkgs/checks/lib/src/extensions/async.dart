@@ -11,10 +11,12 @@ import 'package:checks/context.dart';
 extension FutureChecks<T> on Subject<Future<T>> {
   /// Expects that the `Future` completes to a value without throwing.
   ///
-  /// Returns a future that completes to a [Subject] on the result once the
-  /// future completes.
-  ///
   /// Fails if the future completes as an error.
+  ///
+  /// Pass [completionCondition] to check expectations on the completion result.
+  ///
+  /// The returned future will complete when the subject future has completed,
+  /// and [completionCondition] has optionally been checked.
   Future<void> completes([Condition<T>? completionCondition]) =>
       context.nestAsync<T>(() => ['completes to a value'], (actual) async {
         try {
@@ -56,10 +58,13 @@ extension FutureChecks<T> on Subject<Future<T>> {
 
   /// Expects that the `Future` completes as an error.
   ///
-  /// Returns a future that completes to a [Subject] on the error once the
-  /// future completes as an error.
-  ///
   /// Fails if the future completes to a value.
+  ///
+  /// Pass [errorCondition] to check expectations on the error thrown by the
+  /// future.
+  ///
+  /// The returned future will complete when the subject future has completed,
+  /// and [errorCondition] has optionally been checked.
   Future<void> throws<E extends Object>([Condition<E>? errorCondition]) =>
       context.nestAsync<E>(
           () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
@@ -105,11 +110,18 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
 
   /// Expect that the `Stream` emits a value without first emitting an error.
   ///
-  /// Returns a `Future` that completes to a [Subject] on the next event emitted
-  /// by the stream.
-  ///
   /// Fails if the stream emits an error instead of a value, or closes without
   /// emitting a value.
+  ///
+  /// If an error is emitted the queue will be left in its original state, the
+  /// error will not be consumed.
+  /// If an event is emitted, it will be consumed from the queue.
+  ///
+  /// Pass [emittedCondition] to check expectations on the value emitted by the
+  /// stream.
+  ///
+  /// The returned future will complete when the stream has emitted, errored, or
+  /// ended, and the [emittedCondition] has optionally been checked.
   Future<void> emits([Condition<T>? emittedCondition]) =>
       context.nestAsync<T>(() => ['emits a value'], (actual) async {
         if (!await actual.hasNext) {
@@ -132,15 +144,19 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
 
   /// Expects that the stream emits an error of type [E].
   ///
-  /// Returns a [Subject] on the error's value.
-  ///
   /// Fails if the stream emits any value.
   /// Fails if the stream emits an error with an incorrect type.
   /// Fails if the stream closes without emitting an error.
   ///
-  /// If this expectation fails, the source queue will be left in it's original
-  /// state.
-  /// If this expectation succeeds, consumes the error event.
+  /// If an event is emitted the queue will be left in its original state, the
+  /// event will not be consumed.
+  /// If an error is emitted, it will be consumed from the queue.
+  ///
+  /// Pass [errorCondition] to check expectations on the error emitted by the
+  /// stream.
+  ///
+  /// The returned future will complete when the stream has emitted, errored, or
+  /// ended, and the [errorCondition] has optionally been checked.
   Future<void> emitsError<E extends Object>([Condition<E>? errorCondition]) =>
       context.nestAsync(
           () => ['emits an error${E == Object ? '' : ' of type $E'}'],

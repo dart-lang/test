@@ -50,9 +50,8 @@ condition. The `it()` utility returns a `ConditionSubject`.
 check(someList).any(it()..isGreaterThan(0));
 ```
 
-Some complicated checks may be difficult to write with parenthesized awaited
-expressions, or impossible to write with cascade syntax. There are `which`
-utilities for both use cases which take a `Condition`.
+Some complicated checks may be not be possible to write with cascade syntax.
+There is a `which` utility for this use case which takes a `Condition`.
 
 ```dart
 check(someString)
@@ -61,10 +60,6 @@ check(someString)
   ..length.which(it()
     ..isGreatherThan(10)
     ..isLessThan(100));
-
-await check(someFuture)
-    .completes()
-    .which(it()..equals(expectedCompletion));
 ```
 
 # Writing custom expectations

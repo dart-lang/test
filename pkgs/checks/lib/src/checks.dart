@@ -175,8 +175,17 @@ Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
 
 /// A set of expectations that are checked against the value when applied to a
 /// [Subject].
+///
+/// This class should not be implemented or extended.
 abstract class Condition<T> {
+  /// Check the expectations of this condition against [subject].
+  ///
+  /// The [subject] should throw if any asynchronous expectations are checked.
+  /// It is not possible to wait for for asynchronous expectations to be fully
+  /// applied with this method.
   void apply(Subject<T> subject);
+
+  /// Check the expectations of this condition against [subject].
   Future<void> applyAsync(Subject<T> subject);
 }
 
@@ -282,6 +291,10 @@ abstract class Context<T> {
   /// Some context may disallow asynchronous expectations, for instance in
   /// [softCheck] which must synchronously check the value. In those contexts
   /// this method will throw.
+  ///
+  /// In contrast to [nest], subsequent expectations need to be passed in
+  /// [nestedCondition] which will be applied to the subject for the extracted
+  /// value.
   Future<void> nestAsync<R>(
       Iterable<String> Function() label,
       FutureOr<Extracted<R>> Function(T) extract,

@@ -152,7 +152,7 @@ fake trace''');
                 '    equals <42>',
               ]));
       });
-      test('uses a transaction', () async {
+      test('does not consume error', () async {
         final queue = _countingStream(1, errorAt: 0);
         await softCheckAsync<StreamQueue<int>>(queue, it()..emits());
         await check(queue).emitsError();
