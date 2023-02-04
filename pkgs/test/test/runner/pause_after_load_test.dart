@@ -82,7 +82,7 @@ void main() {
     await test.stdin.flush();
     await expectLater(
         test.stdout, emitsThrough(contains('+2: All tests passed!')));
-    unawaited(test.stdout.cancel());
+    unawaited(test.stdout.rest.drain());
     await test.shouldExit(0);
   }, tags: 'chrome');
 
@@ -176,7 +176,7 @@ void main() {
 
     await expectLater(
         test.stdout, emitsThrough(contains('+3: All tests passed!')));
-    unawaited(test.stdout.cancel());
+    unawaited(test.stdout.rest.drain());
     await test.shouldExit(0);
   }, tags: ['firefox', 'chrome', 'vm']);
 
@@ -201,7 +201,7 @@ void main() {
     ''')));
 
     test.signal(ProcessSignal.sigterm);
-    unawaited(test.stdout.cancel());
+    unawaited(test.stdout.rest.drain());
     await test.shouldExit();
     await expectLater(test.stderr, emitsDone);
   }, tags: 'chrome', testOn: '!windows');
@@ -245,7 +245,7 @@ void main() {
     await test.stdin.flush();
     await expectLater(
         test.stdout, emitsThrough(contains('+1: All tests passed!')));
-    unawaited(test.stdout.cancel());
+    unawaited(test.stdout.rest.drain());
     await test.shouldExit(0);
   }, tags: 'chrome');
 
@@ -287,7 +287,7 @@ void main() {
     await test.stdin.flush();
     await expectLater(
         test.stdout, emitsThrough(contains('+1: All tests passed!')));
-    unawaited(test.stdout.cancel());
+    unawaited(test.stdout.rest.drain());
     await test.shouldExit(0);
   }, tags: 'chrome');
 }
