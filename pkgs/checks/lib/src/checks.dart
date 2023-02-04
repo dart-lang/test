@@ -15,9 +15,10 @@ import 'describe.dart';
 /// validated or rejected; or it may be a placeholder, in which case
 /// expectations describe what would be checked but cannot be rejected.
 ///
-/// Expectations are defined as extension methods specialized on the generic
-/// [T]. Expectations can use the [ContextExtension] to interact with the
-/// [Context] for this subject.
+/// Expectation methodss are defined in extensions `on Subject`, specialized on
+/// the generic [T].
+/// Expectation extension methodss can use the [ContextExtension] to interact
+/// with the [Context] for this subject.
 class Subject<T> {
   final Context<T> _context;
   Subject._(this._context);
