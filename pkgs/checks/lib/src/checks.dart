@@ -427,7 +427,7 @@ abstract class Context<T> {
   /// [Extracted.rejection] describing the problem. Otherwise it should return
   /// an [Extracted.value].
   ///
-  /// Subsequent expectations can be checkd for the extracted value on the
+  /// Subsequent expectations can be checked for the extracted value on the
   /// returned [Subject].
   ///
   /// {@macro label_description}
