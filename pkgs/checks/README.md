@@ -147,3 +147,9 @@ check(actual).deepEquals(expected);
 -   The `equals` Matcher performed a deep equality check on collections.
     `.equals()` expectation will only correspond to [operator ==] so some tests
     may need to replace `.equals()` with `.deepEquals()`.
+-   The [`matches` Matcher][matches] would convert a `String` argument into a
+    `Regex`, so `matches(r'\d')` would match the value `'1'`. With
+    `matchesPattern` a `String` argument is treated as a `Pattern` instead of
+    converted to a `RegExp`.
+
+[matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
