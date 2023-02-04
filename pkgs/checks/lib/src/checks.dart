@@ -420,15 +420,16 @@ abstract class Context<T> {
   ///
   /// {@macro label_description}
   ///
-  /// If [atSameLevel] is true then [R] should be a subtype of [T], and a
-  /// returned [Extracted.value] should be the same instance as the passed
-  /// value, or an object which is is equivalent but has a type which is more
-  /// convenient to test. In this case expectations applied to the return
-  /// [Subject] will behave as if they were applied to the subject for this
-  /// context. The [label] will be used as if it were a "clause" argument passed
-  /// to [expect]. If the label returns an empty iterable, the clause will be
-  /// omitted. The label should only be left empty if the value extraction
-  /// cannot be rejected.
+  /// If [atSameLevel] is true then the returned [Extracted.value] should hold
+  /// the same instance as the passed value, or an object which is is equivalent
+  /// but has a type that is more convenient to test.
+  /// In this case expectations applied to the returned [Subject] will behave as
+  /// if they were applied to the subject for this context.
+  /// The [label] will be used as if it were a "clause" argument passed to
+  /// [expect].
+  /// If the label returns an empty iterable, the clause will be omitted.
+  /// The label should only be left empty if the value extraction cannot be
+  /// rejected.
   ///
   /// {@macro description_lines}
   ///

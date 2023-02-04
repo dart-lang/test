@@ -4,14 +4,15 @@
 
 export 'src/checks.dart'
     show
-        Subject,
         CheckFailure,
         Condition,
+        ConditionSubject,
         Context,
         ContextExtension,
         Extracted,
         FailureDetail,
         Rejection,
+        Subject,
         describe,
         describeAsync,
         softCheck,
