@@ -189,20 +189,19 @@ extension ContextExtension<T> on Subject<T> {
 /// The context for a [Subject] that allows asserting expectations and creating
 /// nested subjects.
 ///
-/// A [Subject] is the target for checking expecatations in a test.
-/// Every subject has a [Context], which is only available through an extension.
-/// The context for a subject holds the "actual" value, tracks how the value was
-/// obtained, and can check expectations about the value.
+/// A [Subject] is the target for checking expectations in a test.
+/// Every subject has a [Context] which holds the "actual" value, tracks how the
+/// value was obtained, and can check expectations about the value.
 ///
-/// The user focused APIs called within tests are expectation extension methods.
-/// Expectation extension methods are written in extensions `on Subject`,
-/// typically specialized to a specific generic.
+/// The user focused APIs called within tests are expectation extension methods
+/// written in extension `on Subject`, typically specialized to a specific
+/// generic.
 ///
-/// Expectation extension methods will make a call to one of the APIs in the
+/// Expectation extension methods will make a call to one of the APIs on the
 /// subject's [Context], and can perform one of two types of operations:
 ///
-/// -   Expect something of the value.
-/// -   Extract a new subject value derived from the current value.
+/// -   Expect something of the current value.
+/// -   Expect that a new subject can be extracted from the current value.
 ///
 ///
 /// Whichever type of operation, an expectation extension method provides two
@@ -220,8 +219,7 @@ extension ContextExtension<T> on Subject<T> {
 ///
 ///
 /// The context for a subject may hold a real "actual" value to test against, or
-/// it may have a placeholder if the expectation is checked against the subject
-/// within a call to [describe].
+/// it may have a placeholder within a call to [describe].
 /// A context with a placeholder value will not invoke the callback to check
 /// expectations.
 ///
@@ -256,7 +254,7 @@ extension ContextExtension<T> on Subject<T> {
 /// in a nested subject.
 /// The description will be passed in a "label" callback.
 /// {@template label_description}
-/// The label callback returns a description of the extracted value as it
+/// The label callback returns a description of the extracted subject as it
 /// relates to the original subject.
 /// For instance the `completes to a value` in:
 ///
@@ -292,9 +290,9 @@ extension ContextExtension<T> on Subject<T> {
 /// The behavior of a context following a rejection depends on the source of the
 /// [Subject].
 ///
-/// When an expectation fails for a [check] subject, an exception is thrown to
-/// interrupt the test, so no further checks should happen. The failure message
-/// will include:
+/// When an expectation is rejected for a [check] subject, an exception is
+/// thrown to interrupt the test, so no further checks should happen. The
+/// failure message will include:
 /// -  An "Expected" section with descriptions of all the expectations that
 ///    were checked, including the ones that passed, and the last one that
 ///    failed.
@@ -329,6 +327,11 @@ extension ContextExtension<T> on Subject<T> {
 ///   Actual: <0>
 ///   Which: are not equal
 /// ```
+///
+/// When an expectation is rejected for a subject within a call to [softCheck]
+/// or [softCheckAsync] a [CheckFailure] will be returned with the rejection, as
+/// well as a [FailureDetail] which could be used to format the same failure
+/// message thrown by the [check] subject.
 ///
 /// Some contexts disallow certain interactions.
 /// {@template async_limitations}
@@ -423,7 +426,7 @@ abstract class Context<T> {
   /// context. The [label] will be used as if it were a "clause" argument passed
   /// to [expect]. If the label returns an empty iterable, the clause will be
   /// omitted. The label should only be left empty if the value extraction
-  /// cannot fail.
+  /// cannot be rejected.
   ///
   /// {@macro description_lines}
   ///
