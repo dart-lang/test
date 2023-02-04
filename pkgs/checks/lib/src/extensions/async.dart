@@ -16,7 +16,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// Fails if the future completes as an error.
   Future<void> completes([Condition<T>? completionCondition]) =>
-      context.nestAsync<T>('completes to a value', (actual) async {
+      context.nestAsync<T>(() => ['completes to a value'], (actual) async {
         try {
           return Extracted.value(await actual);
         } catch (e, st) {
@@ -62,7 +62,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// Fails if the future completes to a value.
   Future<void> throws<E extends Object>([Condition<E>? errorCondition]) =>
       context.nestAsync<E>(
-          'completes to an error${E == Object ? '' : ' of type $E'}',
+          () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
           (actual) async {
         try {
           return Extracted.rejection(
@@ -111,7 +111,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// Fails if the stream emits an error instead of a value, or closes without
   /// emitting a value.
   Future<void> emits([Condition<T>? emittedCondition]) =>
-      context.nestAsync<T>('emits a value', (actual) async {
+      context.nestAsync<T>(() => ['emits a value'], (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
               actual: ['a stream'],
@@ -142,7 +142,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes the error event.
   Future<void> emitsError<E extends Object>([Condition<E>? errorCondition]) =>
-      context.nestAsync<E>('emits an error${E == Object ? '' : ' of type $E'}',
+      context.nestAsync(
+          () => ['emits an error${E == Object ? '' : ' of type $E'}'],
           (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
@@ -445,6 +446,6 @@ extension StreamQueueWrap<T> on Subject<Stream<T>> {
   /// so that they can support conditional expectations and check multiple
   /// possibilities from the same point in the stream.
   Subject<StreamQueue<T>> get withQueue =>
-      context.nest('', (actual) => Extracted.value(StreamQueue(actual)),
+      context.nest(() => [], (actual) => Extracted.value(StreamQueue(actual)),
           atSameLevel: true);
 }

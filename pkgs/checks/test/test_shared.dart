@@ -12,8 +12,8 @@ extension RejectionChecks<T> on Subject<T> {
       {Iterable<String>? actual, Iterable<String>? which}) {
     late T actualValue;
     var didRunCallback = false;
-    final rejection = context
-        .nest<Rejection>('does not meet a condition with a Rejection', (value) {
+    final rejection = context.nest<Rejection>(
+        () => ['does not meet a condition with a Rejection'], (value) {
       actualValue = value;
       didRunCallback = true;
       final failure = softCheck(value, condition);
@@ -47,7 +47,8 @@ extension RejectionChecks<T> on Subject<T> {
     late T actualValue;
     var didRunCallback = false;
     await context.nestAsync<Rejection>(
-        'does not meet an async condition with a Rejection', (value) async {
+        () => ['does not meet an async condition with a Rejection'],
+        (value) async {
       actualValue = value;
       didRunCallback = true;
       final failure = await softCheckAsync(value, condition);
@@ -84,7 +85,7 @@ extension ConditionChecks<T> on Subject<Condition<T>> {
   Future<void> hasAsyncDescriptionWhich(
           Condition<Iterable<String>> descriptionCondition) =>
       context.nestAsync(
-          'has description',
+          () => ['has description'],
           (condition) async =>
               Extracted.value(await describeAsync<T>(condition)),
           descriptionCondition);
