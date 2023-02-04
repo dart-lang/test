@@ -36,7 +36,7 @@ void main() {
     });
     test('fails for a missing key', () {
       check(_testMap)
-          .isRejectedBy(it()..['z'], which: ['does not contain the key \'z\'']);
+          .isRejectedBy(it()..['z'], which: ["does not contain the key 'z'"]);
     });
     test('can be described', () {
       check(it<Map<String, Object>>()..['some\nlong\nkey'])
