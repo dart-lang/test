@@ -63,7 +63,7 @@ extension Skip<T> on Subject<T> {
 Subject<T> check<T>(T value, {String? because}) => Subject._(_TestContext._root(
       value: _Present(value),
       // TODO - switch between "a" and "an"
-      label: () => ['a $T'],
+      label: 'a $T',
       fail: (f) {
         final which = f.rejection.which;
         throw TestFailure([
@@ -363,22 +363,45 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   final List<_ClauseDescription> _clauses;
   final List<_TestContext> _aliases;
 
-  // The "a value" in "a value that:".
-  final Iterable<String> Function() _label;
-
   final void Function(CheckFailure) _fail;
 
   final bool _allowAsync;
   final bool _allowUnawaited;
 
+  /// A callback that returns a label for this context.
+  ///
+  /// If this context is the root the label should return a phrase like
+  /// "a List" in
+  ///
+  /// ```
+  /// Expected: a List that:
+  /// ```
+  ///
+  /// If this context is nested under another context the lable should return a
+  /// phrase like "completes to a value" in
+  ///
+  ///
+  /// ```
+  /// Expected: a Future<int> that:
+  ///   completes to a value that:
+  /// ```
+  ///
+  /// In cases where a nested context does not have any expectations checked on
+  /// it, the "that:" will be will be omitted.
+  final Iterable<String> Function() _label;
+
+  static Iterable<String> _emptyLabel() => const [];
+
+  /// Create a context appropriate for a subject which is not nested under any
+  /// other subject.
   _TestContext._root({
     required _Optional<T> value,
     required void Function(CheckFailure) fail,
     required bool allowAsync,
     required bool allowUnawaited,
-    Iterable<String> Function()? label,
+    String? label,
   })  : _value = value,
-        _label = label ?? (() => ['']),
+        _label = (() => [label ?? '']),
         _fail = fail,
         _allowAsync = allowAsync,
         _allowUnawaited = allowUnawaited,
@@ -395,8 +418,11 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
         _allowUnawaited = original._allowUnawaited,
         // Never read from an aliased context because they are never present in
         // `_clauses`.
-        _label = (() => ['']);
+        _label = _emptyLabel;
 
+  /// Create a context nested under [parent].
+  ///
+  /// The [_label] callback should not return an empty iterable.
   _TestContext._child(this._value, this._label, _TestContext<dynamic> parent)
       : _parent = parent,
         _fail = parent._fail,
