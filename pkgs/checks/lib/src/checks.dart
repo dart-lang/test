@@ -434,7 +434,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
-    _clauses.add(_StringClause(clause));
+    _clauses.add(_ExpectationClause(clause));
     final rejection =
         _value.apply((actual) => predicate(actual)?._fillActual(actual));
     if (rejection != null) {
@@ -449,7 +449,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       throw StateError(
           'Async expectations cannot be used on a synchronous subject');
     }
-    _clauses.add(_StringClause(clause));
+    _clauses.add(_ExpectationClause(clause));
     final outstandingWork = TestHandle.current.markPending();
     final rejection = await _value.apply(
         (actual) async => (await predicate(actual))?._fillActual(actual));
@@ -464,7 +464,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (!_allowUnawaited) {
       throw StateError('Late expectations cannot be used for soft checks');
     }
-    _clauses.add(_StringClause(clause));
+    _clauses.add(_ExpectationClause(clause));
     _value.apply((actual) {
       predicate(actual, (r) => _fail(_failure(r._fillActual(actual))));
     });
@@ -477,7 +477,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
     final rejection = result.rejection;
     if (rejection != null) {
-      _clauses.add(_StringClause(label));
+      _clauses.add(_ExpectationClause(label));
       _fail(_failure(rejection));
     }
     final value = result.value ?? _Absent<R>();
@@ -485,7 +485,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (atSameLevel) {
       context = _TestContext._alias(this, value);
       _aliases.add(context);
-      _clauses.add(_StringClause(label));
+      _clauses.add(_ExpectationClause(label));
     } else {
       context = _TestContext._child(value, label, this);
       _clauses.add(context);
@@ -506,7 +506,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     outstandingWork.complete();
     final rejection = result.rejection;
     if (rejection != null) {
-      _clauses.add(_StringClause(label));
+      _clauses.add(_ExpectationClause(label));
       _fail(_failure(rejection));
     }
     final value = result.value ?? _Absent<R>();
@@ -595,9 +595,9 @@ abstract class _ClauseDescription {
   FailureDetail detail(_TestContext failingContext);
 }
 
-class _StringClause implements _ClauseDescription {
+class _ExpectationClause implements _ClauseDescription {
   final Iterable<String> Function() _expected;
-  _StringClause(this._expected);
+  _ExpectationClause(this._expected);
   @override
   FailureDetail detail(_TestContext failingContext) =>
       FailureDetail(_expected(), -1, -1);
