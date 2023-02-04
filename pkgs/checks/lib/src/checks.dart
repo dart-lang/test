@@ -280,8 +280,8 @@ extension ContextExtension<T> on Subject<T> {
 /// A rejection carries two descriptions, one description of the "actual" value
 /// that was tested, and an optional "which" with further details about how the
 /// result different from the expectation.
-/// If the "actual" argument is omitted it will be filled with a formatted
-/// representation of "actual" value.
+/// If the "actual" argument is omitted it will be filled with a representation
+/// of the value passed to the expectation callback formatted with [literal].
 /// If an expectation extension method is written on a type of subject without a
 /// useful `toString()`, the rejection can provide a string representation to
 /// use instead.
@@ -456,8 +456,8 @@ abstract class Context<T> {
 
 /// A property extracted from a value being checked, or a rejection.
 class Extracted<T> {
-  final Rejection? rejection;
-  final T? value;
+  final Rejection? _rejection;
+  final T? _value;
 
   /// Creates a rejected extraction to indicate a failure trying to read the
   /// value.
@@ -466,22 +466,22 @@ class Extracted<T> {
   /// will be filled in with the [literal] representation of the value.
   Extracted.rejection(
       {Iterable<String> actual = const [], Iterable<String>? which})
-      : rejection = Rejection(actual: actual, which: which),
-        value = null;
-  Extracted.value(T this.value) : rejection = null;
+      : _rejection = Rejection(actual: actual, which: which),
+        _value = null;
+  Extracted.value(T this._value) : _rejection = null;
 
-  Extracted._(Rejection this.rejection) : value = null;
+  Extracted._(Rejection this._rejection) : _value = null;
 
   Extracted<R> _map<R>(R Function(T) transform) {
-    final rejection = this.rejection;
+    final rejection = _rejection;
     if (rejection != null) return Extracted._(rejection);
-    return Extracted.value(transform(value as T));
+    return Extracted.value(transform(_value as T));
   }
 
-  Extracted<T> _fillActual(Object? actual) => rejection == null ||
-          rejection!.actual.isNotEmpty
+  Extracted<T> _fillActual(Object? actual) => _rejection == null ||
+          _rejection!.actual.isNotEmpty
       ? this
-      : Extracted.rejection(actual: literal(actual), which: rejection!.which);
+      : Extracted.rejection(actual: literal(actual), which: _rejection!.which);
 }
 
 abstract class _Optional<T> {
@@ -647,12 +647,12 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       Iterable<String> Function() label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false}) {
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
-    final rejection = result.rejection;
+    final rejection = result._rejection;
     if (rejection != null) {
       _clauses.add(_ExpectationClause(label));
       _fail(_failure(rejection));
     }
-    final value = result.value ?? _Absent<R>();
+    final value = result._value ?? _Absent<R>();
     final _TestContext<R> context;
     if (atSameLevel) {
       context = _TestContext._alias(this, value);
@@ -676,12 +676,12 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final result = await _value.mapAsync(
         (actual) async => (await extract(actual))._fillActual(actual));
     outstandingWork.complete();
-    final rejection = result.rejection;
+    final rejection = result._rejection;
     if (rejection != null) {
       _clauses.add(_ExpectationClause(label));
       _fail(_failure(rejection));
     }
-    final value = result.value ?? _Absent<R>();
+    final value = result._value ?? _Absent<R>();
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
     return Subject._(context);
