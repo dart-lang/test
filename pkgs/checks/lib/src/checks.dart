@@ -249,17 +249,19 @@ abstract class Context<T> {
   /// [Extracted.rejection] describing the problem. Otherwise it should return
   /// an [Extracted.value].
   ///
-  /// The [label] will be used preceding "that:" in a description. Expectations
-  /// applied to the returned [Subject] will follow the label, indented by two
-  /// more spaces.
+  /// The [label] output will be used preceding "that:" in a description if
+  /// there are further expectations checked on the returned subject, or on it's
+  /// own otherwise.
+  /// Expectations applied to the returned [Subject] will follow the label,
+  /// indented by two more spaces.
   ///
   /// If [atSameLevel] is true then [R] should be a subtype of [T], and a
   /// returned [Extracted.value] should be the same instance as the passed
   /// value, or an object which is is equivalent but has a type which is more
   /// convenient to test. In this case expectations applied to the return
   /// [Subject] will behave as if they were applied to the subject for this
-  /// context. The [label] will be used as if it were a single line "clause"
-  /// passed to [expect]. If the label is empty, the clause will be omitted. The
+  /// context. The [label] will be used as if it were a "clause" argument passed
+  /// to [expect]. If the label is empty, the clause will be omitted. The
   /// label should only be left empty if the value extraction cannot fail.
   Subject<R> nest<R>(
       Iterable<String> Function() label, Extracted<R> Function(T) extract,
@@ -271,9 +273,11 @@ abstract class Context<T> {
   /// [Extracted.rejection] describing the problem. Otherwise it should return
   /// an [Extracted.value].
   ///
-  /// The [label] will be used preceding "that:" in a description. Expectations
-  /// applied to the returned [Subject] will follow the label, indented by two
-  /// more spaces.
+  /// The [label] output will be used preceding "that:" in a description if
+  /// there are further expectations checked on the returned subject, or on it's
+  /// own otherwise.
+  /// Expectations applied to the returned [Subject] will follow the label,
+  /// indented by two more spaces.
   ///
   /// Some context may disallow asynchronous expectations, for instance in
   /// [softCheck] which must synchronously check the value. In those contexts
