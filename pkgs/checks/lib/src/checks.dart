@@ -225,6 +225,8 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// If both callbacks are invoked, the description callback will always be
 /// called strictly after the expectation callback is called.
+///
+/// Callbacks passed to a context should not throw.
 /// {@endtemplate}
 ///
 ///
@@ -346,7 +348,7 @@ extension ContextExtension<T> on Subject<T> {
 /// {@endtemplate}
 ///
 /// Expectation extension methods can access the context for the subject with
-/// the [ContextExtension]. Callbacks passed to the context should not throw.
+/// the [ContextExtension].
 ///
 /// The [it] utility returns a subject whose context will not directly invoke
 /// any callbacks, but stores them and passed them along  when the
