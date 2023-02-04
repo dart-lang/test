@@ -332,13 +332,14 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// Some contexts disallow certain interactions.
 /// {@template async_limitations}
-/// Expectations which call [expectAsync] or [nestAsync] may not be used in the
-/// [Condition] passed to [softCheck] or [describe].
-/// Use [softCheckAsync] or [describeAsync] instead.
+/// Calls to [expectAsync] or [nestAsync] must not be performed by a [Condition]
+/// passed to [softCheck] or [describe].
+/// Use [softCheckAsync] or [describeAsync] for any condition which checks async
+/// expectations.
 /// {@endtemplate}
 /// {@template unawaited_limitations}
-/// Expectations which call [expectUnawaited] may not be used in the [Condition]
-/// passed to [softCheck] or [softCheckAsync].
+/// Calls to [expectUnawaited] may not be performed by a [Condition] passed to
+/// [softCheck] or [softCheckAsync].
 /// {@endtemplate}
 ///
 /// Expectation extension methods can access the context for the subject with
@@ -897,6 +898,7 @@ class Rejection {
   Rejection({this.actual = const [], this.which});
 }
 
+/// A [Subject] which records expectations and can replay them as a [Condition].
 class ConditionSubject<T> implements Subject<T>, Condition<T> {
   ConditionSubject._();
 
