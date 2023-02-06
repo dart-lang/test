@@ -115,7 +115,7 @@ void main() {
 
     var nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: [Firefox] success'));
+      expect(line, contains('+0: [Firefox, Dart2Js] success'));
       nextLineFired = true;
     })));
 
