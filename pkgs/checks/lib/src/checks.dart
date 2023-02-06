@@ -27,7 +27,7 @@ class Subject<T> {
   Subject._(this._context);
 }
 
-extension Skip<T> on Subject<T> {
+extension SkipExtension<T> on Subject<T> {
   /// Mark the currently running test as skipped and return a [Subject] that
   /// will ignore all expectations.
   ///
