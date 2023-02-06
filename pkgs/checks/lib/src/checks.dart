@@ -219,26 +219,6 @@ extension ContextExtension<T> on Subject<T> {
 /// The second callback always takes the actual value as an argument, and the
 /// specific signature varies by operation.
 ///
-/// {@template callbacks_may_be_unused}
-/// The description of an expectation may never be shown to the user, so the
-/// callback may never be invoked.
-/// If all the conditions on a subject succeed, or if the failure detail for a
-/// failed [softCheck] is never read, the descriptions will be unused.
-/// String formatting for the descriptions should be performed in the callback,
-/// not ahead of time.
-///
-///
-/// The context for a subject may hold a real "actual" value to test against, or
-/// it may have a placeholder within a call to [describe].
-/// A context with a placeholder value will not invoke the callback to check
-/// expectations.
-///
-/// If both callbacks are invoked, the description callback will always be
-/// called strictly after the expectation callback is called.
-///
-/// Callbacks passed to a context should not throw.
-/// {@endtemplate}
-///
 ///
 /// In expectation extension methods calling [expect], [expectAync], or
 /// [expectUnawaited], the `predicate` callback can report a [Rejection] if the
@@ -340,6 +320,27 @@ extension ContextExtension<T> on Subject<T> {
 /// or [softCheckAsync] a [CheckFailure] will be returned with the rejection, as
 /// well as a [FailureDetail] which could be used to format the same failure
 /// message thrown by the [check] subject.
+///
+/// {@template callbacks_may_be_unused}
+/// The description of an expectation may never be shown to the user, so the
+/// callback may never be invoked.
+/// If all the conditions on a subject succeed, or if the failure detail for a
+/// failed [softCheck] is never read, the descriptions will be unused.
+/// String formatting for the descriptions should be performed in the callback,
+/// not ahead of time.
+///
+///
+/// The context for a subject may hold a real "actual" value to test against, or
+/// it may have a placeholder within a call to [describe].
+/// A context with a placeholder value will not invoke the callback to check
+/// expectations.
+///
+/// If both callbacks are invoked, the description callback will always be
+/// called strictly after the expectation callback is called.
+///
+/// Callbacks passed to a context should not throw.
+/// {@endtemplate}
+///
 ///
 /// Some contexts disallow certain interactions.
 /// {@template async_limitations}
