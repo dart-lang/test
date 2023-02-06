@@ -205,9 +205,11 @@ extension ContextExtension<T> on Subject<T> {
 /// subject's [Context], and can perform one of two types of operations:
 ///
 /// -   Expect something of the current value (such as [CoreChecks.equals] or
-///     [IterableChecks.contains]).
+///     [IterableChecks.contains]) by calling [expect], [expectAsync], or
+///     [expectUnawaited].
 /// -   Expect that a new subject can be extracted from the current value (such
-///     as [CoreChecks.has] or [FutureChecks.completes]).
+///     as [CoreChecks.has] or [FutureChecks.completes]) by calling [nest] or
+///     [nestAsync].
 ///
 ///
 /// Whichever type of operation, an expectation extension method provides two
@@ -238,10 +240,9 @@ extension ContextExtension<T> on Subject<T> {
 /// {@endtemplate}
 ///
 ///
-/// An expectation extension method which only expects something of the value
-/// will use [expect], [expectAsync], or [expectUnawaited].
-/// In these expectation extensions the `predicate` callback can report a
-/// [Rejection] if the value fails to satisfy the expectation.
+/// In expectation extension methods calling [expect], [expectAync], or
+/// [expectUnawaited], the `predicate` callback can report a [Rejection] if the
+/// value fails to satisfy the expectation.
 /// The description will be passed in a "clause" callback.
 /// {@template clause_description}
 /// The clause callback returns a description of what is checked which stands
@@ -255,13 +256,10 @@ extension ContextExtension<T> on Subject<T> {
 /// {@endtemplate}
 ///
 ///
-/// An expectation extension method which also extracts a value for further
-/// checking, such as a reading a field from the original subject, will use
-/// [nest], or [nestAsync].
-/// In these expectation extensions the `extract` callback can return a
-/// [Extracted.rejection] if the value fails to satisfy an expectation which
-/// disallows extracting the value, or an [Extracted.value] to become the value
-/// in a nested subject.
+/// In expectation extension methods calling [nest] or [nestAsync], the
+/// `extract` callback can return a [Extracted.rejection] if the value fails to
+/// satisfy an expectation which disallows extracting the value, or an
+/// [Extracted.value] to become the value in a nested subject.
 /// The description will be passed in a "label" callback.
 /// {@template label_description}
 /// The label callback returns a description of the extracted subject as it
