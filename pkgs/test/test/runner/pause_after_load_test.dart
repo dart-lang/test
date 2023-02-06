@@ -158,7 +158,7 @@ void main() {
 
     nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+2: [VM, kernel] success'));
+      expect(line, contains('+2: [VM, Kernel] success'));
       nextLineFired = true;
     })));
 

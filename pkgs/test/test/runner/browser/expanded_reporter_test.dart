@@ -28,7 +28,7 @@ void main() {
       'test.dart'
     ]);
 
-    expect(test.stdoutStream(), emitsThrough(contains('[VM, kernel]')));
+    expect(test.stdoutStream(), emitsThrough(contains('[VM, Kernel]')));
     expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
     await test.shouldExit(0);
   }, tags: ['chrome']);

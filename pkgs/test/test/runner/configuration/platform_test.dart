@@ -72,7 +72,7 @@ void main() {
           test.stdout,
           containsInOrder([
             '-1: [Chrome, Dart2Js] test [E]',
-            '-2: [VM, kernel] test [E]',
+            '-2: [VM, Kernel] test [E]',
             '-2: Some tests failed.'
           ]));
       await test.shouldExit(1);

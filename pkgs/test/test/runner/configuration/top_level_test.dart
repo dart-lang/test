@@ -482,7 +482,7 @@ transformers:
 
     var test = await runTest(['test.dart']);
     expect(test.stdout,
-        containsInOrder(['[VM, kernel] success', '[Chrome, Dart2Js] success']));
+        containsInOrder(['[VM, Kernel] success', '[Chrome, Dart2Js] success']));
     await test.shouldExit(0);
   }, tags: 'chrome');
 
