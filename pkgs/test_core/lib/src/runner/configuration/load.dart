@@ -273,10 +273,13 @@ class _ConfigurationLoader {
             _parseIdentifierLike(runtimeNode, 'Platform name'),
             runtimeNode.span));
 
-    var compilers = _getList(
+    var compilerSelections = _getList(
         'compilers',
-        (compiler) => CompilerSelection(
-            _parseIdentifierLike(compiler, 'Compiler name'), compiler.span));
+        (node) => _parseNode(
+            node,
+            'compiler',
+            (option) =>
+                CompilerSelection.parse(option, parentSpan: node.span)));
 
     var chosenPresets = _getList('add_presets',
         (presetNode) => _parseIdentifierLike(presetNode, 'Preset name'));
@@ -292,7 +295,7 @@ class _ConfigurationLoader {
         reporter: reporter,
         fileReporters: fileReporters,
         concurrency: concurrency,
-        compilers: compilers,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         chosenPresets: chosenPresets,
         overrideRuntimes: overrideRuntimes);

@@ -86,16 +86,14 @@ final ArgParser _parser = (() {
       });
   parser.addMultiOption('compiler',
       abbr: 'c',
-      help:
-          'The compiler(s) to use to run tests. Each platform chooses its default and supported compilers.',
-      defaultsTo: [],
-      allowed: [
-        for (var compiler in Compiler.builtIn) compiler.identifier,
-      ],
-      allowedHelp: {
-        for (var compiler in Compiler.builtIn)
-          compiler.identifier: compiler.description,
-      });
+      help: 'The compiler(s) to use to run tests, supported compilers are '
+          '[${Compiler.builtIn.map((c) => c.identifier).join(', ')}].\n\n'
+          'Each platform has a default compiler but may support other '
+          'compilers.\n\n'
+          'You can target a compiler to a specific platform using arguments '
+          'of the following form [<platform-selector>:]<compiler>.\n\n'
+          'If a platform is specified but no given compiler is supported for '
+          'that platform, then it will use its default compiler.');
   parser.addMultiOption('preset',
       abbr: 'P', help: 'The configuration preset(s) to use.');
   parser.addOption('concurrency',
@@ -308,8 +306,8 @@ class _Parser {
     var runtimes = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
         .toList();
-    var compilers = _ifParsed<List<String>>('compiler')
-        ?.map((compiler) => CompilerSelection(compiler))
+    var compilerSelections = _ifParsed<List<String>>('compiler')
+        ?.map(CompilerSelection.parse)
         .toList();
 
     final paths = _options.rest.isEmpty ? null : _options.rest;
@@ -341,9 +339,9 @@ class _Parser {
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
         totalShards: totalShards,
-        timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
+        timeout: _parseOption('timeout', Timeout.parse),
         globalPatterns: patterns,
-        compilers: compilers,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
@@ -431,14 +429,5 @@ extension _RuntimeDescription on Runtime {
       message.write(', ${compiler.identifier}');
     }
     return message.toString();
-  }
-}
-
-extension _CompilerDescription on Compiler {
-  String get description {
-    var runtimes =
-        Runtime.builtIn.where((r) => r.supportedCompilers.contains(this));
-    return 'Supported platforms: '
-        '${runtimes.map((r) => r.identifier).join(', ')}';
   }
 }

@@ -55,7 +55,7 @@ class SuiteConfiguration {
       testSelections: const {},
       precompiledPath: null,
       runtimes: null,
-      compilers: null,
+      compilerSelections: null,
       tags: null,
       onPlatform: null,
       metadata: null,
@@ -106,11 +106,8 @@ class SuiteConfiguration {
   /// [testSelections].
   final Set<TestSelection> testSelections;
 
-  /// The set of compilers with which to run tests.
-  List<String>? get compilers => _compilers == null
-      ? null
-      : List.unmodifiable(_compilers!.map((compiler) => compiler.name));
-  final List<CompilerSelection>? _compilers;
+  /// The set of compiler selections for running tests.
+  final List<CompilerSelection>? compilerSelections;
 
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
@@ -161,7 +158,7 @@ class SuiteConfiguration {
       required bool? runSkipped,
       required Iterable<String>? dart2jsArgs,
       required String? precompiledPath,
-      required Iterable<CompilerSelection>? compilers,
+      required Iterable<CompilerSelection>? compilerSelections,
       required Iterable<RuntimeSelection>? runtimes,
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -184,7 +181,7 @@ class SuiteConfiguration {
         dart2jsArgs: dart2jsArgs,
         testSelections: const {},
         precompiledPath: precompiledPath,
-        compilers: compilers,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         tags: tags,
         onPlatform: onPlatform,
@@ -212,7 +209,7 @@ class SuiteConfiguration {
           bool? runSkipped,
           Iterable<String>? dart2jsArgs,
           String? precompiledPath,
-          Iterable<CompilerSelection>? compilers,
+          Iterable<CompilerSelection>? compilerSelections,
           Iterable<RuntimeSelection>? runtimes,
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -234,7 +231,7 @@ class SuiteConfiguration {
           runSkipped: runSkipped,
           dart2jsArgs: dart2jsArgs,
           precompiledPath: precompiledPath,
-          compilers: compilers,
+          compilerSelections: compilerSelections,
           runtimes: runtimes,
           tags: tags,
           onPlatform: onPlatform,
@@ -272,7 +269,7 @@ class SuiteConfiguration {
     required Iterable<String>? dart2jsArgs,
     required this.testSelections,
     required this.precompiledPath,
-    required Iterable<CompilerSelection>? compilers,
+    required Iterable<CompilerSelection>? compilerSelections,
     required Iterable<RuntimeSelection>? runtimes,
     required Map<BooleanSelector, SuiteConfiguration>? tags,
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -284,7 +281,7 @@ class SuiteConfiguration {
         _runSkipped = runSkipped,
         dart2jsArgs = _list(dart2jsArgs) ?? const [],
         _runtimes = _list(runtimes),
-        _compilers = _list(compilers),
+        compilerSelections = _list(compilerSelections),
         tags = _map(tags),
         onPlatform = _map(onPlatform),
         _ignoreTimeouts = ignoreTimeouts,
@@ -307,7 +304,7 @@ class SuiteConfiguration {
         testSelections: const {},
         precompiledPath: null,
         runtimes: null,
-        compilers: null,
+        compilerSelections: null,
         ignoreTimeouts: null,
       );
 
@@ -348,7 +345,7 @@ class SuiteConfiguration {
         testSelections:
             testSelections.isEmpty ? other.testSelections : testSelections,
         precompiledPath: other.precompiledPath ?? precompiledPath,
-        compilers: other._compilers ?? _compilers,
+        compilerSelections: other.compilerSelections ?? compilerSelections,
         runtimes: other._runtimes ?? _runtimes,
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
@@ -368,7 +365,7 @@ class SuiteConfiguration {
       bool? runSkipped,
       Iterable<String>? dart2jsArgs,
       String? precompiledPath,
-      Iterable<CompilerSelection>? compilers,
+      Iterable<CompilerSelection>? compilerSelections,
       Iterable<RuntimeSelection>? runtimes,
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -393,7 +390,7 @@ class SuiteConfiguration {
         dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
         testSelections: testSelections,
         precompiledPath: precompiledPath ?? this.precompiledPath,
-        compilers: compilers ?? _compilers,
+        compilerSelections: compilerSelections ?? this.compilerSelections,
         runtimes: runtimes ?? _runtimes,
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
@@ -428,7 +425,7 @@ class SuiteConfiguration {
         runSkipped: _runSkipped,
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
-        compilers: _compilers,
+        compilerSelections: compilerSelections,
         runtimes: _runtimes,
         tags: tags,
         onPlatform: onPlatform,
