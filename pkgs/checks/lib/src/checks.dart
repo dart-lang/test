@@ -2,13 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO Add doc about how failure strings work.
 import 'dart:async';
 
 import 'package:meta/meta.dart' as meta;
 import 'package:test_api/hooks.dart';
 
 import 'describe.dart';
+import 'extensions/async.dart';
+import 'extensions/core.dart';
+import 'extensions/iterable.dart';
 
 /// A target for checking expectations against a value in a test.
 ///
@@ -16,9 +18,10 @@ import 'describe.dart';
 /// validated or rejected; or it may be a placeholder, in which case
 /// expectations describe what would be checked but cannot be rejected.
 ///
-/// Expectations are defined as extension methods specialized on the generic
-/// [T]. Expectations can use the [ContextExtension] to interact with the
-/// [Context] for this subject.
+/// Expectation methods are defined in extensions `on Subject`, specialized on
+/// the generic [T].
+/// Expectation extension methods can use the [ContextExtension] to interact
+/// with the [Context] for this subject.
 class Subject<T> {
   final Context<T> _context;
   Subject._(this._context);
@@ -187,40 +190,250 @@ extension ContextExtension<T> on Subject<T> {
   Context<T> get context => _context;
 }
 
-/// The expectation and nesting context already applied to a [Subject].
+/// The context for a [Subject] that allows asserting expectations and creating
+/// nested subjects.
 ///
-/// This is the surface of interaction for expectation extension method
-/// implementations.
+/// A [Subject] is the target for checking expectations in a test.
+/// Every subject has a [Context] which holds the "actual" value, tracks how the
+/// value was obtained, and can check expectations about the value.
 ///
-/// The `expect` and `expectAsync` can test the value and optionally reject it.
-/// The `nest` and `nestAsync` can test the value, and also extract some other
-/// property from it for further checking.
+/// The user focused APIs called within tests are expectation extension methods
+/// written in an extension `on Subject`, typically specialized to a specific
+/// generic.
+///
+/// Expectation extension methods will make a call to one of the APIs on the
+/// subject's [Context], and can perform one of two types of operations:
+///
+/// -   Expect something of the current value (such as [CoreChecks.equals] or
+///     [IterableChecks.contains]) by calling [expect], [expectAsync], or
+///     [expectUnawaited].
+/// -   Expect that a new subject can be extracted from the current value (such
+///     as [CoreChecks.has] or [FutureChecks.completes]) by calling [nest] or
+///     [nestAsync].
+///
+///
+/// Whichever type of operation, an expectation extension method provides two
+/// callbacks.
+/// The first callback is an `Iterable<String> Function()` returning a
+/// description of the expectation.
+/// The second callback always takes the actual value as an argument, and the
+/// specific signature varies by operation.
+///
+///
+/// In expectation extension methods calling [expect], [expectAync], or
+/// [expectUnawaited], the `predicate` callback can report a [Rejection] if the
+/// value fails to satisfy the expectation.
+/// The description will be passed in a "clause" callback.
+/// {@template clause_description}
+/// The clause callback returns a description of what is checked which stands
+/// on its own.
+/// For instance the `is equal to <1>` in:
+///
+/// ```
+/// Expected: a int that:
+///   is equal to <1>
+/// ```
+/// {@endtemplate}
+///
+///
+/// In expectation extension methods calling [nest] or [nestAsync], the
+/// `extract` callback can return a [Extracted.rejection] if the value fails to
+/// satisfy an expectation which disallows extracting the value, or an
+/// [Extracted.value] to become the value in a nested subject.
+/// The description will be passed in a "label" callback.
+/// {@template label_description}
+/// The label callback returns a description of the extracted subject as it
+/// relates to the original subject.
+/// For instance the `completes to a value` in:
+///
+/// ```
+/// Expected a Future<int> that:
+///   completes to a value that:
+///     is equal to <1>
+/// ```
+///
+/// A label should also be sensible when it is read as a clause.
+/// If no further expectations are checked on the extracted subject, or if the
+/// extraction is rejected, the "that:" is omitted in the output.
+///
+/// ```
+///   Expected a Future<int> that:
+///     completes to a value
+/// ```
+/// {@endtemplate}
+///
+///
+/// A rejection carries two descriptions, one description of the "actual" value
+/// that was tested, and an optional "which" with further details about how the
+/// result different from the expectation.
+/// If the "actual" argument is omitted it will be filled with a representation
+/// of the value passed to the expectation callback formatted with [literal].
+/// If an expectation extension method is written on a type of subject without a
+/// useful `toString()`, the rejection can provide a string representation to
+/// use instead.
+/// The "which" argument may be omitted if the reason is very obvious based on
+/// the clause and "actual" description, but most expectations should include a
+/// "which".
+///
+/// The behavior of a context following a rejection depends on the source of the
+/// [Subject].
+///
+/// When an expectation is rejected for a [check] subject, an exception is
+/// thrown to interrupt the test, so no further checks should happen. The
+/// failure message will include:
+/// -  An "Expected" section with descriptions of all the expectations that
+///    were checked, including the ones that passed, and the last one that
+///    failed.
+/// -  An "Actual" section, which may be the description directly from the
+///    [Rejection] if the failure was on the root subject, or may start with a
+///    partial version of the "Expected" description up to the label for the
+///    nesting subject that saw a failure, then the "actual" from the rejection.
+/// -  A "Which" description from the rejection, if it was included.
+///
+/// For example, if a failure happens on the root subject, the "actual" is taken
+/// directly from the rejection.
+///
+/// ```
+/// Expected: a Future<int> that:
+///   completes to a value
+/// Actual: a future that completes as an error
+/// Which: threw <UnimplementedError> at:
+/// <stack trace>
+/// ```
+///
+/// But if the failure happens on a nested subject, the actual starts with a
+/// description of the nesting or non-nesting expectations that succeeded, up
+/// to nesting point of the failure, then the "actual" and "which" from the
+/// rejection are indented to that level of nesting.
+///
+/// ```
+/// Expected: a Future<int> that:
+///   completes to a value that:
+///     equals <1>
+/// Actual: a Future<int> that:
+///   completes to a value that:
+///   Actual: <0>
+///   Which: are not equal
+/// ```
+///
+/// ```dart
+/// extension CustomChecks on Subject<CustomType> {
+///   void someExpectation() {
+///     context.expect(() => ['meets this expectation'], (actual) {
+///       if (_expectationIsMet(actual)) return null;
+///       return Rejection(which: ['does not meet this expectation']);
+///     });
+///   }
+///
+///   Subject<Foo> get someDerivedValue =>
+///       context.nest('has someDerivedValue', (actual) {
+///         if (_cannotReadDerivedValue(actual)) {
+///           return Extracted.rejection(which: ['cannot read someDerivedValue']);
+///         }
+///         return Extracted.value(_readDerivedValue(actual));
+///       });
+///
+///   // for field reads that will not get rejected, use `has`
+///   Subject<Bar> get someField => has((a) => a.someField, 'someField');
+/// }
+/// ```
+///
+/// When an expectation is rejected for a subject within a call to [softCheck]
+/// or [softCheckAsync] a [CheckFailure] will be returned with the rejection, as
+/// well as a [FailureDetail] which could be used to format the same failure
+/// message thrown by the [check] subject.
+///
+/// {@template callbacks_may_be_unused}
+/// The description of an expectation may never be shown to the user, so the
+/// callback may never be invoked.
+/// If all the conditions on a subject succeed, or if the failure detail for a
+/// failed [softCheck] is never read, the descriptions will be unused.
+/// String formatting for the descriptions should be performed in the callback,
+/// not ahead of time.
+///
+///
+/// The context for a subject may hold a real "actual" value to test against, or
+/// it may have a placeholder within a call to [describe].
+/// A context with a placeholder value will not invoke the callback to check
+/// expectations.
+///
+/// If both callbacks are invoked, the description callback will always be
+/// called strictly after the expectation callback is called.
+///
+/// Callbacks passed to a context should not throw.
+/// {@endtemplate}
+///
+///
+/// Some contexts disallow certain interactions.
+/// {@template async_limitations}
+/// Calls to [expectAsync] or [nestAsync] must not be performed by a [Condition]
+/// passed to [softCheck] or [describe].
+/// Use [softCheckAsync] or [describeAsync] for any condition which checks async
+/// expectations.
+/// {@endtemplate}
+/// {@template unawaited_limitations}
+/// Calls to [expectUnawaited] may not be performed by a [Condition] passed to
+/// [softCheck] or [softCheckAsync].
+/// {@endtemplate}
+///
+/// Expectation extension methods can access the context for the subject with
+/// the [ContextExtension].
+///
+/// The [it] utility returns a subject whose context will not directly invoke
+/// any callbacks, but stores them and passed them along  when the
+/// [ConditionSubject] is replayed as a [Condition] against another subject.
+///
+/// {@template description_lines}
+/// Description callbacks return an `Iterable<String>` where each element is a
+/// line in the output. Individual elements should not contain newlines.
+/// Utilities such as [prefixFirst], [postfixLast], and [literal] may be useful
+/// to format values which are potentially multiline.
+/// {@endtemplate}
+///
+/// This class should not be implemented or extended.
 abstract class Context<T> {
   /// Expect that [predicate] will not return a [Rejection] for the checked
   /// value.
   ///
-  /// The property that is asserted by this expectation is described by
-  /// [clause]. Often this is a single statement like "equals <1>" or "is
-  /// greater than 10", but it may be multiple lines such as describing that an
-  /// Iterable contains an element meeting a complex expectation. If any element
-  /// in the returned iterable contains a newline it may cause problems with
-  /// indentation in the output.
+  /// {@macro clause_description}
+  ///
+  /// {@macro description_lines}
+  ///
+  /// {@macro callbacks_may_be_unused}
+  ///
+  /// ```dart
+  /// void someExpectation() {
+  ///   context.expect(() => ['meets this expectation'], (actual) {
+  ///     if (_expectationIsMet(actual)) return null;
+  ///     return Rejection(which: ['does not meet this expectation']);
+  ///   });
+  /// }
+  /// ```
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate);
 
   /// Expect that [predicate] will not result in a [Rejection] for the checked
   /// value.
   ///
-  /// The property that is asserted by this expectation is described by
-  /// [clause]. Often this is a single statement like "equals <1>" or "is
-  /// greater than 10", but it may be multiple lines such as describing that an
-  /// Iterable contains an element meeting a complex expectation. If any element
-  /// in the returned iterable contains a newline it may cause problems with
-  /// indentation in the output.
+  /// {@macro clause_description}
   ///
-  /// Some context may disallow asynchronous expectations, for instance in
-  /// [softCheck] which must synchronously check the value. In those contexts
-  /// this method will throw.
+  /// {@macro description_lines}
+  ///
+  /// {@macro callbacks_may_be_unused}
+  ///
+  /// {@macro async_limitations}
+  ///
+  /// ```dart
+  /// extension CustomChecks on Subject<CustomType> {
+  ///   Future<void> someAsyncExpectation() async {
+  ///     await context.expectAsync(() => ['meets this async expectation'],
+  ///         (actual) async {
+  ///       if (await _expectationIsMet(actual)) return null;
+  ///       return Rejection(which: ['does not meet this async expectation']);
+  ///     });
+  ///   }
+  /// }
+  /// ```
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate);
 
@@ -236,10 +449,29 @@ abstract class Context<T> {
   /// listening for the event, there is no way to complete a returned future and
   /// consider the check "complete".
   ///
-  /// May not be used from the context for a [Subject] created by [softCheck] or
-  /// [softCheckAsync]. The only useful effect of a late rejection is to throw a
-  /// [TestFailure] when used with a [check] subject. Most conditions should
-  /// prefer to use [expect] or [expectAsync].
+  /// {@macro clause_description}
+  ///
+  /// {@macro description_lines}
+  ///
+  /// {@macro callbacks_may_be_unused}
+  ///
+  /// {@macro unawaited_limitations}
+  /// The only useful effect of a late rejection is to throw a [TestFailure]
+  /// when used with a [check] subject. Most conditions should prefer to use
+  /// [expect] or [expectAsync].
+  ///
+  /// ```dart
+  /// void someUnawaitableExpectation() async {
+  ///   await context.expectUnawaited(
+  ///       () => ['meets this unawaitable expectation'], (actual, reject) {
+  ///     final failureSignal = _completeIfFailed(actual);
+  ///     unawaited(failureSignal.then((_) {
+  ///       reject(Reject(
+  ///           which: ['unexpectedly failed this unawaited expectation']));
+  ///     }));
+  ///   });
+  /// }
+  /// ```
   void expectUnawaited(Iterable<String> Function() clause,
       void Function(T, void Function(Rejection)) predicate);
 
@@ -249,20 +481,33 @@ abstract class Context<T> {
   /// [Extracted.rejection] describing the problem. Otherwise it should return
   /// an [Extracted.value].
   ///
-  /// The [label] output will be used preceding "that:" in a description if
-  /// there are further expectations checked on the returned subject, or on it's
-  /// own otherwise.
-  /// Expectations applied to the returned [Subject] will follow the label,
-  /// indented by two more spaces.
+  /// {@macro label_description}
   ///
-  /// If [atSameLevel] is true then [R] should be a subtype of [T], and a
-  /// returned [Extracted.value] should be the same instance as the passed
-  /// value, or an object which is is equivalent but has a type which is more
-  /// convenient to test. In this case expectations applied to the return
-  /// [Subject] will behave as if they were applied to the subject for this
-  /// context. The [label] will be used as if it were a "clause" argument passed
-  /// to [expect]. If the label is empty, the clause will be omitted. The
-  /// label should only be left empty if the value extraction cannot fail.
+  /// If [atSameLevel] is true then the returned [Extracted.value] should hold
+  /// the same instance as the passed value, or an object which is is equivalent
+  /// but has a type that is more convenient to test.
+  /// In this case expectations applied to the returned [Subject] will behave as
+  /// if they were applied to the subject for this context.
+  /// The [label] will be used as if it were a "clause" argument passed to
+  /// [expect].
+  /// If the label returns an empty iterable, the clause will be omitted.
+  /// The label should only be left empty if the value extraction cannot be
+  /// rejected.
+  ///
+  /// {@macro description_lines}
+  ///
+  /// {@macro callbacks_may_be_unused}
+  ///
+  /// ```dart
+  /// Subject<Foo> get someDerivedValue =>
+  ///     context.nest(() => ['has someDerivedValue'], (actual) {
+  ///       if (_cannotReadDerivedValue(actual)) {
+  ///         return Extracted.rejection(
+  ///             which: ['cannot read someDerivedValue']);
+  ///       }
+  ///       return Extracted.value(_readDerivedValue(actual));
+  ///     });
+  /// ```
   Subject<R> nest<R>(
       Iterable<String> Function() label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false});
@@ -273,23 +518,32 @@ abstract class Context<T> {
   /// [Extracted.rejection] describing the problem. Otherwise it should return
   /// an [Extracted.value].
   ///
-  /// The [label] output will be used preceding "that:" in a description if
-  /// there are further expectations checked on the returned subject, or on it's
-  /// own otherwise.
-  /// Expectations applied to the returned [Subject] will follow the label,
-  /// indented by two more spaces.
+  /// {@macro label_description}
   ///
-  /// Some context may disallow asynchronous expectations, for instance in
-  /// [softCheck] which must synchronously check the value. In those contexts
-  /// this method will throw.
+  /// {@macro description_lines}
+  ///
+  /// {@macro callbacks_may_be_unused}
+  ///
+  /// {@macro async_limitations}
+  ///
+  /// ```dart
+  /// Future<Subject<Foo>> get someAsyncValue async => await context
+  ///         .nestAsync(() => ['has someAsyncValue'], (actual) async {
+  ///       if (await _cannotReadAsyncValue(actual)) {
+  ///         return Extracted.rejection(
+  ///             which: ['cannot read someAsyncValue']);
+  ///       }
+  ///       return Extracted.value(await _readAsyncValue(actual));
+  ///     });
+  /// ```
   Future<Subject<R>> nestAsync<R>(Iterable<String> Function() label,
       FutureOr<Extracted<R>> Function(T) extract);
 }
 
 /// A property extracted from a value being checked, or a rejection.
 class Extracted<T> {
-  final Rejection? rejection;
-  final T? value;
+  final Rejection? _rejection;
+  final T? _value;
 
   /// Creates a rejected extraction to indicate a failure trying to read the
   /// value.
@@ -298,22 +552,22 @@ class Extracted<T> {
   /// will be filled in with the [literal] representation of the value.
   Extracted.rejection(
       {Iterable<String> actual = const [], Iterable<String>? which})
-      : rejection = Rejection(actual: actual, which: which),
-        value = null;
-  Extracted.value(T this.value) : rejection = null;
+      : _rejection = Rejection(actual: actual, which: which),
+        _value = null;
+  Extracted.value(T this._value) : _rejection = null;
 
-  Extracted._(Rejection this.rejection) : value = null;
+  Extracted._(Rejection this._rejection) : _value = null;
 
   Extracted<R> _map<R>(R Function(T) transform) {
-    final rejection = this.rejection;
+    final rejection = _rejection;
     if (rejection != null) return Extracted._(rejection);
-    return Extracted.value(transform(value as T));
+    return Extracted.value(transform(_value as T));
   }
 
-  Extracted<T> _fillActual(Object? actual) => rejection == null ||
-          rejection!.actual.isNotEmpty
+  Extracted<T> _fillActual(Object? actual) => _rejection == null ||
+          _rejection!.actual.isNotEmpty
       ? this
-      : Extracted.rejection(actual: literal(actual), which: rejection!.which);
+      : Extracted.rejection(actual: literal(actual), which: _rejection!.which);
 }
 
 abstract class _Optional<T> {
@@ -479,12 +733,12 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
       Iterable<String> Function() label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false}) {
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
-    final rejection = result.rejection;
+    final rejection = result._rejection;
     if (rejection != null) {
       _clauses.add(_ExpectationClause(label));
       _fail(_failure(rejection));
     }
-    final value = result.value ?? _Absent<R>();
+    final value = result._value ?? _Absent<R>();
     final _TestContext<R> context;
     if (atSameLevel) {
       context = _TestContext._alias(this, value);
@@ -508,12 +762,12 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     final result = await _value.mapAsync(
         (actual) async => (await extract(actual))._fillActual(actual));
     outstandingWork.complete();
-    final rejection = result.rejection;
+    final rejection = result._rejection;
     if (rejection != null) {
       _clauses.add(_ExpectationClause(label));
       _fail(_failure(rejection));
     }
-    final value = result.value ?? _Absent<R>();
+    final value = result._value ?? _Absent<R>();
     final context = _TestContext<R>._child(value, label, this);
     _clauses.add(context);
     return Subject._(context);
@@ -735,6 +989,7 @@ class Rejection {
   Rejection({this.actual = const [], this.which});
 }
 
+/// A [Subject] which records expectations and can replay them as a [Condition].
 class ConditionSubject<T> implements Subject<T>, Condition<T> {
   ConditionSubject._();
 
