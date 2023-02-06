@@ -8,6 +8,9 @@ import 'package:meta/meta.dart' as meta;
 import 'package:test_api/hooks.dart';
 
 import 'describe.dart';
+import 'extensions/async.dart';
+import 'extensions/core.dart';
+import 'extensions/iterable.dart';
 
 /// A target for checking expectations against a value in a test.
 ///
@@ -201,14 +204,18 @@ extension ContextExtension<T> on Subject<T> {
 /// Expectation extension methods will make a call to one of the APIs on the
 /// subject's [Context], and can perform one of two types of operations:
 ///
-/// -   Expect something of the current value.
-/// -   Expect that a new subject can be extracted from the current value.
+/// -   Expect something of the current value (such as [CoreChecks.equals] or
+///     [IterableChecks.contains]).
+/// -   Expect that a new subject can be extracted from the current value (such
+///     as [CoreChecks.has] or [FutureChecks.completes]).
 ///
 ///
 /// Whichever type of operation, an expectation extension method provides two
 /// callbacks.
-/// The first callback returns a description of the expectation, and the second
-/// callback checks the expectation.
+/// The first callback is an `Iterable<String> Function()` returning a
+/// description of the expectation.
+/// The second callback always takes the actual value as an argument, and the
+/// specific signature varies by operation.
 ///
 /// {@template callbacks_may_be_unused}
 /// The description of an expectation may never be shown to the user, so the
