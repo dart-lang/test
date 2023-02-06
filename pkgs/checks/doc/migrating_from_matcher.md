@@ -66,12 +66,17 @@ check(actualCollection).deepEquals(expected);
     value to check for equality, a matcher for the emitted value, or a matcher
     for the entire queue which would match multiple values. Use `it()..emits()`
     to check the emitted elements.
--   The [`matches` Matcher][matches] would convert a `String` argument into a
-    `Regex`, so `matches(r'\d')` would match the value `'1'`. With
-    `matchesPattern` a `String` argument is treated as a `Pattern` instead of
-    converted to a `RegExp`.
+-   In `package:matcher` the [`matches` Matcher][matches] converted a `String`
+    argument into a `Regex`, so `matches(r'\d')` would match the value `'1'`.
+    This was potentially confusing, because even though `String` is a subtype of
+    `Pattern`, it wasn't used as a pattern directly.
+    With `matchesPattern` a `String` argument is used as a `Pattern` and
+    comparison uses the [`String.allMatches`][allMatches].
+    For backwards compatibility change `matches(regexString)` to
+    `matchesPattern(RegExp(regexString))`.
 
 [matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
+[allMatches]:https://api.dart.dev/stable/2.19.1/dart-core/Pattern/allMatches.html
 
 ## Matchers with replacements under a different name
 
