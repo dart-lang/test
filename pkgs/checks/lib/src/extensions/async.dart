@@ -16,7 +16,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// Fails if the future completes as an error.
   Future<Subject<T>> completes() =>
-      context.nestAsync<T>('completes to a value', (actual) async {
+      context.nestAsync<T>(() => ['completes to a value'], (actual) async {
         try {
           return Extracted.value(await actual);
         } catch (e, st) {
@@ -61,7 +61,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// Fails if the future completes to a value.
   Future<Subject<E>> throws<E extends Object>() => context.nestAsync<E>(
-          'completes to an error${E == Object ? '' : ' of type $E'}',
+          () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
           (actual) async {
         try {
           return Extracted.rejection(
@@ -110,7 +110,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// Fails if the stream emits an error instead of a value, or closes without
   /// emitting a value.
   Future<Subject<T>> emits() =>
-      context.nestAsync<T>('emits a value', (actual) async {
+      context.nestAsync<T>(() => ['emits a value'], (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
               actual: ['a stream'],
@@ -140,8 +140,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation fails, the source queue will be left in it's original
   /// state.
   /// If this expectation succeeds, consumes the error event.
-  Future<Subject<E>> emitsError<E extends Object>() =>
-      context.nestAsync('emits an error${E == Object ? '' : ' of type $E'}',
+  Future<Subject<E>> emitsError<E extends Object>() => context.nestAsync(
+          () => ['emits an error${E == Object ? '' : ' of type $E'}'],
           (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
@@ -205,7 +205,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// conditions.
   ///
   /// ```dart
-  /// await checkThat(StreamQueue(someStream)).inOrder([
+  /// await check(StreamQueue(someStream)).inOrder([
   ///   it()..emits().that(it()..equals(0)),
   ///   it()..emits().that(it()..equals(1)),
   //  ]);
@@ -445,16 +445,16 @@ extension ChainAsync<T> on Future<Subject<T>> {
   /// expression that would need parenthesis.
   ///
   /// ```dart
-  /// await checkThat(someFuture).completes().which(it()..equals('expected'));
+  /// await check(someFuture).completes().which(it()..equals('expected'));
   /// // or, with the intermediate `await`:
-  /// (await checkThat(someFuture).completes()).equals('expected');
+  /// (await check(someFuture).completes()).equals('expected');
   /// ```
   Future<void> which(Condition<T> condition) async {
     await condition.applyAsync(await this);
   }
 }
 
-extension StreamQueueWrap<T> on Subject<Stream<T>> {
+extension WithQueueExtension<T> on Subject<Stream<T>> {
   /// Wrap the stream in a [StreamQueue] to allow using checks from
   /// [StreamChecks].
   ///
@@ -462,6 +462,6 @@ extension StreamQueueWrap<T> on Subject<Stream<T>> {
   /// so that they can support conditional expectations and check multiple
   /// possibilities from the same point in the stream.
   Subject<StreamQueue<T>> get withQueue =>
-      context.nest('', (actual) => Extracted.value(StreamQueue(actual)),
+      context.nest(() => [], (actual) => Extracted.value(StreamQueue(actual)),
           atSameLevel: true);
 }
