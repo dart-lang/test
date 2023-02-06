@@ -4,7 +4,7 @@
 
 import 'package:checks/context.dart';
 
-extension ThrowsCheck<T> on Subject<T Function()> {
+extension FunctionChecks<T> on Subject<T Function()> {
   /// Expects that a function throws synchronously when it is called.
   ///
   /// If the function synchronously throws a value of type [E], return a
@@ -17,7 +17,7 @@ extension ThrowsCheck<T> on Subject<T Function()> {
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
   Subject<E> throws<E>() {
-    return context.nest<E>('throws an error of type $E', (actual) {
+    return context.nest<E>(() => ['throws an error of type $E'], (actual) {
       try {
         final result = actual();
         return Extracted.rejection(
@@ -40,7 +40,7 @@ extension ThrowsCheck<T> on Subject<T Function()> {
   ///
   /// If the function throws synchronously, this expectation will fail.
   Subject<T> returnsNormally() {
-    return context.nest<T>('returns a value', (actual) {
+    return context.nest<T>(() => ['returns a value'], (actual) {
       try {
         return Extracted.value(actual());
       } catch (e, st) {
