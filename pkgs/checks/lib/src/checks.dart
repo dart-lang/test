@@ -195,7 +195,7 @@ extension ContextExtension<T> on Subject<T> {
 /// value was obtained, and can check expectations about the value.
 ///
 /// The user focused APIs called within tests are expectation extension methods
-/// written in extension `on Subject`, typically specialized to a specific
+/// written in an extension `on Subject`, typically specialized to a specific
 /// generic.
 ///
 /// Expectation extension methods will make a call to one of the APIs on the
