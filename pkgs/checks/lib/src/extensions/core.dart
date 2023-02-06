@@ -10,7 +10,7 @@ extension CoreChecks<T> on Subject<T> {
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
   Subject<R> has<R>(R Function(T) extract, String name) {
-    return context.nest('has $name', (T value) {
+    return context.nest(() => ['has $name'], (T value) {
       try {
         return Extracted.value(extract(value));
       } catch (_) {
@@ -70,7 +70,7 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// If the value is a [T], returns a [Subject] for further expectations.
   Subject<R> isA<R>() {
-    return context.nest<R>('is a $R', (actual) {
+    return context.nest<R>(() => ['is a $R'], (actual) {
       if (actual is! R) {
         return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
       }
@@ -116,9 +116,9 @@ extension BoolChecks on Subject<bool> {
   }
 }
 
-extension NullabilityChecks<T> on Subject<T?> {
+extension NullableChecks<T> on Subject<T?> {
   Subject<T> isNotNull() {
-    return context.nest<T>('is not null', (actual) {
+    return context.nest<T>(() => ['is not null'], (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
     }, atSameLevel: true);

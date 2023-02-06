@@ -14,11 +14,11 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   Subject<Iterable<V>> get values => has((m) => m.values, 'values');
   Subject<int> get length => has((m) => m.length, 'length');
   Subject<V> operator [](K key) {
-    final keyString = literal(key).join(r'\n');
-    return context.nest('contains a value for $keyString', (actual) {
+    return context.nest(
+        () => prefixFirst('contains a value for ', literal(key)), (actual) {
       if (!actual.containsKey(key)) {
         return Extracted.rejection(
-            which: ['does not contain the key $keyString']);
+            which: prefixFirst('does not contain the key ', literal(key)));
       }
       return Extracted.value(actual[key] as V);
     });
@@ -40,10 +40,10 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains [key] according to [Map.containsKey].
   void containsKey(K key) {
-    final keyString = literal(key).join(r'\n');
-    context.expect(() => ['contains key $keyString'], (actual) {
+    context.expect(() => prefixFirst('contains key ', literal(key)), (actual) {
       if (actual.containsKey(key)) return null;
-      return Rejection(which: ['does not contain key $keyString']);
+      return Rejection(
+          which: prefixFirst('does not contain key ', literal(key)));
     });
   }
 
@@ -68,10 +68,11 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains [value] according to [Map.containsValue].
   void containsValue(V value) {
-    final valueString = literal(value).join(r'\n');
-    context.expect(() => ['contains value $valueString'], (actual) {
+    context.expect(() => prefixFirst('contains value ', literal(value)),
+        (actual) {
       if (actual.containsValue(value)) return null;
-      return Rejection(which: ['does not contain value $valueString']);
+      return Rejection(
+          which: prefixFirst('does not contain value ', literal(value)));
     });
   }
 
