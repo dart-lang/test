@@ -116,7 +116,7 @@ extension BoolChecks on Subject<bool> {
   }
 }
 
-extension NullabilityChecks<T> on Subject<T?> {
+extension NullableChecks<T> on Subject<T?> {
   Subject<T> isNotNull() {
     return context.nest<T>(() => ['is not null'], (actual) {
       if (actual == null) return Extracted.rejection();

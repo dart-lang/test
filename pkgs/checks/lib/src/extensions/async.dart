@@ -459,7 +459,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   }
 }
 
-extension StreamQueueWrap<T> on Subject<Stream<T>> {
+extension WithQueueExtension<T> on Subject<Stream<T>> {
   /// Wrap the stream in a [StreamQueue] to allow using checks from
   /// [StreamChecks].
   ///
