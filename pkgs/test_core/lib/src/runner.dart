@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 // ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
@@ -317,7 +316,8 @@ class Runner {
                   'Cannot filter by line/column for this test suite, no suite'
                   'path available.');
             }
-            var absoluteSuitePath = p.absolute(path);
+            // The absolute path as it will appear in stack traces.
+            var absoluteSuitePath = File(path).absolute.uri.toFilePath();
 
             bool matchLineAndCol(Frame frame) {
               if (frame.uri.scheme != 'file' ||

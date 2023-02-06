@@ -2,6 +2,7 @@
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
+* Support running tests by absolute file uri.
 * Update `vm_service` constraint to `>=6.0.0 <12.0.0`.
 
 # 0.4.22
