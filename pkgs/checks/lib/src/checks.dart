@@ -18,9 +18,9 @@ import 'extensions/iterable.dart';
 /// validated or rejected; or it may be a placeholder, in which case
 /// expectations describe what would be checked but cannot be rejected.
 ///
-/// Expectation methodss are defined in extensions `on Subject`, specialized on
+/// Expectation methods are defined in extensions `on Subject`, specialized on
 /// the generic [T].
-/// Expectation extension methodss can use the [ContextExtension] to interact
+/// Expectation extension methods can use the [ContextExtension] to interact
 /// with the [Context] for this subject.
 class Subject<T> {
   final Context<T> _context;
