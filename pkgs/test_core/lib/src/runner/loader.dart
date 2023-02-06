@@ -8,10 +8,10 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
@@ -182,18 +182,22 @@ class Loader {
     }
 
     for (var runtimeName in suiteConfig.runtimes) {
-      for (var compilerName in suiteConfig.compilers ?? [null]) {
-        var runtime = findRuntime(runtimeName);
-        if (runtime == null) {
-          throw ArgumentError.value(
-              runtimeName, 'platform', 'Unknown platform');
-        }
-        var compiler = compilerName == null
-            ? runtime.defaultCompiler
-            : Compiler.builtIn
-                .firstWhere((compiler) => compiler.identifier == compilerName);
-        if (!runtime.supportedCompilers.contains(compiler)) continue;
+      var runtime = findRuntime(runtimeName);
+      if (runtime == null) {
+        throw ArgumentError.value(runtimeName, 'platform', 'Unknown platform');
+      }
+      final compilers = [
+        for (var selection
+            in suiteConfig.compilerSelections ?? <CompilerSelection>[])
+          if (runtime.supportedCompilers.contains(selection.compiler) &&
+              (selection.platformSelector == null ||
+                  selection.platformSelector!
+                      .evaluate(currentPlatform(runtime, selection.compiler))))
+            selection.compiler,
+      ];
+      if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
 
+      for (var compiler in compilers) {
         var platform = currentPlatform(runtime, compiler);
         if (!suiteConfig.metadata.testOn.evaluate(platform)) continue;
 
