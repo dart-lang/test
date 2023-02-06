@@ -21,7 +21,7 @@ void main() {
 
       check(2).isRejectedBy(
           it()..has((v) => throw UnimplementedError(), 'isOdd'),
-          which: ['threw while trying to read property']);
+          which: ['threw while trying to read isOdd']);
     });
 
     test('which', () {

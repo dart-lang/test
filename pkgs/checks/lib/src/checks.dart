@@ -316,6 +316,28 @@ extension ContextExtension<T> on Subject<T> {
 ///   Which: are not equal
 /// ```
 ///
+/// ```dart
+/// extension CustomChecks on Subject<CustomType> {
+///   void someExpectation() {
+///     context.expect(() => ['meets this expectation'], (actual) {
+///       if (_expectationIsMet(actual)) return null;
+///       return Rejection(which: ['does not meet this expectation']);
+///     });
+///   }
+///
+///   Subject<Foo> get someDerivedValue =>
+///       context.nest('has someDerivedValue', (actual) {
+///         if (_cannotReadDerivedValue(actual)) {
+///           return Extracted.rejection(which: ['cannot read someDerivedValue']);
+///         }
+///         return Extracted.value(_readDerivedValue(actual));
+///       });
+///
+///   // for field reads that will not get rejected, use `has`
+///   Subject<Bar> get someField => has((a) => a.someField, 'someField');
+/// }
+/// ```
+///
 /// When an expectation is rejected for a subject within a call to [softCheck]
 /// or [softCheckAsync] a [CheckFailure] will be returned with the rejection, as
 /// well as a [FailureDetail] which could be used to format the same failure
@@ -378,6 +400,15 @@ abstract class Context<T> {
   /// {@macro description_lines}
   ///
   /// {@macro callbacks_may_be_unused}
+  ///
+  /// ```dart
+  /// void someExpectation() {
+  ///   context.expect(() => ['meets this expectation'], (actual) {
+  ///     if (_expectationIsMet(actual)) return null;
+  ///     return Rejection(which: ['does not meet this expectation']);
+  ///   });
+  /// }
+  /// ```
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate);
 
@@ -391,6 +422,18 @@ abstract class Context<T> {
   /// {@macro callbacks_may_be_unused}
   ///
   /// {@macro async_limitations}
+  ///
+  /// ```dart
+  /// extension CustomChecks on Subject<CustomType> {
+  ///   Future<void> someAsyncExpectation() async {
+  ///     await context.expectAsync(() => ['meets this async expectation'],
+  ///         (actual) async {
+  ///       if (await _expectationIsMet(actual)) return null;
+  ///       return Rejection(which: ['does not meet this async expectation']);
+  ///     });
+  ///   }
+  /// }
+  /// ```
   Future<void> expectAsync<R>(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate);
 
@@ -416,6 +459,19 @@ abstract class Context<T> {
   /// The only useful effect of a late rejection is to throw a [TestFailure]
   /// when used with a [check] subject. Most conditions should prefer to use
   /// [expect] or [expectAsync].
+  ///
+  /// ```dart
+  /// void someUnawaitableExpectation() async {
+  ///   await context.expectUnawaited(
+  ///       () => ['meets this unawaitable expectation'], (actual, reject) {
+  ///     final failureSignal = _completeIfFailed(actual);
+  ///     unawaited(failureSignal.then((_) {
+  ///       reject(Reject(
+  ///           which: ['unexpectedly failed this unawaited expectation']));
+  ///     }));
+  ///   });
+  /// }
+  /// ```
   void expectUnawaited(Iterable<String> Function() clause,
       void Function(T, void Function(Rejection)) predicate);
 
@@ -441,6 +497,17 @@ abstract class Context<T> {
   /// {@macro description_lines}
   ///
   /// {@macro callbacks_may_be_unused}
+  ///
+  /// ```dart
+  /// Subject<Foo> get someDerivedValue =>
+  ///     context.nest(() => ['has someDerivedValue'], (actual) {
+  ///       if (_cannotReadDerivedValue(actual)) {
+  ///         return Extracted.rejection(
+  ///             which: ['cannot read someDerivedValue']);
+  ///       }
+  ///       return Extracted.value(_readDerivedValue(actual));
+  ///     });
+  /// ```
   Subject<R> nest<R>(
       Iterable<String> Function() label, Extracted<R> Function(T) extract,
       {bool atSameLevel = false});
@@ -458,6 +525,17 @@ abstract class Context<T> {
   /// {@macro callbacks_may_be_unused}
   ///
   /// {@macro async_limitations}
+  ///
+  /// ```dart
+  /// Future<Subject<Foo>> get someAsyncValue async => await context
+  ///         .nestAsync(() => ['has someAsyncValue'], (actual) async {
+  ///       if (await _cannotReadAsyncValue(actual)) {
+  ///         return Extracted.rejection(
+  ///             which: ['cannot read someAsyncValue']);
+  ///       }
+  ///       return Extracted.value(await _readAsyncValue(actual));
+  ///     });
+  /// ```
   Future<Subject<R>> nestAsync<R>(Iterable<String> Function() label,
       FutureOr<Extracted<R>> Function(T) extract);
 }

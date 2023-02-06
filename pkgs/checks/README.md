@@ -96,7 +96,7 @@ extension CustomChecks on Subject<CustomType> {
   }
 
   Subject<Foo> get someDerivedValue =>
-      context.nest('has someDerivedValue', (actual) {
+      context.nest(() => ['has someDerivedValue'], (actual) {
         if (_cannotReadDerivedValue(actual)) {
           return Extracted.rejection(which: ['cannot read someDerivedValue']);
         }
