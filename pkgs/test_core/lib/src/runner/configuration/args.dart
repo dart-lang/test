@@ -71,19 +71,12 @@ final ArgParser _parser = (() {
   // UI to avoid a painful migration.
   parser.addMultiOption('platform',
       abbr: 'p',
-      help: 'The platform(s) on which to run the tests',
-      defaultsTo: [
-        'vm'
-      ],
-      allowed: [
-        'vm',
-        for (var runtime in allRuntimes) runtime.identifier
-      ],
-      allowedHelp: {
-        'vm': Runtime.vm.description,
-        for (var runtime in allRuntimes)
-          runtime.identifier: runtime.description,
-      });
+      help: 'The platform(s) on which to run the tests.\n'
+          '[vm (default), '
+          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}].\n\n'
+          'Each platform supports the following compilers:\n\n'
+          '${Runtime.vm.supportedCompilersText}\n'
+          '${allRuntimes.map((r) => r.supportedCompilersText).join('\n')}');
   parser.addMultiOption('compiler',
       abbr: 'c',
       help: 'The compiler(s) to use to run tests, supported compilers are '
@@ -421,8 +414,8 @@ class _Parser {
 }
 
 extension _RuntimeDescription on Runtime {
-  String get description {
-    var message = StringBuffer('Supported compilers: ');
+  String get supportedCompilersText {
+    var message = StringBuffer('[$identifier]: ');
     message.write('${defaultCompiler.identifier} (default)');
     for (var compiler in supportedCompilers) {
       if (compiler == defaultCompiler) continue;
