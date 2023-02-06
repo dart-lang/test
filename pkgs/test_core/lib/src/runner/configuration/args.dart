@@ -73,18 +73,18 @@ final ArgParser _parser = (() {
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.\n'
           '[vm (default), '
-          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}].\n\n'
-          'Each platform supports the following compilers:\n\n'
+          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}].\n'
+          'Each platform supports the following compilers:\n'
           '${Runtime.vm.supportedCompilersText}\n'
           '${allRuntimes.map((r) => r.supportedCompilersText).join('\n')}');
   parser.addMultiOption('compiler',
       abbr: 'c',
       help: 'The compiler(s) to use to run tests, supported compilers are '
-          '[${Compiler.builtIn.map((c) => c.identifier).join(', ')}].\n\n'
+          '[${Compiler.builtIn.map((c) => c.identifier).join(', ')}].\n'
           'Each platform has a default compiler but may support other '
-          'compilers.\n\n'
+          'compilers.\n'
           'You can target a compiler to a specific platform using arguments '
-          'of the following form [<platform-selector>:]<compiler>.\n\n'
+          'of the following form [<platform-selector>:]<compiler>.\n'
           'If a platform is specified but no given compiler is supported for '
           'that platform, then it will use its default compiler.');
   parser.addMultiOption('preset',
