@@ -431,12 +431,3 @@ extension _RuntimeDescription on Runtime {
     return message.toString();
   }
 }
-
-extension _CompilerDescription on Compiler {
-  String get description {
-    var runtimes =
-        Runtime.builtIn.where((r) => r.supportedCompilers.contains(this));
-    return 'Supported platforms: '
-        '${runtimes.map((r) => r.identifier).join(', ')}';
-  }
-}
