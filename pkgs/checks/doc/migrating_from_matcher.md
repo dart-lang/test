@@ -71,7 +71,7 @@ check(actualCollection).deepEquals(expected);
     This was potentially confusing, because even though `String` is a subtype of
     `Pattern`, it wasn't used as a pattern directly.
     With `matchesPattern` a `String` argument is used as a `Pattern` and
-    comparison uses the [`String.allMatches`][allMatches].
+    comparison uses [`String.allMatches`][allMatches].
     For backwards compatibility change `matches(regexString)` to
     `matchesPattern(RegExp(regexString))`.
 
