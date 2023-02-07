@@ -42,7 +42,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder(
-              ['-1: [Chrome] test [E]', '+1 -1: Some tests failed.']));
+              ['-1: [Chrome, Dart2Js] test [E]', '+1 -1: Some tests failed.']));
       await test.shouldExit(1);
     }, tags: ['chrome']);
 
@@ -71,8 +71,8 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: [Chrome] test [E]',
-            '-2: [VM] test [E]',
+            '-1: [Chrome, Dart2Js] test [E]',
+            '-2: [VM, Kernel] test [E]',
             '-2: Some tests failed.'
           ]));
       await test.shouldExit(1);

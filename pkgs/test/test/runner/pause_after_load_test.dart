@@ -115,7 +115,7 @@ void main() {
 
     var nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: [Firefox] success'));
+      expect(line, contains('+0: [Firefox, Dart2Js] success'));
       nextLineFired = true;
     })));
 
@@ -137,7 +137,7 @@ void main() {
 
     nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+1: [Chrome] success'));
+      expect(line, contains('+1: [Chrome, Dart2Js] success'));
       nextLineFired = true;
     })));
 
@@ -158,7 +158,7 @@ void main() {
 
     nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+2: [VM] success'));
+      expect(line, contains('+2: [VM, Kernel] success'));
       nextLineFired = true;
     })));
 

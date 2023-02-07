@@ -69,7 +69,13 @@ Selecting Tests:
 
 Running Tests:
 -p, --platform                        The platform(s) on which to run the tests.
-                                      $_runtimes
+                                      $_runtimes.
+                                      Each platform supports the following compilers:
+$_runtimeCompilers
+-c, --compiler                        The compiler(s) to use to run tests, supported compilers are [dart2js, dart2wasm, kernel, source].
+                                      Each platform has a default compiler but may support other compilers.
+                                      You can target a compiler to a specific platform using arguments of the following form [<platform-selector>:]<compiler>.
+                                      If a platform is specified but no given compiler is supported for that platform, then it will use its default compiler.
 -P, --preset                          The configuration preset(s) to use.
 -j, --concurrency=<threads>           The number of concurrent test suites run.
                                       (defaults to "$_defaultConcurrency")
@@ -112,13 +118,22 @@ Output:
     --js-trace                        Emit raw JavaScript stack traces for browser tests.
     --[no-]color                      Use terminal colors.
                                       (auto-detected by default)
-
 ''';
 
 final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
     '${Platform.isWindows ? ', ie' : ''}, node, '
     'experimental-chrome-wasm]';
+
+final _runtimeCompilers = [
+  '[vm]: kernel (default), source',
+  '[chrome]: dart2js (default)',
+  '[firefox]: dart2js (default)',
+  if (Platform.isMacOS) '[safari]: dart2js (default)',
+  if (Platform.isWindows) '[ie]: dart2js (default)',
+  '[node]: dart2js (default)',
+  '[experimental-chrome-wasm]: dart2wasm (default)',
+].map((str) => '                                      $str').join('\n');
 
 void main() {
   setUpAll(precompileTestExecutable);
