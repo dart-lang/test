@@ -27,7 +27,7 @@ value - for instance reading a field or awaiting the result of a Future.
 
 ```dart
 check(someString).length.equals(expectedLength);
-(await check(someFuture).completes()).equals(expectedCompletion);
+await check(someFuture).completes(it()..equals(expectedCompletion));
 ```
 
 Fields can be extracted from objects for checking further properties with the
@@ -102,3 +102,9 @@ extension CustomChecks on Subject<CustomType> {
   Subject<Bar> get someField => has((a) => a.someField, 'someField');
 }
 ```
+
+# Migrating from `matcher` (`expect`) expectations
+
+See the [migration guide][].
+
+[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
