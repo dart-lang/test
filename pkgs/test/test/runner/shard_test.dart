@@ -3,9 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-
-import 'dart:io';
-
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -95,14 +92,10 @@ void main() {
         test.stdout,
         emitsInOrder([
           emitsAnyOf([
-            containsInOrder([
-              '+0: .${Platform.pathSeparator}1_test.dart: test 1.1',
-              '+1: .${Platform.pathSeparator}2_test.dart: test 2.1'
-            ]),
-            containsInOrder([
-              '+0: .${Platform.pathSeparator}2_test.dart: test 2.1',
-              '+1: .${Platform.pathSeparator}1_test.dart: test 1.1'
-            ])
+            containsInOrder(
+                ['+0: ./1_test.dart: test 1.1', '+1: ./2_test.dart: test 2.1']),
+            containsInOrder(
+                ['+0: ./2_test.dart: test 2.1', '+1: ./1_test.dart: test 1.1'])
           ]),
           contains('+2: All tests passed!')
         ]));
@@ -113,14 +106,10 @@ void main() {
         test.stdout,
         emitsInOrder([
           emitsAnyOf([
-            containsInOrder([
-              '+0: .${Platform.pathSeparator}1_test.dart: test 1.2',
-              '+1: .${Platform.pathSeparator}2_test.dart: test 2.2'
-            ]),
-            containsInOrder([
-              '+0: .${Platform.pathSeparator}2_test.dart: test 2.2',
-              '+1: .${Platform.pathSeparator}1_test.dart: test 1.2'
-            ])
+            containsInOrder(
+                ['+0: ./1_test.dart: test 1.2', '+1: ./2_test.dart: test 2.2']),
+            containsInOrder(
+                ['+0: ./2_test.dart: test 2.2', '+1: ./1_test.dart: test 1.2'])
           ]),
           contains('+2: All tests passed!')
         ]));
@@ -131,14 +120,10 @@ void main() {
         test.stdout,
         emitsInOrder([
           emitsAnyOf([
-            containsInOrder([
-              '+0: .${Platform.pathSeparator}1_test.dart: test 1.3',
-              '+1: .${Platform.pathSeparator}2_test.dart: test 2.3'
-            ]),
-            containsInOrder([
-              '+0: .${Platform.pathSeparator}2_test.dart: test 2.3',
-              '+1: .${Platform.pathSeparator}1_test.dart: test 1.3'
-            ])
+            containsInOrder(
+                ['+0: ./1_test.dart: test 1.3', '+1: ./2_test.dart: test 2.3']),
+            containsInOrder(
+                ['+0: ./2_test.dart: test 2.3', '+1: ./1_test.dart: test 1.3'])
           ]),
           contains('+2: All tests passed!')
         ]));

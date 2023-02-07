@@ -7,6 +7,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -374,6 +375,30 @@ $_usage''');
       await d.dir('dir', [d.file('test.dart', _success)]).create();
 
       var test = await runTest(['dir/test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('given a file: uri', () async {
+      await d.file('test.dart', _success).create();
+      var fileUri = p.toUri(d.path('test.dart')).toString();
+      expect(fileUri, startsWith('file:///'));
+      var test = await runTest([fileUri]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('with platform specific relative paths', () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest([p.join('foo', 'test.dart')]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('with platform specific relative paths containing query params',
+        () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest(['${p.join('foo', 'test.dart')}?line=6']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });

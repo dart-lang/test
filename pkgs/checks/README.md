@@ -27,7 +27,7 @@ value - for instance reading a field or awaiting the result of a Future.
 
 ```dart
 check(someString).length.equals(expectedLength);
-(await check(someFuture).completes()).equals(expectedCompletion);
+await check(someFuture).completes(it()..equals(expectedCompletion));
 ```
 
 Fields can be extracted from objects for checking further properties with the
@@ -50,9 +50,8 @@ condition. The `it()` utility returns a `ConditionSubject`.
 check(someList).any(it()..isGreaterThan(0));
 ```
 
-Some complicated checks may be difficult to write with parenthesized awaited
-expressions, or impossible to write with cascade syntax. There are `which`
-utilities for both use cases which take a `Condition`.
+Some complicated checks may be not be possible to write with cascade syntax.
+There is a `which` utility for this use case which takes a `Condition`.
 
 ```dart
 check(someString)
@@ -61,10 +60,6 @@ check(someString)
   ..length.which(it()
     ..isGreatherThan(10)
     ..isLessThan(100));
-
-await check(someFuture)
-    .completes()
-    .which(it()..equals(expectedCompletion));
 ```
 
 # Writing custom expectations
@@ -96,7 +91,7 @@ extension CustomChecks on Subject<CustomType> {
   }
 
   Subject<Foo> get someDerivedValue =>
-      context.nest('has someDerivedValue', (actual) {
+      context.nest(() => ['has someDerivedValue'], (actual) {
         if (_cannotReadDerivedValue(actual)) {
           return Extracted.rejection(which: ['cannot read someDerivedValue']);
         }
@@ -107,3 +102,9 @@ extension CustomChecks on Subject<CustomType> {
   Subject<Bar> get someField => has((a) => a.someField, 'someField');
 }
 ```
+
+# Migrating from `matcher` (`expect`) expectations
+
+See the [migration guide][].
+
+[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md

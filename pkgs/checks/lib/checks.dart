@@ -4,7 +4,7 @@
 
 export 'src/checks.dart' show SkipExtension, Subject, check, it;
 export 'src/extensions/async.dart'
-    show ChainAsync, FutureChecks, StreamChecks, WithQueueExtension;
+    show FutureChecks, StreamChecks, WithQueueExtension;
 export 'src/extensions/core.dart' show BoolChecks, CoreChecks, NullableChecks;
 export 'src/extensions/function.dart' show FunctionChecks;
 export 'src/extensions/iterable.dart' show IterableChecks;
