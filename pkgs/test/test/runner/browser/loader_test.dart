@@ -9,9 +9,11 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:test/src/runner/browser/platform.dart';
 import 'package:test/test.dart';
+import 'package:test_api/src/backend/compiler.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/test.dart';
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:test_core/src/runner/hack_register_platform.dart';
 import 'package:test_core/src/runner/loader.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
@@ -67,6 +69,7 @@ void main() {
     test('returns a suite with the file path and platform', () {
       expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
       expect(suite.platform.runtime, equals(Runtime.chrome));
+      expect(suite.platform.compiler, equals(Runtime.chrome.defaultCompiler));
     });
 
     test('returns tests with the correct names', () {
@@ -142,8 +145,10 @@ Future main() {
         .cast<RunnerSuite>()
         .toList();
     expect(suites[0].platform.runtime, equals(Runtime.vm));
+    expect(suites[0].platform.compiler, equals(Runtime.vm.defaultCompiler));
     expect(suites[0].path, equals(path));
     expect(suites[1].platform.runtime, equals(Runtime.chrome));
+    expect(suites[1].platform.compiler, equals(Runtime.chrome.defaultCompiler));
     expect(suites[1].path, equals(path));
 
     for (var suite in suites) {
