@@ -11,8 +11,8 @@
     -   `nestAsync` no longer returns a `Subject`, callers must pass the
         followup `Condition` to the nullable argument.
     -   Remove the `which` extension on `Future<Subject>`.
--   Add a constructor for `Condition` which takes a callback to invoke when
-    `apply` or `applyAsync` is called.
+    -   `matches` renamed to `matchesPattern` and now accepts a `Pattern`
+        argument, instead of limiting to `RegExp`.
 -   Added an example.
 -   Include a stack trace in the failure description for unexpected errors from
     Futures or Streams.
