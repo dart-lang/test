@@ -1,4 +1,6 @@
-# 0.2.1-dev
+# 0.2.1
+
+-   Add a link to file issues with feedback in the README.
 
 # 0.2.0
 
