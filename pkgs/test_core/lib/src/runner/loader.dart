@@ -186,7 +186,7 @@ class Loader {
       if (runtime == null) {
         throw ArgumentError.value(runtimeName, 'platform', 'Unknown platform');
       }
-      final compilers = [
+      final compilers = {
         for (var selection
             in suiteConfig.compilerSelections ?? <CompilerSelection>[])
           if (runtime.supportedCompilers.contains(selection.compiler) &&
@@ -194,7 +194,7 @@ class Loader {
                   selection.platformSelector!
                       .evaluate(currentPlatform(runtime, selection.compiler))))
             selection.compiler,
-      ];
+      };
       if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
 
       for (var compiler in compilers) {
