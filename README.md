@@ -4,11 +4,9 @@
 ## What's here?
 
 Welcome! [package:test](pkgs/test/) is the standard testing library for Dart and
-Flutter.
-
-If you have questions about Dart testing, you're probably looking for the docs
-for [package:test](pkgs/test/) below ()`package:test_api` and `package:test_core`
-are implementations details and generally not user-facing).
+Flutter. If you have questions about Dart testing, please see the docs for
+[package:test](pkgs/test/). `package:test_api` and `package:test_core`
+are implementation details and generally not user-facing.
 
 [package:checks](pkgs/checks/) is a relatively new library for expressing test
 expectations. It's a more modern version of `package:matcher` and features a
