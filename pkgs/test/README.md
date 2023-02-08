@@ -10,6 +10,7 @@
   * [Collecting Code Coverage](#collecting-code-coverage)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
+  * [Compiler Selectors](#compiler-selectors)
   * [Running Tests on Node.js](#running-tests-on-nodejs)
 * [Asynchronous Tests](#asynchronous-tests)
   * [Stream Matchers](#stream-matchers)
@@ -183,6 +184,12 @@ care of starting the browser and loading the tests, and all the results will be
 reported on the command line just like for VM tests. In fact, you can even run
 tests on both platforms with a single command: `dart test -p "chrome,vm"
 path/to/test.dart`.
+
+By default each platform has a default compiler, but some of them support
+more than one compiler. You can choose which compiler to use by passing
+`dart test -c source`, which would run all VM tests from source instead of
+compiling them to kernel. This also supports targetting a specific platform
+using normal platform selectors, like this `dart test -c vm:source`.
 
 ### Test Path Queries
 
@@ -380,6 +387,14 @@ only supports boolean operations. The following identifiers are defined:
 
 * `posix`: Whether the test is running on a POSIX operating system. This is
   equivalent to `!windows`.
+
+* `dart2js`: Whether the test has been compiled with Dart2Js.
+
+* `dart2wasm`: Whether the test has been compiled with Dart2Wasm.
+
+* `kernel`: Whether the test has been compiled to kernel.
+
+* `source`: Whether the test has been run with no compiler (from source).
 
 For example, if you wanted to run a test on every browser but Chrome, you would
 write `@TestOn('browser && !chrome')`.
