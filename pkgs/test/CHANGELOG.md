@@ -1,4 +1,4 @@
-## 1.23.0-dev
+## 1.23.0
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.

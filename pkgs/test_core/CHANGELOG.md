@@ -1,4 +1,4 @@
-# 0.4.23-dev
+# 0.4.23
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
