@@ -6,5 +6,5 @@ about: >-
 title: ''
 labels: enhancement
 ---
-Add any feedback about `package:checks`. Include a description of a specific use
-case for any feature requests.
+Describe the feature and include specific description of the use case, or use
+cases, you have in mind.
