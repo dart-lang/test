@@ -114,6 +114,6 @@ See the [migration guide][].
 
 ## Giving feedback while `checks` is in preview
 
-Files [an issue][] with questions, suggestions, feature requests, or feedback.
+File [an issue][] with questions, suggestions, feature requests, or feedback.
 
 [an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
