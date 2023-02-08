@@ -1,4 +1,7 @@
-# Checking expectations with `checks`
+[![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
+[![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
+
+## Checking expectations with `checks`
 
 Expectations start with `check`. This utility returns a `Subject`, and
 expectations can be checked against the subject. Expectations are defined as
@@ -62,7 +65,7 @@ check(someString)
     ..isLessThan(100));
 ```
 
-# Writing custom expectations
+## Writing custom expectations
 
 Expectations are written as extension on `Subject` with specific generics. The
 library `package:checks/context.dart` gives access to a `context` getter on
@@ -103,7 +106,7 @@ extension CustomChecks on Subject<CustomType> {
 }
 ```
 
-# Migrating from `matcher` (`expect`) expectations
+## Migrating from `matcher` (`expect`) expectations
 
 See the [migration guide][].
 
