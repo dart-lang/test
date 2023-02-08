@@ -111,3 +111,9 @@ extension CustomChecks on Subject<CustomType> {
 See the [migration guide][].
 
 [migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
+
+## Giving feedback while `checks` is in preview
+
+Files [an issue][] with questions, suggestions, feature requests, or feedback.
+
+[an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
