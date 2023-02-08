@@ -1,9 +1,6 @@
-[![pub package](https://img.shields.io/pub/v/test.svg)](https://pub.dev/packages/test)
-[![package publisher](https://img.shields.io/pub/publisher/test.svg)](https://pub.dev/packages/test/publisher)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dart-lang/test/badge)](https://api.securityscorecards.dev/projects/github.com/dart-lang/test)
 
 `test` provides a standard way of writing and running tests in Dart.
-
-## Using package:test
 
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)

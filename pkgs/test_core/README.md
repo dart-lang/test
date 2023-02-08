@@ -1,6 +1,3 @@
-[![pub package](https://img.shields.io/pub/v/test_core.svg)](https://pub.dev/packages/test_core)
-[![package publisher](https://img.shields.io/pub/publisher/test_core.svg)](https://pub.dev/packages/test_core/publisher)
-
 A minimal package for writing and running tests as well as extensions for
 implementing a custom test runner.
 
