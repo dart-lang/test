@@ -178,13 +178,11 @@ Configuration parse(List<String> args) => _Parser(args).parse();
 void _parseTestSelection(
     String option, Map<String, Set<TestSelection>> selections) {
   final uri = Uri.parse(option);
-  // Restore the path to how it was given (namely, we want to report paths
-  // with their original separators).
-  var path = Uri.decodeComponent(uri.path);
-  // Strip out the leading slash before the drive letter on windows.
-  if (Platform.isWindows && path.startsWith('/')) {
-    path = path.substring(1);
-  }
+  final path = uri.isScheme('file')
+      ? uri.toFilePath()
+      // If not a File URI but has query params, chop at the '?'
+      // to give us exactly the path.
+      : option.split('?').first;
 
   final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
