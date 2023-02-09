@@ -1,8 +1,8 @@
-# 0.2.1
+## 0.2.1
 
 -   Add a link to file issues with feedback in the README.
 
-# 0.2.0
+## 0.2.0
 
 -   **Breaking Changes**
     -   `checkThat` renamed to `check`.
@@ -21,6 +21,6 @@
 -   Include a stack trace in the failure description for unexpected errors from
     Futures or Streams.
 
-# 0.1.0
+## 0.1.0
 
 -   Initial release.
