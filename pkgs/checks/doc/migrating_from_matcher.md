@@ -86,7 +86,7 @@ check(actualCollection).deepEquals(expected);
 -   `containsPair(key, value)` -> Use `Subject<Map>[key].equals(value)`
 -   `hasLength(expected)` -> `length.equals(expected)`
 -   `isNot(Matcher)` -> `not(Condition)`
--   `pairwiseCompare` -> `pairwiseComparseTo`
+-   `pairwiseCompare` -> `pairwiseComparesTo`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
 

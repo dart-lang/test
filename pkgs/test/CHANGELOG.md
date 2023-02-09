@@ -1,4 +1,8 @@
-## 1.23.0-dev
+## 1.23.1
+
+* Fix running paths by absolute path (with drive letter) on windows.
+
+## 1.23.0
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
