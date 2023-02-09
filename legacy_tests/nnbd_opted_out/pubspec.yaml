@@ -1,4 +1,5 @@
 name: nnbd_opted_out
+publish_to: none
 environment:
   sdk: '>=2.11.0 <3.0.0'
 dev_dependencies:
