@@ -380,6 +380,13 @@ $_usage''');
       await test.shouldExit(0);
     });
 
+    test('with platform specific absolute paths', () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest([d.path(p.join('foo', 'test.dart'))]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
     test('with platform specific relative paths containing query params',
         () async {
       await d.dir('foo', [d.file('test.dart', _success)]).create();

@@ -1,3 +1,7 @@
+## 0.4.24
+
+* Fix running paths by absolute path (with drive letter) on windows.
+
 ## 0.4.23
 
 * Avoid empty expandable groups for tests without extra output in Github
