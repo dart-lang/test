@@ -177,11 +177,13 @@ Configuration parse(List<String> args) => _Parser(args).parse();
 
 void _parseTestSelection(
     String option, Map<String, Set<TestSelection>> selections) {
-  // If given a path that starts with what looks like a drive letter, convert it
-  // into a file scheme URI. We can't parse using `Uri.file` because we do
-  // support query parameters which aren't valid file uris.
-  if (option.indexOf(':') == 1) {
-    option = 'file:///$option';
+  if (Platform.isWindows) {
+    // If given a path that starts with what looks like a drive letter, convert it
+    // into a file scheme URI. We can't parse using `Uri.file` because we do
+    // support query parameters which aren't valid file uris.
+    if (option.indexOf(':') == 1) {
+      option = 'file:///$option';
+    }
   }
   final uri = Uri.parse(option);
   // Decode the path segment. Specifically, on github actions back slashes on
