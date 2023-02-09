@@ -13,6 +13,14 @@ these members it will be possible to add a dependency on `package:matcher` and
 continue to use them. `package:matcher` will get deprecated and will not see new
 development, but the existing features will continue to work.
 
+**Why is the Dart team moving away from matcher?** The `matcher` package has a
+design which is fundamentally incompatible with using static types to validate
+correct use. With an entirely new design, the static types in `checks` give
+confidence that the expectation is appropriate for the value, and can narrow
+autocomplete choices in the IDE for a better editing experience. The clean break
+from the legacy implementation and API also gives an opportunity to make small
+behavior and signature changes to align with modern Dart idioms.
+
 **Should I start using checks over matcher for new tests?** There is still a
 high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
