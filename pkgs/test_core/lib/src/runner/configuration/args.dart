@@ -177,12 +177,24 @@ Configuration parse(List<String> args) => _Parser(args).parse();
 
 void _parseTestSelection(
     String option, Map<String, Set<TestSelection>> selections) {
+  // If given a path that starts with what looks like a drive letter, convert it
+  // into a file scheme URI. We can't parse using `Uri.file` because we do
+  // support query parameters which aren't valid file uris.
+  if (option.indexOf(':') == 1) {
+    option = 'file:///$option';
+  }
   final uri = Uri.parse(option);
-  final path = uri.isScheme('file')
-      ? uri.toFilePath()
-      // If not a File URI but has query params, chop at the '?'
-      // to give us exactly the path.
-      : option.split('?').first;
+  // Decode the path segment. Specifically, on github actions back slashes on
+  // windows end up being encoded into the URI instead of converted into forward
+  // slashes.
+  var path = Uri.decodeComponent(uri.path);
+  // Strip out the leading slash before the drive letter on windows.
+  if (Platform.isWindows &&
+      path.startsWith('/') &&
+      path.length >= 3 &&
+      path[2] == ':') {
+    path = path.substring(1);
+  }
 
   final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
