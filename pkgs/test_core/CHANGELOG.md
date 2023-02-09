@@ -1,3 +1,7 @@
+## 0.4.25
+
+* Temporary - will become -dev version.
+
 ## 0.4.24
 
 * Fix running paths by absolute path (with drive letter) on windows.
