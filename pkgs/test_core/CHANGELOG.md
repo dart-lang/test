@@ -1,3 +1,29 @@
+## 0.5.0
+
+* Support the `--compiler` flag, which can be used to configure which compiler
+  to use.
+  * To specify a compiler by platform, the argument supports platform selectors
+    through this syntax `[<platform>:]<compiler>`. For example the command line
+    argument `--compiler vm:source` would run all vm tests from source instead
+    of compiling to kernel first.
+  * If no given compiler is compatible for a platform, it will use its default
+    compiler instead.
+* Add `Compiler` class, exposed through `backend.dart`.
+* Support compiler identifiers in platform selectors.
+* List the supported compilers for each platform in the usage text.
+* Update all reporters to print the compiler along with the platform name
+  when configured to print the platform. Extend the logic for printing platofrm
+  information to do so if any compilers are explicitly configured.
+* **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
+  to `Runtime`.
+* **BREAKING** Add required `compiler` field to `SuitePlatform`.
+* **BREAKING** Add required `compilerSelections` argument to some
+  `Configuration` and `SuiteConfiguration` constructors.
+* **BREAKING** Custom platform plugins need to respect the compiler option
+  given through the `SuitePlatform` argument to `PlatformPlugin.load`. This is
+  not statically breaking but it will be confusing for users if it isn't
+  supported.
+
 ## 0.4.24
 
 * Fix running paths by absolute path (with drive letter) on windows.
