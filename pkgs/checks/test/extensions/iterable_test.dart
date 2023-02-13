@@ -23,6 +23,38 @@ void main() {
     check([42]).single.equals(42);
   });
 
+  test('hasLength', () {
+    check([]).hasLength(0);
+    check([3, 4]).isRejectedBy(it()..hasLength(1),
+        which: ['does not have length 1 but <2>']);
+  });
+
+  test('hasLengthGreaterThan', () {
+    check([1]).hasLengthGreaterThan(0);
+    check([]).isRejectedBy(it()..hasLengthGreaterThan(1),
+        which: ['does not have length greater than 1 but <0>']);
+  });
+
+  test('hasLengthGreaterThan', () {
+    check([1]).hasLengthGreaterThanOrEqualTo(0);
+    check([1]).hasLengthGreaterThanOrEqualTo(1);
+    check([]).isRejectedBy(it()..hasLengthGreaterThanOrEqualTo(1),
+        which: ['does not have length greater than or equal to 1 but <0>']);
+  });
+
+  test('hasLengthLessThan', () {
+    check([]).hasLengthLessThan(1);
+    check([1]).isRejectedBy(it()..hasLengthLessThan(0),
+        which: ['does not have length less than 0 but <1>']);
+  });
+
+  test('hasLengthLessThanOrEqualTo', () {
+    check([]).hasLengthLessThanOrEqualTo(0);
+    check([]).hasLengthLessThanOrEqualTo(1);
+    check([1]).isRejectedBy(it()..hasLengthLessThanOrEqualTo(0),
+        which: ['does not have length less than or equal to 0 but <1>']);
+  });
+
   test('isEmpty', () {
     check([]).isEmpty();
     check(_testIterable).isRejectedBy(it()..isEmpty(), which: ['is not empty']);

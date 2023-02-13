@@ -13,6 +13,74 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<T> get last => has((l) => l.last, 'last element');
   Subject<T> get single => has((l) => l.single, 'single element');
 
+  /// Checks that the number of values in [Iterable] is exactly [length]
+  void hasLength(int length) {
+    if (length < 0) {
+      throw ArgumentError('length must be greater than 0');
+    }
+    context.expect(() => ['has length <$length>'], (actual) {
+      if (actual.length == length) return null;
+      return Rejection(
+          which: ['does not have length $length but <${actual.length}>']);
+    });
+  }
+
+  /// Checks that the number of values in [Iterable] is greater than [length]
+  void hasLengthGreaterThan(int length) {
+    if (length < 0) {
+      throw ArgumentError('length must be greater than 0');
+    }
+    context.expect(() => ['has length greater than <$length>'], (actual) {
+      if (actual.length > length) return null;
+      return Rejection(which: [
+        'does not have length greater than $length but <${actual.length}>'
+      ]);
+    });
+  }
+
+  /// Checks that the number of values in [Iterable] is greater than or equal to
+  /// [length]
+  void hasLengthGreaterThanOrEqualTo(int length) {
+    if (length < 0) {
+      throw ArgumentError('length must be greater than 0');
+    }
+    context.expect(() => ['has length greater than or equal to <$length>'],
+        (actual) {
+      if (actual.length >= length) return null;
+      return Rejection(which: [
+        'does not have length greater than or equal to $length but <${actual.length}>'
+      ]);
+    });
+  }
+
+  /// Checks that the number of values in [Iterable] is less than [length]
+  void hasLengthLessThan(int length) {
+    if (length < 0) {
+      throw ArgumentError('length must be greater than 0');
+    }
+    context.expect(() => ['has length less than <$length>'], (actual) {
+      if (actual.length < length) return null;
+      return Rejection(which: [
+        'does not have length less than $length but <${actual.length}>'
+      ]);
+    });
+  }
+
+  /// Checks that the number of values in [Iterable] is less than or equal to
+  /// [length]
+  void hasLengthLessThanOrEqualTo(int length) {
+    if (length < 0) {
+      throw ArgumentError('length must be greater than 0');
+    }
+    context.expect(() => ['has length less than or equal to $length'],
+        (actual) {
+      if (actual.length <= length) return null;
+      return Rejection(which: [
+        'does not have length less than or equal to $length but <${actual.length}>'
+      ]);
+    });
+  }
+
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
