@@ -103,7 +103,7 @@ class FakeAsync {
   /// Note: it's usually more convenient to use [fakeAsync] rather than creating
   /// a [FakeAsync] object and calling [run] manually.
   FakeAsync({DateTime? initialTime, this.includeTimerStackTrace = true}) {
-    var nonNullInitialTime = initialTime ?? clock.now();
+    final nonNullInitialTime = initialTime ?? clock.now();
     _clock = Clock(() => nonNullInitialTime.add(elapsed));
   }
 
@@ -156,7 +156,7 @@ class FakeAsync {
     }
 
     _elapsed += duration;
-    var elapsingTo = _elapsingTo;
+    final elapsingTo = _elapsingTo;
     if (elapsingTo != null && _elapsed > elapsingTo) _elapsingTo = _elapsed;
   }
 
@@ -169,7 +169,7 @@ class FakeAsync {
   /// The [`clock`][] property will be set to a clock that reports the fake
   /// elapsed time. By default, it starts at the time the [FakeAsync] was
   /// created (according to [`clock.now()`][]), but this can be controlled by
-  /// passing `initialTime` to [new FakeAsync].
+  /// passing `initialTime` to [FakeAsync.new].
   ///
   /// [`clock`]: https://www.dartdocs.org/documentation/clock/latest/clock/clock.html
   /// [`clock.now()`]: https://www.dartdocs.org/documentation/clock/latest/clock/Clock/now.html
@@ -210,7 +210,7 @@ class FakeAsync {
   void flushTimers(
       {Duration timeout = const Duration(hours: 1),
       bool flushPeriodicTimers = true}) {
-    var absoluteTimeout = _elapsed + timeout;
+    final absoluteTimeout = _elapsed + timeout;
     _fireTimersWhile((timer) {
       if (timer._nextCall > absoluteTimeout) {
         // TODO(nweiz): Make this a [TimeoutException].
@@ -237,7 +237,7 @@ class FakeAsync {
     for (;;) {
       if (_timers.isEmpty) break;
 
-      var timer = minBy(_timers, (FakeTimer timer) => timer._nextCall)!;
+      final timer = minBy(_timers, (FakeTimer timer) => timer._nextCall)!;
       if (!predicate(timer)) break;
 
       _elapseTo(timer._nextCall);
@@ -249,7 +249,7 @@ class FakeAsync {
   /// Creates a new timer controlled by `this` that fires [callback] after
   /// [duration] (or every [duration] if [periodic] is `true`).
   Timer _createTimer(Duration duration, Function callback, bool periodic) {
-    var timer = FakeTimer._(duration, callback, periodic, this,
+    final timer = FakeTimer._(duration, callback, periodic, this,
         includeStackTrace: includeTimerStackTrace);
     _timers.add(timer);
     return timer;
@@ -320,10 +320,12 @@ class FakeTimer implements Timer {
     assert(isActive);
     _tick++;
     if (isPeriodic) {
+      // ignore: avoid_dynamic_calls
       _callback(this);
       _nextCall += duration;
     } else {
       cancel();
+      // ignore: avoid_dynamic_calls
       _callback();
     }
   }

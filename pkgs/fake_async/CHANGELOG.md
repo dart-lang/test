@@ -1,3 +1,7 @@
+## 1.3.2-dev
+
+* Require Dart 2.17.
+
 ## 1.3.1
 
 * Populate the pubspec `repository` field.
