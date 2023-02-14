@@ -259,8 +259,7 @@ class BrowserPlatform extends PlatformPlugin
       var dartUrl =
           _config.pubServeUrl!.resolve('$suitePrefix.dart.browser_test.dart');
 
-      await _pubServeSuite(
-          path, dartUrl, browser, platform.compiler, suiteConfig);
+      await _pubServeSuite(path, dartUrl, browser, suiteConfig);
       suiteUrl = _config.pubServeUrl!.resolveUri(p.toUri('$suitePrefix.html'));
     } else {
       if (suiteConfig.precompiledPath == null) {
@@ -301,7 +300,7 @@ class BrowserPlatform extends PlatformPlugin
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
   Future<void> _pubServeSuite(String path, Uri dartUrl, Runtime browser,
-      Compiler compiler, SuiteConfiguration suiteConfig) {
+      SuiteConfiguration suiteConfig) {
     return _pubServePool.withResource(() async {
       var timer = Timer(Duration(seconds: 1), () {
         print('"pub serve" is compiling $path...');
