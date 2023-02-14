@@ -14,6 +14,8 @@
 * Update all reporters to print the compiler along with the platform name
   when configured to print the platform. Extend the logic for printing platofrm
   information to do so if any compilers are explicitly configured.
+* Deprecate `--use-data-isolate-strategy`. It is now an alias for `-c vm:source`
+  which is roughly equivalent. If this is breaking for you please file an issue.
 * **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
   to `Runtime`.
 * **BREAKING** Add required `compiler` field to `SuitePlatform`.
@@ -23,6 +25,7 @@
   given through the `SuitePlatform` argument to `PlatformPlugin.load`. This is
   not statically breaking but it will be confusing for users if it isn't
   supported.
+* **BREAKING** Remove `useDataIsolateStrategy` field from `Configuration`.
 
 ## 0.4.24
 
