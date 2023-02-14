@@ -10,8 +10,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
     show
         Timeout;
-import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/backend.dart';
 import 'package:test_core/test_core.dart';
 
 import '../../util/io.dart';
@@ -128,10 +127,9 @@ final ArgParser _parser = (() {
       defaultsTo: false,
       negatable: false);
   parser.addFlag('use-data-isolate-strategy',
-      help: 'Use `data:` uri isolates when spawning VM tests instead of the\n'
-          'default strategy. This may be faster when you only ever run a\n'
-          'single test suite at a time.',
+      help: '**DEPRECATED**: This is now just an alias for --compiler source.',
       defaultsTo: false,
+      hide: true,
       negatable: false);
   parser.addOption('test-randomize-ordering-seed',
       help: 'Use the specified seed to randomize the execution order of test'
@@ -308,6 +306,10 @@ class _Parser {
     var compilerSelections = _ifParsed<List<String>>('compiler')
         ?.map(CompilerSelection.parse)
         .toList();
+    if (_ifParsed('use-data-isolate-strategy') == true) {
+      compilerSelections ??= [];
+      compilerSelections.add(CompilerSelection.parse('vm:source'));
+    }
 
     final paths = _options.rest.isEmpty ? null : _options.rest;
 
@@ -348,7 +350,6 @@ class _Parser {
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),
-        useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         ignoreTimeouts: _ifParsed('ignore-timeouts'),
         // Config that isn't supported on the command line

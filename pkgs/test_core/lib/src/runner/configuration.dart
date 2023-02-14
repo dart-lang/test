@@ -191,17 +191,6 @@ class Configuration {
       });
   Set<String>? _knownPresets;
 
-  /// Whether to use the original `data:` URI isolate spawning strategy for VM
-  /// tests.
-  ///
-  /// This can make more sense than the default strategy in systems such as
-  /// `bazel` where only a single test suite is ran at a time.
-  ///
-  /// Note that this will also override any compiler settings, it will
-  /// effectively use `Compiler.none` regardless of setting.
-  bool get useDataIsolateStrategy => _useDataIsolateStrategy ?? false;
-  final bool? _useDataIsolateStrategy;
-
   /// Built-in runtimes whose settings are overridden by the user.
   final Map<String, RuntimeSettings> overrideRuntimes;
 
@@ -282,7 +271,6 @@ class Configuration {
       required Map<String, RuntimeSettings>? overrideRuntimes,
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
-      required bool? useDataIsolateStrategy,
       required int? testRandomizeOrderingSeed,
 
       // Suite-level configuration
@@ -335,7 +323,6 @@ class Configuration {
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
-        useDataIsolateStrategy: useDataIsolateStrategy,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         includeTags: includeTags,
         excludeTags: excludeTags,
@@ -393,7 +380,6 @@ class Configuration {
           Map<String, RuntimeSettings>? overrideRuntimes,
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
-          bool? useDataIsolateStrategy,
           int? testRandomizeOrderingSeed,
 
           // Suite-level configuration
@@ -445,7 +431,6 @@ class Configuration {
           overrideRuntimes: overrideRuntimes,
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
-          useDataIsolateStrategy: useDataIsolateStrategy,
           testRandomizeOrderingSeed: testRandomizeOrderingSeed,
           allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
@@ -512,7 +497,6 @@ class Configuration {
         overrideRuntimes: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
         ignoreTimeouts: null,
         allowDuplicateTestNames: null,
@@ -580,7 +564,6 @@ class Configuration {
         overrideRuntimes: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
         jsTrace: null,
         runSkipped: null,
@@ -645,7 +628,6 @@ class Configuration {
         presets: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
@@ -708,7 +690,6 @@ class Configuration {
           presets: null,
           overrideRuntimes: null,
           noRetry: null,
-          useDataIsolateStrategy: null,
           testRandomizeOrderingSeed: null,
           allowDuplicateTestNames: null,
           allowTestRandomization: null,
@@ -774,7 +755,6 @@ class Configuration {
       required Map<String, RuntimeSettings>? overrideRuntimes,
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
-      required bool? useDataIsolateStrategy,
       required this.testRandomizeOrderingSeed,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
@@ -803,7 +783,6 @@ class Configuration {
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
-        _useDataIsolateStrategy = useDataIsolateStrategy,
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
         globalPatterns = globalPatterns == null
@@ -861,7 +840,6 @@ class Configuration {
         overrideRuntimes: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
         includeTags: null,
         excludeTags: null,
@@ -966,8 +944,6 @@ class Configuration {
         defineRuntimes:
             mergeUnmodifiableMaps(defineRuntimes, other.defineRuntimes),
         noRetry: other._noRetry ?? _noRetry,
-        useDataIsolateStrategy:
-            other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
         includeTags: includeTags.intersection(other.includeTags),
@@ -1010,7 +986,6 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
-      bool? useDataIsolateStrategy,
       int? testRandomizeOrderingSeed,
       bool? ignoreTimeouts,
 
@@ -1059,8 +1034,6 @@ class Configuration {
         overrideRuntimes: overrideRuntimes ?? this.overrideRuntimes,
         defineRuntimes: defineRuntimes ?? this.defineRuntimes,
         noRetry: noRetry ?? _noRetry,
-        useDataIsolateStrategy:
-            useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
         includeTags: includeTags,

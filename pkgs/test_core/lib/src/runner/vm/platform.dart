@@ -25,7 +25,6 @@ import '../../runner/platform.dart';
 import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
-import '../../util/dart.dart' as dart;
 import '../../util/package_config.dart';
 import '../package_version.dart';
 import 'environment.dart';
@@ -151,8 +150,6 @@ class VMPlatform extends PlatformPlugin {
       } else if (_config.pubServeUrl != null) {
         return _spawnPubServeIsolate(
             path, message, _config.pubServeUrl!, compiler);
-      } else if (_config.useDataIsolateStrategy) {
-        return _spawnDataIsolate(path, message, suiteMetadata, compiler);
       }
       switch (compiler) {
         case Compiler.kernel:
@@ -189,23 +186,6 @@ class VMPlatform extends PlatformPlugin {
   Future<Isolate> _spawnIsolateWithUri(Uri uri, SendPort message) async {
     return await Isolate.spawnUri(uri, [], message,
         packageConfig: await packageConfigUri, checked: true);
-  }
-
-  /// Boots
-  Future<Isolate> _spawnDataIsolate(String path, SendPort message,
-      Metadata suiteMetadata, Compiler compiler) async {
-    if (compiler != Compiler.source) {
-      throw ArgumentError('The --use-data-isolate-strategy option requires the '
-          '`--compiler none` option but the compiler was $compiler');
-    }
-
-    return await dart.runInIsolate(
-        _bootstrapTestContents(
-          _absolute(path),
-          suiteMetadata.languageVersionComment ??
-              await rootPackageLanguageVersionComment,
-        ),
-        message);
   }
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,

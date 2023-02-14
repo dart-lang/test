@@ -282,7 +282,6 @@ Configuration configuration(
         Map<String, RuntimeSettings>? overrideRuntimes,
         Map<String, CustomRuntime>? defineRuntimes,
         bool? noRetry,
-        bool? useDataIsolateStrategy,
         bool? ignoreTimeouts,
 
         // Suite-level configuration
@@ -334,7 +333,6 @@ Configuration configuration(
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
-        useDataIsolateStrategy: useDataIsolateStrategy,
         ignoreTimeouts: ignoreTimeouts,
         allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
