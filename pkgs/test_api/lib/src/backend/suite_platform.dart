@@ -32,7 +32,9 @@ class SuitePlatform {
   /// If [compiler] is `null`, then the default compiler for [runtime] will be
   /// used.
   SuitePlatform(this.runtime,
-      {required Compiler? compiler,
+      {
+      // TODO(https://github.com/dart-lang/test/issues/1935): make required
+      Compiler? compiler,
       this.os = OperatingSystem.none,
       this.inGoogle = false})
       : compiler = compiler ?? runtime.defaultCompiler {

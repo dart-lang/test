@@ -2,9 +2,10 @@
 
 * Add `Compiler` class, exposed through `backend.dart`.
 * Support compiler identifiers in platform selectors.
+* Add `compiler` field to `SuitePlatform`. This will become required in the next
+  major release.
 * **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
   to `Runtime`.
-* **BREAKING** Add required `compiler` field to `SuitePlatform`.
 
 ## 0.4.18
 
