@@ -7,11 +7,10 @@ import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
     show
         Timeout;
-import 'package:test_core/backend.dart';
-import 'package:test_core/test_core.dart';
 
 import '../../util/io.dart';
 import '../compiler_selection.dart';
