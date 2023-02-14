@@ -68,8 +68,11 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
       allowDuplicateTestNames: allowDuplicateTestNames);
   await declarer.declare(testMain);
 
-  final suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-      declarer.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
+  final suite = RunnerSuite(
+      const PluginEnvironment(),
+      SuiteConfiguration.empty,
+      declarer.build(),
+      SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
       path: p.prettyUri(Uri.base));
 
   final engine = Engine()

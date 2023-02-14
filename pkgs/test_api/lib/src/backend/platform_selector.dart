@@ -5,6 +5,7 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:source_span/source_span.dart';
 
+import 'compiler.dart';
 import 'operating_system.dart';
 import 'runtime.dart';
 import 'suite_platform.dart';
@@ -19,6 +20,7 @@ final _universalValidVariables = {
   'google',
   'wasm',
   for (var runtime in Runtime.builtIn) runtime.identifier,
+  for (var compiler in Compiler.builtIn) compiler.identifier,
   for (var os in OperatingSystem.all) os.identifier,
 };
 
@@ -82,6 +84,7 @@ class PlatformSelector {
       if (variable == platform.runtime.identifier) return true;
       if (variable == platform.runtime.parent?.identifier) return true;
       if (variable == platform.os.identifier) return true;
+      if (variable == platform.compiler.identifier) return true;
       switch (variable) {
         case 'dart-vm':
           return platform.runtime.isDartVM;

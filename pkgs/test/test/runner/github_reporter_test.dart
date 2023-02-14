@@ -36,8 +36,8 @@ void main() {
   test('includes the platform name when multiple platforms are run', () {
     return _expectReportLines('''
         test('success 1', () {});''', [
-      '✅ [VM] success 1',
-      '✅ [Chrome] success 1',
+      '✅ [VM, Kernel] success 1',
+      '✅ [Chrome, Dart2Js] success 1',
       '🎉 2 tests passed.',
     ], args: [
       '-p',

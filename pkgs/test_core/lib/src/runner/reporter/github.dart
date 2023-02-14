@@ -152,7 +152,8 @@ class GithubReporter implements Reporter {
       }
     }
     if (_printPlatform) {
-      name = '[${test.suite.platform.runtime.name}] $name';
+      name = '[${test.suite.platform.runtime.name}, '
+          '${test.suite.platform.compiler.name}] $name';
     }
     if (messages.isEmpty && errors.isEmpty) {
       _sink.writeln('$prefix $name$statusSuffix');
@@ -184,7 +185,8 @@ class GithubReporter implements Reporter {
         }
       }
       if (_printPlatform) {
-        name = '[${test.suite.platform.runtime.name}] $name';
+        name = '[${test.suite.platform.runtime.name}, '
+            '${test.suite.platform.compiler.name}] $name';
       }
 
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
