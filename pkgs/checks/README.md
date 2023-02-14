@@ -1,6 +1,43 @@
 [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
 [![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
 
+`package:checks` ia a library for expressing test expectations and features a
+literate API.
+
+## package:checks preview
+
+`package:checks` is in preview; to provide feedback on the API, please file
+[an issue][] with questions, suggestions, feature requests, or general
+feedback.
+
+For documentation about migrating from `package:matcher` to `checks`, see the
+[migration guide][].
+
+[an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
+[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
+
+## Quickstart
+
+1. Add a `dev_dependency` on `checks: ^0.2.0`.
+
+1. Add an import for `package:checks/checks.dart`.
+
+1. Use `checks` in your test code:
+
+```dart
+void main() {
+  test('sample test', () {
+    // test code here
+    ...
+
+    check(actual).equals(expected);
+    check(someList).isNotEmpty();
+    check(someObject).isA<Map>();
+    check(someString)..startsWith('a')..endsWith('z')..contains('lmno');
+  });
+}
+```
+
 ## Checking expectations with `checks`
 
 Expectations start with `check`. This utility returns a `Subject`, and
@@ -105,15 +142,3 @@ extension CustomChecks on Subject<CustomType> {
   Subject<Bar> get someField => has((a) => a.someField, 'someField');
 }
 ```
-
-## Migrating from `matcher` (`expect`) expectations
-
-See the [migration guide][].
-
-[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
-
-## Giving feedback while `checks` is in preview
-
-File [an issue][] with questions, suggestions, feature requests, or feedback.
-
-[an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md

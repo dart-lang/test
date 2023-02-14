@@ -1,3 +1,5 @@
+## Migrating from package:matcher
+
 `package:checks` is currently in preview. Once this package reaches a stable
 version, it will be the recommended package by the Dart team to use for most
 tests.
@@ -16,8 +18,7 @@ high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
 `matcher`.
 
-
-# Trying Checks as a Preview
+## Trying Checks as a Preview
 
 1.  Add a `dev_dependency` on `checks: ^0.2.0`.
 
@@ -33,7 +34,7 @@ Once this package is stable, yes! The experience of using `checks` improves on
 
 1.  Migrate the test cases.
 
-# Migrating from Matchers
+## Migrating from Matchers
 
 Replace calls to `expect` with a call to `check` passing the first argument.
 When a direct replacement is available, change the second argument from calling
@@ -53,7 +54,7 @@ check(actual).equals(expected);
 check(actualCollection).deepEquals(expected);
 ```
 
-## Differences in behavior from matcher
+### Differences in behavior from matcher
 
 -   The `equals` Matcher performed a deep equality check on collections.
     `.equals()` expectation will only correspond to [operator ==] so some tests
@@ -78,7 +79,7 @@ check(actualCollection).deepEquals(expected);
 [matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
 [allMatches]:https://api.dart.dev/stable/2.19.1/dart-core/Pattern/allMatches.html
 
-## Matchers with replacements under a different name
+### Matchers with replacements under a different name
 
 -   `anyElement` -> `Subject<Iterable>.any`
 -   `everyElement` -> `Subject<Iterable>.every`
@@ -90,7 +91,7 @@ check(actualCollection).deepEquals(expected);
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
 
-## Members from `package:test/expect.dart` without a direct replacement
+### Members from `package:test/expect.dart` without a direct replacement
 
 -   `checks` does not ship with any type checking matchers for specific types.
     Instead of, for example,  `isArgumentError` use `isA<ArgumentError>`, and
