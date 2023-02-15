@@ -26,7 +26,6 @@
   not statically breaking but it will be confusing for users if it isn't
   supported.
 * **BREAKING** Remove `useDataIsolateStrategy` field from `Configuration`.
->>>>>>> master
 
 ## 0.4.24
 
