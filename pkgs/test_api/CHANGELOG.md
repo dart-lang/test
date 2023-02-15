@@ -1,3 +1,12 @@
+## 0.5.0-dev
+
+* Add `Compiler` class, exposed through `backend.dart`.
+* Support compiler identifiers in platform selectors.
+* Add `compiler` field to `SuitePlatform`. This will become required in the next
+  major release.
+* **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
+  to `Runtime`.
+
 ## 0.4.18
 
 * Don't run `tearDown` until the test body and outstanding work is complete,

@@ -72,7 +72,7 @@ class _TestCompilerForLanguageVersion {
   late final _outputDill =
       File(p.join(_outputDillDirectory.path, 'output.dill'));
   final _outputDillDirectory =
-      Directory.systemTemp.createTempSync('dart_test.');
+      Directory.systemTemp.createTempSync('dart_test.kernel.');
   // Used to create unique file names for final kernel files.
   int _compileNumber = 0;
   // The largest incremental dill file we created, will be cached under

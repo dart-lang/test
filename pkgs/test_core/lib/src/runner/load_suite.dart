@@ -136,7 +136,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     return LoadSuite(
         'loading ${exception.path}',
         config ?? SuiteConfiguration.empty,
-        platform ?? currentPlatform(Runtime.vm),
+        platform ?? currentPlatform(Runtime.vm, null),
         () => Future.error(exception, stackTrace),
         path: exception.path);
   }

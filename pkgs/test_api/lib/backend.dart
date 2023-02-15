@@ -6,6 +6,7 @@
     'Please use package:test.')
 library test_api.backend;
 
+export 'src/backend/compiler.dart' show Compiler;
 export 'src/backend/metadata.dart' show Metadata;
 export 'src/backend/platform_selector.dart' show PlatformSelector;
 export 'src/backend/remote_exception.dart' show RemoteException;
