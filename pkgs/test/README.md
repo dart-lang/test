@@ -191,7 +191,7 @@ path/to/test.dart`.
 By default each platform has a default compiler, but some of them support
 more than one compiler. You can choose which compiler to use by passing
 `dart test -c source`, which would run all VM tests from source instead of
-compiling them to kernel. This also supports targetting a specific platform
+compiling them to kernel. This also supports targeting a specific platform
 using normal platform selectors, like this `dart test -c vm:source`.
 
 ### Test Path Queries
