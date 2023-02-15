@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-## 0.4.25
-
-* Temporary - will become -dev version.
-=======
 ## 0.5.0-dev
 
 * Support the `--compiler` flag, which can be used to configure which compiler
