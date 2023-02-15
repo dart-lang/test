@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:source_span/source_span.dart';
-import 'package:test_core/backend.dart';
+// ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 
 /// A compiler with which the user has chosen to run tests.
 class CompilerSelection {
