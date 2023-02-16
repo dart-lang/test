@@ -10,6 +10,9 @@ class Compiler {
   /// Experimental Dart to Wasm compiler.
   static const Compiler dart2wasm = Compiler._('Dart2WASM', 'dart2wasm');
 
+  /// Compiles dart code to a native executable.
+  static const Compiler exe = Compiler._('Exe', 'exe');
+
   /// The standard compiler for vm tests, compiles tests to kernel before
   /// running them on the VM.
   static const Compiler kernel = Compiler._('Kernel', 'kernel');
@@ -21,6 +24,7 @@ class Compiler {
   static const List<Compiler> builtIn = [
     Compiler.dart2js,
     Compiler.dart2wasm,
+    Compiler.exe,
     Compiler.kernel,
     Compiler.source,
   ];
