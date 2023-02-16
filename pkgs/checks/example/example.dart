@@ -16,7 +16,7 @@ void main() {
     final someString = 'abcdefghijklmnopqrstuvwxyz';
 
     check(
-      because: 'It should contain the beginning, middle and end',
+      because: 'it should contain the beginning, middle and end',
       someString,
     )
       ..startsWith('a')
