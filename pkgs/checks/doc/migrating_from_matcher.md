@@ -4,6 +4,9 @@
 version, it will be the recommended package by the Dart team to use for most
 tests.
 
+[`package:matcher`][matcher] is the legacy package with an API exported from
+`package:test/test.dart` and `package:test/expect.dart`. 
+
 **Do I have to migrate all at once?** No. `package:matcher` will be compatible
 with `package:checks`, and old tests can continue to use matchers. Test cases
 within the same file can use a mix of `expect` and `check`.
@@ -24,7 +27,10 @@ behavior and signature changes to align with modern Dart idioms.
 **Should I start using checks over matcher for new tests?** There is still a
 high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
-`matcher`.
+`matcher`. See some of the [improvements to look forward to in checks
+below][#improvements-you-can-expect].
+
+[matcher]: https://pub.dev/packages/matcher
 
 ## Trying Checks as a Preview
 
@@ -130,3 +136,42 @@ check(because: 'some explanation', actual).expectation();
     with `check(actual).deepEquals(expected.map((e) => it()..equals(e)))`;
 -   `prints`: TODO add missing expectation? Is this one worth replacing?
 -   `predicate`: TODO add missing expectation
+
+## Improvements you can expect
+
+Expectations are statically restricted to those which are appropriate for the
+type. So while the following is statically allowed with `matcher` but always
+fails at runtime, the expectation cannot be written at all with `checks`.
+
+```dart
+expect(1, contains(1)); // No static error, always fails
+check(1).contains(1); // Static error. The method 'contains' isn't defined
+```
+
+These static restrictions also improve the relevance of IDE autocomplete
+suggestions. While editing with the cursor at `_`, the suggestions provided
+in the `matcher` example can include _any_ top level element including matchers
+appropriate for other types of value, type names, and top level definitions from
+other packages. With the cursor following a `.` in the `checks` example the
+suggestions will only be expectations or utilities appropriate for the value
+type.
+
+```dart
+expect(actual, _ // many unrelated suggestions
+check(actual)._ // specific suggestions
+```
+
+Expectations are checked at runtime and `async` expectations cause errors when
+they are used in places where a synchronous answer is required. With `matcher`
+the definition of synchronous and asynchronous matchers was originally split
+across the `matcher` and `test` packages. Asynchronous matchers used the same
+interface, but required special usage that was not implemented in the `matcher`
+package, so asynchronous matchers passed to places required a synchronous
+response would always appear to match but cause unhandled asynchronous errors.
+
+Asynchronous expectations always return a `Future`, and with the
+`unawaited_futures` lint should more safely ensure that asynchronous expectation
+work is completed within the test body. With `matcher` it was up to the author
+to correctly use `await expecLater` for asynchronous cases, and `expect` for
+synchronous cases, and if `expect` was used with an asynchronous matcher the
+expectation could fail at any point.
