@@ -15,7 +15,10 @@ void main() {
 
     final someString = 'abcdefghijklmnopqrstuvwxyz';
 
-    check(someString)
+    check(
+      because: 'It should contain the beginning, middle and end',
+      someString,
+    )
       ..startsWith('a')
       ..endsWith('z')
       ..contains('lmno');
