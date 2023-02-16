@@ -199,7 +199,7 @@ class VMPlatform extends PlatformPlugin {
       '--output',
       output.path,
       '--packages',
-      (await packageConfigUri).path,
+      (await packageConfigUri).toFilePath(),
     ]);
     if (processResult.exitCode != 0 || !(await output.exists())) {
       throw LoadException(path, '''
