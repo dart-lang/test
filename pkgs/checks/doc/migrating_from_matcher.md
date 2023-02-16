@@ -161,16 +161,18 @@ expect(actual, _ // many unrelated suggestions
 check(actual)._ // specific suggestions
 ```
 
-Expectations in `checks` are limited at runtime and `async` expectations cause
-errors when they are used in places where a synchronous answer is required. With
-`matcher` an asynchronous matcher used to get a synchronous match would always
-pass, but could cause unhandled async errors, or when using `not` would always
-fail even if the expectation would succeed asynchronously. The reason for the
-poor compatibility is due to some history of implementation - asynchronous
-matchers were written in `test` alongside `expect`, and synchronous matchers
-have no dependency on the asynchronous implementation. The exceptions that
-happen when an expectation from `checks` is misapplied should result in fewer
-missed or misleading failures.
+Asynchronous matchers in `matcher` are a subtype of synchronous matchers, but do
+not satisfy the same behavior contract. Some APIs which use a matcher could not
+validate whether it would satisfy the behavior it needs, and it could result in
+a false success, false failure, or misleading errors. APIs which correctly use
+asynchronous matchers need to do a type check and change their interaction based
+on the runtime type. Asynchronous expectations in `checks` are refused at
+runtime when a synchronous answer is required. The error will help solve the
+specific misuse, instead of resulting in a confusing error, or worse a missed
+failure. The reason for the poor compatibility in `matcher` is due to some
+history of implementation - asynchronous matchers were written in `test`
+alongside `expect`, and synchronous matchers have no dependency on the
+asynchronous implementation.
 
 Asynchronous expectations always return a `Future`, and with the
 [`unawaited_futures` lint][unawaited lint] should more safely ensure that
