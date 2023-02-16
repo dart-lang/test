@@ -14,7 +14,6 @@ import '../io.dart';
 void main() {
   setUpAll(() async {
     await precompileTestExecutable();
-    await d.file('test.dart', _goodTest).create();
   });
 
   for (var runtime in Runtime.builtIn) {
