@@ -53,8 +53,14 @@ class VMPlatform extends PlatformPlugin {
     Isolate? isolate;
     if (platform.compiler == Compiler.exe) {
       var serverSocket = await ServerSocket.bind('localhost', 0);
-      var process =
-          await _spawnExecutable(path, suiteConfig.metadata, serverSocket);
+      Process process;
+      try {
+        process =
+            await _spawnExecutable(path, suiteConfig.metadata, serverSocket);
+      } catch (error) {
+        serverSocket.close();
+        rethrow;
+      }
       process.stdout.map(stdout.add);
       process.stderr.map(stderr.add);
       var socket = await serverSocket.first;
@@ -196,11 +202,10 @@ class VMPlatform extends PlatformPlugin {
       (await packageConfigUri).path,
     ]);
     if (processResult.exitCode != 0 || !(await output.exists())) {
-      throw LoadException(
-          path,
-          'exitCode: ${processResult.exitCode}\nstdout:\n'
-          '${processResult.stdout}\nstderr:\n'
-          '${processResult.stderr}.compilerOutput');
+      throw LoadException(path, '''
+exitCode: ${processResult.exitCode}
+stdout: ${processResult.stdout}
+stderr: ${processResult.stderr}''');
     }
     return output.path;
   }
