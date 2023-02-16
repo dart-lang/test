@@ -8,6 +8,7 @@
     of compiling to kernel first.
   * If no given compiler is compatible for a platform, it will use its default
     compiler instead.
+* Add support for `-c exe` (the native executable compiler) to the vm platform.
 * Add `Compiler` class, exposed through `backend.dart`.
 * Support compiler identifiers in platform selectors.
 * List the supported compilers for each platform in the usage text.
