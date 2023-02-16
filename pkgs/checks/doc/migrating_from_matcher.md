@@ -54,6 +54,13 @@ check(actual).equals(expected);
 check(actualCollection).deepEquals(expected);
 ```
 
+If you use the `reason` argument to `expect`, rename it to `because`.
+
+```dart
+expect(actual, expectation(), reason: 'some explanation');
+check(because: 'some explanation', actual).expectation();
+```
+
 ### Differences in behavior from matcher
 
 -   The `equals` Matcher performed a deep equality check on collections.

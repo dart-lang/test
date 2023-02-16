@@ -102,6 +102,22 @@ check(someString)
     ..isLessThan(100));
 ```
 
+If a failure may not be have enough context about the actual or expected values
+when an expectation fails, add a "Reason" in the failure message by passing a
+`because:` argument to `check()`.
+
+```dart
+check(
+  because: 'log lines must start with the severity',
+  logLines,
+).every(it()
+  ..anyOf([
+    it()..startsWith('ERROR'),
+    it()..startsWith('WARNING'),
+    it()..startsWith('INFO'),
+  ]));
+```
+
 ## Writing custom expectations
 
 Expectations are written as extension on `Subject` with specific generics. The
