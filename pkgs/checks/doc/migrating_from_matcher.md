@@ -161,17 +161,22 @@ expect(actual, _ // many unrelated suggestions
 check(actual)._ // specific suggestions
 ```
 
-Expectations are checked at runtime and `async` expectations cause errors when
-they are used in places where a synchronous answer is required. With `matcher`
-the definition of synchronous and asynchronous matchers was originally split
-across the `matcher` and `test` packages. Asynchronous matchers used the same
-interface, but required special usage that was not implemented in the `matcher`
-package, so asynchronous matchers passed to places required a synchronous
-response would always appear to match but cause unhandled asynchronous errors.
+Expectations in `checks` are limited at runtime and `async` expectations cause
+errors when they are used in places where a synchronous answer is required. With
+`matcher` an asynchronous matcher used to get a synchronous match would always
+pass, but could cause unhandled async errors, or when using `not` would always
+fail even if the expectation would succeed asynchronously. The reason for the
+poor compatibility is due to some history of implementation - asynchronous
+matchers were written in `test` alongside `expect`, and synchronous matchers
+have no dependency on the asynchronous implementation. The exceptions that
+happen when an expectation from `checks` is misapplied should result in fewer
+missed or misleading failures.
 
 Asynchronous expectations always return a `Future`, and with the
-`unawaited_futures` lint should more safely ensure that asynchronous expectation
-work is completed within the test body. With `matcher` it was up to the author
-to correctly use `await expecLater` for asynchronous cases, and `expect` for
-synchronous cases, and if `expect` was used with an asynchronous matcher the
-expectation could fail at any point.
+[`unawaited_futures` lint][unawaited lint] should more safely ensure that
+asynchronous expectation work is completed within the test body. With `matcher`
+it was up to the author to correctly use `await expecLater` for asynchronous
+cases, and `expect` for synchronous cases, and if `expect` was used with an
+asynchronous matcher the expectation could fail at any point.
+
+[unawaited lint]:https://dart-lang.github.io/linter/lints/unawaited_futures.html
