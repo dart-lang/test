@@ -12,7 +12,7 @@ import 'package:stream_channel/stream_channel.dart';
 ///
 /// JSON messages are separated by newlines.
 StreamChannel<Object?> jsonSocketStreamChannel(Socket socket) =>
-    StreamChannel(socket, socket)
+    StreamChannel.withGuarantees(socket, socket)
         .cast<List<int>>()
         .transform(StreamChannelTransformer.fromCodec(utf8))
         .transformStream(const LineSplitter())
