@@ -61,8 +61,8 @@ class VMPlatform extends PlatformPlugin {
         serverSocket.close();
         rethrow;
       }
-      process.stdout.map(stdout.add);
-      process.stderr.map(stderr.add);
+      process.stdout.listen(stdout.add);
+      process.stderr.listen(stderr.add);
       var socket = await serverSocket.first;
       outerChannel = MultiChannel<Object?>(StreamChannel(socket, socket)
           .cast<List<int>>()

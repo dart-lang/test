@@ -87,6 +87,28 @@ void main() {
                 ]));
             await test.shouldExit(1);
           });
+
+          test('captures prints', () async {
+            await d.file('test.dart', _testWithPrints).create();
+            var test = await runTest([...testArgs, '-r', 'json']);
+
+            expect(
+                test.stdout,
+                containsInOrder([
+                  '"messageType":"print","message":"hello","type":"print"',
+                ]));
+
+            await test.shouldExit(0);
+          });
+
+          test('forwards stdout/stderr', () async {
+            await d.file('test.dart', _testWithStdOutAndErr).create();
+            var test = await runTest(testArgs);
+
+            expect(test.stdout, emitsThrough('hello'));
+            expect(test.stderr, emits('world'));
+            await test.shouldExit(0);
+          }, testOn: '!browser');
         },
             skip: compiler == Compiler.dart2wasm
                 ? 'Wasm tests are experimental and require special setup'
@@ -121,3 +143,21 @@ void main() {}
 ''';
 
 final _throwingTest = "void main() => throw 'oh no';";
+
+final _testWithPrints = '''
+import 'package:test/test.dart';
+
+void main() {
+  print('hello');
+  test('success', () {});
+}''';
+
+final _testWithStdOutAndErr = '''
+import 'dart:io';
+import 'package:test/test.dart';
+
+void main() {
+  stdout.writeln('hello');
+  stderr.writeln('world');
+  test('success', () {});
+}''';
