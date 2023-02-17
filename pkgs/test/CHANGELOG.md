@@ -8,6 +8,8 @@
     of compiling to kernel first.
   * If no given compiler is compatible for a platform, it will use its default
     compiler instead.
+* Add support for running tests as native executables (vm platform only).
+  * You can run tests this way with `--compiler exe`.
 * Support compiler identifiers in platform selectors.
 * List the supported compilers for each platform in the usage text.
 * Update all reporters to print the compiler along with the platform name

@@ -10,8 +10,8 @@ class Runtime {
   // variable tests in test/backend/platform_selector/evaluate_test.
 
   /// The command-line Dart VM.
-  static const Runtime vm = Runtime(
-      'VM', 'vm', Compiler.kernel, [Compiler.kernel, Compiler.source],
+  static const Runtime vm = Runtime('VM', 'vm', Compiler.kernel,
+      [Compiler.kernel, Compiler.source, Compiler.exe],
       isDartVM: true);
 
   /// Google Chrome.
