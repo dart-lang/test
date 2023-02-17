@@ -12,6 +12,7 @@ import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'package:test_core/src/runner/plugin/remote_platform_helpers.dart';
+import 'package:test_core/src/runner/plugin/shared_platform_helpers.dart';
 
 /// Bootstraps a vm test to communicate with the test runner over an isolate.
 void internalBootstrapVmTest(Function Function() getMain, SendPort sendPort) {
@@ -37,13 +38,7 @@ void internalBootstrapNativeTest(
         'Expected exactly two args, a host and a port, but got $args');
   }
   var socket = await Socket.connect(args[0], int.parse(args[1]));
-  var platformChannel = MultiChannel<Object?>(StreamChannel(socket, socket)
-      .cast<List<int>>()
-      .transform(StreamChannelTransformer.fromCodec(utf8))
-      .transformStream(const LineSplitter())
-      .transformSink(StreamSinkTransformer.fromHandlers(
-          handleData: (original, sink) => sink.add('$original\n')))
-      .transform(jsonDocument));
+  var platformChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
   var testControlChannel = platformChannel.virtualChannel()
     ..pipe(serializeSuite(getMain));
   platformChannel.sink.add(testControlChannel.id);

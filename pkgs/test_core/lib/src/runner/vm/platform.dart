@@ -23,6 +23,7 @@ import '../../runner/environment.dart';
 import '../../runner/load_exception.dart';
 import '../../runner/platform.dart';
 import '../../runner/plugin/platform_helpers.dart';
+import '../../runner/plugin/shared_platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/package_config.dart';
@@ -49,7 +50,7 @@ class VMPlatform extends PlatformPlugin {
     _setupPauseAfterTests();
 
     MultiChannel outerChannel;
-    var cleanupFns = <void Function()>[];
+    var cleanupCallbacks = <void Function()>[];
     Isolate? isolate;
     if (platform.compiler == Compiler.exe) {
       var serverSocket = await ServerSocket.bind('localhost', 0);
@@ -64,14 +65,8 @@ class VMPlatform extends PlatformPlugin {
       process.stdout.listen(stdout.add);
       process.stderr.listen(stderr.add);
       var socket = await serverSocket.first;
-      outerChannel = MultiChannel<Object?>(StreamChannel(socket, socket)
-          .cast<List<int>>()
-          .transform(StreamChannelTransformer.fromCodec(utf8))
-          .transformStream(const LineSplitter())
-          .transformSink(StreamSinkTransformer.fromHandlers(
-              handleData: (original, sink) => sink.add('$original\n')))
-          .transform(jsonDocument));
-      cleanupFns
+      outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
+      cleanupCallbacks
         ..add(serverSocket.close)
         ..add(process.kill);
     } else {
@@ -85,7 +80,7 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
-      cleanupFns
+      cleanupCallbacks
         ..add(receivePort.close)
         ..add(isolate.kill);
     }
@@ -103,7 +98,7 @@ class VMPlatform extends PlatformPlugin {
         outerChannel.sink.add('debug');
         await outerQueue.next;
       }
-      for (var fn in cleanupFns) {
+      for (var fn in cleanupCallbacks) {
         fn();
       }
       eventSub?.cancel();
