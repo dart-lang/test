@@ -84,6 +84,7 @@ class VMPlatform extends PlatformPlugin {
         ..add(receivePort.close)
         ..add(isolate.kill);
     }
+    cleanupCallbacks.add(outerChannel.sink.close);
 
     VmService? client;
     StreamSubscription<Event>? eventSub;
