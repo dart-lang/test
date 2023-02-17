@@ -113,7 +113,9 @@ void main() {
       },
           skip: compiler == Compiler.dart2wasm
               ? 'Wasm tests are experimental and require special setup'
-              : null);
+              : runtime == Runtime.firefox && Platform.isWindows
+                  ? 'https://github.com/dart-lang/test/issues/1942'
+                  : null);
     }
   }
 }
