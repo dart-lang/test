@@ -4,8 +4,9 @@
 
 import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
+import 'package:test_api/hooks_testing.dart';
 
-import '../utils.dart';
+import '../utils_new.dart';
 
 void main() {
   setUpAll(() {
@@ -13,32 +14,32 @@ void main() {
   });
 
   test("doesn't throw if it isn't called", () async {
-    var liveTest = await runTestBody(() {
+    var monitor = await TestCaseMonitor.run(() {
       const Stream.empty().listen(neverCalled);
     });
 
-    expectTestPassed(liveTest);
+    expectTestPassed(monitor);
   });
 
   group("if it's called", () {
     test('throws', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         neverCalled();
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Callback should never have been called, but it was called with no '
           'arguments.');
     });
 
     test('pretty-prints arguments', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         neverCalled(1, 'foo\nbar');
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Callback should never have been called, but it was called with:\n'
           '* <1>\n'
           "* 'foo\\n'\n"
@@ -46,18 +47,18 @@ void main() {
     });
 
     test('keeps the test alive', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         pumpEventQueue(times: 10).then(neverCalled);
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Callback should never have been called, but it was called with:\n'
           '* <null>');
     });
 
     test("can't be caught", () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         try {
           neverCalled();
         } catch (_) {
@@ -66,7 +67,7 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Callback should never have been called, but it was called with '
           'no arguments.');
     });

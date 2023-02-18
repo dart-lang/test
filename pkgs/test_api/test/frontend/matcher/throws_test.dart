@@ -5,8 +5,9 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
+import 'package:test_api/hooks_testing.dart';
 
-import '../../utils.dart';
+import '../../utils_new.dart';
 
 void main() {
   group('synchronous', () {
@@ -17,12 +18,12 @@ void main() {
 
       test("with a function that doesn't throw", () async {
         void local() {}
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(local, throws);
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith('Expected: throws\n'
                   '  Actual: <'),
@@ -32,12 +33,12 @@ void main() {
       });
 
       test('with a non-function', () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(10, throws);
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             'Expected: throws\n'
             '  Actual: <10>\n'
             '   Which: was not a Function or Future\n');
@@ -55,12 +56,12 @@ void main() {
 
       test("with a function that doesn't throw", () async {
         void local() {}
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(local, throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
                   '  Actual: <'),
@@ -70,24 +71,24 @@ void main() {
       });
 
       test('with a non-function', () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(10, throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             "Expected: throws 'oh no'\n"
             '  Actual: <10>\n'
             '   Which: was not a Function or Future\n');
       });
 
       test('with a function that throws the wrong error', () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(() => throw 'aw dang', throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
                   '  Actual: <'),
@@ -111,12 +112,12 @@ void main() {
       });
 
       test("with a Future that doesn't throw", () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(Future.value(), throws);
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith('Expected: throws\n'
                   '  Actual: <'),
@@ -130,12 +131,12 @@ void main() {
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(() => Future.value(), throws);
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith('Expected: throws\n'
                   '  Actual: <'),
@@ -144,12 +145,18 @@ void main() {
             ]));
       });
 
-      test("won't let the test end until the Future completes", () {
-        return expectTestBlocks(() {
-          var completer = Completer();
+      test("won't let the test end until the Future completes", () async {
+        late void Function() callback;
+        final monitor = TestCaseMonitor.start(() {
+          final completer = Completer<void>();
           expect(completer.future, throws);
-          return completer;
-        }, (completer) => completer.completeError('oh no'));
+          callback = () => completer.completeError('oh no');
+        });
+        await pumpEventQueue();
+        expect(monitor.status, Status.running);
+        callback();
+        await monitor.onDone;
+        expectTestPassed(monitor);
       });
     });
 
@@ -164,12 +171,12 @@ void main() {
       });
 
       test("with a Future that doesn't throw", () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(Future.value(), throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
                   '  Actual: <'),
@@ -179,12 +186,12 @@ void main() {
       });
 
       test('with a Future that throws the wrong error', () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(Future.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
                   '  Actual: <'),
@@ -200,12 +207,12 @@ void main() {
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(() => Future.value(), throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
                   '  Actual: <'),
@@ -216,12 +223,12 @@ void main() {
 
       test('with closure that returns a Future that throws the wrong error',
           () async {
-        var liveTest = await runTestBody(() {
+        var monitor = await TestCaseMonitor.run(() {
           expect(() => Future.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
-            liveTest,
+            monitor,
             allOf([
               startsWith("Expected: throws 'oh no'\n"
                   '  Actual: <'),
@@ -230,12 +237,19 @@ void main() {
             ]));
       });
 
-      test("won't let the test end until the Future completes", () {
-        return expectTestBlocks(() {
-          var completer = Completer();
+      test("won't let the test end until the Future completes", () async {
+        late void Function() callback;
+        final monitor = TestCaseMonitor.start(() {
+        final completer = Completer<void>();
           expect(completer.future, throwsA('oh no'));
-          return completer;
-        }, (completer) => completer.completeError('oh no'));
+          callback = () => completer.completeError('oh no');
+        });
+        await pumpEventQueue();
+        expect(monitor.status, Status.running);
+        callback();
+        await monitor.onDone;
+
+        expectTestPassed(monitor);
       });
 
       test("blocks expectLater's Future", () async {

@@ -5,8 +5,9 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
+import 'package:test_api/hooks_testing.dart';
 
-import '../../utils.dart';
+import '../../utils_new.dart';
 
 void main() {
   group('synchronous', () {
@@ -27,12 +28,12 @@ void main() {
 
     test('describes a failure nicely', () async {
       void local() => print('Hello, world!');
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(local, prints('Goodbye, world!\n'));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: prints 'Goodbye, world!\\n'\n"
                 "            ''\n"
@@ -50,12 +51,12 @@ void main() {
 
     test('describes a failure with a non-descriptive Matcher nicely', () async {
       void local() => print('Hello, world!');
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
                 '  Actual: <'),
@@ -67,12 +68,12 @@ void main() {
 
     test('describes a failure with no text nicely', () async {
       void local() {}
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
                 '  Actual: <'),
@@ -82,12 +83,12 @@ void main() {
     });
 
     test('with a non-function', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(10, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           "Expected: prints contains 'Goodbye'\n"
           '  Actual: <10>\n'
           '   Which: was not a unary Function\n');
@@ -116,12 +117,12 @@ void main() {
 
     test('describes a failure nicely', () async {
       void local() => Future(() => print('Hello, world!'));
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(local, prints('Goodbye, world!\n'));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: prints 'Goodbye, world!\\n'\n"
                 "            ''\n"
@@ -139,12 +140,12 @@ void main() {
 
     test('describes a failure with a non-descriptive Matcher nicely', () async {
       void local() => Future(() => print('Hello, world!'));
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
                 '  Actual: <'),
@@ -156,12 +157,12 @@ void main() {
 
     test('describes a failure with no text nicely', () async {
       void local() => Future.value();
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(local, prints(contains('Goodbye')));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: prints contains 'Goodbye'\n"
                 '  Actual: <'),
@@ -170,12 +171,16 @@ void main() {
           ]));
     });
 
-    test("won't let the test end until the Future completes", () {
-      return expectTestBlocks(() {
-        var completer = Completer();
+    test("won't let the test end until the Future completes", () async {
+      final completer = Completer<void>();
+      final monitor = TestCaseMonitor.start(() {
         expect(() => completer.future, prints(isEmpty));
-        return completer;
-      }, (completer) => completer.complete());
+      });
+      await pumpEventQueue();
+      expect(monitor.status, Status.running);
+      completer.complete();
+      await monitor.onDone;
+      expectTestPassed(monitor);
     });
 
     test("blocks expectLater's Future", () async {

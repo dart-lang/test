@@ -4,7 +4,7 @@
 
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../utils_new.dart';
 
 void main() {
   group('returned Future from expectLater()', () {
