@@ -243,10 +243,10 @@ reduce the overall testing time.
 
 ### Concurrency Testing
 
-Tests run concurrently by default on two threads. use `--concurrency` to control
-the number of tests that runs concurrently, meaning that multiple tests can be 
-executed at the same time. For example, if you wanted to run the tests on 4 threads,
-you could run the tests as follows:
+Tests run concurrently by default and it will utilize half of your available cores.
+use `--concurrency` to control the number of tests that runs concurrently,
+meaning that multiple tests can be executed at the same time. For example,
+if you wanted to run the tests on 4 threads, you could run the tests as follows:
 
 ```bash
 dart test --concurrency=4
