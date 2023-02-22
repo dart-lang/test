@@ -6,6 +6,8 @@
   major release.
 * **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
   to `Runtime`.
+* Add `package:test_api/hooks_testing.dart` library for writing tests against
+  code that uses `package:test_api/hooks.dart`.
 
 ## 0.4.18
 
