@@ -96,7 +96,7 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
-      failure = f;
+      failure ??= f;
     },
     allowAsync: false,
     allowUnawaited: false,
@@ -119,7 +119,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
-      failure = f;
+      failure ??= f;
     },
     allowAsync: true,
     allowUnawaited: false,
