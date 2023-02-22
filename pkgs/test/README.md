@@ -253,7 +253,7 @@ run the tests as follows:
 dart test --concurrency=4
 ```
 This can speed up the overall testing process, especially if you have a large
-number of tests.
+number of test suites.
 
 ### Shuffling Tests
 
