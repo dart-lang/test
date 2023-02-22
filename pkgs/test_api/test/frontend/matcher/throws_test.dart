@@ -240,7 +240,7 @@ void main() {
       test("won't let the test end until the Future completes", () async {
         late void Function() callback;
         final monitor = TestCaseMonitor.start(() {
-        final completer = Completer<void>();
+          final completer = Completer<void>();
           expect(completer.future, throwsA('oh no'));
           callback = () => completer.completeError('oh no');
         });
