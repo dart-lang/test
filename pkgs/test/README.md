@@ -8,6 +8,7 @@
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
   * [Sharding Tests](#sharding-tests)
+  * [Test Concurrency](#test-concurrency)
   * [Shuffling Tests](#shuffling-tests)
   * [Selecting a Test Reporter](#selecting-a-test-reporter)
   * [Collecting Code Coverage](#collecting-code-coverage)
@@ -233,6 +234,26 @@ dart test --total-shards 3 --shard-index 0 path/to/test.dart
 dart test --total-shards 3 --shard-index 1 path/to/test.dart
 dart test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
+Sharding: This refers to the process of splitting up a large test suite into
+smaller subsets (called shards) that can be run independently. Sharding is
+particularly useful for distributed testing, where multiple machines are used
+to run tests simultaneously. By dividing the test suite into smaller subsets,
+you can run tests in parallel across multiple machines, which can significantly
+reduce the overall testing time.
+
+### Test concurrency
+
+Test suites run concurrently by default, using half of the host's CPU cores. Use
+`--concurrency` to control the number of test suites that runs concurrently,
+meaning that multiple tests in independent suites or platforms can run at the
+same time. For example, if you wanted to run the tests on 4 threads, you could
+run the tests as follows:
+
+```bash
+dart test --concurrency=4
+```
+This can speed up the overall testing process, especially if you have a large
+number of test suites.
 
 ### Shuffling Tests
 
