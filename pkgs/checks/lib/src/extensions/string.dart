@@ -59,10 +59,18 @@ extension StringChecks on Subject<String> {
     );
   }
 
-  /// Expects that the string matches the regular expression [expected].
-  void matches(RegExp expected) {
+  /// Expects that the string matches the pattern [expected].
+  ///
+  /// Fails if [expected] returns an empty result from calling `allMatches` with
+  /// the value.
+  ///
+  /// ```
+  /// check(actual).matchesPattern('abc');
+  /// check(actual).matchesPattern(RegExp(r'\d'));
+  /// ```
+  void matchesPattern(Pattern expected) {
     context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
-      if (expected.hasMatch(actual)) return null;
+      if (expected.allMatches(actual).isNotEmpty) return null;
       return Rejection(
           which: () => prefixFirst('does not match ', literal(expected)));
     });

@@ -37,17 +37,29 @@ void main() {
     });
 
     group('matches', () {
-      test('succeeds for strings that match', () {
-        check('123').matches(RegExp(r'\d\d\d'));
+      test('succeeds for strings that match a regex', () {
+        check('123').matchesPattern(RegExp(r'\d\d\d'));
       });
-      test('fails for non-matching strings', () {
-        check('abc').isRejectedBy(it()..matches(RegExp(r'\d\d\d')),
+      test('succeeds for strings that match a string pattern', () {
+        check(r'\d').matchesPattern(r'\d');
+      });
+      test('fails for non-matching regex', () {
+        check('abc').isRejectedBy(it()..matchesPattern(RegExp(r'\d\d\d')),
             which: [r'does not match <RegExp: pattern=\d\d\d flags=>']);
       });
+      test('fails for non-matching string pattern', () {
+        // A string is _not_ converted to a regex, string patterns must match
+        // directly.
+        check('123').isRejectedBy(it()..matchesPattern(r'\d\d\d'),
+            which: [r"does not match '\\d\\d\\d'"]);
+      });
       test('can be described', () {
-        check(it<String>()..matches(RegExp(r'\d\d\d')))
+        check(it<String>()..matchesPattern(RegExp(r'\d\d\d')))
             .description
             .deepEquals([r'  matches <RegExp: pattern=\d\d\d flags=>']);
+        check(it<String>()..matchesPattern('abc'))
+            .description
+            .deepEquals([r"  matches 'abc'"]);
       });
     });
 

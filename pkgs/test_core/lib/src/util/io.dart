@@ -10,6 +10,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
+import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
@@ -46,9 +47,11 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [inGoogle] determined automatically.
 ///
 /// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
-    os: runtime.isBrowser ? OperatingSystem.none : currentOS,
-    inGoogle: inGoogle);
+SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+    SuitePlatform(runtime,
+        compiler: compiler,
+        os: runtime.isBrowser ? OperatingSystem.none : currentOS,
+        inGoogle: inGoogle);
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = StreamTransformer<List<int>, String>(

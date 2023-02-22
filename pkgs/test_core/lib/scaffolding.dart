@@ -54,8 +54,11 @@ Declarer get _declarer {
   () async {
     await pumpEventQueue();
 
-    var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-        _globalDeclarer!.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
+    var suite = RunnerSuite(
+        const PluginEnvironment(),
+        SuiteConfiguration.empty,
+        _globalDeclarer!.build(),
+        SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
 
     var engine = Engine();

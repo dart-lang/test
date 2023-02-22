@@ -1,15 +1,51 @@
-# 0.4.23-dev
+## 0.5.0-dev
+
+* Support the `--compiler` flag, which can be used to configure which compiler
+  to use.
+  * To specify a compiler by platform, the argument supports platform selectors
+    through this syntax `[<platform>:]<compiler>`. For example the command line
+    argument `--compiler vm:source` would run all vm tests from source instead
+    of compiling to kernel first.
+  * If no given compiler is compatible for a platform, it will use its default
+    compiler instead.
+* Add support for `-c exe` (the native executable compiler) to the vm platform.
+* Add `Compiler` class, exposed through `backend.dart`.
+* Support compiler identifiers in platform selectors.
+* List the supported compilers for each platform in the usage text.
+* Update all reporters to print the compiler along with the platform name
+  when configured to print the platform. Extend the logic for printing platofrm
+  information to do so if any compilers are explicitly configured.
+* Deprecate `--use-data-isolate-strategy`. It is now an alias for `-c vm:source`
+  which is roughly equivalent. If this is breaking for you please file an issue.
+* **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
+  to `Runtime`.
+* **BREAKING** Add required `compiler` field to `SuitePlatform`.
+* **BREAKING** Add required `compilerSelections` argument to some
+  `Configuration` and `SuiteConfiguration` constructors.
+* **BREAKING** Custom platform plugins need to respect the compiler option
+  given through the `SuitePlatform` argument to `PlatformPlugin.load`. This is
+  not statically breaking but it will be confusing for users if it isn't
+  supported.
+* **BREAKING** Remove `useDataIsolateStrategy` field from `Configuration`.
+
+## 0.4.24
+
+* Fix running paths by absolute path (with drive letter) on windows.
+
+## 0.4.23
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
+* Support running tests by absolute file uri.
+* Update `vm_service` constraint to `>=6.0.0 <12.0.0`.
 
-# 0.4.22
+## 0.4.22
 
 * Don't run `tearDown` until the test body and outstanding work is complete,
   even if the test has already failed.
 * Update `vm_service` constraint to `>=6.0.0 <11.0.0`.
 
-# 0.4.21
+## 0.4.21
 
 * Move `includeTags` and `excludeTags` from `SuiteConfiguration` to
   `Configuration`.
@@ -18,24 +54,24 @@
 * Fix VM tests which run after some test has changed the working directory.
   There are still issues with browser tests after changing directory.
 
-# 0.4.20
+## 0.4.20
 
 * Fix an issue with the github reporter where tests that fail asynchronously
   after they've completed would show up as succeeded tests.
 * Support the latest `package:test_api`.
 * Refactor `CompilerPool` to be abstract, add wasm compiler pool.
 
-# 0.4.19
+## 0.4.19
 
 * Support `package:matcher` version `0.12.13`.
 * Require Dart SDK version 2.18.
 
-# 0.4.18
+## 0.4.18
 
 * Support the latest `package:test_api`.
 * Support the latest `package:analyzer`.
 
-# 0.4.17
+## 0.4.17
 
 * Support the latest `package:test_api`.
 * Support the latest `package:frontend_server_client`.

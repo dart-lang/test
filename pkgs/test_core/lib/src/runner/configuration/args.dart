@@ -7,12 +7,13 @@ import 'dart:math';
 
 import 'package:args/args.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
     show
         Timeout;
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
 import '../../util/io.dart';
+import '../compiler_selection.dart';
 import '../configuration.dart';
 import '../runtime_selection.dart';
 import 'reporters.dart';
@@ -70,7 +71,20 @@ final ArgParser _parser = (() {
       abbr: 'p',
       help: 'The platform(s) on which to run the tests.\n'
           '[vm (default), '
-          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}]');
+          '${allRuntimes.map((runtime) => runtime.identifier).join(", ")}].\n'
+          'Each platform supports the following compilers:\n'
+          '${Runtime.vm.supportedCompilersText}\n'
+          '${allRuntimes.map((r) => r.supportedCompilersText).join('\n')}');
+  parser.addMultiOption('compiler',
+      abbr: 'c',
+      help: 'The compiler(s) to use to run tests, supported compilers are '
+          '[${Compiler.builtIn.map((c) => c.identifier).join(', ')}].\n'
+          'Each platform has a default compiler but may support other '
+          'compilers.\n'
+          'You can target a compiler to a specific platform using arguments '
+          'of the following form [<platform-selector>:]<compiler>.\n'
+          'If a platform is specified but no given compiler is supported for '
+          'that platform, then it will use its default compiler.');
   parser.addMultiOption('preset',
       abbr: 'P', help: 'The configuration preset(s) to use.');
   parser.addOption('concurrency',
@@ -112,10 +126,9 @@ final ArgParser _parser = (() {
       defaultsTo: false,
       negatable: false);
   parser.addFlag('use-data-isolate-strategy',
-      help: 'Use `data:` uri isolates when spawning VM tests instead of the\n'
-          'default strategy. This may be faster when you only ever run a\n'
-          'single test suite at a time.',
+      help: '**DEPRECATED**: This is now just an alias for --compiler source.',
       defaultsTo: false,
+      hide: true,
       negatable: false);
   parser.addOption('test-randomize-ordering-seed',
       help: 'Use the specified seed to randomize the execution order of test'
@@ -177,41 +190,47 @@ Configuration parse(List<String> args) => _Parser(args).parse();
 
 void _parseTestSelection(
     String option, Map<String, Set<TestSelection>> selections) {
-  var firstQuestion = option.indexOf('?');
-  TestSelection selection;
-  String path;
-  if (firstQuestion == -1) {
-    path = option;
-    selection = TestSelection();
-  } else if (option.substring(0, firstQuestion).contains('\\')) {
-    throw FormatException(
-        'When passing test path queries, you must pass the path in URI '
-        'format (use `/` for directory separators instead of `\\`).');
-  } else {
-    final uri = Uri.parse(option);
-
-    final names = uri.queryParametersAll['name'];
-    final fullName = uri.queryParameters['full-name'];
-    final line = uri.queryParameters['line'];
-    final col = uri.queryParameters['col'];
-
-    if (names != null && names.isNotEmpty && fullName != null) {
-      throw FormatException(
-        'Cannot specify both "name=<...>" and "full-name=<...>".',
-      );
+  if (Platform.isWindows) {
+    // If given a path that starts with what looks like a drive letter, convert it
+    // into a file scheme URI. We can't parse using `Uri.file` because we do
+    // support query parameters which aren't valid file uris.
+    if (option.indexOf(':') == 1) {
+      option = 'file:///$option';
     }
-    path = uri.path;
-    selection = TestSelection(
-      testPatterns: fullName != null
-          ? {RegExp('^${RegExp.escape(fullName)}\$')}
-          : {
-              if (names != null)
-                for (var name in names) RegExp(name)
-            },
-      line: line == null ? null : int.parse(line),
-      col: col == null ? null : int.parse(col),
+  }
+  final uri = Uri.parse(option);
+  // Decode the path segment. Specifically, on github actions back slashes on
+  // windows end up being encoded into the URI instead of converted into forward
+  // slashes.
+  var path = Uri.decodeComponent(uri.path);
+  // Strip out the leading slash before the drive letter on windows.
+  if (Platform.isWindows &&
+      path.startsWith('/') &&
+      path.length >= 3 &&
+      path[2] == ':') {
+    path = path.substring(1);
+  }
+
+  final names = uri.queryParametersAll['name'];
+  final fullName = uri.queryParameters['full-name'];
+  final line = uri.queryParameters['line'];
+  final col = uri.queryParameters['col'];
+
+  if (names != null && names.isNotEmpty && fullName != null) {
+    throw FormatException(
+      'Cannot specify both "name=<...>" and "full-name=<...>".',
     );
   }
+  final selection = TestSelection(
+    testPatterns: fullName != null
+        ? {RegExp('^${RegExp.escape(fullName)}\$')}
+        : {
+            if (names != null)
+              for (var name in names) RegExp(name)
+          },
+    line: line == null ? null : int.parse(line),
+    col: col == null ? null : int.parse(col),
+  );
 
   selections.update(path, (selections) => selections..add(selection),
       ifAbsent: () => {selection});
@@ -280,9 +299,16 @@ class _Parser {
 
     var color = _ifParsed<bool>('color') ?? canUseSpecialChars;
 
-    var platform = _ifParsed<List<String>>('platform')
+    var runtimes = _ifParsed<List<String>>('platform')
         ?.map((runtime) => RuntimeSelection(runtime))
         .toList();
+    var compilerSelections = _ifParsed<List<String>>('compiler')
+        ?.map(CompilerSelection.parse)
+        .toList();
+    if (_ifParsed('use-data-isolate-strategy') == true) {
+      compilerSelections ??= [];
+      compilerSelections.add(CompilerSelection.parse('vm:source'));
+    }
 
     final paths = _options.rest.isEmpty ? null : _options.rest;
 
@@ -313,16 +339,16 @@ class _Parser {
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
         totalShards: totalShards,
-        timeout: _parseOption('timeout', (value) => Timeout.parse(value)),
+        timeout: _parseOption('timeout', Timeout.parse),
         globalPatterns: patterns,
-        runtimes: platform,
+        compilerSelections: compilerSelections,
+        runtimes: runtimes,
         runSkipped: _ifParsed('run-skipped'),
         chosenPresets: _ifParsed('preset'),
         testSelections: selections,
         includeTags: includeTags,
         excludeTags: excludeTags,
         noRetry: _ifParsed('no-retry'),
-        useDataIsolateStrategy: _ifParsed('use-data-isolate-strategy'),
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         ignoreTimeouts: _ifParsed('ignore-timeouts'),
         // Config that isn't supported on the command line
@@ -390,5 +416,17 @@ class _Parser {
           'Couldn\'t parse ${optionName == null ? '' : '--$optionName '}"$value": '
           '${error.message}');
     }
+  }
+}
+
+extension _RuntimeDescription on Runtime {
+  String get supportedCompilersText {
+    var message = StringBuffer('[$identifier]: ');
+    message.write('${defaultCompiler.identifier} (default)');
+    for (var compiler in supportedCompilers) {
+      if (compiler == defaultCompiler) continue;
+      message.write(', ${compiler.identifier}');
+    }
+    return message.toString();
   }
 }

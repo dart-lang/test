@@ -140,14 +140,16 @@ void main() {
       });
 
       var key = metadata.onPlatform.keys.first;
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isFalse);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isTrue);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
       key = metadata.onPlatform.keys.last;
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isTrue);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isFalse);
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));
@@ -200,6 +202,10 @@ void main() {
       Metadata.parse(testOn: 'vm || browser').validatePlatformSelectors({'vm'});
     });
 
+    test('succeeds if testOn uses valid compilers', () {
+      Metadata.parse(testOn: 'dart2js || kernel').validatePlatformSelectors({});
+    });
+
     test('fails if onPlatform uses an invalid platform', () {
       expect(() {
         Metadata.parse(onPlatform: {'unknown': Skip()})
@@ -210,6 +216,12 @@ void main() {
     test('fails if testOn uses an invalid platform', () {
       expect(() {
         Metadata.parse(testOn: 'unknown').validatePlatformSelectors({'vm'});
+      }, throwsFormatException);
+    });
+
+    test('fails if testOn uses an invalid compiler', () {
+      expect(() {
+        Metadata.parse(testOn: 'foo2bar').validatePlatformSelectors({});
       }, throwsFormatException);
     });
   });

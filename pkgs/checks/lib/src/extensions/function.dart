@@ -4,7 +4,7 @@
 
 import 'package:checks/context.dart';
 
-extension ThrowsCheck<T> on Subject<T Function()> {
+extension FunctionChecks<T> on Subject<T Function()> {
   /// Expects that a function throws synchronously when it is called.
   ///
   /// If the function synchronously throws a value of type [E], return a
