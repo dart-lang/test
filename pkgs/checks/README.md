@@ -118,6 +118,43 @@ check(
   ]));
 ```
 
+## Asynchronous expectations
+
+Expectation extension methods checking asynchronous behavior return a `Future`.
+The future should typically be awaited within the test body, however
+asynchronous expectations will also ensure that the test is not considered
+complete before the expectation is complete.
+Expectations with no concrete end conditions, such as an expectation that a
+future never completes, cannot be awaited and may cause a failure after the test
+has already appeared to complete.
+
+```dart
+await check(someFuture).completes(it()..isGreaterThan(0));
+```
+
+Subjects for `Stream` instances must first be wrapped into a `StreamQueue` to
+allow multiple expectations to test against the stream from the same state.
+The `withQueue` extension can be used when a given stream instance only needs to
+be checked once, or if it is a broadcast stream, but if single subscription
+stream needs to have multiple expectations checked separately it should be
+wrapped with a `StreamQueue`.
+
+```dart
+await check(someStream).withQueue.inOrder([
+  it()..emits(it()..equals(1)),
+  it()..emits(it()..equals(2)),
+  it()..emits(it()..equals(3)),
+  it()..isDone(),
+]);
+
+var someQueue = StreamQueue(someOtherStream);
+await check(someQueue).emits(it()..equals(1));
+// do something
+await check(someQueue).emits(it()..equals(2));
+// do something
+```
+
+
 ## Writing custom expectations
 
 Expectations are written as extension on `Subject` with specific generics. The
