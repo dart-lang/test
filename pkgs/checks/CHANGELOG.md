@@ -1,5 +1,7 @@
 ## 0.2.2-dev
 
+-   Return the first failure from `softCheck` and `softCheckAsync` as
+    documented, instead of the last failure when there are multiple failures.
 -   Add example `because` usage and mention the "reason" name in the migration
     guide.
 
