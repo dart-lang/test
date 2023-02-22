@@ -50,7 +50,8 @@ below][#improvements-you-can-expect].
 
 ## Migrating from Matchers
 
-Replace calls to `expect` with a call to `check` passing the first argument.
+Replace calls to `expect` or `expectLater` with a call to `check` passing the
+first argument.
 When a direct replacement is available, change the second argument from calling
 a function returning a Matcher, to calling the relevant extension method on the
 `Subject`.
@@ -66,6 +67,9 @@ expect(actual, expected);
 check(actual).equals(expected);
 // or maybe
 check(actualCollection).deepEquals(expected);
+
+await expectLater(actual, completes());
+await check(actual).completes();
 ```
 
 If you use the `reason` argument to `expect`, rename it to `because`.

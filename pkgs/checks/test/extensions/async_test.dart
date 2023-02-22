@@ -127,6 +127,12 @@ fake trace''');
     group('emits', () {
       test('succeeds for a stream that emits a value', () async {
         await check(_countingStream(5)).emits(it()..equals(0));
+        await check(_countingStream(3)).withQueue.inOrder([
+          it()..emits(it()..equals(1)),
+          it()..emits(it()..equals(2)),
+          it()..emits(it()..equals(3)),
+          it()..isDone(),
+        ]);
       });
       test('fails for a stream that closes without emitting', () async {
         await check(_countingStream(0)).isRejectedByAsync(
