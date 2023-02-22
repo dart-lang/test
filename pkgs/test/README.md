@@ -8,7 +8,7 @@
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
   * [Sharding Tests](#sharding-tests)
-  * [Concurrency Testing](#concurrency-testing)
+  * [Test Concurrency](#test-concurrency)
   * [Shuffling Tests](#shuffling-tests)
   * [Selecting a Test Reporter](#selecting-a-test-reporter)
   * [Collecting Code Coverage](#collecting-code-coverage)
