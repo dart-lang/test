@@ -241,12 +241,13 @@ to run tests simultaneously. By dividing the test suite into smaller subsets,
 you can run tests in parallel across multiple machines, which can significantly
 reduce the overall testing time.
 
-### Concurrency Testing
+### Test concurrency
 
-Tests run concurrently by default and it will utilize half of your available cores.
-use `--concurrency` to control the number of tests that runs concurrently,
-meaning that multiple tests can be executed at the same time. For example,
-if you wanted to run the tests on 4 threads, you could run the tests as follows:
+Test suites run concurrently by default, using half of the host's CPU cores. Use
+`--concurrency` to control the number of test suites that runs concurrently,
+meaning that multiple tests in independent suites or platforms can run at the
+same time. For example, if you wanted to run the tests on 4 threads, you could
+run the tests as follows:
 
 ```bash
 dart test --concurrency=4
