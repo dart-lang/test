@@ -100,6 +100,11 @@ check(because: 'some explanation', actual).expectation();
     comparison uses [`String.allMatches`][allMatches].
     For backwards compatibility change `matches(regexString)` to
     `matchesPattern(RegExp(regexString))`.
+-   The `TypeMatcher.having` API is replace by the more general`.has`. While
+    `.having` could only be called on a `TypeMatcher` using `.isA`, `.has` works
+    on any `Subject`. `CoreChecks.has` takes 1 fewer arguments - instead of
+    taking the last argument, a `matcher` to apply to the field, it returns a
+    `Subject` for the field.
 
 [matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
 [allMatches]:https://api.dart.dev/stable/2.19.1/dart-core/Pattern/allMatches.html
