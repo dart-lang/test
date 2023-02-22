@@ -50,7 +50,8 @@ below][#improvements-you-can-expect].
 
 ## Migrating from Matchers
 
-Replace calls to `expect` with a call to `check` passing the first argument.
+Replace calls to `expect` or `expectLater` with a call to `check` passing the
+first argument.
 When a direct replacement is available, change the second argument from calling
 a function returning a Matcher, to calling the relevant extension method on the
 `Subject`.
@@ -66,6 +67,9 @@ expect(actual, expected);
 check(actual).equals(expected);
 // or maybe
 check(actualCollection).deepEquals(expected);
+
+await expectLater(actual, completes());
+await check(actual).completes();
 ```
 
 If you use the `reason` argument to `expect`, rename it to `because`.
@@ -96,6 +100,11 @@ check(because: 'some explanation', actual).expectation();
     comparison uses [`String.allMatches`][allMatches].
     For backwards compatibility change `matches(regexString)` to
     `matchesPattern(RegExp(regexString))`.
+-   The `TypeMatcher.having` API is replace by the more general`.has`. While
+    `.having` could only be called on a `TypeMatcher` using `.isA`, `.has` works
+    on any `Subject`. `CoreChecks.has` takes 1 fewer arguments - instead of
+    taking the last argument, a `matcher` to apply to the field, it returns a
+    `Subject` for the field.
 
 [matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
 [allMatches]:https://api.dart.dev/stable/2.19.1/dart-core/Pattern/allMatches.html

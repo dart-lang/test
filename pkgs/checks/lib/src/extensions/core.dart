@@ -3,12 +3,14 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/context.dart';
+import 'package:meta/meta.dart' as meta;
 
 extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
+  @meta.useResult
   Subject<R> has<R>(R Function(T) extract, String name) {
     return context.nest(() => ['has $name'], (T value) {
       try {
