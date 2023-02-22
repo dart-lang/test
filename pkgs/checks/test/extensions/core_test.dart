@@ -20,7 +20,7 @@ void main() {
       check(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
       check(2).isRejectedBy(
-          it()..has((v) => throw UnimplementedError(), 'isOdd'),
+          it()..has((v) => throw UnimplementedError(), 'isOdd').isNotNull(),
           which: ['threw while trying to read property']);
     });
 
