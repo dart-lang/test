@@ -160,8 +160,9 @@ final _testWithStdOutAndErr = '''
 import 'dart:io';
 import 'package:test/test.dart';
 
-void main() {
+void main() async {
   stdout.writeln('hello');
+  await stdout.flush();
   stderr.writeln('world');
   test('success', () {});
 }''';
