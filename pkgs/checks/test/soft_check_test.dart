@@ -23,7 +23,6 @@ void main() {
           it()
             ..completes(it()..isGreaterThan(1))
             ..completes(it()..isGreaterThan(2)),
-          actual: ['<0>'],
           which: ['is not greater than <1>']);
     });
   });
