@@ -84,8 +84,7 @@ void main() {
       });
 
       expect(monitor.state, equals(State.failed));
-      expect(monitor.errors, hasLength(1));
-      expect(monitor.errors.first.error, equals('X'));
+      expect(monitor.errors, ['X']);
     });
 
     test('with a failure', () async {
@@ -132,8 +131,7 @@ void main() {
       });
 
       expect(monitor.state, equals(State.failed));
-      expect(monitor.errors, hasLength(1));
-      expect(monitor.errors.first.error, equals('X'));
+      expect(monitor.errors, ['X']);
     });
 
     test('with a failure', () async {

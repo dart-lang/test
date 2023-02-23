@@ -15,10 +15,10 @@ void expectTestPassed(TestCaseMonitor monitor) {
   // to the running test, because they're definitely unexpected and it is most
   // useful for the error to point directly to the throw point.
   for (var error in monitor.errors) {
-    Zone.current.handleUncaughtError(error.error, error.stackTrace);
+    Zone.current.handleUncaughtError(error, StackTrace.empty);
   }
   monitor.onError.listen((error) {
-    Zone.current.handleUncaughtError(error.error, error.stackTrace);
+    Zone.current.handleUncaughtError(error, StackTrace.empty);
   });
 
   expect(monitor.state, State.passed);
@@ -28,8 +28,7 @@ void expectTestPassed(TestCaseMonitor monitor) {
 /// matches [message].
 void expectTestFailed(TestCaseMonitor monitor, message) {
   expect(monitor.state, State.failed);
-  expect(monitor.errors, hasLength(1));
-  expect(monitor.errors.first.error, isTestFailure(message));
+  expect(monitor.errors, [isTestFailure(message)]);
 }
 
 /// Returns a matcher that matches a [TestFailure] with the given [message].
