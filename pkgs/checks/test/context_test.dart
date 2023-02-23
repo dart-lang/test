@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:async/async.dart' hide Result;
 import 'package:checks/checks.dart';
@@ -39,7 +38,7 @@ void main() {
           callback = completer.complete;
           await completer.future;
           return Extracted.value(null);
-        }, it());
+        }, null);
       });
       await pumpEventQueue();
       check(monitor).state.equals(State.running);
@@ -54,7 +53,7 @@ void main() {
         check(null).context.expectUnawaited(() => [''], (actual, reject) {
           final completer = Completer<void>()
             ..future.then((_) {
-              reject(Rejection(which: ['']));
+              reject(Rejection(which: ['foo']));
             });
           callback = completer.complete;
         });
@@ -63,16 +62,34 @@ void main() {
       callback();
       await pumpEventQueue();
       check(monitor)
-          .didFail(Result.error)
-          .contains('This test failed after it had already completed.');
+        ..state.equals(State.failed)
+        ..errors.deepEquals([
+          it()
+            ..isA<TestFailure>()
+                .has((f) => f.message, 'message')
+                .isNotNull()
+                .endsWith('Which: foo'),
+          it()
+            ..isA<String>()
+                .startsWith('This test failed after it had already completed.')
+        ]);
+    });
+  });
+
+  group('SkipExtension', () {
+    test('marks the test as skipped', () async {
+      final monitor = await TestCaseMonitor.run(() {
+        check(null).skip('skip').isNotNull();
+      });
+      check(monitor).state.equals(State.skipped);
     });
   });
 }
 
 extension _MonitorChecks on Subject<TestCaseMonitor> {
   Subject<State> get state => has((m) => m.state, 'state');
-  Subject<Iterable<AsyncError>> get errors => has((m) => m.errors, 'errors');
-  Subject<StreamQueue<AsyncError>> get onError =>
+  Subject<Iterable<Object>> get errors => has((m) => m.errors, 'errors');
+  Subject<StreamQueue<Object>> get onError =>
       has((m) => m.onError, 'onError').withQueue;
 
   /// Expects that the monitored test is completed as success with no errors.
@@ -86,25 +103,9 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
         (actual, reject) async {
       await for (var error in actual.rest) {
         reject(Rejection(which: [
-          ...prefixFirst('threw late error', literal(error.error)),
-          ...(const LineSplitter().convert(
-              TestHandle.current.formatStackTrace(error.stackTrace).toString()))
+          ...prefixFirst('threw late error', literal(error)),
         ]));
       }
     });
-  }
-
-  /// Expects that the monitored test is completed as [expectedResult] with
-  /// exactly 1 TestFailure.
-  ///
-  /// Returns the message from the failure.
-  Subject<String> didFail(Result expectedResult) {
-    state.equals(State.failed);
-    return errors.single
-        .isA<AsyncError>()
-        .has((a) => a.error, 'error')
-        .isA<TestFailure>()
-        .has((f) => f.message, 'message')
-        .isNotNull();
   }
 }

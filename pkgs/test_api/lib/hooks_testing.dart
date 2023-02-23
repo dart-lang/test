@@ -106,13 +106,13 @@ class TestCaseMonitor {
   ///
   /// A test may have more than one error if there were unhandled asynchronous
   /// errors surfaced after the test is done.
-  Iterable<AsyncError> get errors => _liveTest.errors;
+  Iterable<Object> get errors => _liveTest.errors.map((a) => a.error);
 
   /// A stream of errors surfaced by the test.
   ///
   /// This stream will not close, asynchronous errors may be surfaced within the
   /// test's error zone at any point.
-  Stream<AsyncError> get onError => _liveTest.onError;
+  Stream<Object> get onError => _liveTest.onError.map((a) => a.error);
 }
 
 /// Returns a local [LiveTest] that runs [body].
