@@ -91,7 +91,7 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(_TestContext._root(
 ///
 /// Asynchronous expectations are not allowed in [condition] and will cause a
 /// runtime error if they are used.
-CheckFailure? softCheck<T>(T value, Condition<T> condition) {
+CheckFailure? softCheck<T>(T value, void Function(Subject<T>) condition) {
   CheckFailure? failure;
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
@@ -101,7 +101,7 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
     allowAsync: false,
     allowUnawaited: false,
   ));
-  condition.apply(subject);
+  condition(subject);
   return failure;
 }
 
@@ -114,7 +114,8 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
 ///
 /// In contrast to [softCheck], asynchronous expectations are allowed in
 /// [condition].
-Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
+Future<CheckFailure?> softCheckAsync<T>(
+    T value, FutureOr<void> Function(Subject<T>) condition) async {
   CheckFailure? failure;
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
@@ -124,7 +125,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
     allowAsync: true,
     allowUnawaited: false,
   ));
-  await condition.applyAsync(subject);
+  await condition(subject);
   return failure;
 }
 
@@ -139,7 +140,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
 ///
 /// Asynchronous expectations are not allowed in [condition], for async
 /// conditions use [describeAsync].
-Iterable<String> describe<T>(Condition<T> condition) {
+Iterable<String> describe<T>(void Function(Subject<T>) condition) {
   final context = _TestContext<T>._root(
     value: _Absent(),
     fail: (_) {
@@ -148,7 +149,7 @@ Iterable<String> describe<T>(Condition<T> condition) {
     allowAsync: false,
     allowUnawaited: true,
   );
-  condition.apply(Subject._(context));
+  condition(Subject._(context));
   return context.detail(context).expected.skip(1);
 }
 
@@ -163,7 +164,8 @@ Iterable<String> describe<T>(Condition<T> condition) {
 ///
 /// In contrast to [describe], asynchronous expectations are allowed in
 /// [condition].
-Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
+Future<Iterable<String>> describeAsync<T>(
+    FutureOr<void> Function(Subject<T>) condition) async {
   final context = _TestContext<T>._root(
     value: _Absent(),
     fail: (_) {
@@ -172,27 +174,9 @@ Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
     allowAsync: true,
     allowUnawaited: true,
   );
-  await condition.applyAsync(Subject._(context));
+  await condition(Subject._(context));
   return context.detail(context).expected.skip(1);
 }
-
-/// A set of expectations that are checked against the value when applied to a
-/// [Subject].
-///
-/// This class should not be implemented or extended.
-abstract class Condition<T> {
-  /// Check the expectations of this condition against [subject].
-  ///
-  /// The [subject] should throw if any asynchronous expectations are checked.
-  /// It is not possible to wait for for asynchronous expectations to be fully
-  /// applied with this method.
-  void apply(Subject<T> subject);
-
-  /// Check the expectations of this condition against [subject].
-  Future<void> applyAsync(Subject<T> subject);
-}
-
-ConditionSubject<T> it<T>() => ConditionSubject._();
 
 extension ContextExtension<T> on Subject<T> {
   /// The expectations and nesting context for this subject.
@@ -555,7 +539,7 @@ abstract class Context<T> {
   Future<void> nestAsync<R>(
       Iterable<String> Function() label,
       FutureOr<Extracted<R>> Function(T) extract,
-      Condition<R>? nestedCondition);
+      FutureOr<void> Function(Subject<R>)? nestedCondition);
 }
 
 /// A property extracted from a value being checked, or a rejection.
@@ -727,11 +711,14 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     _clauses.add(_ExpectationClause(clause));
     final outstandingWork = TestHandle.current.markPending();
-    final rejection = await _value.apply(
-        (actual) async => (await predicate(actual))?._fillActual(actual));
-    outstandingWork.complete();
-    if (rejection == null) return;
-    _fail(_failure(rejection));
+    try {
+      final rejection = await _value.apply(
+          (actual) async => (await predicate(actual))?._fillActual(actual));
+      if (rejection == null) return;
+      _fail(_failure(rejection));
+    } finally {
+      outstandingWork.complete();
+    }
   }
 
   @override
@@ -773,24 +760,27 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
   Future<void> nestAsync<R>(
       Iterable<String> Function() label,
       FutureOr<Extracted<R>> Function(T) extract,
-      Condition<R>? nestedCondition) async {
+      FutureOr<void> Function(Subject<R>)? nestedCondition) async {
     if (!_allowAsync) {
       throw StateError(
           'Async expectations cannot be used on a synchronous subject');
     }
     final outstandingWork = TestHandle.current.markPending();
-    final result = await _value.mapAsync(
-        (actual) async => (await extract(actual))._fillActual(actual));
-    outstandingWork.complete();
-    final rejection = result._rejection;
-    if (rejection != null) {
-      _clauses.add(_ExpectationClause(label));
-      _fail(_failure(rejection));
+    try {
+      final result = await _value.mapAsync(
+          (actual) async => (await extract(actual))._fillActual(actual));
+      final rejection = result._rejection;
+      if (rejection != null) {
+        _clauses.add(_ExpectationClause(label));
+        _fail(_failure(rejection));
+      }
+      final value = result._value ?? _Absent<R>();
+      final context = _TestContext<R>._child(value, label, this);
+      _clauses.add(context);
+      await nestedCondition?.call(Subject<R>._(context));
+    } finally {
+      outstandingWork.complete();
     }
-    final value = result._value ?? _Absent<R>();
-    final context = _TestContext<R>._child(value, label, this);
-    _clauses.add(context);
-    await nestedCondition?.applyAsync(Subject<R>._(context));
   }
 
   CheckFailure _failure(Rejection rejection) =>
@@ -866,7 +856,7 @@ class _SkippedContext<T> implements Context<T> {
   Future<void> nestAsync<R>(
       Iterable<String> Function() label,
       FutureOr<Extracted<R>> Function(T p1) extract,
-      Condition<R>? nestedCondition) async {
+      FutureOr<void> Function(Subject<R>)? nestedCondition) async {
     // no-op
   }
 }
@@ -1009,91 +999,4 @@ class Rejection {
       : Rejection(actual: literal(value), which: which);
 
   Rejection({this.actual = const [], this.which});
-}
-
-/// A [Subject] which records expectations and can replay them as a [Condition].
-class ConditionSubject<T> implements Subject<T>, Condition<T> {
-  ConditionSubject._();
-
-  @override
-  void apply(Subject<T> subject) {
-    _context.apply(subject);
-  }
-
-  @override
-  Future<void> applyAsync(Subject<T> subject) async {
-    await _context.applyAsync(subject);
-  }
-
-  @override
-  final _ReplayContext<T> _context = _ReplayContext();
-
-  @override
-  String toString() {
-    return ['A value that:', ...describe(_context)].join('\n');
-  }
-}
-
-class _ReplayContext<T> implements Context<T>, Condition<T> {
-  final _interactions = <FutureOr<void> Function(Context<T>)>[];
-
-  @override
-  void apply(Subject<T> subject) {
-    for (var interaction in _interactions) {
-      interaction(subject.context);
-    }
-  }
-
-  @override
-  Future<void> applyAsync(Subject<T> subject) async {
-    for (var interaction in _interactions) {
-      await interaction(subject.context);
-    }
-  }
-
-  @override
-  void expect(
-      Iterable<String> Function() clause, Rejection? Function(T) predicate) {
-    _interactions.add((c) {
-      c.expect(clause, predicate);
-    });
-  }
-
-  @override
-  Future<void> expectAsync<R>(Iterable<String> Function() clause,
-      FutureOr<Rejection?> Function(T) predicate) async {
-    _interactions.add((c) async {
-      await c.expectAsync(clause, predicate);
-    });
-  }
-
-  @override
-  void expectUnawaited(Iterable<String> Function() clause,
-      void Function(T, void Function(Rejection)) predicate) {
-    _interactions.add((c) {
-      c.expectUnawaited(clause, predicate);
-    });
-  }
-
-  @override
-  Subject<R> nest<R>(
-      Iterable<String> Function() label, Extracted<R> Function(T p1) extract,
-      {bool atSameLevel = false}) {
-    final nestedContext = _ReplayContext<R>();
-    _interactions.add((c) {
-      var result = c.nest(label, extract, atSameLevel: atSameLevel);
-      nestedContext.apply(result);
-    });
-    return Subject._(nestedContext);
-  }
-
-  @override
-  Future<void> nestAsync<R>(
-      Iterable<String> Function() label,
-      FutureOr<Extracted<R>> Function(T) extract,
-      Condition<R>? nestedCondition) async {
-    _interactions.add((c) async {
-      await c.nestAsync(label, extract, nestedCondition);
-    });
-  }
 }

@@ -5,8 +5,6 @@
 export 'src/checks.dart'
     show
         CheckFailure,
-        Condition,
-        ConditionSubject,
         Context,
         ContextExtension,
         Extracted,

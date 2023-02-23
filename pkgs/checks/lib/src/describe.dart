@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'checks.dart' show Subject, describe;
+
 /// Returns a pretty-printed representation of [object].
 ///
 /// When possible, lines will be kept under [_maxLineLength]. This isn't
@@ -59,6 +61,9 @@ Iterable<String> _prettyPrint(
         .map((line) => line.replaceAll("'", r"\'"))
         .toList();
     return prefixFirst("'", postfixLast("'", escaped));
+  } else if (object is void Function(Subject)) {
+    final value = ['A value that:', ...describe(object)];
+    return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
   } else {
     final value = const LineSplitter().convert(object.toString());
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;

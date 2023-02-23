@@ -8,7 +8,7 @@ import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 
 extension RejectionChecks<T> on Subject<T> {
-  void isRejectedBy(Condition<T> condition,
+  void isRejectedBy(void Function(Subject<T>) condition,
       {Iterable<String>? actual, Iterable<String>? which}) {
     late T actualValue;
     var didRunCallback = false;
@@ -42,7 +42,7 @@ extension RejectionChecks<T> on Subject<T> {
     }
   }
 
-  Future<void> isRejectedByAsync(Condition<T> condition,
+  Future<void> isRejectedByAsync(void Function(Subject<T>) condition,
       {Iterable<String>? actual, Iterable<String>? which}) async {
     late T actualValue;
     var didRunCallback = false;
@@ -59,7 +59,7 @@ extension RejectionChecks<T> on Subject<T> {
         ]);
       }
       return Extracted.value(failure.rejection);
-    }, _LazyCondition((rejection) {
+    }, (rejection) {
       if (didRunCallback) {
         rejection
             .has((r) => r.actual, 'actual')
@@ -75,38 +75,18 @@ extension RejectionChecks<T> on Subject<T> {
       } else {
         rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
       }
-    }));
+    });
   }
 }
 
-extension ConditionChecks<T> on Subject<Condition<T>> {
+extension ConditionChecks<T> on Subject<void Function(Subject<T>)> {
   Subject<Iterable<String>> get description =>
       has((c) => describe<T>(c), 'description');
   Future<void> hasAsyncDescriptionWhich(
-          Condition<Iterable<String>> descriptionCondition) =>
+          void Function(Subject<Iterable<String>>) descriptionCondition) =>
       context.nestAsync(
           () => ['has description'],
           (condition) async =>
               Extracted.value(await describeAsync<T>(condition)),
           descriptionCondition);
-}
-
-/// A condition which can be defined at the time it is invoked instead of
-/// eagerly.
-///
-/// Allows basing the following condition in `isRejectedByAsync` on the actual
-/// value.
-class _LazyCondition<T> implements Condition<T> {
-  final FutureOr<void> Function(Subject<T>) _apply;
-  _LazyCondition(this._apply);
-
-  @override
-  void apply(Subject<T> subject) {
-    _apply(subject);
-  }
-
-  @override
-  Future<void> applyAsync(Subject<T> subject) async {
-    await _apply(subject);
-  }
 }

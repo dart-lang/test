@@ -96,7 +96,7 @@ List<String>? _findIterableDifference(Object? actual,
       if (depth + 1 > _maxDepth) throw _ExceededDepthError();
       queue.addLast(
           _Search(path.append(index), actualValue, expectedValue, depth + 1));
-    } else if (expectedValue is Condition) {
+    } else if (expectedValue is void Function(Subject)) {
       final failure = softCheck(actualValue, expectedValue);
       if (failure != null) {
         final which = failure.rejection.which;
@@ -128,7 +128,7 @@ bool _elementMatches(Object? actual, Object? expected, int depth) {
     return actual != null &&
         _deepCollectionEquals(actual, expected, depth) == null;
   }
-  if (expected is Condition) {
+  if (expected is void Function(Subject)) {
     return softCheck(actual, expected) == null;
   }
   return expected == actual;
