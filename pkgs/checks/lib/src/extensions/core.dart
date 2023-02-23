@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:checks/context.dart';
 import 'package:meta/meta.dart' as meta;
 
@@ -12,12 +14,14 @@ extension CoreChecks<T> on Subject<T> {
   /// expectations applied to the returned [Subject].
   @meta.useResult
   Subject<R> has<R>(R Function(T) extract, String name) {
-    return context.nest(() => ['has $name'], (T value) {
+    return context.nest(() => ['has $name'], (value) {
       try {
         return Extracted.value(extract(value));
-      } catch (_) {
-        return Extracted.rejection(
-            which: ['threw while trying to read property']);
+      } catch (e, st) {
+        return Extracted.rejection(which: [
+          ...prefixFirst('threw while trying to read $name: ', literal(e)),
+          ...(const LineSplitter()).convert(st.toString())
+        ]);
       }
     });
   }
