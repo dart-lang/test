@@ -13,8 +13,12 @@ import 'package:checks/context.dart';
 /// Elements, keys, or values, which are a collections are deeply compared for
 /// equality, and do not use the native identity based equality or custom
 /// equality operator overrides.
+///
 /// Elements, keys, or values, which are a [Condition] instances are checked
 /// against actual values.
+/// Conditions must be a `Condition<dynamic>`, Use `it()..isA<Type>()` to check
+/// expecations for specific element types.
+///
 /// All other value or key types use `operator ==`.
 ///
 /// Comparing sets or maps will have a runtime which is polynomial on the the
