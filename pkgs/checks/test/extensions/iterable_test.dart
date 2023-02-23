@@ -18,7 +18,7 @@ void main() {
     test('succeeds for happy case', () {
       check(_testIterable).first.equals(0);
     });
-    test('rejects empty iterabls', () {
+    test('rejects empty iterable', () {
       check([]).isRejectedBy(it()..first.equals(0), which: ['has no elements']);
     });
   });
@@ -27,7 +27,7 @@ void main() {
     test('succeeds for happy case', () {
       check(_testIterable).last.equals(1);
     });
-    test('rejects empty iterabls', () {
+    test('rejects empty iterable', () {
       check([]).isRejectedBy(it()..last.equals(0), which: ['has no elements']);
     });
   });
