@@ -58,7 +58,7 @@ class TestCaseMonitor {
   /// and result.
   ///
   /// The [state] will start as [State.pending] if queried synchronously, but it
-  /// will fil to [State.running]. After `onDone` completes the state will be
+  /// will switch to [State.running]. After `onDone` completes the state will be
   /// one of [State.passed], [State.skipped], or [State.failed].
   ///
   /// {@macro result-late-fail}
