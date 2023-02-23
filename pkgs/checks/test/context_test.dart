@@ -11,6 +11,8 @@ import 'package:test/scaffolding.dart';
 import 'package:test_api/hooks.dart';
 import 'package:test_api/hooks_testing.dart';
 
+import 'test_shared.dart';
+
 void main() {
   group('Context', () {
     test('expectAsync holds test open', () async {
@@ -30,6 +32,25 @@ void main() {
       check(monitor).didPass();
     });
 
+    test('expectAsync does not hold test open past exception', () async {
+      late void Function() callback;
+      final monitor = TestCaseMonitor.start(() {
+        check(null).context.expectAsync(() => [''], (actual) async {
+          final completer = Completer<void>();
+          callback = completer.complete;
+          await completer.future;
+          throw 'oh no!';
+        });
+      });
+      await pumpEventQueue();
+      check(monitor).state.equals(State.running);
+      callback();
+      await monitor.onDone;
+      check(monitor)
+        ..state.equals(State.failed)
+        ..errors.single.equals('oh no!');
+    });
+
     test('nestAsync holds test open', () async {
       late void Function() callback;
       final monitor = TestCaseMonitor.start(() {
@@ -45,6 +66,43 @@ void main() {
       callback();
       await monitor.onDone;
       check(monitor).didPass();
+    });
+
+    test('nestAsync holds test open past async condition', () async {
+      late void Function() callback;
+      final monitor = TestCaseMonitor.start(() {
+        check(null).context.nestAsync(() => [''], (actual) async {
+          return Extracted.value(null);
+        }, LazyCondition((it) async {
+          final completer = Completer<void>();
+          callback = completer.complete;
+          await completer.future;
+        }));
+      });
+      await pumpEventQueue();
+      check(monitor).state.equals(State.running);
+      callback();
+      await monitor.onDone;
+      check(monitor).didPass();
+    });
+
+    test('nestAsync does not hold test open past exception', () async {
+      late void Function() callback;
+      final monitor = TestCaseMonitor.start(() {
+        check(null).context.nestAsync(() => [''], (actual) async {
+          final completer = Completer<void>();
+          callback = completer.complete;
+          await completer.future;
+          throw 'oh no!';
+        }, null);
+      });
+      await pumpEventQueue();
+      check(monitor).state.equals(State.running);
+      callback();
+      await monitor.onDone;
+      check(monitor)
+        ..state.equals(State.failed)
+        ..errors.single.equals('oh no!');
     });
 
     test('expectUnawaited can fail the test after it completes', () async {
