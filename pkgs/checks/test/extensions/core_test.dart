@@ -19,9 +19,17 @@ void main() {
     test('has', () {
       check(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
-      check(2).isRejectedBy(
-          it()..has((v) => throw UnimplementedError(), 'isOdd').isNotNull(),
-          which: ['threw while trying to read property']);
+      check(null).isRejectedBy(
+          it()
+            ..has((v) {
+              Error.throwWithStackTrace(
+                  UnimplementedError(), StackTrace.fromString('fake trace'));
+            }, 'foo')
+                .isNotNull(),
+          which: [
+            'threw while trying to read foo: <UnimplementedError>',
+            'fake trace'
+          ]);
     });
 
     test('which', () {
