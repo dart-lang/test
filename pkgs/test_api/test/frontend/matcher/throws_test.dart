@@ -153,7 +153,7 @@ void main() {
           callback = () => completer.completeError('oh no');
         });
         await pumpEventQueue();
-        expect(monitor.status, Status.running);
+        expect(monitor.state, State.running);
         callback();
         await monitor.onDone;
         expectTestPassed(monitor);
@@ -245,7 +245,7 @@ void main() {
           callback = () => completer.completeError('oh no');
         });
         await pumpEventQueue();
-        expect(monitor.status, Status.running);
+        expect(monitor.state, State.running);
         callback();
         await monitor.onDone;
 

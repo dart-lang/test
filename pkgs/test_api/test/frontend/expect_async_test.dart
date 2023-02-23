@@ -154,7 +154,7 @@ void main() {
       });
 
       await pumpEventQueue();
-      expect(monitor.status, equals(Status.running));
+      expect(monitor.state, equals(State.running));
       callback();
       await monitor.onDone;
 
@@ -183,15 +183,15 @@ void main() {
       });
 
       await pumpEventQueue();
-      expect(monitor.status, equals(Status.running));
+      expect(monitor.state, equals(State.running));
       callback();
 
       await pumpEventQueue();
-      expect(monitor.status, equals(Status.running));
+      expect(monitor.state, equals(State.running));
       callback();
 
       await pumpEventQueue();
-      expect(monitor.status, equals(Status.running));
+      expect(monitor.state, equals(State.running));
       callback();
 
       await monitor.onDone;
@@ -279,10 +279,10 @@ void main() {
 
         future = () async {
           await pumpEventQueue();
-          expect(monitor.status, equals(Status.running));
+          expect(monitor.state, equals(State.running));
           callback();
           await pumpEventQueue();
-          expect(monitor.status, equals(Status.running));
+          expect(monitor.state, equals(State.running));
           done = true;
           callback();
         }();

@@ -21,15 +21,13 @@ void expectTestPassed(TestCaseMonitor monitor) {
     Zone.current.handleUncaughtError(error.error, error.stackTrace);
   });
 
-  expect(monitor.status, Status.complete);
-  expect(monitor.result, Result.success);
+  expect(monitor.state, State.passed);
 }
 
 /// Asserts that [liveTest] failed with a single [TestFailure] whose message
 /// matches [message].
 void expectTestFailed(TestCaseMonitor monitor, message) {
-  expect(monitor.status, Status.complete);
-  expect(monitor.result, Result.failure);
+  expect(monitor.state, State.failed);
   expect(monitor.errors, hasLength(1));
   expect(monitor.errors.first.error, isTestFailure(message));
 }

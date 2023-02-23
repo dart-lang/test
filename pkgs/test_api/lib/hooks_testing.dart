@@ -20,7 +20,7 @@ export 'src/backend/test_failure.dart' show TestFailure;
 /// test case.
 ///
 /// Allows running a callback as the body of a local test case and querying for
-/// the current [status], [result], and [errors] from the test.
+/// the current [state], and [errors], and subscribing to future errors.
 ///
 /// Use [run] to run a test body and query for the success or failure.
 ///
@@ -33,19 +33,19 @@ class TestCaseMonitor {
 
   /// Run [body] as a test case and return a [TestCaseMonitor] with the result.
   ///
-  /// The [status] of the returned result will always be [Status.complete].
-  /// The [result] and [errors] will reflect the latest state of the test.
+  /// The [state] will either [State.passed], [State.skipped], or
+  /// [State.failed], the test will no longer be running.
+  ///
   /// {@template result-late-fail}
-  /// Note that a test can change result from success to failure even after it
-  /// has already completed if the test surfaces an unawaited asynchronous
-  /// error.
+  /// Note that a test can change state from [State.passed] to [State.failed]
+  /// if the test surfaces an unawaited asynchronous error.
   /// {@endtemplate}
   ///
   /// ```dart
   /// final monitor = await TestCaseMonitor.run(() {
   ///   fail('oh no!');
   /// });
-  /// assert(monitor.result == Result.failure);
+  /// assert(monitor.state == State.failed);
   /// assert((monitor.errors.single.error as TestFailure).message == 'oh no!');
   /// ```
   static Future<TestCaseMonitor> run(FutureOr<void> Function() body) async {
@@ -57,8 +57,10 @@ class TestCaseMonitor {
   /// Start [body] as a test case and return a [TestCaseMonitor] with the status
   /// and result.
   ///
-  /// The [status] of the test will be [Status.running] until it completes.
-  /// The [result] and [errors] will reflect the latest state of the test.
+  /// The [state] will start as [State.pending] if queried synchronously, but it
+  /// will fil to [State.running]. After `onDone` completes the state will be
+  /// one of [State.passed], [State.skipped], or [State.failed].
+  ///
   /// {@macro result-late-fail}
   ///
   /// ```dart
@@ -68,12 +70,11 @@ class TestCaseMonitor {
   ///   completeWork = outstandingWork.complete;
   /// });
   /// await pumpEventQueue();
-  /// assert(monitor.status == Status.running);
+  /// assert(monitor.state == State.running);
   /// completeWork();
   /// await monitor.onDone;
-  /// assert(monitor.status == Status.complete);
+  /// assert(monitor.state == State.passed);
   /// ```
-  /// The [result] and [errors] will reflect the latest state of the test.
   static TestCaseMonitor start(FutureOr<void> Function() body) =>
       TestCaseMonitor._(body).._start();
 
@@ -85,21 +86,17 @@ class TestCaseMonitor {
   /// surfaced an error.
   Future<void> get onDone => _done.future;
 
-  /// The run status for the test.
-  Status get status => _liveTest.state.status;
-
-  /// The result for the test.
-  ///
-  /// A test that is still running may have a result of [Result.success] because
-  /// it has not failed _yet_. The result should only be read after the test is
-  /// done.
-  ///
-  /// {@macro result-late-fail}
-  ///
-  /// A failed test my be a [Result.failure] if the test failed with a
-  /// [TestFailure] exception, or a [Result.error] if it failed with any other
-  /// type of exception.
-  Result get result => _liveTest.state.result;
+  /// The running and success or failure status for the test case.
+  State get state {
+    final status = _liveTest.state.status;
+    if (status == Status.pending) return State.pending;
+    if (status == Status.running) return State.running;
+    final result = _liveTest.state.result;
+    if (result == Result.skipped) return State.skipped;
+    if (result == Result.success) return State.passed;
+    // result == Result.failure || result == Result.error
+    return State.failed;
+  }
 
   /// The errors surfaced by the test.
   ///
@@ -128,3 +125,32 @@ LiveTest _createTest(FutureOr<void> Function() body) {
 /// A dummy suite platform to use for testing suites.
 final _suitePlatform =
     SuitePlatform(Runtime.vm, compiler: Runtime.vm.defaultCompiler);
+
+/// The running and success state of a test monitored by a [TestCaseMonitor].
+enum State {
+  /// The test is has not yet started.
+  pending,
+
+  /// The test is running and has not yet failed.
+  running,
+
+  /// The test has completed without any error.
+  ///
+  /// This implies that the test body has completed, and no error has surfaced
+  /// *yet*. However, it this doesn't mean that the test won't fail in the
+  /// future.
+  passed,
+
+  /// The test, or some part of it, has been skipped.
+  ///
+  /// This does not imply that the test has not had an error, but if there are
+  /// errors they are ignored.
+  skipped,
+
+  /// The test has failed.
+  ///
+  /// An test fails when any exception, typically a [TestFailure], is thrown in
+  /// the test's zone. A test that has failed may still have additional errors
+  /// that surface as unhandled asynchronous errors.
+  failed,
+}

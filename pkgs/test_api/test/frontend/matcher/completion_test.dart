@@ -72,7 +72,7 @@ void main() {
         expect(completer.future, completes);
       });
       await pumpEventQueue();
-      expect(monitor.status, Status.running);
+      expect(monitor.state, State.running);
       completer.complete();
       await monitor.onDone;
       expectTestPassed(monitor);
@@ -83,8 +83,7 @@ void main() {
         expect(Future.error('X'), completes);
       });
 
-      expect(monitor.status, equals(Status.complete));
-      expect(monitor.result, equals(Result.error));
+      expect(monitor.state, equals(State.failed));
       expect(monitor.errors, hasLength(1));
       expect(monitor.errors.first.error, equals('X'));
     });
@@ -121,7 +120,7 @@ void main() {
         expect(completer.future, completion(isNull));
       });
       await pumpEventQueue();
-      expect(monitor.status, Status.running);
+      expect(monitor.state, State.running);
       completer.complete(null);
       await monitor.onDone;
       expectTestPassed(monitor);
@@ -132,8 +131,7 @@ void main() {
         expect(Future.error('X'), completion(isNull));
       });
 
-      expect(monitor.status, equals(Status.complete));
-      expect(monitor.result, equals(Result.error));
+      expect(monitor.state, equals(State.failed));
       expect(monitor.errors, hasLength(1));
       expect(monitor.errors.first.error, equals('X'));
     });

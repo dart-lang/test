@@ -177,7 +177,7 @@ void main() {
         expect(() => completer.future, prints(isEmpty));
       });
       await pumpEventQueue();
-      expect(monitor.status, Status.running);
+      expect(monitor.state, State.running);
       completer.complete();
       await monitor.onDone;
       expectTestPassed(monitor);

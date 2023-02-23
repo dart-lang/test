@@ -25,7 +25,7 @@ void main() {
         });
       });
       await pumpEventQueue();
-      check(monitor).status.equals(Status.running);
+      check(monitor).state.equals(State.running);
       callback();
       await monitor.onDone;
       check(monitor).didPass();
@@ -42,7 +42,7 @@ void main() {
         }, it());
       });
       await pumpEventQueue();
-      check(monitor).status.equals(Status.running);
+      check(monitor).state.equals(State.running);
       callback();
       await monitor.onDone;
       check(monitor).didPass();
@@ -59,9 +59,7 @@ void main() {
           callback = completer.complete;
         });
       });
-      check(monitor)
-        ..status.equals(Status.complete)
-        ..result.equals(Result.success);
+      check(monitor).state.equals(State.passed);
       callback();
       await pumpEventQueue();
       check(monitor)
@@ -72,8 +70,7 @@ void main() {
 }
 
 extension _MonitorChecks on Subject<TestCaseMonitor> {
-  Subject<Status> get status => has((m) => m.status, 'status');
-  Subject<Result> get result => has((m) => m.result, 'result');
+  Subject<State> get state => has((m) => m.state, 'state');
   Subject<Iterable<AsyncError>> get errors => has((m) => m.errors, 'errors');
   Subject<StreamQueue<AsyncError>> get onError =>
       has((m) => m.onError, 'onError').withQueue;
@@ -84,8 +81,7 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
   /// future in addition to checking there have been no errors yet.
   void didPass() {
     errors.isEmpty();
-    status.equals(Status.complete);
-    result.equals(Result.success);
+    state.equals(State.passed);
     onError.context.expectUnawaited(() => ['emits no further errors'],
         (actual, reject) async {
       await for (var error in actual.rest) {
@@ -103,8 +99,7 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
   ///
   /// Returns the message from the failure.
   Subject<String> didFail(Result expectedResult) {
-    status.equals(Status.complete);
-    result.equals(Result.failure);
+    state.equals(State.failed);
     return errors.single
         .isA<AsyncError>()
         .has((a) => a.error, 'error')
