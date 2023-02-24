@@ -4,7 +4,7 @@
     documented, instead of the last failure when there are multiple failures.
 -   Add example `because` usage and mention the "reason" name in the migration
     guide.
--   `ComparableChecks` with comparison expectations for subject types that
+-   Add `ComparableChecks` with comparison expectations for subject types that
     implement `Comparable`.
 
 ## 0.2.1
