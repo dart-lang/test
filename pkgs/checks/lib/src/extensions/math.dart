@@ -88,7 +88,7 @@ extension NumChecks on Subject<num> {
 }
 
 extension ComparableChecks<T> on Subject<Comparable<T>> {
-  /// Expects that this number is greater than [other].
+  /// Expects that this value is greater than [other].
   void isGreaterThan(T other) {
     context.expect(() => prefixFirst('is greater than ', literal(other)),
         (actual) {
@@ -98,7 +98,7 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     });
   }
 
-  /// Expects that this number is greater than or equal to [other].
+  /// Expects that this value is greater than or equal to [other].
   void isGreaterOrEqual(T other) {
     context.expect(
         () => prefixFirst('is greater than or equal to ', literal(other)),
@@ -110,7 +110,7 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     });
   }
 
-  /// Expects that this number is less than [other].
+  /// Expects that this value is less than [other].
   void isLessThan(T other) {
     context.expect(() => prefixFirst('is less than ', literal(other)),
         (actual) {
@@ -119,7 +119,7 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     });
   }
 
-  /// Expects that this number is less than or equal to [other].
+  /// Expects that this value is less than or equal to [other].
   void isLessOrEqual(T other) {
     context
         .expect(() => prefixFirst('is less than or equal to ', literal(other)),
