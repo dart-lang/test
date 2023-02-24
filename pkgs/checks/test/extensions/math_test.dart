@@ -9,60 +9,6 @@ import '../test_shared.dart';
 
 void main() {
   group('num checks', () {
-    group('greater than', () {
-      test('succeeds for happy case', () {
-        check(42).isGreaterThan(7);
-      });
-      test('fails for less than', () {
-        check(42).isRejectedBy(it()..isGreaterThan(50),
-            which: ['is not greater than <50>']);
-      });
-      test('fails for equal', () {
-        check(42).isRejectedBy(it()..isGreaterThan(42),
-            which: ['is not greater than <42>']);
-      });
-    });
-
-    group('greater than or equal', () {
-      test('succeeds for happy case', () {
-        check(42).isGreaterOrEqual(7);
-      });
-      test('fails for less than', () {
-        check(42).isRejectedBy(it()..isGreaterOrEqual(50),
-            which: ['is not greater than or equal to <50>']);
-      });
-      test('succeeds for equal', () {
-        check(42).isGreaterOrEqual(42);
-      });
-    });
-
-    group('less than', () {
-      test('succeeds for happy case', () {
-        check(42).isLessThan(50);
-      });
-      test('fails for greater than', () {
-        check(42)
-            .isRejectedBy(it()..isLessThan(7), which: ['is not less than <7>']);
-      });
-      test('fails for equal', () {
-        check(42).isRejectedBy(it()..isLessThan(42),
-            which: ['is not less than <42>']);
-      });
-    });
-
-    group('less than or equal', () {
-      test('succeeds for happy case', () {
-        check(42).isLessOrEqual(50);
-      });
-      test('fails for greater than', () {
-        check(42).isRejectedBy(it()..isLessOrEqual(7),
-            which: ['is not less than or equal to <7>']);
-      });
-      test('succeeds for equal', () {
-        check(42).isLessOrEqual(42);
-      });
-    });
-
     group('isNaN', () {
       test('succeeds for happy case', () {
         check(double.nan).isNaN();
@@ -191,6 +137,65 @@ void main() {
       });
       test('fails for high values', () {
         check(5).isRejectedBy(it()..isCloseTo(3, 1), which: ['differs by <2>']);
+      });
+    });
+  });
+
+  group('ComparableChecks on Duration', () {
+    group('isGreaterThan', () {
+      test('succeeds for greater', () {
+        check(Duration(seconds: 10)).isGreaterThan(Duration(seconds: 1));
+      });
+      test('fails for equal', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isGreaterThan(Duration(seconds: 10)),
+            which: ['is not greater than <0:00:10.000000>']);
+      });
+      test('fails for less', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isGreaterThan(Duration(seconds: 50)),
+            which: ['is not greater than <0:00:50.000000>']);
+      });
+    });
+    group('isGreaterOrEqual', () {
+      test('succeeds for greater', () {
+        check(Duration(seconds: 10)).isGreaterOrEqual(Duration(seconds: 1));
+      });
+      test('succeeds for equal', () {
+        check(Duration(seconds: 10)).isGreaterOrEqual(Duration(seconds: 10));
+      });
+      test('fails for less', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isGreaterOrEqual(Duration(seconds: 50)),
+            which: ['is not greater than or equal to <0:00:50.000000>']);
+      });
+    });
+    group('isLessThan', () {
+      test('succeeds for less', () {
+        check(Duration(seconds: 1)).isLessThan(Duration(seconds: 10));
+      });
+      test('fails for equal', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isLessThan(Duration(seconds: 10)),
+            which: ['is not less than <0:00:10.000000>']);
+      });
+      test('fails for greater', () {
+        check(Duration(seconds: 50)).isRejectedBy(
+            it()..isLessThan(Duration(seconds: 10)),
+            which: ['is not less than <0:00:10.000000>']);
+      });
+    });
+    group('isLessOrEqual', () {
+      test('succeeds for less', () {
+        check(Duration(seconds: 10)).isLessOrEqual(Duration(seconds: 50));
+      });
+      test('succeeds for equal', () {
+        check(Duration(seconds: 10)).isLessOrEqual(Duration(seconds: 10));
+      });
+      test('fails for greater', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isLessOrEqual(Duration(seconds: 1)),
+            which: ['is not less than or equal to <0:00:01.000000>']);
       });
     });
   });
