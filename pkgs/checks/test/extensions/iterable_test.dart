@@ -13,14 +13,37 @@ void main() {
   test('length', () {
     check(_testIterable).length.equals(2);
   });
-  test('first', () {
-    check(_testIterable).first.equals(0);
+
+  group('first', () {
+    test('succeeds for happy case', () {
+      check(_testIterable).first.equals(0);
+    });
+    test('rejects empty iterable', () {
+      check([]).isRejectedBy(it()..first.equals(0), which: ['has no elements']);
+    });
   });
-  test('last', () {
-    check(_testIterable).last.equals(1);
+
+  group('last', () {
+    test('succeeds for happy case', () {
+      check(_testIterable).last.equals(1);
+    });
+    test('rejects empty iterable', () {
+      check([]).isRejectedBy(it()..last.equals(0), which: ['has no elements']);
+    });
   });
-  test('single', () {
-    check([42]).single.equals(42);
+
+  group('single', () {
+    test('succeeds for happy case', () {
+      check([42]).single.equals(42);
+    });
+    test('rejects empty iterable', () {
+      check([])
+          .isRejectedBy(it()..single.equals(0), which: ['has no elements']);
+    });
+    test('rejects iterable with too many elements', () {
+      check(_testIterable).isRejectedBy(it()..single.equals(0),
+          which: ['has more than one element']);
+    });
   });
 
   test('isEmpty', () {
@@ -31,7 +54,7 @@ void main() {
   test('isNotEmpty', () {
     check(_testIterable).isNotEmpty();
     check(Iterable<int>.empty())
-        .isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
+        .isRejectedBy(it()..isNotEmpty(), which: ['is empty']);
   });
 
   test('contains', () {
