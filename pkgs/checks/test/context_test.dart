@@ -49,7 +49,7 @@ void main() {
       await monitor.onDone;
       check(monitor)
         ..state.equals(State.failed)
-        ..errors.single.equals('oh no!');
+        ..errors.single.has((e) => e.error, 'error').equals('oh no!');
     });
 
     test('nestAsync holds test open', () async {
@@ -60,7 +60,7 @@ void main() {
           callback = completer.complete;
           await completer.future;
           return Extracted.value(null);
-        }, it());
+        }, null);
       });
       await pumpEventQueue();
       check(monitor).state.equals(State.running);
@@ -103,7 +103,7 @@ void main() {
       await monitor.onDone;
       check(monitor)
         ..state.equals(State.failed)
-        ..errors.single.equals('oh no!');
+        ..errors.single.has((e) => e.error, 'error').equals('oh no!');
     });
 
     test('expectUnawaited can fail the test after it completes', () async {
@@ -112,7 +112,7 @@ void main() {
         check(null).context.expectUnawaited(() => [''], (actual, reject) {
           final completer = Completer<void>()
             ..future.then((_) {
-              reject(Rejection(which: ['']));
+              reject(Rejection(which: ['foo']));
             });
           callback = completer.complete;
         });
@@ -121,8 +121,30 @@ void main() {
       callback();
       await pumpEventQueue();
       check(monitor)
-          .didFail(Result.error)
-          .contains('This test failed after it had already completed.');
+        ..state.equals(State.failed)
+        ..errors.unorderedMatches([
+          it()
+            ..isA<AsyncError>()
+                .has((e) => e.error, 'error')
+                .isA<TestFailure>()
+                .has((f) => f.message, 'message')
+                .isNotNull()
+                .endsWith('Which: foo'),
+          it()
+            ..isA<AsyncError>()
+                .has((e) => e.error, 'error')
+                .isA<String>()
+                .startsWith('This test failed after it had already completed.')
+        ]);
+    });
+  });
+
+  group('SkipExtension', () {
+    test('marks the test as skipped', () async {
+      final monitor = await TestCaseMonitor.run(() {
+        check(null).skip('skip').isNotNull();
+      });
+      check(monitor).state.equals(State.skipped);
     });
   });
 }
@@ -150,19 +172,5 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
         ]));
       }
     });
-  }
-
-  /// Expects that the monitored test is completed as [expectedResult] with
-  /// exactly 1 TestFailure.
-  ///
-  /// Returns the message from the failure.
-  Subject<String> didFail(Result expectedResult) {
-    state.equals(State.failed);
-    return errors.single
-        .isA<AsyncError>()
-        .has((a) => a.error, 'error')
-        .isA<TestFailure>()
-        .has((f) => f.message, 'message')
-        .isNotNull();
   }
 }
