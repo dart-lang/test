@@ -100,7 +100,7 @@ class TestCaseMonitor {
 
   /// The errors surfaced by the test.
   ///
-  /// A test with any errors will have a failing [result].
+  /// A test with any errors will have a [state] of [State.failed].
   ///
   /// {@macro result-late-fail}
   ///
