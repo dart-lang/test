@@ -13,6 +13,7 @@ import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 
 import '../../util/dart.dart';
+import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
 
@@ -182,7 +183,7 @@ class _TestCompilerForLanguageVersion {
         _frontendServerClient?.kill();
         _frontendServerClient = null;
         if (_outputDillDirectory.existsSync()) {
-          _outputDillDirectory.deleteSync(recursive: true);
+          _outputDillDirectory.deleteWithRetry();
         }
       });
 }

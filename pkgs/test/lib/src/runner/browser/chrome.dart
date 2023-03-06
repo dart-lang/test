@@ -89,7 +89,7 @@ class Chrome extends Browser {
         }
 
         unawaited(process.exitCode
-            .then((_) => Directory(dir).deleteSync(recursive: true)));
+            .then((_) => Directory(dir).deleteWithRetry()));
 
         return process;
       }

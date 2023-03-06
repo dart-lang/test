@@ -41,7 +41,7 @@ class Safari extends Browser {
         settings.executable, settings.arguments.toList()..add(redirect));
 
     unawaited(process.exitCode
-        .then((_) => Directory(dir).deleteSync(recursive: true)));
+        .then((_) => Directory(dir).deleteWithRetry()));
 
     return process;
   }

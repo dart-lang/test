@@ -112,7 +112,7 @@ Future withTempDir(Future Function(String) fn) {
   return Future.sync(() {
     var tempDir = createTempDir();
     return Future.sync(() => fn(tempDir))
-        .whenComplete(() => Directory(tempDir).deleteSync(recursive: true));
+        .whenComplete(() => Directory(tempDir).deleteWithRetry());
   });
 }
 
@@ -224,5 +224,18 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
     return base;
+  }
+}
+
+extension RetryDelete on FileSystemEntity {
+  void deleteWithRetry() {
+    for (var i = 0; i < 3; i++) {
+      try {
+        deleteSync(recursive: true);
+        return;
+      } on FileSystemException {
+        // Ignore and retry
+      }
+    }
   }
 }

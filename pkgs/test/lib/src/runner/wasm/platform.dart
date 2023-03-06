@@ -360,7 +360,7 @@ class BrowserWasmPlatform extends PlatformPlugin
           _compilers.close(),
         ]);
 
-        Directory(_compiledDir).deleteSync(recursive: true);
+        Directory(_compiledDir).deleteWithRetry();
       });
   final _closeMemo = AsyncMemoizer<void>();
 }
