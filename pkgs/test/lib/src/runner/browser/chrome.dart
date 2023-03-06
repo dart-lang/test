@@ -88,8 +88,8 @@ class Chrome extends Browser {
           remoteDebuggerCompleter.complete(null);
         }
 
-        unawaited(process.exitCode
-            .then((_) => Directory(dir).deleteWithRetry()));
+        unawaited(
+            process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
         return process;
       }

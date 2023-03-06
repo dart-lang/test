@@ -40,8 +40,7 @@ class Safari extends Browser {
     var process = await Process.start(
         settings.executable, settings.arguments.toList()..add(redirect));
 
-    unawaited(process.exitCode
-        .then((_) => Directory(dir).deleteWithRetry()));
+    unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
     return process;
   }
