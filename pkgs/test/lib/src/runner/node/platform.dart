@@ -298,7 +298,7 @@ class NodePlatform extends PlatformPlugin
         await _compilers.close();
 
         if (_config.pubServeUrl == null) {
-          Directory(_compiledDir).deleteWithRetry();
+          await Directory(_compiledDir).deleteWithRetry();
         } else {
           _http!.close();
         }

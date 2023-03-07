@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:core' as core;
 import 'dart:core';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
@@ -228,13 +229,14 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
 }
 
 extension RetryDelete on FileSystemEntity {
-  void deleteWithRetry() {
+  Future<void> deleteWithRetry() async {
     for (var i = 0; i < 3; i++) {
       try {
-        deleteSync(recursive: true);
+        await delete(recursive: true);
         return;
       } on FileSystemException {
         if (i == 2) rethrow;
+        await Future.delayed(Duration(milliseconds: pow(10, i).toInt()));
       }
     }
   }

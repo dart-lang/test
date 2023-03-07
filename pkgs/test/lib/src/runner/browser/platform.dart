@@ -472,7 +472,7 @@ class BrowserPlatform extends PlatformPlugin
         ]);
 
         if (_config.pubServeUrl == null) {
-          Directory(_compiledDir!).deleteWithRetry();
+          await Directory(_compiledDir!).deleteWithRetry();
         } else {
           _http!.close();
         }

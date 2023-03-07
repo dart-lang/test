@@ -358,9 +358,8 @@ class BrowserWasmPlatform extends PlatformPlugin
             browser.then((b) => b?.close()),
           _server.close(),
           _compilers.close(),
+          Directory(_compiledDir).deleteWithRetry(),
         ]);
-
-        Directory(_compiledDir).deleteWithRetry();
       });
   final _closeMemo = AsyncMemoizer<void>();
 }

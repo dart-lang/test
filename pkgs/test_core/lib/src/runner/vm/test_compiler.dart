@@ -183,7 +183,7 @@ class _TestCompilerForLanguageVersion {
         _frontendServerClient?.kill();
         _frontendServerClient = null;
         if (_outputDillDirectory.existsSync()) {
-          _outputDillDirectory.deleteWithRetry();
+          await _outputDillDirectory.deleteWithRetry();
         }
       });
 }

@@ -158,11 +158,10 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() {
-        final dispose = _compiler.dispose();
-        _tempDir.deleteWithRetry();
-        return dispose;
-      });
+  Future close() => _closeMemo.runOnce(() => Future.wait([
+        _compiler.dispose(),
+        _tempDir.deleteWithRetry(),
+      ]));
 
   Uri _absolute(String path) {
     final uri = p.toUri(path);
