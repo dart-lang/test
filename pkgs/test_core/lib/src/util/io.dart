@@ -234,7 +234,7 @@ extension RetryDelete on FileSystemEntity {
         deleteSync(recursive: true);
         return;
       } on FileSystemException {
-        // Ignore and retry
+        if (i == 2) rethrow;
       }
     }
   }
