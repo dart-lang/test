@@ -237,6 +237,7 @@ extension RetryDelete on FileSystemEntity {
         return;
       } on FileSystemException {
         if (attempt == 2) rethrow;
+        attempt++;
         await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
       }
     }
