@@ -50,8 +50,7 @@ class Firefox extends Browser {
       'MOZ_CRASHREPORTER_DISABLE': '1'
     });
 
-    unawaited(process.exitCode
-        .then((_) => Directory(dir).deleteSync(recursive: true)));
+    unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
     return process;
   }

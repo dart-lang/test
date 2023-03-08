@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:core' as core;
 import 'dart:core';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
@@ -112,7 +113,7 @@ Future withTempDir(Future Function(String) fn) {
   return Future.sync(() {
     var tempDir = createTempDir();
     return Future.sync(() => fn(tempDir))
-        .whenComplete(() => Directory(tempDir).deleteSync(recursive: true));
+        .whenComplete(() => Directory(tempDir).deleteWithRetry());
   });
 }
 
@@ -224,5 +225,21 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
     return base;
+  }
+}
+
+extension RetryDelete on FileSystemEntity {
+  Future<void> deleteWithRetry() async {
+    var attempt = 0;
+    while (true) {
+      try {
+        await delete(recursive: true);
+        return;
+      } on FileSystemException {
+        if (attempt == 2) rethrow;
+        attempt++;
+        await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
+      }
+    }
   }
 }
