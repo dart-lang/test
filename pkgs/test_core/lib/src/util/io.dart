@@ -230,13 +230,14 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
 
 extension RetryDelete on FileSystemEntity {
   Future<void> deleteWithRetry() async {
-    for (var i = 0; i < 3; i++) {
+    var attempt = 0;
+    while (true) {
       try {
         await delete(recursive: true);
         return;
       } on FileSystemException {
-        if (i == 2) rethrow;
-        await Future.delayed(Duration(milliseconds: pow(10, i).toInt()));
+        if (attempt == 2) rethrow;
+        await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
       }
     }
   }
