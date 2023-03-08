@@ -5,18 +5,18 @@
 import 'dart:async';
 
 import 'package:test/test.dart';
-import 'package:test_api/src/backend/state.dart';
+import 'package:test_api/hooks_testing.dart';
 
-import '../../utils.dart';
+import '../../utils_new.dart';
 
 void main() {
   group('[doesNotComplete]', () {
     test('fails when provided a non future', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(10, doesNotComplete);
       });
 
-      expectTestFailed(liveTest, contains('10 is not a Future'));
+      expectTestFailed(monitor, contains('10 is not a Future'));
     });
 
     test('succeeds when a future does not complete', () {
@@ -25,33 +25,33 @@ void main() {
     });
 
     test('fails when a future does complete', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         var completer = Completer();
         completer.complete(null);
         expect(completer.future, doesNotComplete);
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Future was not expected to complete but completed with a value of'
           ' null');
     });
 
     test('fails when a future completes after the expect', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         var completer = Completer();
         expect(completer.future, doesNotComplete);
         completer.complete(null);
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Future was not expected to complete but completed with a value of'
           ' null');
     });
 
     test('fails when a future eventually completes', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         var completer = Completer();
         expect(completer.future, doesNotComplete);
         Future(() async {
@@ -60,46 +60,48 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Future was not expected to complete but completed with a value of'
           ' null');
     });
   });
   group('[completes]', () {
-    test('blocks the test until the Future completes', () {
-      return expectTestBlocks(() {
-        var completer = Completer();
+    test('blocks the test until the Future completes', () async {
+      final completer = Completer<void>();
+      final monitor = TestCaseMonitor.start(() {
         expect(completer.future, completes);
-        return completer;
-      }, (completer) => completer.complete());
+      });
+      await pumpEventQueue();
+      expect(monitor.state, State.running);
+      completer.complete();
+      await monitor.onDone;
+      expectTestPassed(monitor);
     });
 
     test('with an error', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(Future.error('X'), completes);
       });
 
-      expect(liveTest.state.status, equals(Status.complete));
-      expect(liveTest.state.result, equals(Result.error));
-      expect(liveTest.errors, hasLength(1));
-      expect(liveTest.errors.first.error, equals('X'));
+      expect(monitor.state, equals(State.failed));
+      expect(monitor.errors, [isAsyncError(equals('X'))]);
     });
 
     test('with a failure', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(Future.error(TestFailure('oh no')), completes);
       });
 
-      expectTestFailed(liveTest, 'oh no');
+      expectTestFailed(monitor, 'oh no');
     });
 
     test('with a non-future', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(10, completes);
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Expected: completes successfully\n'
           '  Actual: <10>\n'
           '   Which: was not a Future\n');
@@ -111,52 +113,54 @@ void main() {
   });
 
   group('[completion]', () {
-    test('blocks the test until the Future completes', () {
-      return expectTestBlocks(() {
-        var completer = Completer();
+    test('blocks the test until the Future completes', () async {
+      final completer = Completer<Object?>();
+      final monitor = TestCaseMonitor.start(() {
         expect(completer.future, completion(isNull));
-        return completer;
-      }, (completer) => completer.complete());
+      });
+      await pumpEventQueue();
+      expect(monitor.state, State.running);
+      completer.complete(null);
+      await monitor.onDone;
+      expectTestPassed(monitor);
     });
 
     test('with an error', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(Future.error('X'), completion(isNull));
       });
 
-      expect(liveTest.state.status, equals(Status.complete));
-      expect(liveTest.state.result, equals(Result.error));
-      expect(liveTest.errors, hasLength(1));
-      expect(liveTest.errors.first.error, equals('X'));
+      expect(monitor.state, equals(State.failed));
+      expect(monitor.errors, [isAsyncError(equals('X'))]);
     });
 
     test('with a failure', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(Future.error(TestFailure('oh no')), completion(isNull));
       });
 
-      expectTestFailed(liveTest, 'oh no');
+      expectTestFailed(monitor, 'oh no');
     });
 
     test('with a non-future', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(10, completion(equals(10)));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           'Expected: completes to a value that <10>\n'
           '  Actual: <10>\n'
           '   Which: was not a Future\n');
     });
 
     test('with an incorrect value', () async {
-      var liveTest = await runTestBody(() {
+      var monitor = await TestCaseMonitor.run(() {
         expect(Future.value('a'), completion(equals('b')));
       });
 
       expectTestFailed(
-          liveTest,
+          monitor,
           allOf([
             startsWith("Expected: completes to a value that 'b'\n"
                 '  Actual: <'),

@@ -8,7 +8,7 @@ import 'package:async/async.dart';
 import 'package:term_glyph/term_glyph.dart' as glyph;
 import 'package:test/test.dart';
 
-import '../utils.dart';
+import '../utils_new.dart';
 
 void main() {
   setUpAll(() {

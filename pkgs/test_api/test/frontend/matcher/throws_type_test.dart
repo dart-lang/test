@@ -3,8 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:test/test.dart';
+import 'package:test_api/hooks_testing.dart';
 
-import '../../utils.dart';
+import '../../utils_new.dart';
 
 void main() {
   group('[throwsArgumentError]', () {
@@ -13,7 +14,7 @@ void main() {
     });
 
     test('fails when a non-ArgumentError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsArgumentError);
       });
 
@@ -29,7 +30,7 @@ void main() {
     });
 
     test('fails when a non-ConcurrentModificationError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsConcurrentModificationError);
       });
 
@@ -49,7 +50,7 @@ void main() {
     });
 
     test('fails when a non-CyclicInitializationError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsCyclicInitializationError);
       });
 
@@ -64,7 +65,7 @@ void main() {
     });
 
     test('fails when a non-Exception is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw 'oh no', throwsException);
       });
 
@@ -79,7 +80,7 @@ void main() {
     });
 
     test('fails when a non-FormatException is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsFormatException);
       });
 
@@ -96,7 +97,7 @@ void main() {
     });
 
     test('fails when a non-NoSuchMethodError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsNoSuchMethodError);
       });
 
@@ -111,7 +112,7 @@ void main() {
     });
 
     test('fails when a non-RangeError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsRangeError);
       });
 
@@ -126,7 +127,7 @@ void main() {
     });
 
     test('fails when a non-StateError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsStateError);
       });
 
@@ -141,7 +142,7 @@ void main() {
     });
 
     test('fails when a non-UnimplementedError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsUnimplementedError);
       });
 
@@ -156,7 +157,7 @@ void main() {
     });
 
     test('fails when a non-UnsupportedError is thrown', () async {
-      var liveTest = await runTestBody(() {
+      var liveTest = await TestCaseMonitor.run(() {
         expect(() => throw Exception(), throwsUnsupportedError);
       });
 
