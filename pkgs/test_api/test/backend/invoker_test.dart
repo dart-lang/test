@@ -185,8 +185,8 @@ void main() {
           expect(
               error,
               equals('This test failed after it had already completed.\n'
-                  'Make sure to use a matching library which informs the test runner '
-                  'of pending async work.'));
+                  'Make sure to use a matching library which informs the '
+                  'test runner\nof pending async work.'));
         }
       ]);
 

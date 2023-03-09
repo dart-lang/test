@@ -306,7 +306,7 @@ class Invoker {
       // failing after being complete.
       _controller.setState(const State(Status.complete, Result.error));
       throw 'This test was marked as skipped after it had already completed.\n'
-          'Make sure to use a matching library which informs the test runner '
+          'Make sure to use a matching library which informs the test runner\n'
           'of pending async work.';
     }
 
@@ -368,7 +368,7 @@ class Invoker {
     _handleError(
         zone,
         'This test failed after it had already completed.\n'
-        'Make sure to use a matching library which informs the test runner '
+        'Make sure to use a matching library which informs the test runner\n'
         'of pending async work.',
         stackTrace);
   }

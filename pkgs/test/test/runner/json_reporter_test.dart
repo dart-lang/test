@@ -172,9 +172,9 @@ void main() {
         errorJson(3, 'oh no'),
         errorJson(
             3,
-            'This test failed after it had already completed. Make sure to '
-            'use [expectAsync]\n'
-            'or the [completes] matcher when testing async code.'),
+            'This test failed after it had already completed.\n'
+            'Make sure to use a matching library which informs the '
+            'test runner\nof pending async work.'),
         testDoneJson(4),
       ]
     ], doneJson(success: false));
