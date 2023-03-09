@@ -1,3 +1,8 @@
+## 0.12.15-dev
+
+* Add `package:matcher/expect.dart` library. Copies the implementation of
+  `expect` and the asynchronous matchers from `package:test`.
+
 ## 0.12.14
 
 * Add `containsOnce` matcher.

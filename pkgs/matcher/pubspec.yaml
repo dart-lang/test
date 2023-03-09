@@ -9,14 +9,27 @@ environment:
   sdk: ">=2.18.0 <3.0.0"
 
 dependencies:
+  async: ^2.10.0
   meta: ^1.8.0
   stack_trace: ^1.10.0
+  term_glyph: ^1.2.0
+  test_api: ^0.5.0
 
 dev_dependencies:
+  fake_async: ^1.3.0
   lints: ^2.0.0
-  test: any
-  test_api: any
-  test_core: any
+  test: ^1.23.0
 
 dependency_overrides:
-  test_api: any
+  test_api:
+    git:
+      url: https://github.com/dart-lang/test
+      path: pkgs/test_api
+  test_core:
+    git:
+      url: https://github.com/dart-lang/test
+      path: pkgs/test_core
+  test:
+    git:
+      url: https://github.com/dart-lang/test
+      path: pkgs/test
