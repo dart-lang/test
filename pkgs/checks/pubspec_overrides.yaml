@@ -5,3 +5,7 @@ dependency_overrides:
     path: ../test_core
   test:
     path: ../test
+  matcher:
+    git:
+      url: https://github.com/dart-lang/matcher.git
+      ref: 3b48930a01f678e2921cea16563af67460e6f765

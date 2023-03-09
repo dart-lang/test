@@ -184,10 +184,9 @@ void main() {
           expect(lastState, equals(const State(Status.complete, Result.error)));
           expect(
               error,
-              equals(
-                  'This test failed after it had already completed. Make sure to '
-                  'use [expectAsync]\n'
-                  'or the [completes] matcher when testing async code.'));
+              equals('This test failed after it had already completed.\n'
+                  'Make sure to use a matching library which informs the test runner '
+                  'of pending async work.'));
         }
       ]);
 
