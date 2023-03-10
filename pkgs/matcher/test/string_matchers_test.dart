@@ -103,8 +103,8 @@ void main() {
     shouldPass('hello', contains('o'));
     shouldPass('hello', contains('hell'));
     shouldPass('hello', contains('hello'));
-    shouldFail(
-        'hello', contains(' '), "Expected: contains ' ' Actual: 'hello'");
+    shouldFail('hello', contains(' '),
+        "Expected: contains ' ' Actual: 'hello' Which: does not contain ' '");
   });
 
   test('stringContainsInOrder', () {

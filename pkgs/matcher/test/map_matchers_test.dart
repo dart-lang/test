@@ -12,13 +12,15 @@ void main() {
       {'a': 1},
       contains(2),
       'Expected: contains <2> '
-      'Actual: {\'a\': 1}',
+      'Actual: {\'a\': 1} '
+      'Which: does not contain <2>',
     );
     shouldFail(
       {'a': 1},
       contains(null),
       'Expected: contains <null> '
-      'Actual: {\'a\': 1}',
+      'Actual: {\'a\': 1} '
+      'Which: does not contain <null>',
     );
   });
 

@@ -21,7 +21,8 @@ void main() {
       "Expected: <Instance of 'RangeError'> with "
       "`message`: contains 'details' and `start`: null and `end`: null "
       'Actual: CustomRangeError:<RangeError: Invalid value: details> '
-      "Which: has `message` with value 'Invalid value'",
+      "Which: has `message` with value 'Invalid value' "
+      "which does not contain 'details'",
     );
   });
 
@@ -56,7 +57,8 @@ void main() {
               'Invalid value: Not in inclusive range 1..10: -1] '
               'Which: at location [0] is RangeError:<RangeError: '
               'Invalid value: Not in inclusive range 1..10: -1> '
-              "which has `message` with value 'Invalid value'"),
+              "which has `message` with value 'Invalid value' "
+              "which does not contain 'details'"),
           equalsIgnoringWhitespace(// Older SDKs
               "Expected: [ <<Instance of 'RangeError'> with "
               "`message`: contains 'details' and `start`: null and `end`: null> ] "
@@ -64,7 +66,8 @@ void main() {
               'Invalid value: Not in range 1..10, inclusive: -1] '
               'Which: at location [0] is RangeError:<RangeError: '
               'Invalid value: Not in range 1..10, inclusive: -1> '
-              "which has `message` with value 'Invalid value'")
+              "which has `message` with value 'Invalid value' "
+              "which does not contain 'details'")
         ]));
   });
 

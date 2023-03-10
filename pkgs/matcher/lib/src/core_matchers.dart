@@ -252,8 +252,9 @@ class _Contains extends Matcher {
   Description describeMismatch(Object? item, Description mismatchDescription,
       Map matchState, bool verbose) {
     if (item is String || item is Iterable || item is Map) {
-      return super
-          .describeMismatch(item, mismatchDescription, matchState, verbose);
+      super.describeMismatch(item, mismatchDescription, matchState, verbose);
+      mismatchDescription.add('does not contain ').addDescriptionOf(_expected);
+      return mismatchDescription;
     } else {
       return mismatchDescription.add('is not a string, map or iterable');
     }

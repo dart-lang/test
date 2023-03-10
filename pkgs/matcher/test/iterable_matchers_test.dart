@@ -24,10 +24,14 @@ void main() {
         d,
         contains(0),
         'Expected: contains <0> '
-        'Actual: [1, 2]');
+        'Actual: [1, 2] '
+        'Which: does not contain <0>');
 
     shouldFail(
-        'String', contains(42), "Expected: contains <42> Actual: 'String'");
+        'String',
+        contains(42),
+        "Expected: contains <42> Actual: 'String' "
+            'Which: does not contain <42>');
   });
 
   test('equals with matcher element', () {
@@ -109,8 +113,7 @@ void main() {
         "Expected: every element((contains 'foo' and "
         'an object with length of a value greater than <0>)) '
         "Actual: [['foo', 'bar'], ['foo'], []] "
-        "Which: has value [] which doesn't match (contains 'foo' and "
-        'an object with length of a value greater than <0>) at index 2');
+        "Which: has value [] which does not contain 'foo' at index 2");
     shouldFail(
         e,
         everyElement(allOf(contains('foo'), hasLength(greaterThan(0)))),
@@ -386,6 +389,7 @@ void main() {
         d,
         contains(5),
         'Expected: contains <5> '
-        'Actual: SimpleIterable:[3, 2, 1]');
+        'Actual: SimpleIterable:[3, 2, 1] '
+        'Which: does not contain <5>');
   });
 }
