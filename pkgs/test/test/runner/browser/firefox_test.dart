@@ -79,4 +79,22 @@ void main() {
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
+
+  test('not impacted by CHROME_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'dart:html';
+
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {
+    assert(window.navigator.vendor != 'Google Inc.');
+  });
+}
+''').create();
+    var test = await runTest(['-p', 'firefox', 'test.dart'],
+        environment: {'CHROME_EXECUTABLE': '/some/bad/path'});
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
 }
