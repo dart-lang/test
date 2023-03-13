@@ -4,6 +4,7 @@
 
 library test.src.runner.browser.post_message_channel;
 
+import 'dart:js_interop';
 import 'dart:js_util';
 
 import 'package:js/js.dart';
@@ -13,7 +14,9 @@ import 'dom.dart' as dom;
 
 // Avoid using this from dart:html to work around dart-lang/sdk#32113.
 @JS('window.parent.postMessage')
-external void _postParentMessage(Object message, String targetOrigin);
+external void __postParentMessage(JSAny? message, JSString targetOrigin);
+void _postParentMessage(Object message, String targetOrigin) =>
+    __postParentMessage(message.toJSAnyShallow, targetOrigin.toJS);
 
 /// Constructs a [StreamChannel] wrapping [MessageChannel] communication with
 /// the host page.
@@ -25,7 +28,7 @@ StreamChannel<Object?> postMessageChannel() {
   // subscriptions if the test is ever hot restarted.
   late final dom.Subscription subscription;
   subscription =
-      dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
+      dom.Subscription(dom.window, 'message', (dom.Event event) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
@@ -37,9 +40,9 @@ StreamChannel<Object?> postMessageChannel() {
       var port = message.ports.first;
       port.start();
       var portSubscription =
-          dom.Subscription(port, 'message', allowInterop((dom.Event event) {
+          dom.Subscription(port, 'message', (dom.Event event) {
         controller.local.sink.add((event as dom.MessageEvent).data);
-      }));
+      });
 
       controller.local.stream.listen((data) {
         port.postMessage({'data': data});
@@ -48,7 +51,7 @@ StreamChannel<Object?> postMessageChannel() {
         portSubscription.cancel();
       });
     }
-  }));
+  });
 
   // Send a ready message once we're listening so the host knows it's safe to
   // start sending events.

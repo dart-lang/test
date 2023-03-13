@@ -2,9 +2,39 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:js_interop';
 import 'dart:js_util' as js_util;
 
 import 'package:js/js.dart';
+
+// Conversion functions to help with the migration.
+extension ObjectToJSAnyExtension on Object? {
+  JSAny? get toJSAnyShallow {
+    if (const bool.fromEnvironment('dart.library.html')) {
+      // Cast is necessary on Wasm backends and in the future on JS backends as
+      // well.
+      // ignore: unnecessary_cast
+      return this as JSAny?;
+    } else {
+      return toJSAnyDeep;
+    }
+  }
+
+  JSAny? get toJSAnyDeep => js_util.jsify(this) as JSAny?;
+}
+
+extension JSAnyToObjectExtension on JSAny? {
+  Object? get toObjectShallow {
+    if (const bool.fromEnvironment('dart.library.html')) {
+      return this;
+    } else {
+      return toObjectDeep;
+    }
+  }
+
+  Object? get toObjectDeep => js_util.dartify(this);
+}
+
 
 @JS()
 @staticInterop
@@ -12,19 +42,34 @@ class Window extends EventTarget {}
 
 extension WindowExtension on Window {
   external Location get location;
-  CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
-      js_util.callMethod(this, 'getComputedStyle', <Object>[
-        elt,
-        if (pseudoElt != null) pseudoElt
-      ]) as CSSStyleDeclaration?;
+
+  @JS('getComputedStyle')
+  external CSSStyleDeclaration? _getComputedStyle1(Element elt);
+  @JS('getComputedStyle')
+  external CSSStyleDeclaration? _getComputedStyle2(Element elt, JSString pesudoElt);
+  CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) {
+    if (pseudoElt == null) {
+      return _getComputedStyle1(elt);
+    } else {
+      return _getComputedStyle2(elt, pseudoElt.toJS);
+    }
+  }
   external Navigator get navigator;
+
+  @JS('postMessage')
+  external JSVoid _postMessage1(JSAny message, JSString targetOrigin);
+  @JS('postMessage')
+  external JSVoid _postMessage2(JSAny message, JSString targetOrigin, JSAny
+      messagePorts);
   void postMessage(Object message, String targetOrigin,
-          [List<MessagePort>? messagePorts]) =>
-      js_util.callMethod(this, 'postMessage', <Object?>[
-        js_util.jsify(message),
-        targetOrigin,
-        if (messagePorts != null) js_util.jsify(messagePorts)
-      ]);
+          [List<MessagePort>? messagePorts]) {
+    if (messagePorts == null) {
+      _postMessage1(message.toJSAnyDeep!, targetOrigin.toJS);
+    } else {
+      _postMessage2(message.toJSAnyDeep!, targetOrigin.toJS,
+          messagePorts.toJSAnyDeep!);
+    }
+  }
 }
 
 @JS('window')
@@ -35,10 +80,22 @@ external Window get window;
 class Document extends Node {}
 
 extension DocumentExtension on Document {
-  external Element? querySelector(String selectors);
-  Element createElement(String name, [Object? options]) => js_util.callMethod(
-          this, 'createElement', <Object>[name, if (options != null) options])
-      as Element;
+  @JS('querySelector')
+  external Element? _querySelector(JSString selectors);
+  Element? querySelector(String selectors) =>
+      _querySelector(selectors.toJS);
+
+  @JS('createElement')
+  external Element _createElement1(JSString name);
+  @JS('createElement')
+  external Element _createElement2(JSString name, JSAny options);
+  Element createElement(String name, [Object? options]) {
+    if (options == null) {
+      return _createElement1(name.toJS);
+    } else {
+      return _createElement2(name.toJS, options.toJSAnyShallow!);
+    }
+  }
 }
 
 @JS()
@@ -47,7 +104,10 @@ class HTMLDocument extends Document {}
 
 extension HTMLDocumentExtension on HTMLDocument {
   external HTMLBodyElement? get body;
-  external String? get title;
+
+  @JS('title')
+  external JSString? get _title;
+  String? get title => _title?.toDart;
 }
 
 @JS('document')
@@ -58,7 +118,9 @@ external HTMLDocument get document;
 class Navigator {}
 
 extension NavigatorExtension on Navigator {
-  external String get userAgent;
+  @JS('userAgent')
+  external JSString get _userAgent;
+  String get userAgent => _userAgent.toDart;
 }
 
 @JS()
@@ -99,31 +161,48 @@ extension NodeExtension on Node {
 class EventTarget {}
 
 extension EventTargetExtension on EventTarget {
-  void addEventListener(String type, EventListener? listener,
+  @JS('addEventListener')
+  external JSVoid _addEventListener1(JSString type, JSFunction? listener);
+  @JS('addEventListener')
+  external JSVoid _addEventListener2(JSString type, JSFunction? listener,
+      JSBoolean useCapture);
+  void addEventListener(String type, JSFunction? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'addEventListener',
-          <Object>[type, listener, if (useCapture != null) useCapture]);
+      if (useCapture == null) {
+        _addEventListener1(type.toJS, listener);
+      } else {
+        _addEventListener2(type.toJS, listener, useCapture.toJS);
+      }
     }
   }
 
-  void removeEventListener(String type, EventListener? listener,
+  @JS('removeEventListener')
+  external JSVoid _removeEventListener1(JSString type, JSFunction? listener);
+  @JS('removeEventListener')
+  external JSVoid _removeEventListener2(JSString type, JSFunction? listener,
+      JSBoolean useCapture);
+  void removeEventListener(String type, JSFunction? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'removeEventListener',
-          <Object>[type, listener, if (useCapture != null) useCapture]);
+      if (useCapture == null) {
+        _removeEventListener1(type.toJS, listener);
+      } else {
+        _removeEventListener2(type.toJS, listener, useCapture.toJS);
+      }
     }
   }
 }
 
 typedef EventListener = void Function(Event event);
+JSFunction createEventListener(EventListener listener) => listener.toJS;
 
 @JS()
 @staticInterop
 class Event {}
 
 extension EventExtension on Event {
-  external void stopPropagation();
+  external JSVoid stopPropagation();
 }
 
 @JS()
@@ -131,10 +210,17 @@ extension EventExtension on Event {
 class MessageEvent extends Event {}
 
 extension MessageEventExtension on MessageEvent {
-  dynamic get data => js_util.dartify(js_util.getProperty(this, 'data'));
-  external String get origin;
-  List<MessagePort> get ports =>
-      js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+  @JS('data')
+  external JSAny? get _data;
+  dynamic get data => _data.toObjectDeep;
+
+  @JS('origin')
+  external JSString get _origin;
+  String get origin => _origin.toDart;
+
+  @JS('ports')
+  external JSArray get _ports;
+  List<MessagePort> get ports => _ports.toDart.cast<MessagePort>();
 }
 
 @JS()
@@ -142,8 +228,13 @@ extension MessageEventExtension on MessageEvent {
 class Location {}
 
 extension LocationExtension on Location {
-  external String get href;
-  external String get origin;
+  @JS('href')
+  external JSString get _href;
+  String get href => _href.toDart;
+
+  @JS('origin')
+  external JSString get _origin;
+  String get origin => _origin.toDart;
 }
 
 @JS()
@@ -151,9 +242,18 @@ extension LocationExtension on Location {
 class MessagePort extends EventTarget {}
 
 extension MessagePortExtension on MessagePort {
-  void postMessage(Object? message) => js_util.callMethod(this, 'postMessage',
-      <Object>[if (message != null) js_util.jsify(message) as Object]);
-  external void start();
+  @JS('postMessage')
+  external JSVoid _postMessage1();
+  @JS('postMessage')
+  external JSVoid _postMessage2(JSAny? message);
+  void postMessage(Object? message) {
+    if(message == null) {
+      _postMessage1();
+    } else {
+      _postMessage2(message.toJSAnyDeep);
+    }
+  }
+  external JSVoid start();
 }
 
 @JS()
@@ -165,7 +265,9 @@ class CSSStyleDeclaration {}
 class HTMLScriptElement extends HTMLElement {}
 
 extension HTMLScriptElementExtension on HTMLScriptElement {
-  external set src(String value);
+  @JS('src')
+  external set _src(JSString value);
+  set src(String value) => _src = value.toJS;
 }
 
 HTMLScriptElement createHTMLScriptElement() =>
@@ -176,9 +278,17 @@ HTMLScriptElement createHTMLScriptElement() =>
 class DomTokenList {}
 
 extension DomTokenListExtension on DomTokenList {
-  external void add(String value);
-  external void remove(String value);
-  external bool contains(String token);
+  @JS('add')
+  external JSVoid _add(JSString value);
+  void add(String value) => _add(value.toJS);
+
+  @JS('remove')
+  external JSVoid _remove(JSString value);
+  void remove(String value) => _remove(value.toJS);
+
+  @JS('contains')
+  external JSBoolean _contains(JSString token);
+  bool contains(String token) => _contains(token.toJS).toDart;
 }
 
 @JS()
@@ -186,56 +296,56 @@ extension DomTokenListExtension on DomTokenList {
 class HTMLIFrameElement extends HTMLElement {}
 
 extension HTMLIFrameElementExtension on HTMLIFrameElement {
-  external String? get src;
-  external set src(String? value);
+  @JS('src')
+  external JSString? get _src;
+  String? get src => _src?.toDart;
+
+  @JS('src')
+  external set _src(JSString? value);
+  set src(String? value) => _src = value?.toJS;
+
   external Window get contentWindow;
 }
 
 HTMLIFrameElement createHTMLIFrameElement() =>
     document.createElement('iframe') as HTMLIFrameElement;
 
-@JS()
+@JS('WebSocket')
 @staticInterop
-class WebSocket extends EventTarget {}
-
-extension WebSocketExtension on WebSocket {
-  external void send(Object? data);
+class WebSocket extends EventTarget {
+  external factory WebSocket(JSString url);
 }
 
-WebSocket createWebSocket(String url) =>
-    _callConstructor('WebSocket', <Object>[url])! as WebSocket;
+extension WebSocketExtension on WebSocket {
+  @JS('send')
+  external JSVoid _send(JSAny? data);
+  void send(Object? data) => _send(data.toJSAnyShallow);
+}
 
-@JS()
+WebSocket createWebSocket(String url) => WebSocket(url.toJS);
+
+@JS('MessageChannel')
 @staticInterop
-class MessageChannel {}
+class MessageChannel {
+  external factory MessageChannel();
+}
 
 extension MessageChannelExtension on MessageChannel {
   external MessagePort get port1;
   external MessagePort get port2;
 }
 
-MessageChannel createMessageChannel() =>
-    _callConstructor('MessageChannel', <Object>[])! as MessageChannel;
-
-Object? _findConstructor(String constructorName) =>
-    js_util.getProperty(window, constructorName);
-
-Object? _callConstructor(String constructorName, List<Object?> args) {
-  final Object? constructor = _findConstructor(constructorName);
-  if (constructor == null) {
-    return null;
-  }
-  return js_util.callConstructor(constructor, args);
-}
+MessageChannel createMessageChannel() => MessageChannel();
 
 class Subscription {
-  final String type;
+  final JSString type;
   final EventTarget target;
-  final EventListener listener;
+  final JSFunction listener;
 
-  Subscription(this.target, this.type, this.listener) {
-    target.addEventListener(type, listener);
+  Subscription(this.target, String typeStr, EventListener dartListener) :
+    type = typeStr.toJS, listener = dartListener.toJS {
+    target._addEventListener1(type, listener);
   }
 
-  void cancel() => target.removeEventListener(type, listener);
+  void cancel() => target._removeEventListener1(type, listener);
 }
