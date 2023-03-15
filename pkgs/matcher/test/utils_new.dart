@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:test_api/expect.dart';
+import 'package:matcher/expect.dart';
 import 'package:test_api/hooks_testing.dart';
 
 /// Asserts that [monitor] has completed and passed.
