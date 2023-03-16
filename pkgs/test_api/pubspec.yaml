@@ -18,6 +18,10 @@ dependencies:
   string_scanner: ^1.1.0
   term_glyph: ^1.2.0
 
+  # Use a tight version constraint to ensure that a constraint on matcher
+  # properly constrains all features it provides.
+  matcher: '>=0.12.15 <0.12.16'
+
 dev_dependencies:
   analyzer: '>=2.1.0 <6.0.0'
   fake_async: ^1.2.0
