@@ -48,7 +48,7 @@ typedef ErrorFormatter = String Function(Object? actual, Matcher matcher,
 /// the test doesn't complete until the matcher has either matched or failed. If
 /// you want to wait for the matcher to complete before continuing the test, you
 /// can call [expectLater] instead and `await` the result.
-void expect(Object? actual, Object? matcher,
+void expect(dynamic actual, dynamic matcher,
     {String? reason,
     Object? /* String|bool */ skip,
     @Deprecated('Will be removed in 0.13.0.') bool verbose = false,
@@ -68,12 +68,12 @@ void expect(Object? actual, Object? matcher,
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
-Future expectLater(Object? actual, Object? matcher,
+Future expectLater(dynamic actual, dynamic matcher,
         {String? reason, Object? /* String|bool */ skip}) =>
     _expect(actual, matcher, reason: reason, skip: skip);
 
 /// The implementation of [expect] and [expectLater].
-Future _expect(actual, matcher,
+Future _expect(Object? actual, Object? matcher,
     {String? reason, skip, bool verbose = false, ErrorFormatter? formatter}) {
   final test = TestHandle.current;
   formatter ??= (actual, matcher, reason, matchState, verbose) {
