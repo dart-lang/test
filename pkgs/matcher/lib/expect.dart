@@ -6,7 +6,7 @@
 
 export 'matcher.dart';
 
-export 'src/expect/expect.dart' show expect, expectLater, fail;
+export 'src/expect/expect.dart' show ErrorFormatter, expect, expectLater, fail;
 export 'src/expect/expect_async.dart'
     show
         Func0,
@@ -48,7 +48,7 @@ export 'src/expect/stream_matchers.dart'
         emitsThrough,
         mayEmitMultiple,
         neverEmits;
-export 'src/expect/throws_matcher.dart' show throwsA;
+export 'src/expect/throws_matcher.dart' show Throws, throws, throwsA;
 export 'src/expect/throws_matchers.dart'
     show
         throwsArgumentError,
