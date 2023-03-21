@@ -1,5 +1,5 @@
 [![Dart CI](https://github.com/dart-lang/test/actions/workflows/dart.yml/badge.svg)](https://github.com/dart-lang/test/actions/workflows/dart.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dart-lang/test/badge)](https://api.securityscorecards.dev/projects/github.com/dart-lang/test)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dart-lang/test/badge)](https://deps.dev/project/github/dart-lang%2Ftest)
 
 ## What's here?
 
