@@ -1,4 +1,4 @@
-## 0.12.15-dev
+## 0.12.15
 
 * Add `package:matcher/expect.dart` library. Copies the implementation of
   `expect` and the asynchronous matchers from `package:test`.
