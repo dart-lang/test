@@ -1,0 +1,44 @@
+publish_to: none
+
+name: native_add
+description: Sums two numbers with native code.
+version: 0.1.0
+repository: https://github.com/dcharkes/native_assets_cli
+
+environment:
+  sdk: ">=2.19.3 <4.0.0"
+
+dependencies:
+  cc:
+    git:
+      url: https://github.com/dcharkes/cc.git
+      ref: 5f6a3c8d5248648b21a66788438f39bf8629d7cb
+  config:
+    git:
+      url: https://github.com/dcharkes/config.git
+      ref: a8059f7e7785a9411d915ac27d175059c822b54d
+  native_assets_cli:
+    git:
+      url: https://github.com/dcharkes/native_assets_cli.git
+      ref: 1b8b2b7c08d0ef20c1e66d734b34cd3a306915bf
+  task_runner:
+    git:
+      url: https://github.com/dcharkes/task_runner.git
+      ref: 23a378bf4fac090fe9c46a07daf32945c598ef4a
+
+dev_dependencies:
+  ffigen: ^7.2.9
+  lints: ^2.0.0
+  test: any
+
+dependency_overrides:
+  test:
+    path: ../../pkgs/test
+  test_api:
+    path: ../../pkgs/test_api
+  test_core:
+    path: ../../pkgs/test_core
+  matcher:
+    git:
+      url: https://github.com/dart-lang/matcher.git
+      ref: 3fc9b3c35c3c0465ebef9158971f8203a4fc9416
