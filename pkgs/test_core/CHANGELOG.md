@@ -27,6 +27,7 @@
   not statically breaking but it will be confusing for users if it isn't
   supported.
 * **BREAKING** Remove `useDataIsolateStrategy` field from `Configuration`.
+* **BREAKING** Stop exporting APIs from `package:matcher/expect.dart`.
 
 ## 0.4.24
 

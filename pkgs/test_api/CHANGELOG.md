@@ -8,6 +8,8 @@
   to `Runtime`.
 * Add `package:test_api/hooks_testing.dart` library for writing tests against
   code that uses `package:test_api/hooks.dart`.
+* **BREAKING** Remove `ErrorFormatter`, `expectAsync`,  `throws`, and `Throws`
+  from `package:test_api/test_api.dart`.
 
 ## 0.4.18
 

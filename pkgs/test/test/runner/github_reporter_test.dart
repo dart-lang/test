@@ -154,8 +154,9 @@ void main() {
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
         ::group::❌ fail after completion (failed after test completion)
-        This test failed after it had already completed. Make sure to use [expectAsync]
-        or the [completes] matcher when testing async code.
+        This test failed after it had already completed.
+        Make sure to use a matching library which informs the test runner
+        of pending async work.
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
         ✅ second test so that the first failure is reported
