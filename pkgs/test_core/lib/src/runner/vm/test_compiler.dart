@@ -13,6 +13,7 @@ import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
 
 import '../../util/dart.dart';
+import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
 
@@ -72,7 +73,7 @@ class _TestCompilerForLanguageVersion {
   late final _outputDill =
       File(p.join(_outputDillDirectory.path, 'output.dill'));
   final _outputDillDirectory =
-      Directory.systemTemp.createTempSync('dart_test.');
+      Directory.systemTemp.createTempSync('dart_test.kernel.');
   // Used to create unique file names for final kernel files.
   int _compileNumber = 0;
   // The largest incremental dill file we created, will be cached under
@@ -192,7 +193,7 @@ class _TestCompilerForLanguageVersion {
         _frontendServerClient?.kill();
         _frontendServerClient = null;
         if (_outputDillDirectory.existsSync()) {
-          _outputDillDirectory.deleteSync(recursive: true);
+          await _outputDillDirectory.deleteWithRetry();
         }
       });
 }

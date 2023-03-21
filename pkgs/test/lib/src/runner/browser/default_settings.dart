@@ -13,7 +13,8 @@ final defaultSettings = UnmodifiableMapView({
       linuxExecutable: 'google-chrome',
       macOSExecutable:
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      windowsExecutable: r'Google\Chrome\Application\chrome.exe'),
+      windowsExecutable: r'Google\Chrome\Application\chrome.exe',
+      environmentOverride: 'CHROME_EXECUTABLE'),
   Runtime.firefox: ExecutableSettings(
       linuxExecutable: 'firefox',
       macOSExecutable: '/Applications/Firefox.app/Contents/MacOS/firefox-bin',

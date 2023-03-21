@@ -1,6 +1,11 @@
+## Migrating from package:matcher
+
 `package:checks` is currently in preview. Once this package reaches a stable
 version, it will be the recommended package by the Dart team to use for most
 tests.
+
+[`package:matcher`][matcher] is the legacy package with an API exported from
+`package:test/test.dart` and `package:test/expect.dart`. 
 
 **Do I have to migrate all at once?** No. `package:matcher` will be compatible
 with `package:checks`, and old tests can continue to use matchers. Test cases
@@ -11,13 +16,23 @@ these members it will be possible to add a dependency on `package:matcher` and
 continue to use them. `package:matcher` will get deprecated and will not see new
 development, but the existing features will continue to work.
 
+**Why is the Dart team moving away from matcher?** The `matcher` package has a
+design which is fundamentally incompatible with using static types to validate
+correct use. With an entirely new design, the static types in `checks` give
+confidence that the expectation is appropriate for the value, and can narrow
+autocomplete choices in the IDE for a better editing experience. The clean break
+from the legacy implementation and API also gives an opportunity to make small
+behavior and signature changes to align with modern Dart idioms.
+
 **Should I start using checks over matcher for new tests?** There is still a
 high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
-`matcher`.
+`matcher`. See some of the [improvements to look forward to in checks
+below][#improvements-you-can-expect].
 
+[matcher]: https://pub.dev/packages/matcher
 
-# Trying Checks as a Preview
+## Trying Checks as a Preview
 
 1.  Add a `dev_dependency` on `checks: ^0.2.0`.
 
@@ -33,9 +48,10 @@ Once this package is stable, yes! The experience of using `checks` improves on
 
 1.  Migrate the test cases.
 
-# Migrating from Matchers
+## Migrating from Matchers
 
-Replace calls to `expect` with a call to `check` passing the first argument.
+Replace calls to `expect` or `expectLater` with a call to `check` passing the
+first argument.
 When a direct replacement is available, change the second argument from calling
 a function returning a Matcher, to calling the relevant extension method on the
 `Subject`.
@@ -51,9 +67,19 @@ expect(actual, expected);
 check(actual).equals(expected);
 // or maybe
 check(actualCollection).deepEquals(expected);
+
+await expectLater(actual, completes());
+await check(actual).completes();
 ```
 
-## Differences in behavior from matcher
+If you use the `reason` argument to `expect`, rename it to `because`.
+
+```dart
+expect(actual, expectation(), reason: 'some explanation');
+check(because: 'some explanation', actual).expectation();
+```
+
+### Differences in behavior from matcher
 
 -   The `equals` Matcher performed a deep equality check on collections.
     `.equals()` expectation will only correspond to [operator ==] so some tests
@@ -74,11 +100,16 @@ check(actualCollection).deepEquals(expected);
     comparison uses [`String.allMatches`][allMatches].
     For backwards compatibility change `matches(regexString)` to
     `matchesPattern(RegExp(regexString))`.
+-   The `TypeMatcher.having` API is replace by the more general`.has`. While
+    `.having` could only be called on a `TypeMatcher` using `.isA`, `.has` works
+    on any `Subject`. `CoreChecks.has` takes 1 fewer arguments - instead of
+    taking the last argument, a `matcher` to apply to the field, it returns a
+    `Subject` for the field.
 
 [matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
 [allMatches]:https://api.dart.dev/stable/2.19.1/dart-core/Pattern/allMatches.html
 
-## Matchers with replacements under a different name
+### Matchers with replacements under a different name
 
 -   `anyElement` -> `Subject<Iterable>.any`
 -   `everyElement` -> `Subject<Iterable>.every`
@@ -90,7 +121,7 @@ check(actualCollection).deepEquals(expected);
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
 
-## Members from `package:test/expect.dart` without a direct replacement
+### Members from `package:test/expect.dart` without a direct replacement
 
 -   `checks` does not ship with any type checking matchers for specific types.
     Instead of, for example,  `isArgumentError` use `isA<ArgumentError>`, and
@@ -114,3 +145,49 @@ check(actualCollection).deepEquals(expected);
     with `check(actual).deepEquals(expected.map((e) => it()..equals(e)))`;
 -   `prints`: TODO add missing expectation? Is this one worth replacing?
 -   `predicate`: TODO add missing expectation
+
+## Improvements you can expect
+
+Expectations are statically restricted to those which are appropriate for the
+type. So while the following is statically allowed with `matcher` but always
+fails at runtime, the expectation cannot be written at all with `checks`.
+
+```dart
+expect(1, contains(1)); // No static error, always fails
+check(1).contains(1); // Static error. The method 'contains' isn't defined
+```
+
+These static restrictions also improve the relevance of IDE autocomplete
+suggestions. While editing with the cursor at `_`, the suggestions provided
+in the `matcher` example can include _any_ top level element including matchers
+appropriate for other types of value, type names, and top level definitions from
+other packages. With the cursor following a `.` in the `checks` example the
+suggestions will only be expectations or utilities appropriate for the value
+type.
+
+```dart
+expect(actual, _ // many unrelated suggestions
+check(actual)._ // specific suggestions
+```
+
+Asynchronous matchers in `matcher` are a subtype of synchronous matchers, but do
+not satisfy the same behavior contract. Some APIs which use a matcher could not
+validate whether it would satisfy the behavior it needs, and it could result in
+a false success, false failure, or misleading errors. APIs which correctly use
+asynchronous matchers need to do a type check and change their interaction based
+on the runtime type. Asynchronous expectations in `checks` are refused at
+runtime when a synchronous answer is required. The error will help solve the
+specific misuse, instead of resulting in a confusing error, or worse a missed
+failure. The reason for the poor compatibility in `matcher` is due to some
+history of implementation - asynchronous matchers were written in `test`
+alongside `expect`, and synchronous matchers have no dependency on the
+asynchronous implementation.
+
+Asynchronous expectations always return a `Future`, and with the
+[`unawaited_futures` lint][unawaited lint] should more safely ensure that
+asynchronous expectation work is completed within the test body. With `matcher`
+it was up to the author to correctly use `await expecLater` for asynchronous
+cases, and `expect` for synchronous cases, and if `expect` was used with an
+asynchronous matcher the expectation could fail at any point.
+
+[unawaited lint]:https://dart-lang.github.io/linter/lints/unawaited_futures.html

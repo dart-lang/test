@@ -9,9 +9,38 @@ import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<int> get length => has((l) => l.length, 'length');
-  Subject<T> get first => has((l) => l.first, 'first element');
-  Subject<T> get last => has((l) => l.last, 'last element');
-  Subject<T> get single => has((l) => l.single, 'single element');
+
+  Subject<T> get first => context.nest(() => ['has first element'], (actual) {
+        final iterator = actual.iterator;
+        if (!iterator.moveNext()) {
+          return Extracted.rejection(which: ['has no elements']);
+        }
+        return Extracted.value(iterator.current);
+      });
+
+  Subject<T> get last => context.nest(() => ['has last element'], (actual) {
+        final iterator = actual.iterator;
+        if (!iterator.moveNext()) {
+          return Extracted.rejection(which: ['has no elements']);
+        }
+        var current = iterator.current;
+        while (iterator.moveNext()) {
+          current = iterator.current;
+        }
+        return Extracted.value(current);
+      });
+
+  Subject<T> get single => context.nest(() => ['has single element'], (actual) {
+        final iterator = actual.iterator;
+        if (!iterator.moveNext()) {
+          return Extracted.rejection(which: ['has no elements']);
+        }
+        final value = iterator.current;
+        if (iterator.moveNext()) {
+          return Extracted.rejection(which: ['has more than one element']);
+        }
+        return Extracted.value(value);
+      });
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
@@ -23,7 +52,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is not empty']);
+      return Rejection(which: ['is empty']);
     });
   }
 

@@ -1,5 +1,12 @@
 ## 0.2.2-dev
 
+-   Return the first failure from `softCheck` and `softCheckAsync` as
+    documented, instead of the last failure when there are multiple failures.
+-   Add example `because` usage and mention the "reason" name in the migration
+    guide.
+-   Add `ComparableChecks` with comparison expectations for subject types that
+    implement `Comparable`.
+
 ## 0.2.1
 
 -   Add a link to file issues with feedback in the README.

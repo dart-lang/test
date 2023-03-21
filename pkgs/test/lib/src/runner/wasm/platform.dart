@@ -15,7 +15,7 @@ import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 // ignore: deprecated_member_use
-import 'package:test_api/backend.dart' show Runtime, SuitePlatform;
+import 'package:test_api/backend.dart' show Compiler, Runtime, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
@@ -201,11 +201,16 @@ class BrowserWasmPlatform extends PlatformPlugin
   @override
   Future<RunnerSuite?> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
+    if (platform.compiler != Compiler.dart2wasm) {
+      throw StateError(
+          'Unsupported compiler for experimental-chrome-wasm platform '
+          '${platform.compiler}');
+    }
+
     if (suiteConfig.precompiledPath != null) {
       throw UnsupportedError(
           'The wasm platform doesn\'t support precompiled suites');
     }
-
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
@@ -216,6 +221,7 @@ class BrowserWasmPlatform extends PlatformPlugin
     // TODO: Support custom html?
 
     Uri suiteUrl;
+
     await _compileSuite(path, suiteConfig);
 
     if (_closed) return null;
@@ -227,7 +233,8 @@ class BrowserWasmPlatform extends PlatformPlugin
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
-    var suite = await browserManager.load(path, suiteUrl, suiteConfig, message);
+    var suite = await browserManager.load(
+        path, suiteUrl, suiteConfig, message, platform.compiler);
     if (_closed) return null;
     return suite;
   }
@@ -351,9 +358,8 @@ class BrowserWasmPlatform extends PlatformPlugin
             browser.then((b) => b?.close()),
           _server.close(),
           _compilers.close(),
+          Directory(_compiledDir).deleteWithRetry(),
         ]);
-
-        Directory(_compiledDir).deleteSync(recursive: true);
       });
   final _closeMemo = AsyncMemoizer<void>();
 }

@@ -1,6 +1,43 @@
 [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
 [![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
 
+`package:checks` ia a library for expressing test expectations and features a
+literate API.
+
+## package:checks preview
+
+`package:checks` is in preview; to provide feedback on the API, please file
+[an issue][] with questions, suggestions, feature requests, or general
+feedback.
+
+For documentation about migrating from `package:matcher` to `checks`, see the
+[migration guide][].
+
+[an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
+[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
+
+## Quickstart
+
+1. Add a `dev_dependency` on `checks: ^0.2.0`.
+
+1. Add an import for `package:checks/checks.dart`.
+
+1. Use `checks` in your test code:
+
+```dart
+void main() {
+  test('sample test', () {
+    // test code here
+    ...
+
+    check(actual).equals(expected);
+    check(someList).isNotEmpty();
+    check(someObject).isA<Map>();
+    check(someString)..startsWith('a')..endsWith('z')..contains('lmno');
+  });
+}
+```
+
 ## Checking expectations with `checks`
 
 Expectations start with `check`. This utility returns a `Subject`, and
@@ -65,6 +102,59 @@ check(someString)
     ..isLessThan(100));
 ```
 
+If a failure may not be have enough context about the actual or expected values
+when an expectation fails, add a "Reason" in the failure message by passing a
+`because:` argument to `check()`.
+
+```dart
+check(
+  because: 'log lines must start with the severity',
+  logLines,
+).every(it()
+  ..anyOf([
+    it()..startsWith('ERROR'),
+    it()..startsWith('WARNING'),
+    it()..startsWith('INFO'),
+  ]));
+```
+
+## Asynchronous expectations
+
+Expectation extension methods checking asynchronous behavior return a `Future`.
+The future should typically be awaited within the test body, however
+asynchronous expectations will also ensure that the test is not considered
+complete before the expectation is complete.
+Expectations with no concrete end conditions, such as an expectation that a
+future never completes, cannot be awaited and may cause a failure after the test
+has already appeared to complete.
+
+```dart
+await check(someFuture).completes(it()..isGreaterThan(0));
+```
+
+Subjects for `Stream` instances must first be wrapped into a `StreamQueue` to
+allow multiple expectations to test against the stream from the same state.
+The `withQueue` extension can be used when a given stream instance only needs to
+be checked once, or if it is a broadcast stream, but if single subscription
+stream needs to have multiple expectations checked separately it should be
+wrapped with a `StreamQueue`.
+
+```dart
+await check(someStream).withQueue.inOrder([
+  it()..emits(it()..equals(1)),
+  it()..emits(it()..equals(2)),
+  it()..emits(it()..equals(3)),
+  it()..isDone(),
+]);
+
+var someQueue = StreamQueue(someOtherStream);
+await check(someQueue).emits(it()..equals(1));
+// do something
+await check(someQueue).emits(it()..equals(2));
+// do something
+```
+
+
 ## Writing custom expectations
 
 Expectations are written as extension on `Subject` with specific generics. The
@@ -105,15 +195,3 @@ extension CustomChecks on Subject<CustomType> {
   Subject<Bar> get someField => has((a) => a.someField, 'someField');
 }
 ```
-
-## Migrating from `matcher` (`expect`) expectations
-
-See the [migration guide][].
-
-[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
-
-## Giving feedback while `checks` is in preview
-
-File [an issue][] with questions, suggestions, feature requests, or feedback.
-
-[an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md

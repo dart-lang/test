@@ -168,14 +168,15 @@ class Runner {
     var unsupportedRuntimes = _config.suiteDefaults.runtimes
         .map(_loader.findRuntime)
         .whereType<Runtime>()
-        .where((runtime) => !testOn.evaluate(currentPlatform(runtime)))
+        .where((runtime) => !testOn.evaluate(currentPlatform(runtime, null)))
         .toList();
+
     if (unsupportedRuntimes.isEmpty) return;
 
     // Human-readable names for all unsupported runtimes.
     var unsupportedNames = [];
 
-    // If the user tried to run on one or moe unsupported browsers, figure out
+    // If the user tried to run on one or more unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
     // browsers are unsupported.
     var unsupportedBrowsers =
@@ -183,7 +184,7 @@ class Runner {
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = _loader.allRuntimes
           .where((runtime) => runtime.isBrowser)
-          .any((runtime) => testOn.evaluate(currentPlatform(runtime)));
+          .any((runtime) => testOn.evaluate(currentPlatform(runtime, null)));
 
       if (supportsAnyBrowser) {
         unsupportedNames
@@ -196,8 +197,9 @@ class Runner {
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
     if (unsupportedRuntimes.contains(Runtime.vm)) {
-      var supportsAnyOS = OperatingSystem.all.any((os) => testOn
-          .evaluate(SuitePlatform(Runtime.vm, os: os, inGoogle: inGoogle)));
+      var supportsAnyOS = OperatingSystem.all.any((os) => testOn.evaluate(
+          SuitePlatform(Runtime.vm,
+              compiler: null, os: os, inGoogle: inGoogle)));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);

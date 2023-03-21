@@ -20,6 +20,7 @@ import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/application_exception.dart';
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/custom_runtime.dart';
 import 'package:test_core/src/runner/configuration/runtime_settings.dart';
@@ -31,7 +32,7 @@ import 'package:test_core/src/runner/runtime_selection.dart';
 import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
-final suitePlatform = SuitePlatform(Runtime.vm);
+final suitePlatform = SuitePlatform(Runtime.vm, compiler: null);
 
 // The last state change detected via [expectStates].
 State? lastState;
@@ -221,6 +222,7 @@ SuiteConfiguration suiteConfiguration(
         bool? runSkipped,
         Iterable<String>? dart2jsArgs,
         String? precompiledPath,
+        Iterable<CompilerSelection>? compilerSelections,
         Iterable<RuntimeSelection>? runtimes,
         Map<BooleanSelector, SuiteConfiguration>? tags,
         Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -242,6 +244,7 @@ SuiteConfiguration suiteConfiguration(
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         tags: tags,
         onPlatform: onPlatform,
@@ -279,7 +282,6 @@ Configuration configuration(
         Map<String, RuntimeSettings>? overrideRuntimes,
         Map<String, CustomRuntime>? defineRuntimes,
         bool? noRetry,
-        bool? useDataIsolateStrategy,
         bool? ignoreTimeouts,
 
         // Suite-level configuration
@@ -290,6 +292,7 @@ Configuration configuration(
         Iterable<String>? dart2jsArgs,
         String? precompiledPath,
         Iterable<Pattern>? globalPatterns,
+        Iterable<CompilerSelection>? compilerSelections,
         Iterable<RuntimeSelection>? runtimes,
         BooleanSelector? includeTags,
         BooleanSelector? excludeTags,
@@ -330,7 +333,6 @@ Configuration configuration(
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
-        useDataIsolateStrategy: useDataIsolateStrategy,
         ignoreTimeouts: ignoreTimeouts,
         allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
@@ -339,6 +341,7 @@ Configuration configuration(
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
         globalPatterns: globalPatterns,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         includeTags: includeTags,
         excludeTags: excludeTags,

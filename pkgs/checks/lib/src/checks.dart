@@ -96,7 +96,7 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
-      failure = f;
+      failure ??= f;
     },
     allowAsync: false,
     allowUnawaited: false,
@@ -119,7 +119,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
-      failure = f;
+      failure ??= f;
     },
     allowAsync: true,
     allowUnawaited: false,
@@ -727,11 +727,14 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     _clauses.add(_ExpectationClause(clause));
     final outstandingWork = TestHandle.current.markPending();
-    final rejection = await _value.apply(
-        (actual) async => (await predicate(actual))?._fillActual(actual));
-    outstandingWork.complete();
-    if (rejection == null) return;
-    _fail(_failure(rejection));
+    try {
+      final rejection = await _value.apply(
+          (actual) async => (await predicate(actual))?._fillActual(actual));
+      if (rejection == null) return;
+      _fail(_failure(rejection));
+    } finally {
+      outstandingWork.complete();
+    }
   }
 
   @override
@@ -779,18 +782,21 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
           'Async expectations cannot be used on a synchronous subject');
     }
     final outstandingWork = TestHandle.current.markPending();
-    final result = await _value.mapAsync(
-        (actual) async => (await extract(actual))._fillActual(actual));
-    outstandingWork.complete();
-    final rejection = result._rejection;
-    if (rejection != null) {
-      _clauses.add(_ExpectationClause(label));
-      _fail(_failure(rejection));
+    try {
+      final result = await _value.mapAsync(
+          (actual) async => (await extract(actual))._fillActual(actual));
+      final rejection = result._rejection;
+      if (rejection != null) {
+        _clauses.add(_ExpectationClause(label));
+        _fail(_failure(rejection));
+      }
+      final value = result._value ?? _Absent<R>();
+      final context = _TestContext<R>._child(value, label, this);
+      _clauses.add(context);
+      await nestedCondition?.applyAsync(Subject<R>._(context));
+    } finally {
+      outstandingWork.complete();
     }
-    final value = result._value ?? _Absent<R>();
-    final context = _TestContext<R>._child(value, label, this);
-    _clauses.add(context);
-    await nestedCondition?.applyAsync(Subject<R>._(context));
   }
 
   CheckFailure _failure(Rejection rejection) =>

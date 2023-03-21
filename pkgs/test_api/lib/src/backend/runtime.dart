@@ -2,37 +2,52 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'compiler.dart';
+
 /// An enum of all Dart runtimes supported by the test runner.
 class Runtime {
   // When adding new runtimes, be sure to update the baseline and derived
   // variable tests in test/backend/platform_selector/evaluate_test.
 
   /// The command-line Dart VM.
-  static const Runtime vm = Runtime('VM', 'vm', isDartVM: true);
+  static const Runtime vm = Runtime('VM', 'vm', Compiler.kernel,
+      [Compiler.kernel, Compiler.source, Compiler.exe],
+      isDartVM: true);
 
   /// Google Chrome.
-  static const Runtime chrome =
-      Runtime('Chrome', 'chrome', isBrowser: true, isJS: true, isBlink: true);
+  static const Runtime chrome = Runtime(
+      'Chrome', 'chrome', Compiler.dart2js, [Compiler.dart2js],
+      isBrowser: true, isJS: true, isBlink: true);
 
   /// Mozilla Firefox.
-  static const Runtime firefox =
-      Runtime('Firefox', 'firefox', isBrowser: true, isJS: true);
+  static const Runtime firefox = Runtime(
+      'Firefox', 'firefox', Compiler.dart2js, [Compiler.dart2js],
+      isBrowser: true, isJS: true);
 
   /// Apple Safari.
-  static const Runtime safari =
-      Runtime('Safari', 'safari', isBrowser: true, isJS: true);
+  static const Runtime safari = Runtime(
+      'Safari', 'safari', Compiler.dart2js, [Compiler.dart2js],
+      isBrowser: true, isJS: true);
 
   /// Microsoft Internet Explorer.
-  static const Runtime internetExplorer =
-      Runtime('Internet Explorer', 'ie', isBrowser: true, isJS: true);
+  static const Runtime internetExplorer = Runtime(
+      'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
+      isBrowser: true, isJS: true);
 
   /// The command-line Node.js VM.
-  static const Runtime nodeJS = Runtime('Node.js', 'node', isJS: true);
+  static const Runtime nodeJS = Runtime(
+      'Node.js', 'node', Compiler.dart2js, [Compiler.dart2js],
+      isJS: true);
 
   /// Google Chrome.
   static const Runtime experimentalChromeWasm = Runtime(
-      'ExperimentalChromeWasm', 'experimental-chrome-wasm',
-      isBrowser: true, isBlink: true, isWasm: true);
+      'ExperimentalChromeWasm',
+      'experimental-chrome-wasm',
+      Compiler.dart2wasm,
+      [Compiler.dart2wasm],
+      isBrowser: true,
+      isBlink: true,
+      isWasm: true);
 
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [
@@ -82,7 +97,14 @@ class Runtime {
   /// That is, returns [parent] if it's non-`null` or [this] if it's `null`.
   Runtime get root => parent ?? this;
 
-  const Runtime(this.name, this.identifier,
+  /// The default compiler to use with this runtime.
+  final Compiler defaultCompiler;
+
+  /// All the supported compilers for this runtime.
+  final List<Compiler> supportedCompilers;
+
+  const Runtime(
+      this.name, this.identifier, this.defaultCompiler, this.supportedCompilers,
       {this.isDartVM = false,
       this.isBrowser = false,
       this.isJS = false,
@@ -91,7 +113,8 @@ class Runtime {
       this.isWasm = false})
       : parent = null;
 
-  Runtime._child(this.name, this.identifier, Runtime this.parent)
+  Runtime._child(this.name, this.identifier, this.defaultCompiler,
+      this.supportedCompilers, Runtime this.parent)
       : isDartVM = parent.isDartVM,
         isBrowser = parent.isBrowser,
         isJS = parent.isJS,
@@ -108,17 +131,26 @@ class Runtime {
     }
 
     var map = serialized as Map;
+    var name = map['name'] as String;
+    var identifier = map['identifier'] as String;
+    var defaultCompiler =
+        Compiler.deserialize(map['defaultCompiler'] as Object);
+    var supportedCompilers = [
+      for (var compiler in map['supportedCompilers'] as List)
+        Compiler.deserialize(compiler as Object),
+    ];
+
     var parent = map['parent'];
     if (parent != null) {
       // Note that the returned platform's [parent] won't necessarily be `==` to
       // a separately-deserialized parent platform. This should be fine, though,
       // since we only deserialize platforms in the remote execution context
       // where they're only used to evaluate platform selectors.
-      return Runtime._child(map['name'] as String, map['identifier'] as String,
-          Runtime.deserialize(parent as Object));
+      return Runtime._child(name, identifier, defaultCompiler,
+          supportedCompilers, Runtime.deserialize(parent as Object));
     }
 
-    return Runtime(map['name'] as String, map['identifier'] as String,
+    return Runtime(name, identifier, defaultCompiler, supportedCompilers,
         isDartVM: map['isDartVM'] as bool,
         isBrowser: map['isBrowser'] as bool,
         isJS: map['isJS'] as bool,
@@ -135,6 +167,10 @@ class Runtime {
     if (parent != null) {
       return {
         'name': name,
+        'defaultCompiler': defaultCompiler.serialize(),
+        'supportedCompilers': [
+          for (var compiler in supportedCompilers) compiler.serialize(),
+        ],
         'identifier': identifier,
         'parent': parent!.serialize()
       };
@@ -142,6 +178,10 @@ class Runtime {
 
     return {
       'name': name,
+      'defaultCompiler': defaultCompiler.serialize(),
+      'supportedCompilers': [
+        for (var compiler in supportedCompilers) compiler.serialize(),
+      ],
       'identifier': identifier,
       'isDartVM': isDartVM,
       'isBrowser': isBrowser,
@@ -157,7 +197,10 @@ class Runtime {
   ///
   /// This may not be called on a platform that's already a child.
   Runtime extend(String name, String identifier) {
-    if (parent == null) return Runtime._child(name, identifier, this);
+    if (parent == null) {
+      return Runtime._child(
+          name, identifier, defaultCompiler, supportedCompilers, this);
+    }
     throw StateError('A child platform may not be extended.');
   }
 

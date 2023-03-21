@@ -1,3 +1,23 @@
+## 1.24.0-dev
+
+* Support the `--compiler` flag, which can be used to configure which compiler
+  to use.
+  * To specify a compiler by platform, the argument supports platform selectors
+    through this syntax `[<platform>:]<compiler>`. For example the command line
+    argument `--compiler vm:source` would run all vm tests from source instead
+    of compiling to kernel first.
+  * If no given compiler is compatible for a platform, it will use its default
+    compiler instead.
+* Add support for running tests as native executables (vm platform only).
+  * You can run tests this way with `--compiler exe`.
+* Support compiler identifiers in platform selectors.
+* List the supported compilers for each platform in the usage text.
+* Update all reporters to print the compiler along with the platform name
+  when configured to print the platform. Extend the logic for printing platofrm
+  information to do so if any compilers are explicitly configured.
+* Deprecate `--use-data-isolate-strategy`. It is now an alias for `-c vm:source`
+  which is roughly equivalent. If this is breaking for you please file an issue.
+
 ## 1.23.1
 
 * Fix running paths by absolute path (with drive letter) on windows.

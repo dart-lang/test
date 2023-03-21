@@ -7,9 +7,11 @@ import 'dart:convert';
 import 'dart:core' as core;
 import 'dart:core';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
+import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
@@ -46,9 +48,11 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [inGoogle] determined automatically.
 ///
 /// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime) => SuitePlatform(runtime,
-    os: runtime.isBrowser ? OperatingSystem.none : currentOS,
-    inGoogle: inGoogle);
+SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+    SuitePlatform(runtime,
+        compiler: compiler,
+        os: runtime.isBrowser ? OperatingSystem.none : currentOS,
+        inGoogle: inGoogle);
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = StreamTransformer<List<int>, String>(
@@ -109,7 +113,7 @@ Future withTempDir(Future Function(String) fn) {
   return Future.sync(() {
     var tempDir = createTempDir();
     return Future.sync(() => fn(tempDir))
-        .whenComplete(() => Directory(tempDir).deleteSync(recursive: true));
+        .whenComplete(() => Directory(tempDir).deleteWithRetry());
   });
 }
 
@@ -221,5 +225,21 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
     return base;
+  }
+}
+
+extension RetryDelete on FileSystemEntity {
+  Future<void> deleteWithRetry() async {
+    var attempt = 0;
+    while (true) {
+      try {
+        await delete(recursive: true);
+        return;
+      } on FileSystemException {
+        if (attempt == 2) rethrow;
+        attempt++;
+        await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
+      }
+    }
   }
 }
