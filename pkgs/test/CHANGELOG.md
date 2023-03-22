@@ -1,5 +1,8 @@
 ## 1.24.1-dev
 
+* Deprecate the export of `package:matcher` APIs. Add an import to
+  `package:matcher/expect.dart`.
+
 ## 1.24.0
 
 * Support the `--compiler` flag, which can be used to configure which compiler
