@@ -162,10 +162,12 @@ class _TestCompilerForLanguageVersion {
     final packageConfigUriAwaited = await packageConfigUri;
 
     // If we have native assets for the host os in JIT mode, they are here.
-    Uri? nativeAssetsYaml =
-        packageConfigUriAwaited.resolve('native_assets.yaml');
-    if (!await File.fromUri(nativeAssetsYaml).exists()) {
-      nativeAssetsYaml = null;
+    Uri? nativeAssetsYaml;
+    if (enabledExperiments.contains('native-assets')) {
+      nativeAssetsYaml = packageConfigUriAwaited.resolve('native_assets.yaml');
+      if (!await File.fromUri(nativeAssetsYaml).exists()) {
+        nativeAssetsYaml = null;
+      }
     }
 
     var client = _frontendServerClient = await FrontendServerClient.start(
