@@ -1,4 +1,4 @@
-## 1.24.0-dev
+## 1.24.0
 
 * Support the `--compiler` flag, which can be used to configure which compiler
   to use.
