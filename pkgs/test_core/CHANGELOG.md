@@ -1,3 +1,8 @@
+## 0.5.1-dev
+
+* Start adding experimental support for native_assets.yaml, when
+  `--enable-experiment=native_assets` is passed.
+
 ## 0.5.0
 
 * Support the `--compiler` flag, which can be used to configure which compiler
