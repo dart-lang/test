@@ -1,4 +1,4 @@
-## 0.5.0-dev
+## 0.5.0
 
 * Add `Compiler` class, exposed through `backend.dart`.
 * Support compiler identifiers in platform selectors.
