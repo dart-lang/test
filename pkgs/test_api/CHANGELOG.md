@@ -1,3 +1,11 @@
+## 0.5.1
+
+* Handle a missing `'compiler'` value when running a test compiled against a
+  newer `test_api` than the runner back end is using. The expectation was that
+  the json protocol is only used across packages compatible with the same major
+  version of the `test_api` package, but `flutter test` does not check the
+  version of packages in the pub solve for user test code.
+
 ## 0.5.0
 
 * Add `Compiler` class, exposed through `backend.dart`.

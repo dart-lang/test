@@ -1,4 +1,4 @@
-## 0.5.1-dev
+## 0.5.1
 
 * Start adding experimental support for native_assets.yaml, when
   `--enable-experiment=native_assets` is passed.
