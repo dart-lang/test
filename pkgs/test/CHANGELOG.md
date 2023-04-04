@@ -1,3 +1,9 @@
+## 1.24.2-dev
+
+* Copy an existing nonce from a script on the test HTML page to the script
+  created by the test runner host javascript. This only impacts environments
+  testing with custom HTML that includes a nonce.
+
 ## 1.24.1
 
 * Handle a missing `'compiler'` value when running a test compiled against a
