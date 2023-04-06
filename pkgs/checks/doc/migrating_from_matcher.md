@@ -28,7 +28,7 @@ behavior and signature changes to align with modern Dart idioms.
 high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
 `matcher`. See some of the [improvements to look forward to in checks
-below][#improvements-you-can-expect].
+below](#improvements-you-can-expect).
 
 [matcher]: https://pub.dev/packages/matcher
 
