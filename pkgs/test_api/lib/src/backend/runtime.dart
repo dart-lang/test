@@ -34,6 +34,11 @@ class Runtime {
       'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
       isBrowser: true, isJS: true);
 
+  /// Microsoft Edge (based on Chromium).
+  static const Runtime edge = Runtime(
+      'Microsoft Edge', 'edge', Compiler.dart2js, [Compiler.dart2js],
+      isBrowser: true, isJS: true, isBlink: true);
+
   /// The command-line Node.js VM.
   static const Runtime nodeJS = Runtime(
       'Node.js', 'node', Compiler.dart2js, [Compiler.dart2js],
@@ -56,6 +61,7 @@ class Runtime {
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer,
+    Runtime.edge,
     Runtime.nodeJS,
     Runtime.experimentalChromeWasm,
   ];

@@ -9,6 +9,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/src/runner/browser/chromium.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -45,39 +46,20 @@ class Chrome extends Browser {
     var idToUrl = <String, String>{};
     return Chrome._(() async {
       Future<Process> tryPort([int? port]) async {
-        var dir = createTempDir();
-        var args = [
-          '--user-data-dir=$dir',
-          url.toString(),
-          '--enable-logging=stdout',
-          '--v=1',
-          '--disable-extensions',
-          '--disable-popup-blocking',
-          '--bwsi',
-          '--no-first-run',
-          '--no-default-browser-check',
-          '--disable-default-apps',
-          '--disable-translate',
-          '--disable-dev-shm-usage',
-          if (settings!.headless && !configuration.pauseAfterLoad) ...[
-            '--headless',
-            '--disable-gpu',
+        var process = await ChromiumBasedBrowser.chrome.spawn(
+          url,
+          configuration,
+          settings: settings,
+          additionalArgs: [
+            if (port != null)
+              // Chrome doesn't provide any way of ensuring that this port was
+              // successfully bound. It produces an error if the binding fails,
+              // but without a reliable and fast way to tell if it succeeded
+              // that doesn't provide us much. It's very unlikely that this port
+              // will fail, though.
+              '--remote-debugging-port=$port',
           ],
-          if (!configuration.debug)
-            // We don't actually connect to the remote debugger, but Chrome will
-            // close as soon as the page is loaded if we don't turn it on.
-            '--remote-debugging-port=0',
-          ...settings.arguments,
-          if (port != null)
-            // Chrome doesn't provide any way of ensuring that this port was
-            // successfully bound. It produces an error if the binding fails,
-            // but without a reliable and fast way to tell if it succeeded that
-            // doesn't provide us much. It's very unlikely that this port will
-            // fail, though.
-            '--remote-debugging-port=$port',
-        ];
-
-        var process = await Process.start(settings.executable, args);
+        );
 
         if (port != null) {
           remoteDebuggerCompleter.complete(
@@ -87,9 +69,6 @@ class Chrome extends Browser {
         } else {
           remoteDebuggerCompleter.complete(null);
         }
-
-        unawaited(
-            process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
         return process;
       }
