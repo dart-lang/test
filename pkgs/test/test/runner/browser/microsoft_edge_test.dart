@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-@Tags(['chrome'])
+@Tags(['edge'])
 
 import 'package:test/src/runner/browser/microsoft_edge.dart';
 import 'package:test/src/runner/executable_settings.dart';
