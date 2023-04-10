@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
-import 'package:test/src/runner/browser/chromium.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -17,6 +16,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 import '../executable_settings.dart';
 import 'browser.dart';
+import 'chromium.dart';
 import 'default_settings.dart';
 
 /// A class for running an instance of Chrome.
