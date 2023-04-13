@@ -10,5 +10,3 @@ export 'package:matcher/expect.dart';
 
 export 'hooks.dart' show TestFailure;
 export 'scaffolding.dart';
-// Not yet deprecated, but not exposed through focused libraries.
-export 'src/scaffolding/utils.dart' show registerException;

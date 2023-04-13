@@ -8,8 +8,6 @@
 /// {@canonicalFor tags.Tags}
 /// {@canonicalFor test_on.TestOn}
 /// {@canonicalFor timeout.Timeout}
-@Deprecated('package:test_api is not intended for general use. '
-    'Please use package:test.')
 library test_api.scaffolding;
 
 export 'src/backend/configuration/on_platform.dart' show OnPlatform;
@@ -22,4 +20,4 @@ export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridUri, spawnHybridCode;
 export 'src/scaffolding/test_structure.dart'
     show group, test, setUp, setUpAll, tearDown, tearDownAll, addTearDown;
 export 'src/scaffolding/utils.dart'
-    show pumpEventQueue, printOnFailure, markTestSkipped;
+    show markTestSkipped, printOnFailure, pumpEventQueue, registerException;
