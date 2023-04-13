@@ -18,6 +18,8 @@ final defaultSettings = UnmodifiableMapView({
   Runtime.edge: ExecutableSettings(
     linuxExecutable: 'microsoft-edge-stable',
     windowsExecutable: r'Microsoft\Edge\Application\msedge.exe',
+    macOSExecutable:
+        '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
     environmentOverride: 'MS_EDGE_EXECUTABLE',
   ),
   Runtime.firefox: ExecutableSettings(
