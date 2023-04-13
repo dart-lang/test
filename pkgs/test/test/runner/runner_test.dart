@@ -120,7 +120,7 @@ Output:
 
 final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
-    '${Platform.isWindows ? ', ie' : ''}, node, '
+    '${Platform.isWindows ? ', ie' : ''}, edge, node, '
     'experimental-chrome-wasm]';
 
 final _runtimeCompilers = [
@@ -129,6 +129,7 @@ final _runtimeCompilers = [
   '[firefox]: dart2js (default)',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
   if (Platform.isWindows) '[ie]: dart2js (default)',
+  '[edge]: dart2js (default)',
   '[node]: dart2js (default)',
   '[experimental-chrome-wasm]: dart2wasm (default)',
 ].map((str) => '                                      $str').join('\n');
