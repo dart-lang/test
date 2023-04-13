@@ -24,6 +24,7 @@ import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
+import 'microsoft_edge.dart';
 import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -163,6 +164,8 @@ class BrowserManager {
         return Safari(url, settings: settings);
       case Runtime.internetExplorer:
         return InternetExplorer(url, settings: settings);
+      case Runtime.edge:
+        return MicrosoftEdge(url, configuration, settings: settings);
       default:
         throw ArgumentError('$browser is not a browser.');
     }

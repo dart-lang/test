@@ -3,6 +3,8 @@
 * Copy an existing nonce from a script on the test HTML page to the script
   created by the test runner host javascript. This only impacts environments
   testing with custom HTML that includes a nonce.
+* Support the Microsoft Edge browser (use the `edge` platform in your the test
+  configuration file or `-p edge` on the command line).
 
 ## 1.24.1
 
