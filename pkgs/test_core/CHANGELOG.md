@@ -1,3 +1,7 @@
+## 0.5.2
+
+* Use the version `0.5.2` of `packge:test_api`.
+
 ## 0.5.1
 
 * Start adding experimental support for native_assets.yaml, when

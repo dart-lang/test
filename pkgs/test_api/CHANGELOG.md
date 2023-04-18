@@ -1,3 +1,8 @@
+## 0.5.2
+
+* Remove deprecation for the `scaffolding.dart` and `backend.dart` libraries.
+* Export `registerException` from the `scaffolding.dart` library.
+
 ## 0.5.1
 
 * Handle a missing `'compiler'` value when running a test compiled against a

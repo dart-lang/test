@@ -1,4 +1,4 @@
-## 1.24.2-dev
+## 1.24.2
 
 * Copy an existing nonce from a script on the test HTML page to the script
   created by the test runner host javascript. This only impacts environments
