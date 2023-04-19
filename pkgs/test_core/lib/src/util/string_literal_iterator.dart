@@ -36,7 +36,7 @@ const _verticalTab = 0xB;
 ///
 /// In addition to exposing the values of the runes themselves, this also
 /// exposes the offset of the current rune in the Dart source file.
-class StringLiteralIterator extends Iterator<int> {
+class StringLiteralIterator implements Iterator<int> {
   @override
   int get current => _current!;
   int? _current;
