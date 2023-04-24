@@ -6,7 +6,6 @@
     'Please use package:test.')
 library test_core.backend;
 
-//ignore: deprecated_member_use
 export 'package:test_api/backend.dart'
     show Compiler, Metadata, PlatformSelector, Runtime, SuitePlatform;
 

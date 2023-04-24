@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
