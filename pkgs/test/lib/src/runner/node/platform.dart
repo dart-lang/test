@@ -11,7 +11,6 @@ import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Compiler, Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports

@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports

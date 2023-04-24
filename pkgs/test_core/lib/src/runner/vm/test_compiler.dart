@@ -10,7 +10,7 @@ import 'package:async/async.dart';
 import 'package:frontend_server_client/frontend_server_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
-import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 
 import '../../util/dart.dart';
 import '../../util/io.dart';
