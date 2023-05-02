@@ -1,5 +1,5 @@
 name: checks
-version: 0.2.2-dev
+version: 0.2.2
 description: >-
   A framework for checking values against expectations and building custom
   expectations.
@@ -11,7 +11,7 @@ environment:
 dependencies:
   async: ^2.8.0
   meta: ^1.9.0
-  test_api: ^0.5.0
+  test_api: ">=0.5.0 <0.6.0"
 
 dev_dependencies:
   test: ^1.21.3
