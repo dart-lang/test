@@ -7,7 +7,5 @@
 library test_core;
 
 export 'package:test_api/hooks.dart' show TestFailure;
-// Not yet deprecated, but not exposed through focused libraries.
-export 'package:test_api/test_api.dart' show registerException;
 
 export 'scaffolding.dart';
