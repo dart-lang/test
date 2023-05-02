@@ -1,3 +1,8 @@
+## 0.6.0-dev
+
+* Remove the `package:test_api/expect.dart' library. `test` will export from
+  `package:matcher` directly.
+
 ## 0.5.2
 
 * Remove deprecation for the `scaffolding.dart` and `backend.dart` libraries.
