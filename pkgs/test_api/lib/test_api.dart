@@ -6,7 +6,5 @@
     'Please use package:test.')
 library test_api;
 
-export 'package:matcher/expect.dart';
-
 export 'hooks.dart' show TestFailure;
 export 'scaffolding.dart';
