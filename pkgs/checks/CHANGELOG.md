@@ -1,4 +1,4 @@
-## 0.2.2-dev
+## 0.2.2
 
 -   Return the first failure from `softCheck` and `softCheckAsync` as
     documented, instead of the last failure when there are multiple failures.
