@@ -15,14 +15,14 @@ void main() {
   group('synchronous', () {
     group('[throws]', () {
       test('with a function that throws an error', () {
-        // ignore: deprecated_member_use
+        // ignore: deprecated_member_use_from_same_package
         expect(() => throw 'oh no', throws);
       });
 
       test("with a function that doesn't throw", () async {
         void local() {}
         var monitor = await TestCaseMonitor.run(() {
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           expect(local, throws);
         });
 
@@ -38,7 +38,7 @@ void main() {
 
       test('with a non-function', () async {
         var monitor = await TestCaseMonitor.run(() {
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           expect(10, throws);
         });
 
@@ -114,13 +114,13 @@ void main() {
   group('asynchronous', () {
     group('[throws]', () {
       test('with a Future that throws an error', () {
-        // ignore: deprecated_member_use
+        // ignore: deprecated_member_use_from_same_package
         expect(Future.error('oh no'), throws);
       });
 
       test("with a Future that doesn't throw", () async {
         var monitor = await TestCaseMonitor.run(() {
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           expect(Future.value(), throws);
         });
 
@@ -135,13 +135,13 @@ void main() {
       });
 
       test('with a closure that returns a Future that throws an error', () {
-        // ignore: deprecated_member_use
+        // ignore: deprecated_member_use_from_same_package
         expect(() => Future.error('oh no'), throws);
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
         var monitor = await TestCaseMonitor.run(() {
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           expect(Future.value, throws);
         });
 
@@ -159,7 +159,7 @@ void main() {
         late void Function() callback;
         final monitor = TestCaseMonitor.start(() {
           final completer = Completer<void>();
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           expect(completer.future, throws);
           callback = () => completer.completeError('oh no');
         });

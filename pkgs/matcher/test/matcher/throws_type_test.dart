@@ -47,13 +47,13 @@ void main() {
     test('passes when a CyclicInitializationError is thrown', () {
       expect(
           () => _CyclicInitializationFailure().x,
-          // ignore: deprecated_member_use
+          // ignore: deprecated_member_use_from_same_package
           throwsCyclicInitializationError);
     });
 
     test('fails when a non-CyclicInitializationError is thrown', () async {
       var liveTest = await TestCaseMonitor.run(() {
-        // ignore: deprecated_member_use
+        // ignore: deprecated_member_use_from_same_package
         expect(() => throw Exception(), throwsCyclicInitializationError);
       });
 

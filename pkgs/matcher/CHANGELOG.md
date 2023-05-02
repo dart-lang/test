@@ -1,3 +1,8 @@
+## 0.12.16
+
+* Expand bounds on `test_api` dependency to allow the next breaking release
+  which will remove the cyclic dependency on this package.
+
 ## 0.12.15
 
 * Add `package:matcher/expect.dart` library. Copies the implementation of
