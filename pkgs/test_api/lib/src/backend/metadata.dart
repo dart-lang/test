@@ -282,7 +282,8 @@ class Metadata {
     if (serialized == 'none') return Timeout.none;
     var scaleFactor = serialized['scaleFactor'];
     if (scaleFactor != null) return Timeout.factor(scaleFactor as num);
-    return Timeout(Duration(microseconds: (serialized['duration'] as num).toInt()));
+    return Timeout(
+        Duration(microseconds: (serialized['duration'] as num).toInt()));
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
