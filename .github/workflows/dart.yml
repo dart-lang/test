@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.5.3
+# Created with package:mono_repo v6.5.4
 name: Dart CI
 on:
   push:
@@ -34,9 +34,9 @@ jobs:
           sdk: stable
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.5.3
+        run: dart pub global activate mono_repo 6.5.4
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
@@ -59,7 +59,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_in_with_optout_pub_upgrade
         name: legacy_tests/nnbd_opted_in_with_optout; dart pub upgrade
         run: dart pub upgrade
@@ -93,7 +93,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -132,7 +132,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -231,7 +231,7 @@ jobs:
           sdk: main
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -265,7 +265,7 @@ jobs:
           sdk: stable
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_out_pub_upgrade
         name: legacy_tests/nnbd_opted_out; dart pub upgrade
         run: dart pub upgrade
@@ -300,7 +300,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:integration_tests/spawn_hybrid;commands:test"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:integration_tests/spawn_hybrid;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -312,7 +312,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -337,7 +337,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_in;commands:test"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_in;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_in
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -349,7 +349,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_in_pub_upgrade
         name: legacy_tests/nnbd_opted_in; dart pub upgrade
         run: dart pub upgrade
@@ -374,7 +374,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_in_with_optout;commands:test"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_in_with_optout;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_in_with_optout
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -386,7 +386,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_in_with_optout_pub_upgrade
         name: legacy_tests/nnbd_opted_in_with_optout; dart pub upgrade
         run: dart pub upgrade
@@ -411,7 +411,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_out;commands:test"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_out;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/nnbd_opted_out
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -423,7 +423,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_out_pub_upgrade
         name: legacy_tests/nnbd_opted_out; dart pub upgrade
         run: dart pub upgrade
@@ -448,7 +448,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/spawn_hybrid_with_optout;commands:test"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/spawn_hybrid_with_optout;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:legacy_tests/spawn_hybrid_with_optout
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -460,7 +460,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_spawn_hybrid_with_optout_pub_upgrade
         name: legacy_tests/spawn_hybrid_with_optout; dart pub upgrade
         run: dart pub upgrade
@@ -485,7 +485,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/checks;commands:command_00"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/checks;commands:command_01"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/checks
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -497,7 +497,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -522,7 +522,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_01"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_02"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -534,7 +534,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -559,7 +559,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_02"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_03"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -571,7 +571,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -596,7 +596,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_03"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_04"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -608,7 +608,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -633,7 +633,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_04"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_05"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -645,7 +645,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -670,7 +670,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_05"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test;commands:command_06"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -682,7 +682,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -707,7 +707,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test_api;commands:command_11"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test_api;commands:command_12"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0;packages:pkgs/test_api
             os:ubuntu-latest;pub-cache-hosted;sdk:2.18.0
@@ -719,7 +719,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
         run: dart pub upgrade
@@ -744,7 +744,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test_0"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -756,7 +756,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -781,7 +781,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks;commands:command_00"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks;commands:command_01"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -793,7 +793,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -818,7 +818,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_01"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_02"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -830,7 +830,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -855,7 +855,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_02"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_03"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -867,7 +867,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -892,7 +892,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_03"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_04"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -904,7 +904,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -929,7 +929,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_04"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_05"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -941,7 +941,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -966,7 +966,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_05"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_06"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -978,7 +978,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1003,7 +1003,7 @@ jobs:
         uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api;commands:command_11"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api;commands:command_12"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
@@ -1015,7 +1015,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
         run: dart pub upgrade
@@ -1033,6 +1033,47 @@ jobs:
       - job_005
       - job_006
   job_027:
+    name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm;commands:command_00-command_01"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm
+            os:ubuntu-latest;pub-cache-hosted;sdk:main
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@d6a63dab3335f427404425de0fbfed4686d93c4f
+        with:
+          sdk: main
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+      - id: integration_tests_wasm_pub_upgrade
+        name: integration_tests/wasm; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: integration_tests/wasm; dart test
+        run: dart test
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+  job_028:
     name: "unit_test; windows; Dart 2.18.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1042,7 +1083,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -1059,7 +1100,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_028:
+  job_029:
     name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_in; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1069,7 +1110,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_in_pub_upgrade
         name: legacy_tests/nnbd_opted_in; dart pub upgrade
         run: dart pub upgrade
@@ -1086,7 +1127,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_029:
+  job_030:
     name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_in_with_optout; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1096,7 +1137,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_in_with_optout_pub_upgrade
         name: legacy_tests/nnbd_opted_in_with_optout; dart pub upgrade
         run: dart pub upgrade
@@ -1113,7 +1154,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_030:
+  job_031:
     name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/nnbd_opted_out; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1123,7 +1164,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_nnbd_opted_out_pub_upgrade
         name: legacy_tests/nnbd_opted_out; dart pub upgrade
         run: dart pub upgrade
@@ -1140,7 +1181,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_031:
+  job_032:
     name: "unit_test; windows; Dart 2.18.0; PKG: legacy_tests/spawn_hybrid_with_optout; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1150,7 +1191,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: legacy_tests_spawn_hybrid_with_optout_pub_upgrade
         name: legacy_tests/spawn_hybrid_with_optout; dart pub upgrade
         run: dart pub upgrade
@@ -1167,7 +1208,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_032:
+  job_033:
     name: "unit_test; windows; Dart 2.18.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: windows-latest
     steps:
@@ -1177,7 +1218,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1194,7 +1235,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_033:
+  job_034:
     name: "unit_test; windows; Dart 2.18.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: windows-latest
     steps:
@@ -1204,7 +1245,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1221,7 +1262,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_034:
+  job_035:
     name: "unit_test; windows; Dart 2.18.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: windows-latest
     steps:
@@ -1231,7 +1272,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1248,7 +1289,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_035:
+  job_036:
     name: "unit_test; windows; Dart 2.18.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: windows-latest
     steps:
@@ -1258,7 +1299,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1275,7 +1316,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_036:
+  job_037:
     name: "unit_test; windows; Dart 2.18.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: windows-latest
     steps:
@@ -1285,7 +1326,7 @@ jobs:
           sdk: "2.18.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1302,7 +1343,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_037:
+  job_038:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1312,7 +1353,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -1329,7 +1370,7 @@ jobs:
       - job_004
       - job_005
       - job_006
-  job_038:
+  job_039:
     name: Notify failure
     runs-on: ubuntu-latest
     if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
@@ -1378,3 +1419,4 @@ jobs:
       - job_035
       - job_036
       - job_037
+      - job_038
