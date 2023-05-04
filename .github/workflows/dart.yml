@@ -1033,7 +1033,7 @@ jobs:
       - job_005
       - job_006
   job_027:
-    name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s --retry=2`"
+    name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -1062,8 +1062,8 @@ jobs:
         run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
-      - name: "integration_tests/wasm; dart test --timeout=60s --retry=2"
-        run: "dart test --timeout=60s --retry=2"
+      - name: "integration_tests/wasm; dart test --timeout=60s"
+        run: "dart test --timeout=60s"
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
     needs:
