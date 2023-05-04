@@ -1,3 +1,7 @@
+## 0.5.3-wip
+
+* Fix compatibility with wasm number semantics.
+
 ## 0.5.2
 
 * Remove deprecation for the `scaffolding.dart` and `backend.dart` libraries.

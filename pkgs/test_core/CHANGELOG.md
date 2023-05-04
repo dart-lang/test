@@ -1,5 +1,7 @@
 ## 0.5.3-wip
 
+* Fix compatibility with wasm number semantics.
+
 ## 0.5.2
 
 * Use the version `0.5.2` of `packge:test_api`.

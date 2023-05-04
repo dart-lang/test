@@ -1,5 +1,7 @@
 ## 1.24.3-wip
 
+* Fix compatibility with wasm number semantics.
+
 ## 1.24.2
 
 * Copy an existing nonce from a script on the test HTML page to the script
