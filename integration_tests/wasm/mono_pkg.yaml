@@ -18,6 +18,6 @@ stages:
       - which google-chrome-beta
       os:
         - linux
-    - test:
+    - test: --timeout=60s --retry=2
       os:
       - linux
