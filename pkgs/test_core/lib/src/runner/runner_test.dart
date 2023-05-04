@@ -70,7 +70,7 @@ class RunnerTest extends Test {
             // this virtual channel and cause the spawned isolate to close as
             // well.
             spawnHybridUri(message['url'] as String, message['message'], suite)
-                .pipe(testChannel.virtualChannel(message['channel'] as int));
+                .pipe(testChannel.virtualChannel((message['channel'] as num).toInt()));
             break;
         }
       }, onDone: () {

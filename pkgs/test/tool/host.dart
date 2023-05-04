@@ -130,9 +130,9 @@ void main() {
     serverChannel.stream.listen((message) {
       if (message['command'] == 'loadSuite') {
         var suiteChannel =
-            serverChannel.virtualChannel(message['channel'] as int);
+            serverChannel.virtualChannel((message['channel'] as num).toInt());
         var iframeChannel =
-            _connectToIframe(message['url'] as String, message['id'] as int);
+            _connectToIframe(message['url'] as String, (message['id'] as num).toInt());
         suiteChannel.pipe(iframeChannel);
       } else if (message['command'] == 'displayPause') {
         dom.document.body!.classList.add('paused');

@@ -264,7 +264,7 @@ class Metadata {
         skipReason = serialized['skipReason'] as String?,
         _verboseTrace = serialized['verboseTrace'] as bool?,
         _chainStackTraces = serialized['chainStackTraces'] as bool?,
-        _retry = serialized['retry'] as int?,
+        _retry = (serialized['retry'] as num?)?.toInt(),
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
           for (var pair in serialized['onPlatform'] as List)
@@ -282,7 +282,7 @@ class Metadata {
     if (serialized == 'none') return Timeout.none;
     var scaleFactor = serialized['scaleFactor'];
     if (scaleFactor != null) return Timeout.factor(scaleFactor as num);
-    return Timeout(Duration(microseconds: serialized['duration'] as int));
+    return Timeout(Duration(microseconds: (serialized['duration'] as num).toInt()));
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
