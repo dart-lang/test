@@ -2,6 +2,7 @@
 
 * Remove the `package:test_api/expect.dart' library. `test` will export from
   `package:matcher` directly.
+* Fix compatibility with wasm number semantics.
 
 ## 0.5.2
 
