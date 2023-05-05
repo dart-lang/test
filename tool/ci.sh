@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created with package:mono_repo v6.5.4
+# Created with package:mono_repo v6.5.5
 
 # Support built in commands on windows out of the box.
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
@@ -134,6 +134,10 @@ for PKG in ${PKGS}; do
       test_0)
         echo 'dart test -p chrome,vm,node'
         dart test -p chrome,vm,node || EXIT_CODE=$?
+        ;;
+      test_1)
+        echo 'dart test --timeout=60s'
+        dart test --timeout=60s || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

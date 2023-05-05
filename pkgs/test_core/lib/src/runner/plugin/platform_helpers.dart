@@ -155,7 +155,7 @@ class _Deserializer {
     var metadata = Metadata.deserialize(test['metadata']);
     var trace =
         test['trace'] == null ? null : Trace.parse(test['trace'] as String);
-    var testChannel = _channel.virtualChannel(test['channel'] as int);
+    var testChannel = _channel.virtualChannel((test['channel'] as num).toInt());
     return RunnerTest(test['name'] as String, metadata, trace, testChannel);
   }
 }

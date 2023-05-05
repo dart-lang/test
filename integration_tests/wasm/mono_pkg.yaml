@@ -18,6 +18,7 @@ stages:
       - which google-chrome-beta
       os:
         - linux
-    - test:
+    # The config here is a regression test for https://github.com/dart-lang/test/issues/2006
+    - test: --timeout=60s
       os:
       - linux
