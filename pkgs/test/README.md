@@ -136,9 +136,14 @@ It's also possible to run a test on the Dart VM only by invoking it using `dart
 path/to/test.dart`, but this doesn't load the full test runner and will be
 missing some features.
 
-The test runner considers any file that ends with `_test.dart` to be a test
-file. If you don't pass any paths, it will run all the test files in your
-`test/` directory, making it easy to test your entire application at once.
+The test runner accepts one or more path arguments. If there are no path
+arguments the runner defaults to running tests under the `test/` directory. When
+running for `test/` or any other directory, the runner will recursively search
+the directory for files that match the test name pattern `*_test.dart`. The
+pattern can be overridden in `dart_test.yaml`. When a path argument is a file
+instead of a directory it will be run as a test, regardless of the file name.
+Arguments which use shell globbing should avoid including non-test files in the
+path argument.
 
 You can select specific tests cases to run by name using `dart test -n "test
 name"`. The string is interpreted as a regular expression, and only tests whose
