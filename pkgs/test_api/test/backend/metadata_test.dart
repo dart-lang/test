@@ -10,6 +10,45 @@ import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 
 void main() {
+  group('current', () {
+    final originalMetadata = Metadata.current;
+    group(
+      'tags',
+      () {
+        test(
+          'inherited from the parent group',
+          () {
+            expect(Metadata.current?.tags, equals(['tag-1', 'tag-2', 'tag-3']));
+          },
+          tags: ['tag-3'],
+        );
+        test(
+          'inherited from the parent group (2)',
+          () {
+            expect(Metadata.current?.tags, equals(['tag-1', 'tag-2']));
+          },
+        );
+      },
+      tags: ['tag-1', 'tag-2'],
+    );
+    group('group 1', () {
+      group('group 1.a', () {
+        group('group 1.a.I', () {
+          test('name is correct', () {
+            expect(
+                Metadata.current?.name,
+                equals([
+                  ...originalMetadata?.name ?? [],
+                  'group 1',
+                  'group 1.a',
+                  'group 1.a.I',
+                  'name is correct'
+                ]));
+          });
+        });
+      });
+    });
+  });
   group('tags', () {
     test('parses an Iterable', () {
       expect(

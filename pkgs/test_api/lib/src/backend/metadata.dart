@@ -4,6 +4,7 @@
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
+import 'package:test_api/src/backend/declarer.dart';
 
 import 'configuration/skip.dart';
 import 'configuration/timeout.dart';
@@ -71,6 +72,17 @@ class Metadata {
   ///
   /// Only available for test suites and not individual tests.
   final String? languageVersionComment;
+
+  /// The name of the current test group, including the name of any parent
+  /// groups.
+  ///
+  /// This is `null` if this is the root group.
+  final List<String>? name;
+
+  /// The metadata for the current test/suite.
+  ///
+  /// This is `null` if not in a test/suite.
+  static Metadata? get current => Declarer.currentMetadata;
 
   /// Parses a user-provided map into the value for [onPlatform].
   static Map<PlatformSelector, Metadata> _parseOnPlatform(
@@ -146,7 +158,8 @@ class Metadata {
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
   factory Metadata(
-      {PlatformSelector? testOn,
+      {List<String>? name,
+      PlatformSelector? testOn,
       Timeout? timeout,
       bool? skip,
       bool? verboseTrace,
@@ -159,6 +172,7 @@ class Metadata {
       String? languageVersionComment}) {
     // Returns metadata without forTag resolved at all.
     Metadata unresolved() => Metadata._(
+        name: name,
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -194,6 +208,7 @@ class Metadata {
   ///
   /// Unlike [Metadata], this assumes [forTag] is already resolved.
   Metadata._({
+    this.name,
     PlatformSelector? testOn,
     Timeout? timeout,
     bool? skip,
@@ -223,17 +238,18 @@ class Metadata {
   /// where applicable.
   ///
   /// Throws a [FormatException] if any field is invalid.
-  Metadata.parse(
-      {String? testOn,
-      Timeout? timeout,
-      dynamic skip,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      int? retry,
-      Map<String, dynamic>? onPlatform,
-      tags,
-      this.languageVersionComment})
-      : testOn = testOn == null
+  Metadata.parse({
+    this.name,
+    String? testOn,
+    Timeout? timeout,
+    dynamic skip,
+    bool? verboseTrace,
+    bool? chainStackTraces,
+    int? retry,
+    Map<String, dynamic>? onPlatform,
+    tags,
+    this.languageVersionComment,
+  })  : testOn = testOn == null
             ? PlatformSelector.all
             : PlatformSelector.parse(testOn),
         timeout = timeout ?? const Timeout.factor(1),
@@ -256,7 +272,10 @@ class Metadata {
 
   /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
   Metadata.deserialize(serialized)
-      : testOn = serialized['testOn'] == null
+      : name = (serialized['name'] as List? ?? [])
+            .map((s) => s as String)
+            .toList(),
+        testOn = serialized['testOn'] == null
             ? PlatformSelector.all
             : PlatformSelector.parse(serialized['testOn'] as String),
         timeout = _deserializeTimeout(serialized['timeout']),
@@ -318,6 +337,7 @@ class Metadata {
   /// either has a [forTag] metadata for one of the other's tags, that metadata
   /// is merged as well.
   Metadata merge(Metadata other) => Metadata(
+      name: other.name ?? name,
       testOn: testOn.intersection(other.testOn),
       timeout: timeout.merge(other.timeout),
       skip: other._skip ?? _skip,
@@ -335,7 +355,8 @@ class Metadata {
 
   /// Returns a copy of [this] with the given fields changed.
   Metadata change(
-      {PlatformSelector? testOn,
+      {List<String>? name,
+      PlatformSelector? testOn,
       Timeout? timeout,
       bool? skip,
       bool? verboseTrace,
@@ -346,6 +367,7 @@ class Metadata {
       Set<String>? tags,
       Map<BooleanSelector, Metadata>? forTag,
       String? languageVersionComment}) {
+    name ??= this.name;
     testOn ??= this.testOn;
     timeout ??= this.timeout;
     skip ??= _skip;
@@ -358,6 +380,7 @@ class Metadata {
     forTag ??= this.forTag;
     languageVersionComment ??= this.languageVersionComment;
     return Metadata(
+        name: name,
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -394,6 +417,7 @@ class Metadata {
     });
 
     return {
+      'name': name ?? [],
       'testOn': testOn == PlatformSelector.all ? null : testOn.toString(),
       'timeout': _serializeTimeout(timeout),
       'skip': _skip,

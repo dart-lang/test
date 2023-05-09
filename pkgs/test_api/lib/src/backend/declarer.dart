@@ -106,6 +106,8 @@ class Declarer {
   /// The current zone-scoped declarer.
   static Declarer? get current => Zone.current[#test.declarer] as Declarer?;
 
+  static Metadata? get currentMetadata => current?._metadata;
+
   /// All the test and group names that have been declared in the entire suite.
   ///
   /// If duplicate test names are allowed, this is not tracked and it will be
@@ -184,7 +186,9 @@ class Declarer {
       return;
     }
 
+    final newName = [if (_metadata.name != null) ..._metadata.name!, name];
     var newMetadata = Metadata.parse(
+        name: newName,
         testOn: testOn,
         timeout: timeout,
         skip: skip,
@@ -216,7 +220,18 @@ class Declarer {
       },
           // Make the declarer visible to running tests so that they'll throw
           // useful errors when calling `test()` and `group()` within a test.
-          zoneValues: {#test.declarer: this});
+          zoneValues: {
+            #test.declarer: Declarer._(
+                _parent,
+                _name,
+                metadata,
+                _platformVariables,
+                _collectTraces,
+                _trace,
+                _noRetry,
+                _fullTestName,
+                _seenNames),
+          });
     }, trace: _collectTraces ? Trace.current(2) : null, guarded: false));
 
     if (solo) {
@@ -241,6 +256,7 @@ class Declarer {
     }
 
     var newMetadata = Metadata.parse(
+        name: [if (_metadata.name != null) ..._metadata.name!, name],
         testOn: testOn,
         timeout: timeout,
         skip: skip,
