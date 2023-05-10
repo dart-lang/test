@@ -13,6 +13,7 @@ import 'group_entry.dart';
 import 'invoker.dart';
 import 'metadata.dart';
 import 'test.dart';
+import 'test_failure.dart';
 
 /// A class that manages the state of tests as they're declared.
 ///
@@ -327,6 +328,11 @@ class Declarer {
       }
       return entry;
     }).toList();
+    if (entries.isEmpty) {
+      entries.add(LocalTest(_name ?? 'Empty group', _metadata, () {
+        throw TestFailure('No tests declared in group');
+      }));
+    }
 
     return Group(_name ?? '', entries,
         metadata: _metadata,

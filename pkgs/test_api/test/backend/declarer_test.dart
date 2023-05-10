@@ -410,6 +410,17 @@ void main() {
       });
     });
 
+    test('disallows empty groups', () async {
+      var entries = declare(() {
+        group('group', () {});
+      });
+
+      expect(entries, hasLength(1));
+      var testGroup = entries.single as Group;
+      expect(testGroup.entries, hasLength(1));
+      await _runTest(testGroup.entries.single as Test, shouldFail: true);
+    });
+
     group('.setUp()', () {
       test('is scoped to the group', () async {
         var setUpRun = false;
