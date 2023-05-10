@@ -261,7 +261,7 @@ class JsonReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  void _onError(LiveTest liveTest, Object error, StackTrace stackTrace) {
     _emit('error', {
       'testID': _liveTestIDs[liveTest],
       'error': error.toString(),

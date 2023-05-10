@@ -14,7 +14,7 @@ import 'package:test_api/src/utils.dart'; // ignore: implementation_imports
 
 /// A sink transformer that wraps data and error events so that errors can be
 /// decoded after being JSON-serialized.
-final _transformer = StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
+final _transformer = StreamSinkTransformer<Object?, Object?>.fromHandlers(
     handleData: (data, sink) {
   ensureJsonEncodable(data);
   sink.add({'type': 'data', 'data': data});
@@ -38,7 +38,7 @@ void listen(Function Function() getMain, List data) {
 
   Chain.capture(() {
     runZoned(() {
-      dynamic /*Function*/ main;
+      Object /*Function*/ main;
       try {
         main = getMain();
       } on NoSuchMethodError catch (_) {
@@ -80,10 +80,9 @@ void listen(Function Function() getMain, List data) {
     }, zoneSpecification: ZoneSpecification(print: (_, __, ___, line) {
       channel.sink.add({'type': 'print', 'line': line});
     }));
-  }, onError: (error, stackTrace) async {
+  }, onError: (error, stackTrace) {
     _sendError(channel, error, stackTrace);
-    await channel.sink.close();
-    Isolate.current.kill();
+    channel.sink.close().whenComplete(Isolate.current.kill);
   });
 }
 

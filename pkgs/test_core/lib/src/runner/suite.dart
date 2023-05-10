@@ -445,9 +445,8 @@ class SuiteConfiguration {
           if (selection.span != null) {
             throw SourceSpanFormatException(
                 'Unknown platform "${selection.name}".', selection.span);
-          } else {
-            throw FormatException('Unknown platform "${selection.name}".');
           }
+          throw FormatException('Unknown platform "${selection.name}".');
         }
       }
     }

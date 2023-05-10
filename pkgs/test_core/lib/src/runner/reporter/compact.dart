@@ -252,7 +252,7 @@ class CompactReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  void _onError(LiveTest liveTest, Object error, StackTrace stackTrace) {
     if (!liveTest.test.metadata.chainStackTraces &&
         !liveTest.suite.isLoadSuite) {
       _shouldPrintStackTraceChainingNotice = true;

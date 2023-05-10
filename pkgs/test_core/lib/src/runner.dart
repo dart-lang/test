@@ -149,9 +149,8 @@ class Runner {
                 'No tests match the requested tag selectors:\n'
                 '  include: "${_config.includeTags}"\n'
                 '  exclude: "${_config.excludeTags}"');
-          } else {
-            throw NoTestsFoundException('No tests were found.');
           }
+            throw NoTestsFoundException('No tests were found.');
         }
 
         return (success ?? false) &&
@@ -264,14 +263,13 @@ class Runner {
         return _loader.loadDir(testPath, suiteConfig);
       } else if (File(testPath).existsSync()) {
         return _loader.loadFile(testPath, suiteConfig);
-      } else {
-        return Stream.fromIterable([
-          LoadSuite.forLoadException(
-            LoadException(testPath, 'Does not exist.'),
-            suiteConfig,
-          ),
-        ]);
       }
+      return Stream.fromIterable([
+        LoadSuite.forLoadException(
+          LoadException(testPath, 'Does not exist.'),
+          suiteConfig,
+        ),
+      ]);
     })).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
         _warnForUnknownTags(suite);
@@ -283,13 +281,14 @@ class Runner {
             return false;
           }
 
+          final isInTags = test.metadata.tags.contains;
           // If the user provided tags, skip tests that don't match all of them.
-          if (!_config.includeTags.evaluate(test.metadata.tags.contains)) {
+          if (!_config.includeTags.evaluate(isInTags)) {
             return false;
           }
 
           // Skip tests that do match any tags the user wants to exclude.
-          if (_config.excludeTags.evaluate(test.metadata.tags.contains)) {
+          if (_config.excludeTags.evaluate(isInTags)) {
             return false;
           }
 

@@ -29,9 +29,8 @@ final String _globalConfigPath = () {
     return Platform.environment['DART_TEST_CONFIG']!;
   } else if (Platform.operatingSystem == 'windows') {
     return p.join(Platform.environment['LOCALAPPDATA']!, 'DartTest.yaml');
-  } else {
-    return '${Platform.environment['HOME']}/.dart_test.yaml';
   }
+  return '${Platform.environment['HOME']}/.dart_test.yaml';
 }();
 
 Future<void> main(List<String> args) async {
@@ -60,12 +59,15 @@ Future<void> _execute(List<String> args) async {
   /// Signals will only be captured as long as this has an active subscription.
   /// Otherwise, they'll be handled by Dart's default signal handler, which
   /// terminates the program immediately.
-  final signals = Platform.isWindows
-      ? ProcessSignal.sigint.watch()
-      : Platform.isFuchsia // Signals don't exist on Fuchsia.
-          ? Stream.empty()
-          : StreamGroup.merge(
-              [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+  final Stream signals;
+  if (Platform.isWindows) {
+    signals = ProcessSignal.sigint.watch();
+  } else if (Platform.isFuchsia) {
+    signals = Stream.empty();
+  } else {
+    signals = StreamGroup.merge(
+        [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+  }
 
   Configuration configuration;
   try {
@@ -139,9 +141,9 @@ Future<void> _execute(List<String> args) async {
 
   Runner? runner;
 
-  signalSubscription ??= signals.listen((signal) async {
+  signalSubscription ??= signals.listen((signal) {
     completeShutdown();
-    await runner?.close();
+    runner?.close();
   });
 
   try {

@@ -51,7 +51,7 @@ class VMPlatform extends PlatformPlugin {
     _setupPauseAfterTests();
 
     MultiChannel outerChannel;
-    var cleanupCallbacks = <void Function()>[];
+    var cleanupCallbacks = <FutureOr<void> Function()>[];
     Isolate? isolate;
     if (platform.compiler == Compiler.exe) {
       var serverSocket = await ServerSocket.bind('localhost', 0);
@@ -101,7 +101,7 @@ class VMPlatform extends PlatformPlugin {
         await outerQueue.next;
       }
       for (var fn in cleanupCallbacks) {
-        fn();
+        await fn();
       }
       eventSub?.cancel();
       client?.dispose();

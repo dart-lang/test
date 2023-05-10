@@ -452,7 +452,7 @@ class _ConfigurationLoader {
 
   /// Throws an exception with [message] if [test] returns `false` when passed
   /// [node]'s value.
-  void _validate(YamlNode node, String message, bool Function(dynamic) test) {
+  void _validate(YamlNode node, String message, bool Function(Object?) test) {
     if (test(node.value)) return;
     throw SourceSpanFormatException(message, node.span, _source);
   }
@@ -462,7 +462,7 @@ class _ConfigurationLoader {
   /// If [typeTest] returns `false` for that value, instead throws an error
   /// complaining that the field is not a [typeName].
   Object? _getValue(
-      String field, String typeName, bool Function(dynamic) typeTest) {
+      String field, String typeName, bool Function(Object?) typeTest) {
     var value = _document[field];
     if (value == null || typeTest(value)) return value;
     _error('$field must be ${a(typeName)}.', field);
@@ -475,7 +475,7 @@ class _ConfigurationLoader {
   ///
   /// Returns `null` if [field] does not have a node in [_document].
   YamlNode? _getNode(
-      String field, String typeName, bool Function(dynamic) typeTest) {
+      String field, String typeName, bool Function(Object?) typeTest) {
     var node = _document.nodes[field];
     if (node == null) return null;
     _validate(node, '$field must be ${a(typeName)}.', typeTest);
@@ -625,10 +625,9 @@ class _ConfigurationLoader {
 
     if (presets.isEmpty) {
       return base.isEmpty ? Configuration.empty : create(base);
-    } else {
-      var newPresets = presets.map((key, map) => MapEntry(key, create(map)));
-      return create(base).change(presets: newPresets);
     }
+    var newPresets = presets.map((key, map) => MapEntry(key, create(map)));
+    return create(base).change(presets: newPresets);
   }
 
   /// Asserts that [map] has a field named [field] and returns it.

@@ -100,12 +100,11 @@ Future<String> _normalizeUrl(String url, Suite suite) async {
         // to pass in an explicit root.
         return p.url
             .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
-      } else {
-        var suitePath = suite.path!;
-        return p.url.join(
-            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-            parsedUri.toString());
       }
+      var suitePath = suite.path!;
+      return p.url.join(
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUri.toString());
     case 'package':
       final resolvedUri = await Isolate.resolvePackageUri(parsedUri);
       if (resolvedUri == null) {

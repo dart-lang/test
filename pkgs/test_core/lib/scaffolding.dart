@@ -133,7 +133,7 @@ Declarer get _declarer {
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(description, dynamic Function() body,
+void test(description, FutureOr<void> Function() body,
     {String? testOn,
     Timeout? timeout,
     skip,
@@ -211,12 +211,12 @@ void test(description, dynamic Function() body,
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(description, dynamic Function() body,
+void group(description, void Function() body,
     {String? testOn,
     Timeout? timeout,
     skip,
     tags,
-    Map<String, dynamic>? onPlatform,
+    Map<String, Object>? onPlatform,
     int? retry,
     @Deprecated('Debug only') bool solo = false}) {
   _declarer.group(description.toString(), body,
@@ -246,7 +246,7 @@ void group(description, dynamic Function() body,
 ///
 /// Each callback at the top level or in a given group will be run in the order
 /// they were declared.
-void setUp(dynamic Function() callback) => _declarer.setUp(callback);
+void setUp(FutureOr<void> Function() callback) => _declarer.setUp(callback);
 
 /// Registers a function to be run after tests.
 ///
@@ -261,7 +261,8 @@ void setUp(dynamic Function() callback) => _declarer.setUp(callback);
 /// reverse of the order they were declared.
 ///
 /// See also [addTearDown], which adds tear-downs to a running test.
-void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
+void tearDown(FutureOr<void> Function() callback) =>
+    _declarer.tearDown(callback);
 
 /// Registers a function to be run once before all tests.
 ///
@@ -276,7 +277,8 @@ void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
+void setUpAll(FutureOr<void> Function() callback) =>
+    _declarer.setUpAll(callback);
 
 /// Registers a function to be run once after all tests.
 ///
@@ -289,5 +291,5 @@ void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(dynamic Function() callback) =>
+void tearDownAll(FutureOr<void> Function() callback) =>
     _declarer.tearDownAll(callback);

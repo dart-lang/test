@@ -49,7 +49,7 @@ class Console {
   /// in the help output. The [body] callback will be called when the user types
   /// the command, and may return a [Future].
   void registerCommand(
-      String name, String description, dynamic Function() body) {
+      String name, String description, Object? Function() body) {
     if (_commands.containsKey(name)) {
       throw ArgumentError('The console already has a command named "$name".');
     }

@@ -6,6 +6,6 @@ import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_i
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 
-SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+SuitePlatform currentPlatform(Runtime _, Compiler? __) =>
     throw UnsupportedError(
         'Getting the current platform is only supported where dart:io exists');

@@ -189,7 +189,7 @@ class ExpandedReporter implements Reporter {
   }
 
   /// A callback called when [liveTest]'s state becomes [state].
-  void _onStateChange(LiveTest liveTest, State state) {
+  void _onStateChange(LiveTest _, State state) {
     if (state.status != Status.complete) return;
 
     // If any tests are running, display the name of the oldest active
@@ -200,7 +200,7 @@ class ExpandedReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  void _onError(LiveTest liveTest, Object error, StackTrace stackTrace) {
     if (!liveTest.test.metadata.chainStackTraces &&
         !liveTest.suite.isLoadSuite) {
       _shouldPrintStackTraceChainingNotice = true;

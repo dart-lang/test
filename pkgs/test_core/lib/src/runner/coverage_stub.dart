@@ -4,7 +4,6 @@
 
 import 'live_suite_controller.dart';
 
-Future<void> writeCoverage(
-        String coveragePath, LiveSuiteController controller) =>
+Future<void> writeCoverage(String _, LiveSuiteController __) =>
     throw UnsupportedError(
         'Coverage is only supported through the test runner.');

@@ -57,13 +57,8 @@ class _Parser {
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
     _prefixes = directives
-        .map((directive) {
-          if (directive is ImportDirective) {
-            return directive.prefix?.name;
-          } else {
-            return null;
-          }
-        })
+        .map((directive) =>
+            directive is ImportDirective ? directive.prefix?.name : null)
         .whereType<String>()
         .toSet();
   }
@@ -164,7 +159,7 @@ class _Parser {
   /// [annotation] is the annotation.
   ///
   /// Returns either `true` or a reason string.
-  dynamic _parseSkip(Annotation annotation) {
+  Object? _parseSkip(Annotation annotation) {
     var args = annotation.arguments!.arguments;
     return args.isEmpty ? true : _parseString(args.first).stringValue;
   }
@@ -172,7 +167,7 @@ class _Parser {
   /// Parses a `Skip` constructor.
   ///
   /// Returns either `true` or a reason string.
-  dynamic _parseSkipConstructor(Expression constructor) {
+  Object? _parseSkipConstructor(Expression constructor) {
     _findConstructorName(constructor, 'Skip');
     var arguments = _parseArguments(constructor);
     return arguments.isEmpty ? true : _parseString(arguments.first).stringValue;
@@ -415,17 +410,16 @@ class _Parser {
     var target = constructor.target;
     // Example: `SomeOtherClass()`
     if (target == null) return null;
-    if (target is SimpleIdentifier) {
+    if (target is SimpleIdentifier && candidates.contains(target.name)) {
       // Example: `Timeout.factor()`
-      if (candidates.contains(target.name)) return target.name;
+      return target.name;
     }
-    if (target is PrefixedIdentifier) {
+    if (target is PrefixedIdentifier &&
+        candidates.contains(target.identifier.name)) {
       // Looks  like `some_prefix.SomeTarget.someMethod` - "SomeTarget" is the
       // only potential type name.
       // Example: `test.Timeout.factor()`
-      if (candidates.contains(target.identifier.name)) {
-        return target.identifier.name;
-      }
+      return target.identifier.name;
     }
     return null;
   }

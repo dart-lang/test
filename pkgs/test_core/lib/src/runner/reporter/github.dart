@@ -133,23 +133,27 @@ class GithubReporter implements Reporter {
 
     // For now, we use the same icon for both tests and test-like structures
     // (loadSuite, setUpAll, tearDownAll).
-    var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
-    final prefix = failed
-        ? _GithubMarkup.failed
-        : skipped
-            ? _GithubMarkup.skipped
-            : defaultIcon;
-    final statusSuffix = failed
-        ? ' (failed)'
-        : skipped
-            ? ' (skipped)'
-            : '';
+    var defaultIcon =  _GithubMarkup.passed;
+    final String prefix;
+    if (failed) {
+      prefix = _GithubMarkup.failed;
+    } else if (skipped) {
+      prefix = _GithubMarkup.skipped;
+    } else {
+      prefix = defaultIcon;
+    }
+    final String statusSuffix;
+    if (failed) {
+      statusSuffix = ' (failed)';
+    } else if (skipped) {
+      statusSuffix = ' (skipped)';
+    } else {
+      statusSuffix = '';
+    }
 
     var name = test.test.name;
-    if (!loadSuite) {
-      if (_printPath && test.suite.path != null) {
-        name = '${test.suite.path}: $name';
-      }
+    if (!loadSuite && _printPath && test.suite.path != null) {
+      name = '${test.suite.path}: $name';
     }
     if (_printPlatform) {
       name = '[${test.suite.platform.runtime.name}, '
@@ -179,10 +183,8 @@ class GithubReporter implements Reporter {
       final statusSuffix = ' (failed after test completion)';
 
       var name = test.test.name;
-      if (!loadSuite) {
-        if (_printPath && test.suite.path != null) {
-          name = '${test.suite.path}: $name';
-        }
+      if (!loadSuite && _printPath && test.suite.path != null) {
+        name = '${test.suite.path}: $name';
       }
       if (_printPlatform) {
         name = '[${test.suite.platform.runtime.name}, '

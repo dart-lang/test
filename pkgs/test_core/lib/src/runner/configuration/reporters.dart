@@ -60,13 +60,12 @@ final _allReporters = <String, ReporterDetails>{
           JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
 };
 
-final defaultReporter = inTestTests
-    ? 'expanded'
-    : inGithubContext
-        ? 'github'
-        : canUseSpecialChars
-            ? 'compact'
-            : 'expanded';
+final defaultReporter = () {
+  if (inTestTests) return 'expanded';
+  if (inGithubContext) return 'github';
+  if (canUseSpecialChars) return 'compact';
+  return 'expanded';
+}();
 
 /// **Do not call this function without express permission from the test package
 /// authors**.
