@@ -217,10 +217,7 @@ class _Parser {
       Object? skip;
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
-          var className = _resolveConstructor(
-                  expression.constructorName.type.name,
-                  expression.constructorName.name)
-              .first;
+          var className = expression.constructorName.type.name2.lexeme;
 
           if (className == 'Timeout') {
             _assertSingle(timeout, 'Timeout', expression);
@@ -343,7 +340,7 @@ class _Parser {
   /// If [expression] is not an instantiation of a [className] throws.
   String? _findConstructorName(Expression expression, String className) {
     if (expression is InstanceCreationExpression) {
-      return _findConstructornameFromInstantiation(expression, className);
+      return _findConstructorNameFromInstantiation(expression, className);
     }
     if (expression is MethodInvocation) {
       return _findConstructorNameFromMethod(expression, className);
@@ -352,10 +349,12 @@ class _Parser {
         'Expected a $className.', _spanFor(expression));
   }
 
-  String? _findConstructornameFromInstantiation(
+  String? _findConstructorNameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
-    var pair = _resolveConstructor(constructor.constructorName.type.name,
-        constructor.constructorName.name);
+    var pair = Pair(
+      constructor.constructorName.type.name2.lexeme,
+      constructor.constructorName.name?.name,
+    );
     var actualClassName = pair.first;
     var constructorName = pair.last;
 
