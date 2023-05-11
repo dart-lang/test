@@ -218,6 +218,7 @@ class _Parser {
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
           var className = _resolveConstructor(
+                  // ignore: deprecated_member_use
                   expression.constructorName.type.name,
                   expression.constructorName.name)
               .first;
@@ -354,6 +355,7 @@ class _Parser {
 
   String? _findConstructornameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
+    // ignore: deprecated_member_use
     var pair = _resolveConstructor(constructor.constructorName.type.name,
         constructor.constructorName.name);
     var actualClassName = pair.first;

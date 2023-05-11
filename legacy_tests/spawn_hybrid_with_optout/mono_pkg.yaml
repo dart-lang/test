@@ -1,7 +1,7 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-- pubspec
+- 2.18.0
 
 stages:
 - analyze_and_format:
@@ -9,7 +9,7 @@ stages:
     - format
     - analyze: --fatal-infos
     sdk:
-    - stable
+    - 2.18.0
 - unit_test:
   - test: -p chrome,vm,node
     os:
