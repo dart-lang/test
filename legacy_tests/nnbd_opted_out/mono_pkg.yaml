@@ -9,7 +9,7 @@ stages:
     - format
     - analyze: --fatal-infos
     sdk:
-    - stable
+    - 2.18.0
 - unit_test:
   - test: -p chrome,vm,node
     os:
