@@ -351,12 +351,8 @@ class _Parser {
 
   String? _findConstructorNameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
-    var pair = Pair(
-      constructor.constructorName.type.name2.lexeme,
-      constructor.constructorName.name?.name,
-    );
-    var actualClassName = pair.first;
-    var constructorName = pair.last;
+    var actualClassName = constructor.constructorName.type.name2.lexeme;
+    var constructorName = constructor.constructorName.name?.name;
 
     if (actualClassName != className) {
       throw SourceSpanFormatException(
