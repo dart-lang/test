@@ -233,6 +233,7 @@ class Declarer {
       Map<String, dynamic>? onPlatform,
       tags,
       int? retry,
+      bool allowEmpty = false,
       bool solo = false}) {
     _checkNotBuilt('group');
 
@@ -269,7 +270,7 @@ class Declarer {
       if (result is! Future) return;
       throw ArgumentError('Groups may not be async.');
     });
-    _addEntry(declarer.build());
+    _addEntry(declarer.build(allowEmpty));
 
     if (solo || declarer._solo) {
       _soloEntries.add(_entries.last);
@@ -314,7 +315,7 @@ class Declarer {
   ///
   /// **Note**: The tests in this group must be run in a [Invoker.guard]
   /// context; otherwise, test errors won't be captured.
-  Group build() {
+  Group build([bool allowEmpty = false]) {
     _checkNotBuilt('build');
 
     _built = true;
@@ -328,7 +329,7 @@ class Declarer {
       }
       return entry;
     }).toList();
-    if (entries.isEmpty) {
+    if (!allowEmpty && entries.isEmpty) {
       entries.add(LocalTest(_name ?? 'Empty group', _metadata, () {
         throw TestFailure('No tests declared in group');
       }));

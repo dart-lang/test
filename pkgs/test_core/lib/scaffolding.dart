@@ -218,6 +218,7 @@ void group(description, dynamic Function() body,
     tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
+    bool allowEmpty = false,
     @Deprecated('Debug only') bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
@@ -226,6 +227,7 @@ void group(description, dynamic Function() body,
       tags: tags,
       onPlatform: onPlatform,
       retry: retry,
+      allowEmpty: allowEmpty,
       solo: solo);
 
   // Force dart2js not to inline this function. We need it to be separate from

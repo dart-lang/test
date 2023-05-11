@@ -410,7 +410,7 @@ void main() {
       });
     });
 
-    test('disallows empty groups', () async {
+    test('disallows empty groups by default', () async {
       var entries = declare(() {
         group('group', () {});
       });
@@ -419,6 +419,15 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.entries, hasLength(1));
       await _runTest(testGroup.entries.single as Test, shouldFail: true);
+    });
+    test('allows empty groups when requested', () async {
+      var entries = declare(() {
+        group('group', () {}, allowEmpty: true);
+      });
+
+      expect(entries, hasLength(1));
+      var testGroup = entries.single as Group;
+      expect(testGroup.entries, hasLength(0));
     });
 
     group('.setUp()', () {
