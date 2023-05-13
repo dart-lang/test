@@ -16,65 +16,93 @@ void main() {
 
   group('duplicate names', () {
     group('can be disabled for', () {
-      for (var function in ['group', 'test']) {
-        test('${function}s', () async {
-          await d
-              .file('dart_test.yaml',
-                  jsonEncode({'allow_duplicate_test_names': false}))
-              .create();
+      test('groups', () async {
+        await d
+            .file('dart_test.yaml',
+                jsonEncode({'allow_duplicate_test_names': false}))
+            .create();
 
-          var testName = 'test';
-          await d.file('test.dart', '''
-          import 'package:test/test.dart';
+        await d.file('test.dart', _identicalGroupnames).create();
 
-          void main() {
-            $function("$testName", () {});
-            $function("$testName", () {});
-          }
-        ''').create();
+        var test = await runTest([
+          'test.dart',
+          '--configuration',
+          p.join(d.sandbox, 'dart_test.yaml')
+        ]);
 
-          var test = await runTest([
-            'test.dart',
-            '--configuration',
-            p.join(d.sandbox, 'dart_test.yaml')
-          ]);
+        expect(
+            test.stdout,
+            emitsThrough(contains(
+                'A test with the name "identical name" was already declared.')));
 
-          expect(
-              test.stdout,
-              emitsThrough(contains(
-                  'A test with the name "$testName" was already declared.')));
+        await test.shouldExit(1);
+      });
+      test('tests', () async {
+        await d
+            .file('dart_test.yaml',
+                jsonEncode({'allow_duplicate_test_names': false}))
+            .create();
 
-          await test.shouldExit(1);
-        });
-      }
+        await d.file('test.dart', _identicalTestNames).create();
+
+        var test = await runTest([
+          'test.dart',
+          '--configuration',
+          p.join(d.sandbox, 'dart_test.yaml')
+        ]);
+
+        expect(
+            test.stdout,
+            emitsThrough(contains(
+                'A test with the name "identical name" was already declared.')));
+
+        await test.shouldExit(1);
+      });
     });
     group('are allowed by default for', () {
-      for (var function in ['group', 'test']) {
-        test('${function}s', () async {
-          var testName = 'test';
-          await d.file('test.dart', '''
-          import 'package:test/test.dart';
+      test('groups', () async {
+        await d.file('test.dart', _identicalGroupnames).create();
 
-          void main() {
-            $function("$testName", () {});
-            $function("$testName", () {});
+        var test = await runTest(
+          ['test.dart'],
+        );
 
-            // Needed so at least one test runs when testing groups.
-            test('a test', () {
-              expect(true, isTrue);
-            });
-          }
-        ''').create();
+        expect(test.stdout, emitsThrough(contains('All tests passed!')));
 
-          var test = await runTest(
-            ['test.dart'],
-          );
+        await test.shouldExit(0);
+      });
+      test('tests', () async {
+        await d.file('test.dart', _identicalTestNames).create();
 
-          expect(test.stdout, emitsThrough(contains('All tests passed!')));
+        var test = await runTest(
+          ['test.dart'],
+        );
 
-          await test.shouldExit(0);
-        });
-      }
+        expect(test.stdout, emitsThrough(contains('All tests passed!')));
+
+        await test.shouldExit(0);
+      });
     });
   });
 }
+
+const _identicalTestNames = '''
+import 'package:test/test.dart';
+
+void main() {
+  test('identical name', () {});
+  test('identical name', () {});
+}
+''';
+const _identicalGroupnames = '''
+import 'package:test/test.dart';
+
+void main() {
+  group('identical name', () {
+    test('foo', () {});
+  });
+  group('identical name', () {
+    test('bar', () {});
+  });
+}
+''';

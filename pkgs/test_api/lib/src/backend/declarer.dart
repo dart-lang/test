@@ -329,7 +329,7 @@ class Declarer {
       }
       return entry;
     }).toList();
-    if (!allowEmpty && entries.isEmpty) {
+    if (_parent != null && !allowEmpty && entries.isEmpty) {
       entries.add(LocalTest(_name ?? 'Empty group', _metadata, () {
         throw TestFailure('No tests declared in group');
       }));
