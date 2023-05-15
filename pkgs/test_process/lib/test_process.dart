@@ -119,8 +119,8 @@ class TestProcess {
             .transform(encoding.decoder)
             .transform(const LineSplitter())) {
     addTearDown(_tearDown);
-    expect(_process.exitCode.then((_) => _logOutput()), completes,
-        reason: 'Process `$description` never exited.');
+
+    _process.exitCode.whenComplete(_logOutput);
 
     // Listen eagerly so that the lines are interleaved properly between the two
     // streams.

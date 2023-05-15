@@ -107,6 +107,13 @@ void main() {
     await expectLater(process.stdout, emits('HUP'));
     await process.kill();
   }, testOn: '!windows');
+
+  test('allows a long-running process', () async {
+    await startDartProcess(r'''
+      await Future.delayed(Duration(minutes: 10));
+    ''');
+    // Test should not time out.
+  });
 }
 
 /// Starts a Dart process running [script] in a main method.

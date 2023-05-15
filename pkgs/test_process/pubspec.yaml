@@ -1,5 +1,5 @@
 name: test_process
-version: 2.0.3
+version: 2.1.0-wip
 description:
   "Test processes: starting; validating stdout and stderr; checking exit code"
 repository: https://github.com/dart-lang/test_process

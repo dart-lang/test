@@ -1,3 +1,9 @@
+## 2.1.0-wip
+
+- Remove the expectation that the process exits during the normal test body.
+  The process will still be killed during teardown if it has not exited. The
+  check can be manually restored with `shouldExit()`.
+
 ## 2.0.3
 
 - Populate the pubspec `repository` field.
