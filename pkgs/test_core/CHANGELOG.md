@@ -1,4 +1,4 @@
-## 0.5.3-wip
+## 0.5.3
 
 * Fix compatibility with wasm number semantics.
 
