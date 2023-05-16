@@ -1,7 +1,10 @@
+## 1.24.4-wip
+
+* Consider empty `group` to be test failures.
+
 ## 1.24.3
 
 * Fix compatibility with wasm number semantics.
-* Consider empty `group` to be test failures.
 
 ## 1.24.2
 
