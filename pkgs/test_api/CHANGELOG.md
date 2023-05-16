@@ -1,5 +1,7 @@
-## 0.5.3-wip
+## 0.6.0-wip
 
+* Remove the `package:test_api/expect.dart' library. `test` will export from
+  `package:matcher` directly.
 * Fix compatibility with wasm number semantics.
 * Consider empty `group` to be test failures.
 
