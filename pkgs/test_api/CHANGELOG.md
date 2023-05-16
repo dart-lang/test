@@ -1,4 +1,4 @@
-## 0.6.0-wip
+## 0.6.0
 
 * Remove the `package:test_api/expect.dart' library. `test` will export from
   `package:matcher` directly.
