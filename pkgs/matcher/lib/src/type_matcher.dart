@@ -62,7 +62,7 @@ class TypeMatcher<T> extends Matcher {
   const TypeMatcher(
       [@Deprecated('Provide a type argument to TypeMatcher and omit the name. '
           'This argument will be removed in the next release.')
-          String? name])
+      String? name])
       : _name =
             // ignore: deprecated_member_use_from_same_package
             name;
