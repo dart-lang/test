@@ -178,7 +178,7 @@ Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
 
 /// A set of expectations that are checked against the value when applied to a
 /// [Subject].
-abstract final class Condition<T> {
+abstract interface class Condition<T> {
   /// Check the expectations of this condition against [subject].
   ///
   /// The [subject] should throw if any asynchronous expectations are checked.
