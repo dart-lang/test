@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// All the Dart compilers supported by the test runner.
-class Compiler {
+final class Compiler {
   /// The production Dart to Javascript compiler (whole world, optimizing).
   static const Compiler dart2js = Compiler._('Dart2Js', 'dart2js');
 

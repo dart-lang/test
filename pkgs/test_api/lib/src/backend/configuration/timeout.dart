@@ -24,7 +24,7 @@ final _whitespace = RegExp(r'\s+');
 /// can be overridden entirely; with [Timeout.factor], it can be scaled
 /// relative to the default.
 @Target({TargetKind.library})
-class Timeout {
+final class Timeout {
   /// A constant indicating that a test should never time out.
   static const none = Timeout._none();
 

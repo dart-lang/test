@@ -1,3 +1,15 @@
+## 0.6.1-wip
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some implementation classes `final`. These classes were never intended to
+  be extended or implemented. `Compiler`, `Metadata`, `PlatformSelector`,
+  `RemoteListener`, `Runtime`, `StackTraceFormatter`, `SuitePlatform`,
+  `RemoteException`, `TestHandle`, `OutstandingWork`, `OutsideTestException`,
+  `OnPlatform`, `Retry`, `Skip`, `Tags`, `TestOn`, `Timeout`.
+* Make a utility class `base`: `Fake`.
+* Mark an implementation class `interface`: `StackTraceMapper`.
+
+
 ## 0.6.0
 
 * Remove the `package:test_api/expect.dart' library. `test` will export from

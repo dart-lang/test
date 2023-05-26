@@ -20,7 +20,7 @@ import 'suite_channel_manager.dart';
 import 'suite_platform.dart';
 import 'test.dart';
 
-class RemoteListener {
+final class RemoteListener {
   /// The test suite to run.
   final Suite _suite;
 

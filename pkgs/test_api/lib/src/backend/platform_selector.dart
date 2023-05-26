@@ -30,7 +30,7 @@ final _universalValidVariables = {
 /// This uses the [boolean selector][] syntax.
 ///
 /// [boolean selector]: https://pub.dev/packages/boolean_selector
-class PlatformSelector {
+final class PlatformSelector {
   /// A selector that declares that a test can be run on all platforms.
   static const all = PlatformSelector._(BooleanSelector.all);
 
