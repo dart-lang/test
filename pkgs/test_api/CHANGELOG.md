@@ -6,7 +6,6 @@
   `RemoteListener`, `Runtime`, `StackTraceFormatter`, `SuitePlatform`,
   `RemoteException`, `TestHandle`, `OutstandingWork`, `OutsideTestException`,
   `OnPlatform`, `Retry`, `Skip`, `Tags`, `TestOn`, `Timeout`.
-* Make a utility class `base`: `Fake`.
 * Mark an implementation class `interface`: `StackTraceMapper`.
 
 
