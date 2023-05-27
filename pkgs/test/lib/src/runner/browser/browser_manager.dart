@@ -182,17 +182,17 @@ class BrowserManager {
 
     // Whenever we get a message, no matter which child channel it's for, we the
     // know browser is still running code which means the user isn't debugging.
-    _channel = MultiChannel(
-        webSocket.cast<String>().transform(jsonDocument).changeStream((stream) {
-      return stream.map((message) {
-        if (!_closed) _timer.reset();
-        for (var controller in _controllers) {
-          controller.setDebugging(false);
-        }
+    _channel = MultiChannel(webSocket
+        .cast<String>()
+        .transform(jsonDocument)
+        .changeStream((stream) => stream.map((message) {
+              if (!_closed) _timer.reset();
+              for (var controller in _controllers) {
+                controller.setDebugging(false);
+              }
 
-        return message;
-      });
-    }));
+              return message;
+            })));
 
     _environment = _loadBrowserEnvironment();
     _channel.stream.listen(
@@ -201,10 +201,9 @@ class BrowserManager {
   }
 
   /// Loads [_BrowserEnvironment].
-  Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
-    return _BrowserEnvironment(this, await _browser.observatoryUrl,
-        await _browser.remoteDebuggerUrl, _onRestartController.stream);
-  }
+  Future<_BrowserEnvironment> _loadBrowserEnvironment() async =>
+      _BrowserEnvironment(this, await _browser.observatoryUrl,
+          await _browser.remoteDebuggerUrl, _onRestartController.stream);
 
   /// Tells the browser the load a test suite from the URL [url].
   ///

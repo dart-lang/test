@@ -27,55 +27,55 @@ class WasmCompilerPool extends CompilerPool {
   /// *and* all its output has been printed to the command line.
   @override
   Future compileInternal(
-      String code, String path, SuiteConfiguration suiteConfig) {
-    return withTempDir((dir) async {
-      var wrapperPath = p.join(dir, 'main.dart');
-      File(wrapperPath).writeAsStringSync(code);
-      var outWasmPath = '$path.wasm';
-      var dartBinPath = Platform.resolvedExecutable;
-      var sdkRoot = p.join(p.dirname(dartBinPath), '../');
-      var platformDill =
-          p.join(sdkRoot, 'lib', '_internal', 'dart2wasm_platform.dill');
-      var dartPrecompiledRuntimePath = p.join(sdkRoot, 'bin', 'dartaotruntime');
-      var dart2wasmSnapshotPath =
-          p.join(sdkRoot, 'bin/snapshots', 'dart2wasm_product.snapshot');
-      var process = await Process.start(dartPrecompiledRuntimePath, [
-        dart2wasmSnapshotPath,
-        '--dart-sdk=$sdkRoot',
-        '--platform=$platformDill',
-        '--packages=${(await packageConfigUri).path}',
-        wrapperPath,
-        outWasmPath,
-      ]);
-      if (closed) {
-        process.kill();
-        return;
-      }
+          String code, String path, SuiteConfiguration suiteConfig) =>
+      withTempDir((dir) async {
+        var wrapperPath = p.join(dir, 'main.dart');
+        File(wrapperPath).writeAsStringSync(code);
+        var outWasmPath = '$path.wasm';
+        var dartBinPath = Platform.resolvedExecutable;
+        var sdkRoot = p.join(p.dirname(dartBinPath), '../');
+        var platformDill =
+            p.join(sdkRoot, 'lib', '_internal', 'dart2wasm_platform.dill');
+        var dartPrecompiledRuntimePath =
+            p.join(sdkRoot, 'bin', 'dartaotruntime');
+        var dart2wasmSnapshotPath =
+            p.join(sdkRoot, 'bin/snapshots', 'dart2wasm_product.snapshot');
+        var process = await Process.start(dartPrecompiledRuntimePath, [
+          dart2wasmSnapshotPath,
+          '--dart-sdk=$sdkRoot',
+          '--platform=$platformDill',
+          '--packages=${(await packageConfigUri).path}',
+          wrapperPath,
+          outWasmPath,
+        ]);
+        if (closed) {
+          process.kill();
+          return;
+        }
 
-      _processes.add(process);
+        _processes.add(process);
 
-      /// Wait until the process is entirely done to print out any output.
-      /// This can produce a little extra time for users to wait with no
-      /// update, but it also avoids some really nasty-looking interleaved
-      /// output. Write both stdout and stderr to the same buffer in case
-      /// they're intended to be printed in order.
-      var buffer = StringBuffer();
+        /// Wait until the process is entirely done to print out any output.
+        /// This can produce a little extra time for users to wait with no
+        /// update, but it also avoids some really nasty-looking interleaved
+        /// output. Write both stdout and stderr to the same buffer in case
+        /// they're intended to be printed in order.
+        var buffer = StringBuffer();
 
-      await Future.wait([
-        process.stdout.transform(utf8.decoder).forEach(buffer.write),
-        process.stderr.transform(utf8.decoder).forEach(buffer.write),
-      ]);
+        await Future.wait([
+          process.stdout.transform(utf8.decoder).forEach(buffer.write),
+          process.stderr.transform(utf8.decoder).forEach(buffer.write),
+        ]);
 
-      var exitCode = await process.exitCode;
-      _processes.remove(process);
-      if (closed) return;
+        var exitCode = await process.exitCode;
+        _processes.remove(process);
+        if (closed) return;
 
-      var output = buffer.toString();
-      if (output.isNotEmpty) print(output);
+        var output = buffer.toString();
+        if (output.isNotEmpty) print(output);
 
-      if (exitCode != 0) throw StateError('dart2wasm failed.');
-    });
-  }
+        if (exitCode != 0) throw StateError('dart2wasm failed.');
+      });
 
   /// Closes the compiler pool.
   ///

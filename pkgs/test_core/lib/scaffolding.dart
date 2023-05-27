@@ -28,7 +28,7 @@ import 'src/util/print_sink.dart';
 // This file is an almost direct copy of import below, but with the global
 // declarer added.
 export 'package:test_api/scaffolding.dart'
-    hide test, group, setUp, setUpAll, tearDown, tearDownAll;
+    hide group, setUp, setUpAll, tearDown, tearDownAll, test;
 
 /// The global declarer.
 ///
@@ -133,11 +133,11 @@ Declarer get _declarer {
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(description, dynamic Function() body,
+void test(Object description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
-    skip,
-    tags,
+    Object? skip,
+    Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
     @Deprecated('Debug only') bool solo = false}) {

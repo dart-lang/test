@@ -22,7 +22,7 @@ import 'test_structure.dart' show addTearDown;
 // `hybridMain` can send any json encodeable type.
 final _transformer = StreamChannelTransformer<dynamic, dynamic>(
     StreamTransformer.fromHandlers(handleData: (message, sink) {
-  switch (message['type'] as String) {
+  switch ((message as Map)['type'] as String) {
     case 'data':
       sink.add(message['data']);
       break;
@@ -32,7 +32,7 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
       break;
 
     case 'error':
-      var error = RemoteException.deserialize(message['error']);
+      var error = RemoteException.deserialize(message['error'] as Map);
       sink.addError(error.error, error.stackTrace);
       break;
   }

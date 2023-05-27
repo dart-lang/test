@@ -7,9 +7,8 @@ import 'dart:isolate';
 import 'package:package_config/package_config.dart';
 
 /// The [PackageConfig] parsed from the current isolates package config file.
-final Future<PackageConfig> currentPackageConfig = () async {
-  return loadPackageConfigUri(await packageConfigUri);
-}();
+final Future<PackageConfig> currentPackageConfig =
+    (() async => loadPackageConfigUri(await packageConfigUri))();
 
 final Future<Uri> packageConfigUri = () async {
   var uri = await Isolate.packageConfig;

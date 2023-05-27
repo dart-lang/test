@@ -141,11 +141,9 @@ class LoadSuite extends Suite implements RunnerSuite {
   }
 
   /// A utility constructor for a load suite that just emits [suite].
-  factory LoadSuite.forSuite(RunnerSuite suite) {
-    return LoadSuite(
-        'loading ${suite.path}', suite.config, suite.platform, () => suite,
-        path: suite.path);
-  }
+  factory LoadSuite.forSuite(RunnerSuite suite) => LoadSuite(
+      'loading ${suite.path}', suite.config, suite.platform, () => suite,
+      path: suite.path);
 
   LoadSuite._(String name, this.config, SuitePlatform platform,
       void Function() body, this._suiteAndZone,
@@ -176,18 +174,17 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// If [suite] completes to `null`, [change] won't be run. [change] is run
   /// within the load test's zone, so any errors or prints it emits will be
   /// associated with that test.
-  LoadSuite changeSuite(RunnerSuite? Function(RunnerSuite) change) {
-    return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
-      if (pair == null) return null;
+  LoadSuite changeSuite(RunnerSuite? Function(RunnerSuite) change) =>
+      LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
+        if (pair == null) return null;
 
-      var zone = pair.last;
-      RunnerSuite? newSuite;
-      zone.runGuarded(() {
-        newSuite = change(pair.first);
-      });
-      return newSuite == null ? null : Pair(newSuite!, zone);
-    }));
-  }
+        var zone = pair.last;
+        RunnerSuite? newSuite;
+        zone.runGuarded(() {
+          newSuite = change(pair.first);
+        });
+        return newSuite == null ? null : Pair(newSuite!, zone);
+      }));
 
   /// Runs the test and returns the suite.
   ///

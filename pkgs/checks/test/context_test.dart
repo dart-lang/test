@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: only_throw_errors
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -72,9 +74,10 @@ void main() {
     test('nestAsync holds test open past async condition', () async {
       late void Function() callback;
       final monitor = TestCaseMonitor.start(() {
-        check(null).context.nestAsync(() => [''], (actual) async {
-          return Extracted.value(null);
-        }, LazyCondition((it) async {
+        check(null)
+            .context
+            .nestAsync(() => [''], (actual) async => Extracted.value(null),
+                LazyCondition((it) async {
           final completer = Completer<void>();
           callback = completer.complete;
           await completer.future;
@@ -165,8 +168,8 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
       await for (var error in actual.rest) {
         reject(Rejection(which: [
           ...prefixFirst('threw late error', literal(error.error)),
-          ...(const LineSplitter().convert(
-              TestHandle.current.formatStackTrace(error.stackTrace).toString()))
+          ...const LineSplitter().convert(
+              TestHandle.current.formatStackTrace(error.stackTrace).toString())
         ]));
       }
     });

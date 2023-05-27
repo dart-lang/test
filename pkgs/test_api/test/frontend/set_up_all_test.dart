@@ -8,204 +8,204 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  test('runs once before all tests', () {
-    return expectTestsPass(() {
-      var setUpAllRun = false;
-      setUpAll(() {
-        expect(setUpAllRun, isFalse);
-        setUpAllRun = true;
-      });
+  test(
+      'runs once before all tests',
+      () => expectTestsPass(() {
+            var setUpAllRun = false;
+            setUpAll(() {
+              expect(setUpAllRun, isFalse);
+              setUpAllRun = true;
+            });
 
-      test('test 1', () {
-        expect(setUpAllRun, isTrue);
-      });
+            test('test 1', () {
+              expect(setUpAllRun, isTrue);
+            });
 
-      test('test 2', () {
-        expect(setUpAllRun, isTrue);
-      });
-    });
-  });
+            test('test 2', () {
+              expect(setUpAllRun, isTrue);
+            });
+          }));
 
-  test('runs once per group, outside-in', () {
-    return expectTestsPass(() {
-      var setUpAll1Run = false;
-      var setUpAll2Run = false;
-      var setUpAll3Run = false;
-      setUpAll(() {
-        expect(setUpAll1Run, isFalse);
-        expect(setUpAll2Run, isFalse);
-        expect(setUpAll3Run, isFalse);
-        setUpAll1Run = true;
-      });
+  test(
+      'runs once per group, outside-in',
+      () => expectTestsPass(() {
+            var setUpAll1Run = false;
+            var setUpAll2Run = false;
+            var setUpAll3Run = false;
+            setUpAll(() {
+              expect(setUpAll1Run, isFalse);
+              expect(setUpAll2Run, isFalse);
+              expect(setUpAll3Run, isFalse);
+              setUpAll1Run = true;
+            });
 
-      group('mid', () {
-        setUpAll(() {
-          expect(setUpAll1Run, isTrue);
-          expect(setUpAll2Run, isFalse);
-          expect(setUpAll3Run, isFalse);
-          setUpAll2Run = true;
-        });
+            group('mid', () {
+              setUpAll(() {
+                expect(setUpAll1Run, isTrue);
+                expect(setUpAll2Run, isFalse);
+                expect(setUpAll3Run, isFalse);
+                setUpAll2Run = true;
+              });
 
-        group('inner', () {
-          setUpAll(() {
-            expect(setUpAll1Run, isTrue);
-            expect(setUpAll2Run, isTrue);
-            expect(setUpAll3Run, isFalse);
-            setUpAll3Run = true;
-          });
+              group('inner', () {
+                setUpAll(() {
+                  expect(setUpAll1Run, isTrue);
+                  expect(setUpAll2Run, isTrue);
+                  expect(setUpAll3Run, isFalse);
+                  setUpAll3Run = true;
+                });
 
-          test('test', () {
-            expect(setUpAll1Run, isTrue);
-            expect(setUpAll2Run, isTrue);
-            expect(setUpAll3Run, isTrue);
-          });
-        });
-      });
-    });
-  });
+                test('test', () {
+                  expect(setUpAll1Run, isTrue);
+                  expect(setUpAll2Run, isTrue);
+                  expect(setUpAll3Run, isTrue);
+                });
+              });
+            });
+          }));
 
-  test('runs before setUps', () {
-    return expectTestsPass(() {
-      var setUpAllRun = false;
-      setUp(() {
-        expect(setUpAllRun, isTrue);
-      });
+  test(
+      'runs before setUps',
+      () => expectTestsPass(() {
+            var setUpAllRun = false;
+            setUp(() {
+              expect(setUpAllRun, isTrue);
+            });
 
-      setUpAll(() {
-        expect(setUpAllRun, isFalse);
-        setUpAllRun = true;
-      });
+            setUpAll(() {
+              expect(setUpAllRun, isFalse);
+              setUpAllRun = true;
+            });
 
-      setUp(() {
-        expect(setUpAllRun, isTrue);
-      });
+            setUp(() {
+              expect(setUpAllRun, isTrue);
+            });
 
-      test('test', () {
-        expect(setUpAllRun, isTrue);
-      });
-    });
-  });
+            test('test', () {
+              expect(setUpAllRun, isTrue);
+            });
+          }));
 
-  test('multiples run in order', () {
-    return expectTestsPass(() {
-      var setUpAll1Run = false;
-      var setUpAll2Run = false;
-      var setUpAll3Run = false;
-      setUpAll(() {
-        expect(setUpAll1Run, isFalse);
-        expect(setUpAll2Run, isFalse);
-        expect(setUpAll3Run, isFalse);
-        setUpAll1Run = true;
-      });
+  test(
+      'multiples run in order',
+      () => expectTestsPass(() {
+            var setUpAll1Run = false;
+            var setUpAll2Run = false;
+            var setUpAll3Run = false;
+            setUpAll(() {
+              expect(setUpAll1Run, isFalse);
+              expect(setUpAll2Run, isFalse);
+              expect(setUpAll3Run, isFalse);
+              setUpAll1Run = true;
+            });
 
-      setUpAll(() {
-        expect(setUpAll1Run, isTrue);
-        expect(setUpAll2Run, isFalse);
-        expect(setUpAll3Run, isFalse);
-        setUpAll2Run = true;
-      });
+            setUpAll(() {
+              expect(setUpAll1Run, isTrue);
+              expect(setUpAll2Run, isFalse);
+              expect(setUpAll3Run, isFalse);
+              setUpAll2Run = true;
+            });
 
-      setUpAll(() {
-        expect(setUpAll1Run, isTrue);
-        expect(setUpAll2Run, isTrue);
-        expect(setUpAll3Run, isFalse);
-        setUpAll3Run = true;
-      });
+            setUpAll(() {
+              expect(setUpAll1Run, isTrue);
+              expect(setUpAll2Run, isTrue);
+              expect(setUpAll3Run, isFalse);
+              setUpAll3Run = true;
+            });
 
-      test('test', () {
-        expect(setUpAll1Run, isTrue);
-        expect(setUpAll2Run, isTrue);
-        expect(setUpAll3Run, isTrue);
-      });
-    });
-  });
+            test('test', () {
+              expect(setUpAll1Run, isTrue);
+              expect(setUpAll2Run, isTrue);
+              expect(setUpAll3Run, isTrue);
+            });
+          }));
 
   group('asynchronously', () {
-    test('blocks additional setUpAlls on in-band async', () {
-      return expectTestsPass(() {
-        var setUpAll1Run = false;
-        var setUpAll2Run = false;
-        var setUpAll3Run = false;
-        setUpAll(() async {
-          expect(setUpAll1Run, isFalse);
-          expect(setUpAll2Run, isFalse);
-          expect(setUpAll3Run, isFalse);
-          await pumpEventQueue();
-          setUpAll1Run = true;
-        });
-
-        setUpAll(() async {
-          expect(setUpAll1Run, isTrue);
-          expect(setUpAll2Run, isFalse);
-          expect(setUpAll3Run, isFalse);
-          await pumpEventQueue();
-          setUpAll2Run = true;
-        });
-
-        setUpAll(() async {
-          expect(setUpAll1Run, isTrue);
-          expect(setUpAll2Run, isTrue);
-          expect(setUpAll3Run, isFalse);
-          await pumpEventQueue();
-          setUpAll3Run = true;
-        });
-
-        test('test', () {
-          expect(setUpAll1Run, isTrue);
-          expect(setUpAll2Run, isTrue);
-          expect(setUpAll3Run, isTrue);
-        });
-      });
-    });
-
-    test("doesn't block additional setUpAlls on out-of-band async", () {
-      return expectTestsPass(() {
-        var setUpAll1Run = false;
-        var setUpAll2Run = false;
-        var setUpAll3Run = false;
-        setUpAll(() {
-          expect(setUpAll1Run, isFalse);
-          expect(setUpAll2Run, isFalse);
-          expect(setUpAll3Run, isFalse);
-
-          expect(
-              pumpEventQueue().then((_) {
+    test(
+        'blocks additional setUpAlls on in-band async',
+        () => expectTestsPass(() {
+              var setUpAll1Run = false;
+              var setUpAll2Run = false;
+              var setUpAll3Run = false;
+              setUpAll(() async {
+                expect(setUpAll1Run, isFalse);
+                expect(setUpAll2Run, isFalse);
+                expect(setUpAll3Run, isFalse);
+                await pumpEventQueue();
                 setUpAll1Run = true;
-              }),
-              completes);
-        });
+              });
 
-        setUpAll(() {
-          expect(setUpAll1Run, isFalse);
-          expect(setUpAll2Run, isFalse);
-          expect(setUpAll3Run, isFalse);
-
-          expect(
-              pumpEventQueue().then((_) {
+              setUpAll(() async {
+                expect(setUpAll1Run, isTrue);
+                expect(setUpAll2Run, isFalse);
+                expect(setUpAll3Run, isFalse);
+                await pumpEventQueue();
                 setUpAll2Run = true;
-              }),
-              completes);
-        });
+              });
 
-        setUpAll(() {
-          expect(setUpAll1Run, isFalse);
-          expect(setUpAll2Run, isFalse);
-          expect(setUpAll3Run, isFalse);
-
-          expect(
-              pumpEventQueue().then((_) {
+              setUpAll(() async {
+                expect(setUpAll1Run, isTrue);
+                expect(setUpAll2Run, isTrue);
+                expect(setUpAll3Run, isFalse);
+                await pumpEventQueue();
                 setUpAll3Run = true;
-              }),
-              completes);
-        });
+              });
 
-        test('test', () {
-          expect(setUpAll1Run, isTrue);
-          expect(setUpAll2Run, isTrue);
-          expect(setUpAll3Run, isTrue);
-        });
-      });
-    });
+              test('test', () {
+                expect(setUpAll1Run, isTrue);
+                expect(setUpAll2Run, isTrue);
+                expect(setUpAll3Run, isTrue);
+              });
+            }));
+
+    test(
+        "doesn't block additional setUpAlls on out-of-band async",
+        () => expectTestsPass(() {
+              var setUpAll1Run = false;
+              var setUpAll2Run = false;
+              var setUpAll3Run = false;
+              setUpAll(() {
+                expect(setUpAll1Run, isFalse);
+                expect(setUpAll2Run, isFalse);
+                expect(setUpAll3Run, isFalse);
+
+                expect(
+                    pumpEventQueue().then((_) {
+                      setUpAll1Run = true;
+                    }),
+                    completes);
+              });
+
+              setUpAll(() {
+                expect(setUpAll1Run, isFalse);
+                expect(setUpAll2Run, isFalse);
+                expect(setUpAll3Run, isFalse);
+
+                expect(
+                    pumpEventQueue().then((_) {
+                      setUpAll2Run = true;
+                    }),
+                    completes);
+              });
+
+              setUpAll(() {
+                expect(setUpAll1Run, isFalse);
+                expect(setUpAll2Run, isFalse);
+                expect(setUpAll3Run, isFalse);
+
+                expect(
+                    pumpEventQueue().then((_) {
+                      setUpAll3Run = true;
+                    }),
+                    completes);
+              });
+
+              test('test', () {
+                expect(setUpAll1Run, isTrue);
+                expect(setUpAll2Run, isTrue);
+                expect(setUpAll3Run, isTrue);
+              });
+            }));
   });
 
   test("isn't run for a skipped group", () async {

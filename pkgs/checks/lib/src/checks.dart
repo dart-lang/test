@@ -608,12 +608,12 @@ class _Present<T> implements _Optional<T> {
   Future<Extracted<_Present<R>>> mapAsync<R>(
       FutureOr<Extracted<R>> Function(T) transform) async {
     final transformed = await transform(value);
-    return transformed._map((v) => _Present(v));
+    return transformed._map(_Present.new);
   }
 
   @override
   Extracted<_Present<R>> map<R>(Extracted<R> Function(T) transform) =>
-      transform(value)._map((v) => _Present(v));
+      transform(value)._map(_Present.new);
 }
 
 class _Absent<T> implements _Optional<T> {
@@ -864,11 +864,10 @@ final class _SkippedContext<T> implements Context<T> {
   }
 
   @override
-  Subject<R> nest<R>(
-      Iterable<String> Function() label, Extracted<R> Function(T p1) extract,
-      {bool atSameLevel = false}) {
-    return Subject._(_SkippedContext());
-  }
+  Subject<R> nest<R>(Iterable<String> Function() label,
+          Extracted<R> Function(T p1) extract,
+          {bool atSameLevel = false}) =>
+      Subject._(_SkippedContext());
 
   @override
   Future<void> nestAsync<R>(
@@ -1037,9 +1036,7 @@ final class ConditionSubject<T> implements Subject<T>, Condition<T> {
   final _ReplayContext<T> _context = _ReplayContext();
 
   @override
-  String toString() {
-    return ['A value that:', ...describe(_context)].join('\n');
-  }
+  String toString() => ['A value that:', ...describe(_context)].join('\n');
 }
 
 final class _ReplayContext<T> implements Context<T>, Condition<T> {

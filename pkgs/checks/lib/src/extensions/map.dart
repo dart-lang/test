@@ -13,16 +13,15 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
   Subject<Iterable<V>> get values => has((m) => m.values, 'values');
   Subject<int> get length => has((m) => m.length, 'length');
-  Subject<V> operator [](K key) {
-    return context.nest(
-        () => prefixFirst('contains a value for ', literal(key)), (actual) {
-      if (!actual.containsKey(key)) {
-        return Extracted.rejection(
-            which: prefixFirst('does not contain the key ', literal(key)));
-      }
-      return Extracted.value(actual[key] as V);
-    });
-  }
+  Subject<V> operator [](K key) =>
+      context.nest(() => prefixFirst('contains a value for ', literal(key)),
+          (actual) {
+        if (!actual.containsKey(key)) {
+          return Extracted.rejection(
+              which: prefixFirst('does not contain the key ', literal(key)));
+        }
+        return Extracted.value(actual[key] as V);
+      });
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {

@@ -81,10 +81,6 @@ class Group implements GroupEntry {
   /// Returns the entries of this group mapped using [callback].
   ///
   /// Any `null` values returned by [callback] will be removed.
-  List<GroupEntry> _map(GroupEntry? Function(GroupEntry) callback) {
-    return entries
-        .map((entry) => callback(entry))
-        .whereType<GroupEntry>()
-        .toList();
-  }
+  List<GroupEntry> _map(GroupEntry? Function(GroupEntry) callback) =>
+      entries.map((entry) => callback(entry)).whereType<GroupEntry>().toList();
 }

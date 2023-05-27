@@ -86,9 +86,7 @@ void main() {
     test('can return a Future', () {
       var setUpRun = false;
       var tests = declare(() {
-        setUp(() {
-          return Future(() => setUpRun = true);
-        });
+        setUp(() => Future(() => setUpRun = true));
 
         test(
             'description',
@@ -182,9 +180,7 @@ void main() {
     test('can return a Future', () async {
       var tearDownRun = false;
       var tests = declare(() {
-        tearDown(() {
-          return Future(() => tearDownRun = true);
-        });
+        tearDown(() => Future(() => tearDownRun = true));
 
         test(
             'description',
@@ -297,7 +293,7 @@ void main() {
         tearDown(expectAsync0(() {}));
 
         tearDown(() async {
-          throw 'error';
+          throw UnimplementedError();
         });
 
         test('description', expectAsync0(() {}));
@@ -306,22 +302,23 @@ void main() {
       await _runTest(tests.single as Test, shouldFail: true);
     });
 
-    test('runs in the same error zone as the test', () {
-      return expectTestsPass(() {
-        late Zone testBodyZone;
+    test(
+        'runs in the same error zone as the test',
+        () => expectTestsPass(() {
+              late Zone testBodyZone;
 
-        tearDown(() {
-          final tearDownZone = Zone.current;
-          expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
-              reason: 'The tear down callback is in a different error zone '
-                  'than the test body.');
-        });
+              tearDown(() {
+                final tearDownZone = Zone.current;
+                expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
+                    reason:
+                        'The tear down callback is in a different error zone '
+                        'than the test body.');
+              });
 
-        test('test', () {
-          testBodyZone = Zone.current;
-        });
-      });
-    });
+              test('test', () {
+                testBodyZone = Zone.current;
+              });
+            }));
   });
 
   group('in a group,', () {
@@ -640,13 +637,11 @@ void main() {
       test('runs outer callbacks even when inner ones fail', () async {
         var outerTearDownRun = false;
         var entries = declare(() {
-          tearDown(() {
-            return Future(() => outerTearDownRun = true);
-          });
+          tearDown(() => Future(() => outerTearDownRun = true));
 
           group('inner', () {
             tearDown(() {
-              throw 'inner error';
+              throw UnimplementedError();
             });
 
             test(

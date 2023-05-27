@@ -29,6 +29,7 @@ final bool inGoogle = Platform.version.contains('(google3)');
 final int lineLength = () {
   try {
     return stdout.terminalColumns;
+    // ignore: avoid_catching_errors
   } on UnsupportedError {
     // This can throw an [UnsupportedError] if we're running in a JS context
     // where `dart:io` is unavailable.
@@ -109,43 +110,39 @@ String createTempDir() =>
 ///
 /// Returns a future that completes to the value that the future returned from
 /// [fn] completes to.
-Future withTempDir(Future Function(String) fn) {
-  return Future.sync(() {
-    var tempDir = createTempDir();
-    return Future.sync(() => fn(tempDir))
-        .whenComplete(() => Directory(tempDir).deleteWithRetry());
-  });
-}
+Future withTempDir(Future Function(String) fn) => Future.sync(() {
+      var tempDir = createTempDir();
+      return Future.sync(() => fn(tempDir))
+          .whenComplete(() => Directory(tempDir).deleteWithRetry());
+    });
 
 /// Wraps [text] so that it fits within [lineLength].
 ///
 /// This preserves existing newlines and doesn't consider terminal color escapes
 /// part of a word's length. It only splits words on spaces, not on other sorts
 /// of whitespace.
-String wordWrap(String text) {
-  return text.split('\n').map((originalLine) {
-    var buffer = StringBuffer();
-    var lengthSoFar = 0;
-    for (var word in originalLine.split(' ')) {
-      var wordLength = withoutColors(word).length;
-      if (wordLength > lineLength) {
-        if (lengthSoFar != 0) buffer.writeln();
-        buffer.writeln(word);
-      } else if (lengthSoFar == 0) {
-        buffer.write(word);
-        lengthSoFar = wordLength;
-      } else if (lengthSoFar + 1 + wordLength > lineLength) {
-        buffer.writeln();
-        buffer.write(word);
-        lengthSoFar = wordLength;
-      } else {
-        buffer.write(' $word');
-        lengthSoFar += 1 + wordLength;
+String wordWrap(String text) => text.split('\n').map((originalLine) {
+      var buffer = StringBuffer();
+      var lengthSoFar = 0;
+      for (var word in originalLine.split(' ')) {
+        var wordLength = withoutColors(word).length;
+        if (wordLength > lineLength) {
+          if (lengthSoFar != 0) buffer.writeln();
+          buffer.writeln(word);
+        } else if (lengthSoFar == 0) {
+          buffer.write(word);
+          lengthSoFar = wordLength;
+        } else if (lengthSoFar + 1 + wordLength > lineLength) {
+          buffer.writeln();
+          buffer.write(word);
+          lengthSoFar = wordLength;
+        } else {
+          buffer.write(' $word');
+          lengthSoFar += 1 + wordLength;
+        }
       }
-    }
-    return buffer.toString();
-  }).join('\n');
-}
+      return buffer.toString();
+    }).join('\n');
 
 /// Print a warning containing [message].
 ///
@@ -158,7 +155,13 @@ String wordWrap(String text) {
 void warn(String message, {bool? color, bool print = false}) {
   color ??= canUseSpecialChars;
   var header = color ? '\u001b[33mWarning:\u001b[0m' : 'Warning:';
-  (print ? core.print : stderr.writeln)(wordWrap('$header $message\n'));
+  final void Function(Object?) func;
+  if (print) {
+    func = core.print;
+  } else {
+    func = stderr.writeln;
+  }
+  func(wordWrap('$header $message\n'));
 }
 
 /// Repeatedly finds a probably-unused port on localhost and passes it to
@@ -220,7 +223,8 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     var response = await request.close();
     var jsonObject =
         await json.fuse(utf8).decoder.bind(response).single as List;
-    return base.resolve(jsonObject.first['devtoolsFrontendUrl'] as String);
+    return base
+        .resolve((jsonObject.first as Map)['devtoolsFrontendUrl'] as String);
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.

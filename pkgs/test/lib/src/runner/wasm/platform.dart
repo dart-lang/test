@@ -242,20 +242,20 @@ class BrowserWasmPlatform extends PlatformPlugin
   ///
   /// Once the suite has been compiled, it's added to [_wasmHandler] so it can be
   /// served.
-  Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
-    return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = Directory(_compiledDir).createTempSync('test_').path;
+  Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) =>
+      _compileFutures.putIfAbsent(dartPath, () async {
+        var dir = Directory(_compiledDir).createTempSync('test_').path;
 
-      var baseCompiledPath =
-          p.join(dir, '${p.basename(dartPath)}.browser_test.dart');
-      var baseUrl =
-          '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
-      var wasmUrl = '$baseUrl.wasm';
-      var jsRuntimeWrapperUrl = '$baseUrl.js';
-      var jsRuntimeUrl = '$baseUrl.mjs';
-      var htmlUrl = '$baseUrl.html';
+        var baseCompiledPath =
+            p.join(dir, '${p.basename(dartPath)}.browser_test.dart');
+        var baseUrl =
+            '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
+        var wasmUrl = '$baseUrl.wasm';
+        var jsRuntimeWrapperUrl = '$baseUrl.js';
+        var jsRuntimeUrl = '$baseUrl.mjs';
+        var htmlUrl = '$baseUrl.html';
 
-      var bootstrapContent = '''
+        var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/browser.dart";
 
@@ -266,33 +266,35 @@ class BrowserWasmPlatform extends PlatformPlugin
         }
       ''';
 
-      await _compilers.compile(bootstrapContent, baseCompiledPath, suiteConfig);
-      if (_closed) return;
+        await _compilers.compile(
+            bootstrapContent, baseCompiledPath, suiteConfig);
+        if (_closed) return;
 
-      var wasmPath = '$baseCompiledPath.wasm';
-      _wasmHandler.add(wasmUrl, (request) {
-        return shelf.Response.ok(File(wasmPath).readAsBytesSync(),
-            headers: {'Content-Type': 'application/wasm'});
-      });
+        var wasmPath = '$baseCompiledPath.wasm';
+        _wasmHandler.add(
+            wasmUrl,
+            (request) => shelf.Response.ok(File(wasmPath).readAsBytesSync(),
+                headers: {'Content-Type': 'application/wasm'}));
 
-      _wasmHandler.add(jsRuntimeWrapperUrl, (request) {
-        return shelf.Response.ok(File(_jsRuntimeWrapper).readAsBytesSync(),
-            headers: {'Content-Type': 'application/javascript'});
-      });
+        _wasmHandler.add(
+            jsRuntimeWrapperUrl,
+            (request) => shelf.Response.ok(
+                File(_jsRuntimeWrapper).readAsBytesSync(),
+                headers: {'Content-Type': 'application/javascript'}));
 
-      var jsRuntimePath = '$baseCompiledPath.mjs';
-      _wasmHandler.add(jsRuntimeUrl, (request) {
-        return shelf.Response.ok(File(jsRuntimePath).readAsBytesSync(),
-            headers: {'Content-Type': 'application/javascript'});
-      });
+        var jsRuntimePath = '$baseCompiledPath.mjs';
+        _wasmHandler.add(
+            jsRuntimeUrl,
+            (request) => shelf.Response.ok(
+                File(jsRuntimePath).readAsBytesSync(),
+                headers: {'Content-Type': 'application/javascript'}));
 
-      var htmlPath = '$baseCompiledPath.html';
-      _wasmHandler.add(htmlUrl, (request) {
-        return shelf.Response.ok(File(htmlPath).readAsBytesSync(),
-            headers: {'Content-Type': 'text/html'});
+        var htmlPath = '$baseCompiledPath.html';
+        _wasmHandler.add(
+            htmlUrl,
+            (request) => shelf.Response.ok(File(htmlPath).readAsBytesSync(),
+                headers: {'Content-Type': 'text/html'}));
       });
-    });
-  }
 
   /// Returns the [BrowserManager] for [browser].
   ///

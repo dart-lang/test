@@ -9,7 +9,7 @@ export 'package:matcher/src/expect/expect.dart' show ErrorFormatter;
 // ignore: deprecated_member_use
 export 'package:matcher/src/expect/expect_async.dart' show expectAsync;
 // ignore: deprecated_member_use
-export 'package:matcher/src/expect/throws_matcher.dart' show throws, Throws;
+export 'package:matcher/src/expect/throws_matcher.dart' show Throws, throws;
 // The non-deprecated API (through a deprecated import).
 // ignore: deprecated_member_use
 export 'package:test_core/test_core.dart';

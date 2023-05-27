@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: only_throw_errors
+
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -42,7 +44,7 @@ void main() {
     test('returns the current invoker in a test body after the test completes',
         () async {
       Status? status;
-      var completer = Completer();
+      var completer = Completer<Invoker>();
       var liveTest = _localTest(() {
         // Use the event loop to wait longer than a microtask for the test to
         // complete.

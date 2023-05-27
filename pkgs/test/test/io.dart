@@ -160,12 +160,11 @@ Future<TestProcess> runDart(Iterable<String> args,
 
 /// Runs Pub.
 Future<TestProcess> runPub(Iterable<String> args,
-    {Map<String, String>? environment}) {
-  return TestProcess.start(_pubPath, args,
-      workingDirectory: d.sandbox,
-      environment: environment,
-      description: 'pub ${args.first}');
-}
+        {Map<String, String>? environment}) =>
+    TestProcess.start(_pubPath, args,
+        workingDirectory: d.sandbox,
+        environment: environment,
+        description: 'pub ${args.first}');
 
 /// Runs "pub serve".
 ///

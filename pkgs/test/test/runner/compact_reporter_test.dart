@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -24,8 +25,8 @@ void main() {
     await test.shouldExit(79);
   });
 
-  test('runs several successful tests and reports when each completes', () {
-    return _expectReport('''
+  test('runs several successful tests and reports when each completes',
+      () => _expectReport('''
         test('success 1', () {});
         test('success 2', () {});
         test('success 3', () {});''', '''
@@ -36,11 +37,10 @@ void main() {
         +2: success 2
         +2: success 3
         +3: success 3
-        +3: All tests passed!''');
-  });
+        +3: All tests passed!'''));
 
-  test('runs several failing tests and reports when each fails', () {
-    return _expectReport('''
+  test('runs several failing tests and reports when each fails',
+      () => _expectReport('''
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
         test('failure 3', () => throw TestFailure('oh no'));''', '''
@@ -63,8 +63,7 @@ void main() {
           test.dart 8:33  main.<fn>
 
 
-        +0 -3: Some tests failed.''');
-  });
+        +0 -3: Some tests failed.'''));
 
   test('includes the full stack trace with --verbose-trace', () async {
     await d.file('test.dart', '''
@@ -83,8 +82,7 @@ void main() {
     await test.shouldExit(1);
   });
 
-  test('runs failing tests along with successful tests', () {
-    return _expectReport('''
+  test('runs failing tests along with successful tests', () => _expectReport('''
         test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
@@ -106,11 +104,10 @@ void main() {
 
         +1 -2: success 2
         +2 -2: success 2
-        +2 -2: Some tests failed.''');
-  });
+        +2 -2: Some tests failed.'''));
 
-  test('gracefully handles multiple test failures in a row', () {
-    return _expectReport('''
+  test('gracefully handles multiple test failures in a row',
+      () => _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = Completer();
@@ -145,11 +142,9 @@ void main() {
 
         +0 -1: wait
         +1 -1: wait
-        +1 -1: Some tests failed.''');
-  });
+        +1 -1: Some tests failed.'''));
 
-  test('prints the full test name before an error', () {
-    return _expectReport('''
+  test('prints the full test name before an error', () => _expectReport('''
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. Even more. We have to get to at least 200 characters. '
@@ -163,12 +158,10 @@ void main() {
           test.dart 11:18  main.<fn>
 
 
-        +0 -1: Some tests failed.''');
-  });
+        +0 -1: Some tests failed.'''));
 
   group('print:', () {
-    test('handles multiple prints', () {
-      return _expectReport('''
+    test('handles multiple prints', () => _expectReport('''
         test('test', () {
           print("one");
           print("two");
@@ -183,11 +176,9 @@ void main() {
         four
 
         +1: test
-        +1: All tests passed!''');
-    });
+        +1: All tests passed!'''));
 
-    test('handles a print after the test completes', () {
-      return _expectReport('''
+    test('handles a print after the test completes', () => _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = Completer();
@@ -217,11 +208,9 @@ void main() {
         four
 
         +2: wait
-        +2: All tests passed!''');
-    });
+        +2: All tests passed!'''));
 
-    test('interleaves prints and errors', () {
-      return _expectReport('''
+    test('interleaves prints and errors', () => _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var completer = Completer();
@@ -266,11 +255,9 @@ void main() {
 
         +0 -1: wait
         +1 -1: wait
-        +1 -1: Some tests failed.''');
-    });
+        +1 -1: Some tests failed.'''));
 
-    test('prints the full test name before a print', () {
-      return _expectReport('''
+    test('prints the full test name before a print', () => _expectReport('''
           test(
              'really gosh dang long test name. Even longer than that. No, yet '
                  'longer. Even more. We have to get to at least 200 '
@@ -283,11 +270,10 @@ void main() {
           hello
 
           +1: really ... than that. No, yet longer. Even more. We have to get to at least 200 characters. I know that seems like a lot, but I believe in you. A little more... okay, that should do it.
-          +1: All tests passed!''');
-    });
+          +1: All tests passed!'''));
 
-    test("doesn't print a clock update between two prints", () {
-      return _expectReport('''
+    test("doesn't print a clock update between two prints",
+        () => _expectReport('''
           test('slow', () async {
             print('hello');
             await Future.delayed(Duration(seconds: 3));
@@ -299,13 +285,11 @@ void main() {
           goodbye
 
           +1: slow
-          +1: All tests passed!''');
-    });
+          +1: All tests passed!'''));
   });
 
   group('skip:', () {
-    test('displays skipped tests separately', () {
-      return _expectReport('''
+    test('displays skipped tests separately', () => _expectReport('''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);''', '''
@@ -316,11 +300,9 @@ void main() {
           +0 ~2: skip 2
           +0 ~2: skip 3
           +0 ~3: skip 3
-          +0 ~3: All tests skipped.''');
-    });
+          +0 ~3: All tests skipped.'''));
 
-    test('displays a skipped group', () {
-      return _expectReport('''
+    test('displays a skipped group', () => _expectReport('''
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
@@ -333,11 +315,10 @@ void main() {
           +0 ~2: skip test 2
           +0 ~2: skip test 3
           +0 ~3: skip test 3
-          +0 ~3: All tests skipped.''');
-    });
+          +0 ~3: All tests skipped.'''));
 
-    test('runs skipped tests along with successful tests', () {
-      return _expectReport('''
+    test('runs skipped tests along with successful tests',
+        () => _expectReport('''
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
@@ -351,11 +332,10 @@ void main() {
           +1 ~2: skip 2
           +1 ~2: success 2
           +2 ~2: success 2
-          +2 ~2: All tests passed!''');
-    });
+          +2 ~2: All tests passed!'''));
 
-    test('runs skipped tests along with successful and failing tests', () {
-      return _expectReport('''
+    test('runs skipped tests along with successful and failing tests',
+        () => _expectReport('''
           test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
@@ -383,11 +363,9 @@ void main() {
           +1 ~2 -2: skip 2
           +1 ~2 -2: success 2
           +2 ~2 -2: success 2
-          +2 ~2 -2: Some tests failed.''');
-    });
+          +2 ~2 -2: Some tests failed.'''));
 
-    test('displays the skip reason if available', () {
-      return _expectReport('''
+    test('displays the skip reason if available', () => _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''', '''
           +0: loading test.dart
@@ -399,11 +377,9 @@ void main() {
             Skip: or another
 
           +0 ~2: skip 2
-          +0 ~2: All tests skipped.''');
-    });
+          +0 ~2: All tests skipped.'''));
 
-    test('runs skipped tests with --run-skipped', () {
-      return _expectReport('''
+    test('runs skipped tests with --run-skipped', () => _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''', '''
           +0: loading test.dart
@@ -411,8 +387,7 @@ void main() {
           +1: skip 1
           +1: skip 2
           +2: skip 2
-          +2: All tests passed!''', args: ['--run-skipped']);
-    });
+          +2: All tests passed!''', args: ['--run-skipped']));
   });
 
   test('Directs users to enable stack trace chaining if disabled', () async {
@@ -432,8 +407,7 @@ void main() {
   group('gives non-windows users a way to re-run failed tests', () {
     final executablePath = p.absolute(Platform.resolvedExecutable);
 
-    test('with simple names', () {
-      return _expectReport('''
+    test('with simple names', () => _expectReport('''
         test('failure', () {
           expect(1, equals(2));
         });''', '''
@@ -445,11 +419,9 @@ void main() {
 
         To run this test again: $executablePath test test.dart -p vm --plain-name 'failure'
 
-        +0 -1: Some tests failed.''');
-    });
+        +0 -1: Some tests failed.'''));
 
-    test('escapes names containing single quotes', () {
-      return _expectReport('''
+    test('escapes names containing single quotes', () => _expectReport('''
         test("failure with a ' in the name", () {
           expect(1, equals(2));
         });''', '''
@@ -461,15 +433,13 @@ void main() {
 
         To run this test again: $executablePath test test.dart -p vm --plain-name 'failure with a '\\'' in the name'
 
-        +0 -1: Some tests failed.''');
-    });
+        +0 -1: Some tests failed.'''));
   }, testOn: '!windows');
 
   group('gives windows users a way to re-run failed tests', () {
     final executablePath = p.absolute(Platform.resolvedExecutable);
 
-    test('with simple names', () {
-      return _expectReport('''
+    test('with simple names', () => _expectReport('''
         test('failure', () {
           expect(1, equals(2));
         });''', '''
@@ -481,11 +451,9 @@ void main() {
 
         To run this test again: $executablePath test test.dart -p vm --plain-name "failure"
 
-        +0 -1: Some tests failed.''');
-    });
+        +0 -1: Some tests failed.'''));
 
-    test('escapes names containing double quotes', () {
-      return _expectReport('''
+    test('escapes names containing double quotes', () => _expectReport('''
         test('failure with a " in the name', () {
           expect(1, equals(2));
         });''', '''
@@ -497,8 +465,7 @@ void main() {
 
         To run this test again: $executablePath test test.dart -p vm --plain-name "failure with a """ in the name"
 
-        +0 -1: Some tests failed.''');
-    });
+        +0 -1: Some tests failed.'''));
   }, testOn: 'windows');
 }
 

@@ -24,11 +24,10 @@ class InternetExplorer extends Browser {
 
   /// Starts a new instance of Internet Explorer open to the given [url], which
   /// may be a [Uri] or a [String].
-  static Future<Process> _startBrowser(url, ExecutableSettings settings) {
-    return Process.start(settings.executable, [
-      '-extoff',
-      '$url',
-      ...settings.arguments,
-    ]);
-  }
+  static Future<Process> _startBrowser(url, ExecutableSettings settings) =>
+      Process.start(settings.executable, [
+        '-extoff',
+        '$url',
+        ...settings.arguments,
+      ]);
 }

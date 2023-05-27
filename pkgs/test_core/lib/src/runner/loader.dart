@@ -65,7 +65,7 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
-    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
+    _registerPlatformPlugin([Runtime.vm], VMPlatform.new);
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
@@ -137,16 +137,15 @@ class Loader {
   ///
   /// This emits [LoadSuite]s that must then be run to emit the actual
   /// [RunnerSuite]s defined in the file.
-  Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
-    return StreamGroup.merge(
-        Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File || !_config.filename.matches(p.basename(entry.path))) {
-        return Stream.empty();
-      }
+  Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) =>
+      StreamGroup.merge(Directory(dir).listSync(recursive: true).map((entry) {
+        if (entry is! File ||
+            !_config.filename.matches(p.basename(entry.path))) {
+          return Stream.empty();
+        }
 
-      return loadFile(entry.path, suiteConfig);
-    }));
-  }
+        return loadFile(entry.path, suiteConfig);
+      }));
 
   /// Loads a test suite from the file at [path] according to [suiteConfig].
   ///
@@ -160,6 +159,7 @@ class Loader {
       suiteConfig = suiteConfig.merge(SuiteConfiguration.fromMetadata(
           parseMetadata(
               path, File(path).readAsStringSync(), _runtimeVariables.toSet())));
+      // ignore: avoid_catching_errors
     } on ArgumentError catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.

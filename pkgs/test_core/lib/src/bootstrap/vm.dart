@@ -41,7 +41,7 @@ void internalBootstrapNativeTest(
     ..pipe(serializeSuite(getMain));
   platformChannel.sink.add(testControlChannel.id);
 
-  platformChannel.stream.forEach((message) {
+  await platformChannel.stream.forEach((message) {
     assert(message == 'debug');
     debugger(message: 'Paused by test runner');
     platformChannel.sink.add('done');

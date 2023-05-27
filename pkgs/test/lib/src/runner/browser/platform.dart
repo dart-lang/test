@@ -242,8 +242,11 @@ class BrowserPlatform extends PlatformPlugin
 
       final templateFileContents = File(htmlTemplatePath).readAsStringSync();
       if ('{{testScript}}'.allMatches(templateFileContents).length != 1) {
-        throw LoadException(path,
-            '"$htmlTemplatePath" must contain exactly one {{testScript}} placeholder');
+        throw LoadException(
+          path,
+          '"$htmlTemplatePath" must contain exactly one {{testScript}} '
+          'placeholder',
+        );
       }
       _checkHtmlCorrectness(htmlTemplatePath, path);
     }
@@ -299,64 +302,65 @@ class BrowserPlatform extends PlatformPlugin
   /// This ensures that only one suite is loaded at a time, and that any errors
   /// are exposed as [LoadException]s.
   Future<void> _pubServeSuite(String path, Uri dartUrl, Runtime browser,
-      SuiteConfiguration suiteConfig) {
-    return _pubServePool.withResource(() async {
-      var timer = Timer(Duration(seconds: 1), () {
-        print('"pub serve" is compiling $path...');
-      });
+          SuiteConfiguration suiteConfig) =>
+      _pubServePool.withResource(() async {
+        var timer = Timer(Duration(seconds: 1), () {
+          print('"pub serve" is compiling $path...');
+        });
 
-      var sourceMapUrl = dartUrl.replace(path: '${dartUrl.path}.js.map');
+        var sourceMapUrl = dartUrl.replace(path: '${dartUrl.path}.js.map');
 
-      try {
-        var request = await _http!.getUrl(sourceMapUrl);
-        var response = await request.close();
+        try {
+          var request = await _http!.getUrl(sourceMapUrl);
+          var response = await request.close();
 
-        if (response.statusCode != 200) {
-          // Drain response to avoid VM hang.
-          response.drain();
+          if (response.statusCode != 200) {
+            // Drain response to avoid VM hang.
+            await response.drain();
+
+            throw LoadException(
+                path,
+                'Error getting $sourceMapUrl: ${response.statusCode} '
+                '${response.reasonPhrase}\n'
+                'Make sure "pub serve" is serving the test/ directory.');
+          }
+
+          if (suiteConfig.jsTrace) {
+            // Drain response to avoid VM hang.
+            await response.drain();
+            return;
+          }
+          _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
+              mapUrl: sourceMapUrl,
+              sdkRoot: p.toUri('packages/\$sdk'),
+              packageMap:
+                  (await currentPackageConfig).toPackagesDirPackageMap());
+        } on IOException catch (error) {
+          var message = getErrorMessage(error);
+          if (error is SocketException) {
+            message = '${error.osError?.message} '
+                '(errno ${error.osError?.errorCode})';
+          }
 
           throw LoadException(
               path,
-              'Error getting $sourceMapUrl: ${response.statusCode} '
-              '${response.reasonPhrase}\n'
-              'Make sure "pub serve" is serving the test/ directory.');
+              'Error getting $sourceMapUrl: $message\n'
+              'Make sure "pub serve" is running.');
+        } finally {
+          timer.cancel();
         }
-
-        if (suiteConfig.jsTrace) {
-          // Drain response to avoid VM hang.
-          response.drain();
-          return;
-        }
-        _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),
-            mapUrl: sourceMapUrl,
-            sdkRoot: p.toUri('packages/\$sdk'),
-            packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
-      } on IOException catch (error) {
-        var message = getErrorMessage(error);
-        if (error is SocketException) {
-          message = '${error.osError?.message} '
-              '(errno ${error.osError?.errorCode})';
-        }
-
-        throw LoadException(
-            path,
-            'Error getting $sourceMapUrl: $message\n'
-            'Make sure "pub serve" is running.');
-      } finally {
-        timer.cancel();
-      }
-    });
-  }
+      });
 
   /// Compile the test suite at [dartPath] to JavaScript.
   ///
   /// Once the suite has been compiled, it's added to [_jsHandler] so it can be
   /// served.
-  Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) {
-    return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = Directory(_compiledDir!).createTempSync('test_').path;
-      var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
-      var bootstrapContent = '''
+  Future<void> _compileSuite(String dartPath, SuiteConfiguration suiteConfig) =>
+      _compileFutures.putIfAbsent(dartPath, () async {
+        var dir = Directory(_compiledDir!).createTempSync('test_').path;
+        var jsPath =
+            p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
+        var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/browser.dart";
 
@@ -367,38 +371,39 @@ class BrowserPlatform extends PlatformPlugin
         }
       ''';
 
-      await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
-      if (_closed) return;
+        await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
+        if (_closed) return;
 
-      var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart';
-      _jsHandler.add(bootstrapUrl, (request) {
-        return shelf.Response.ok(bootstrapContent,
-            headers: {'Content-Type': 'application/dart'});
+        var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+            '.browser_test.dart';
+        _jsHandler.add(
+            bootstrapUrl,
+            (request) => shelf.Response.ok(bootstrapContent,
+                headers: {'Content-Type': 'application/dart'}));
+
+        var jsUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+            '.browser_test.dart.js';
+        _jsHandler.add(
+            jsUrl,
+            (request) => shelf.Response.ok(File(jsPath).readAsStringSync(),
+                headers: {'Content-Type': 'application/javascript'}));
+
+        var mapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+            '.browser_test.dart.js.map';
+        _jsHandler.add(
+            mapUrl,
+            (request) => shelf.Response.ok(
+                File('$jsPath.map').readAsStringSync(),
+                headers: {'Content-Type': 'application/json'}));
+
+        if (suiteConfig.jsTrace) return;
+        var mapPath = '$jsPath.map';
+        _mappers[dartPath] = JSStackTraceMapper(
+            File(mapPath).readAsStringSync(),
+            mapUrl: p.toUri(mapPath),
+            sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+            packageMap: (await currentPackageConfig).toPackageMap());
       });
-
-      var jsUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js';
-      _jsHandler.add(jsUrl, (request) {
-        return shelf.Response.ok(File(jsPath).readAsStringSync(),
-            headers: {'Content-Type': 'application/javascript'});
-      });
-
-      var mapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js.map';
-      _jsHandler.add(mapUrl, (request) {
-        return shelf.Response.ok(File('$jsPath.map').readAsStringSync(),
-            headers: {'Content-Type': 'application/json'});
-      });
-
-      if (suiteConfig.jsTrace) return;
-      var mapPath = '$jsPath.map';
-      _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
-    });
-  }
 
   Future<void> _addPrecompiledStackTraceMapper(
       String dartPath, SuiteConfiguration suiteConfig) async {

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -18,8 +19,9 @@ import 'json_reporter_utils.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('runs successful tests with a stdout reporter and file reporter', () {
-    return _expectReports('''
+  test(
+      'runs successful tests with a stdout reporter and file reporter',
+      () => _expectReports('''
       test('success 1', () {});
       test('success 2', () {});
       test('success 3', () {});
@@ -28,25 +30,25 @@ void main() {
       +1: success 2
       +2: success 3
       +3: All tests passed!''', [
-      [
-        suiteJson(0),
-        testStartJson(1, 'loading test.dart', groupIDs: []),
-        testDoneJson(1, hidden: true),
-      ],
-      [
-        groupJson(2, testCount: 3),
-        testStartJson(3, 'success 1', line: 6, column: 7),
-        testDoneJson(3),
-        testStartJson(4, 'success 2', line: 7, column: 7),
-        testDoneJson(4),
-        testStartJson(5, 'success 3', line: 8, column: 7),
-        testDoneJson(5),
-      ]
-    ], doneJson());
-  });
+            [
+              suiteJson(0),
+              testStartJson(1, 'loading test.dart', groupIDs: []),
+              testDoneJson(1, hidden: true),
+            ],
+            [
+              groupJson(2, testCount: 3),
+              testStartJson(3, 'success 1', line: 6, column: 7),
+              testDoneJson(3),
+              testStartJson(4, 'success 2', line: 7, column: 7),
+              testDoneJson(4),
+              testStartJson(5, 'success 3', line: 8, column: 7),
+              testDoneJson(5),
+            ]
+          ], doneJson()));
 
-  test('runs failing tests with a stdout reporter and file reporter', () {
-    return _expectReports('''
+  test(
+      'runs failing tests with a stdout reporter and file reporter',
+      () => _expectReports('''
       test('failure 1', () => throw new TestFailure('oh no'));
       test('failure 2', () => throw new TestFailure('oh no'));
       test('failure 3', () => throw new TestFailure('oh no'));
@@ -67,25 +69,24 @@ void main() {
         test.dart 8:31  main.<fn>
 
       +0 -3: Some tests failed.''', [
-      [
-        suiteJson(0),
-        testStartJson(1, 'loading test.dart', groupIDs: []),
-        testDoneJson(1, hidden: true),
-      ],
-      [
-        groupJson(2, testCount: 3),
-        testStartJson(3, 'failure 1', line: 6, column: 7),
-        errorJson(3, 'oh no', isFailure: true),
-        testDoneJson(3, result: 'failure'),
-        testStartJson(4, 'failure 2', line: 7, column: 7),
-        errorJson(4, 'oh no', isFailure: true),
-        testDoneJson(4, result: 'failure'),
-        testStartJson(5, 'failure 3', line: 8, column: 7),
-        errorJson(5, 'oh no', isFailure: true),
-        testDoneJson(5, result: 'failure'),
-      ]
-    ], doneJson(success: false));
-  });
+            [
+              suiteJson(0),
+              testStartJson(1, 'loading test.dart', groupIDs: []),
+              testDoneJson(1, hidden: true),
+            ],
+            [
+              groupJson(2, testCount: 3),
+              testStartJson(3, 'failure 1', line: 6, column: 7),
+              errorJson(3, 'oh no', isFailure: true),
+              testDoneJson(3, result: 'failure'),
+              testStartJson(4, 'failure 2', line: 7, column: 7),
+              errorJson(4, 'oh no', isFailure: true),
+              testDoneJson(4, result: 'failure'),
+              testStartJson(5, 'failure 3', line: 8, column: 7),
+              errorJson(5, 'oh no', isFailure: true),
+              testDoneJson(5, result: 'failure'),
+            ]
+          ], doneJson(success: false)));
 
   group('reports an error if --file-reporter', () {
     test('is not in the form <reporter>:<filepath>', () async {

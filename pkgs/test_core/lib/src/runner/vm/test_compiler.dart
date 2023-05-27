@@ -85,8 +85,7 @@ class _TestCompilerForLanguageVersion {
       : _dillCachePath = '$dillCachePrefix.'
             '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  String _generateEntrypoint(Uri testUri) {
-    return '''
+  String _generateEntrypoint(Uri testUri) => '''
     $_languageVersionComment
     import "dart:isolate";
 
@@ -98,7 +97,6 @@ class _TestCompilerForLanguageVersion {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
   ''';
-  }
 
   Future<CompilationResponse> compile(Uri mainUri) =>
       _compilePool.withResource(() => _compile(mainUri));

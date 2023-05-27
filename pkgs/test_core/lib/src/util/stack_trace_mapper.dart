@@ -41,14 +41,12 @@ class JSStackTraceMapper implements StackTraceMapper {
 
   /// Returns a Map representation which is suitable for JSON serialization.
   @override
-  Map<String, dynamic> serialize() {
-    return {
-      'mapContents': _mapContents,
-      'sdkRoot': _sdkRoot?.toString(),
-      'packageConfigMap': _serializePackageConfigMap(_packageMap),
-      'mapUrl': _mapUrl?.toString(),
-    };
-  }
+  Map<String, dynamic> serialize() => {
+        'mapContents': _mapContents,
+        'sdkRoot': _sdkRoot?.toString(),
+        'packageConfigMap': _serializePackageConfigMap(_packageMap),
+        'mapUrl': _mapUrl?.toString(),
+      };
 
   /// Returns a [StackTraceMapper] contained in the provided serialized
   /// representation.

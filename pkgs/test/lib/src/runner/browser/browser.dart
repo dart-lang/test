@@ -72,6 +72,7 @@ abstract class Browser {
         try {
           _ioSubscriptions
               .add(stream.listen(output.addAll, cancelOnError: true));
+          // ignore: avoid_catching_errors
         } on StateError catch (_) {}
       }
 

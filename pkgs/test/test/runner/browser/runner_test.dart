@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:convert';
 
 import 'package:test/test.dart';
@@ -75,11 +77,12 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": Top-level main getter is not a function.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: compiling test.dart [E]',
+          'Failed to load "test.dart": Top-level main getter is not a function.'
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome', skip: 'https://github.com/dart-lang/test/issues/894');
 
@@ -88,11 +91,13 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": Top-level main() function takes arguments.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: compiling test.dart [E]',
+          'Failed to load "test.dart": Top-level main() function takes '
+              'arguments.'
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -268,11 +273,13 @@ void main() {
         var test = await runTest(['-p', 'chrome', 'test.dart'],
             environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: compiling test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" does not exist or is not readable'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": "html_template.html.tpl" does not '
+                'exist or is not readable'
+          ]),
+        );
         await test.shouldExit(1);
       }, tags: 'chrome');
 
@@ -291,11 +298,13 @@ void main() {
         var test = await runTest(['-p', 'chrome', 'test.dart'],
             environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: compiling test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: compiling test.dart [E]',
+            'Failed to load "test.dart": "html_template.html.tpl" must contain '
+                'exactly one {{testScript}} placeholder'
+          ]),
+        );
         await test.shouldExit(1);
       }, tags: 'chrome');
 

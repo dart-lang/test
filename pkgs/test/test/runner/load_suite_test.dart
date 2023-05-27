@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -63,9 +65,8 @@ void main() {
 
   test('a load test forwards errors and completes LoadSuite.suite to null',
       () async {
-    var suite = LoadSuite('name', SuiteConfiguration.empty, suitePlatform, () {
-      return fail('error');
-    });
+    var suite = LoadSuite(
+        'name', SuiteConfiguration.empty, suitePlatform, () => fail('error'));
     expect(suite.group.entries, hasLength(1));
 
     expect(suite.suite, completion(isNull));
@@ -146,9 +147,7 @@ void main() {
           'name', SuiteConfiguration.empty, suitePlatform, () => null);
       expect(suite.group.entries, hasLength(1));
 
-      var newSuite = suite.changeSuite(expectAsync1((_) {
-        return null;
-      }, count: 0));
+      var newSuite = suite.changeSuite(expectAsync1((_) => null, count: 0));
       expect(newSuite.suite, completion(isNull));
 
       var liveTest = (suite.group.entries.single as Test).load(suite);

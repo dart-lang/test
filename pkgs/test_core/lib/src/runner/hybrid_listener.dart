@@ -41,6 +41,7 @@ void listen(Function Function() getMain, List data) {
       dynamic /*Function*/ main;
       try {
         main = getMain();
+        // ignore: avoid_catching_errors
       } on NoSuchMethodError catch (_) {
         _sendError(channel, 'No top-level hybridMain() function defined.');
         return;
@@ -75,6 +76,7 @@ void listen(Function Function() getMain, List data) {
       if (main is Function(StreamChannel)) {
         main(transformedChannel);
       } else {
+        // ignore: avoid_dynamic_calls
         main(transformedChannel, message);
       }
     }, zoneSpecification: ZoneSpecification(print: (_, __, ___, line) {

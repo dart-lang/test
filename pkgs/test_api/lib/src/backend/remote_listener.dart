@@ -68,6 +68,7 @@ final class RemoteListener {
         Function? main;
         try {
           main = getMain();
+          // ignore: avoid_catching_errors
         } on NoSuchMethodError catch (_) {
           _sendLoadException(channel, 'No top-level main() function defined.');
           return;
@@ -98,7 +99,7 @@ final class RemoteListener {
         });
 
         if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
-        var metadata = Metadata.deserialize(message['metadata']);
+        var metadata = Metadata.deserialize(message['metadata'] as Map);
         verboseChain = metadata.verboseTrace;
         var declarer = Declarer(
           metadata: metadata,
@@ -198,11 +199,11 @@ final class RemoteListener {
               group.trace?.toString(),
       'setUpAll': _serializeTest(channel, group.setUpAll, parents),
       'tearDownAll': _serializeTest(channel, group.tearDownAll, parents),
-      'entries': group.entries.map((entry) {
-        return entry is Group
-            ? _serializeGroup(channel, entry, parents)
-            : _serializeTest(channel, entry as Test, parents);
-      }).toList()
+      'entries': group.entries
+          .map((entry) => entry is Group
+              ? _serializeGroup(channel, entry, parents)
+              : _serializeTest(channel, entry as Test, parents))
+          .toList()
     };
   }
 
@@ -216,9 +217,9 @@ final class RemoteListener {
 
     var testChannel = channel.virtualChannel();
     testChannel.stream.listen((message) {
-      assert(message['command'] == 'run');
+      assert((message as Map)['command'] == 'run');
       _runLiveTest(test.load(_suite, groups: groups),
-          channel.virtualChannel((message['channel'] as num).toInt()));
+          channel.virtualChannel(((message as Map)['channel'] as num).toInt()));
     });
 
     return {
@@ -238,7 +239,7 @@ final class RemoteListener {
   /// Runs [liveTest] and sends the results across [channel].
   void _runLiveTest(LiveTest liveTest, MultiChannel channel) {
     channel.stream.listen((message) {
-      assert(message['command'] == 'close');
+      assert((message as Map)['command'] == 'close');
       liveTest.close();
     });
 

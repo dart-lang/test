@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:test/test.dart';
@@ -230,11 +232,9 @@ void _expectEscape(String escape, String value) {
 }
 
 /// Returns a matcher that asserts that the given rune is the rune for [char].
-Matcher _isRune(String char) {
-  return predicate((rune) {
-    return rune is int && String.fromCharCode(rune) == char;
-  }, 'is the rune "$char"');
-}
+Matcher _isRune(String char) => predicate(
+    (rune) => rune is int && String.fromCharCode(rune) == char,
+    'is the rune "$char"');
 
 /// Parses [dart], which should be a string literal, into a
 /// [StringLiteralIterator].

@@ -24,7 +24,7 @@ Future<void> expectJsonReport(
   expect(outputLines,
       hasLength(expected.fold<int>(3, (int a, m) => a + m.length)));
 
-  dynamic decodeLine(String l) => jsonDecode(l)
+  dynamic decodeLine(String l) => (jsonDecode(l) as Map)
     ..remove('time')
     ..remove('stackTrace');
 
@@ -52,25 +52,23 @@ Future<void> expectJsonReport(
 /// all suites.
 ///
 /// The [count] defaults to 1.
-Map<String, Object> allSuitesJson({int count = 1}) {
-  return {'type': 'allSuites', 'count': count};
-}
+Map<String, Object> allSuitesJson({int count = 1}) =>
+    {'type': 'allSuites', 'count': count};
 
 /// Returns the event emitted by the JSON reporter indicating that a suite has
 /// begun running.
 ///
 /// The [platform] defaults to `"vm"`, the [path] defaults to `"test.dart"`.
 Map<String, Object> suiteJson(int id,
-    {String platform = 'vm', String path = 'test.dart'}) {
-  return {
-    'type': 'suite',
-    'suite': {
-      'id': id,
-      'platform': platform,
-      'path': path,
-    }
-  };
-}
+        {String platform = 'vm', String path = 'test.dart'}) =>
+    {
+      'type': 'suite',
+      'suite': {
+        'id': id,
+        'platform': platform,
+        'path': path,
+      }
+    };
 
 /// Returns the event emitted by the JSON reporter indicating that a group has
 /// begun running.
@@ -165,29 +163,22 @@ Map<String, Object> testStartJson(int id, String name,
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// printed [message].
 Matcher printJson(int id, dynamic /*String|Matcher*/ message,
-    {String type = 'print'}) {
-  return allOf(
-    hasLength(4),
-    containsPair('type', 'print'),
-    containsPair('testID', id),
-    containsPair('message', message),
-    containsPair('messageType', type),
-  );
-}
+        {String type = 'print'}) =>
+    allOf(
+      hasLength(4),
+      containsPair('type', 'print'),
+      containsPair('testID', id),
+      containsPair('message', message),
+      containsPair('messageType', type),
+    );
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// emitted [error].
 ///
 /// The [isFailure] parameter indicates whether the error was a [TestFailure] or
 /// not.
-Map<String, Object> errorJson(int id, String error, {bool isFailure = false}) {
-  return {
-    'type': 'error',
-    'testID': id,
-    'error': error,
-    'isFailure': isFailure
-  };
-}
+Map<String, Object> errorJson(int id, String error, {bool isFailure = false}) =>
+    {'type': 'error', 'testID': id, 'error': error, 'isFailure': isFailure};
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// finished.
@@ -199,15 +190,16 @@ Map<String, Object> errorJson(int id, String error, {bool isFailure = false}) {
 /// after finishing. The [skipped] parameter indicates whether the test was
 /// skipped.
 Map<String, Object> testDoneJson(int id,
-    {String result = 'success', bool hidden = false, bool skipped = false}) {
-  return {
-    'type': 'testDone',
-    'testID': id,
-    'result': result,
-    'hidden': hidden,
-    'skipped': skipped
-  };
-}
+        {String result = 'success',
+        bool hidden = false,
+        bool skipped = false}) =>
+    {
+      'type': 'testDone',
+      'testID': id,
+      'result': result,
+      'hidden': hidden,
+      'skipped': skipped
+    };
 
 /// Returns the event emitted by the JSON reporter indicating that the entire
 /// run finished.

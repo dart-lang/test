@@ -30,13 +30,13 @@ import 'package_version.dart';
 /// contains `pubspec.yaml`, *not* the `test/` directory). If it's a `package:`
 /// URL, it will be resolved using the current package's dependency
 /// constellation.
-StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
-  return StreamChannelCompleter.fromFuture(() async {
-    url = await _normalizeUrl(url, suite);
-    var port = ReceivePort();
-    var onExitPort = ReceivePort();
-    try {
-      var code = '''
+StreamChannel spawnHybridUri(String url, Object? message, Suite suite) =>
+    StreamChannelCompleter.fromFuture(() async {
+      url = await _normalizeUrl(url, suite);
+      var port = ReceivePort();
+      var onExitPort = ReceivePort();
+      try {
+        var code = '''
         ${await _languageVersionCommentFor(url)}
 
         import "package:test_core/src/runner/hybrid_listener.dart";
@@ -46,40 +46,40 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
         void main(_, List data) => listen(() => lib.hybridMain, data);
       ''';
 
-      var isolate = await dart.runInIsolate(code, [port.sendPort, message],
-          onExit: onExitPort.sendPort);
+        var isolate = await dart.runInIsolate(code, [port.sendPort, message],
+            onExit: onExitPort.sendPort);
 
-      // Ensure that we close [port] and [channel] when the isolate exits.
-      var disconnector = Disconnector();
-      onExitPort.listen((_) {
-        disconnector.disconnect();
+        // Ensure that we close [port] and [channel] when the isolate exits.
+        var disconnector = Disconnector();
+        onExitPort.listen((_) {
+          disconnector.disconnect();
+          port.close();
+          onExitPort.close();
+        });
+
+        return IsolateChannel.connectReceive(port)
+            .transform(disconnector)
+            .transformSink(
+                StreamSinkTransformer.fromHandlers(handleDone: (sink) {
+          // If the user closes the stream channel, kill the isolate.
+          isolate.kill();
+          port.close();
+          onExitPort.close();
+          sink.close();
+        }));
+      } catch (error, stackTrace) {
         port.close();
         onExitPort.close();
-      });
 
-      return IsolateChannel.connectReceive(port)
-          .transform(disconnector)
-          .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
-        // If the user closes the stream channel, kill the isolate.
-        isolate.kill();
-        port.close();
-        onExitPort.close();
-        sink.close();
-      }));
-    } catch (error, stackTrace) {
-      port.close();
-      onExitPort.close();
-
-      // Make sure any errors in spawning the isolate are forwarded to the test.
-      return StreamChannel(
-          Stream.fromFuture(Future.value({
-            'type': 'error',
-            'error': RemoteException.serialize(error, stackTrace)
-          })),
-          NullStreamSink());
-    }
-  }());
-}
+        // Make sure any errors in spawning the isolate are forwarded to the test.
+        return StreamChannel(
+            Stream.fromFuture(Future.value({
+              'type': 'error',
+              'error': RemoteException.serialize(error, stackTrace)
+            })),
+            NullStreamSink());
+      }
+    }());
 
 /// Normalizes [url] to an absolute url, resolving `package:` urls with the
 /// current package config.

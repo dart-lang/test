@@ -4,6 +4,7 @@
 
 // Windows doesn't support sending signals.
 @TestOn('vm && !windows')
+library;
 
 import 'dart:async';
 import 'dart:io';

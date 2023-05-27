@@ -18,7 +18,7 @@ void main() {
     });
   });
   group('softCheckAsync', () {
-    test('returns the first failure', () async {
+    test('returns the first failure', () {
       check(Future.value(0)).isRejectedByAsync(
           it()
             ..completes(it()..isGreaterThan(1))

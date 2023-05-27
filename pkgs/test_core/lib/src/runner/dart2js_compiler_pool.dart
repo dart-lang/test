@@ -39,67 +39,66 @@ class Dart2JsCompilerPool extends CompilerPool {
   /// *and* all its output has been printed to the command line.
   @override
   Future compileInternal(
-      String code, String path, SuiteConfiguration suiteConfig) {
-    return withTempDir((dir) async {
-      var wrapperPath = p.join(dir, 'runInBrowser.dart');
-      File(wrapperPath).writeAsStringSync(code);
+          String code, String path, SuiteConfiguration suiteConfig) =>
+      withTempDir((dir) async {
+        var wrapperPath = p.join(dir, 'runInBrowser.dart');
+        File(wrapperPath).writeAsStringSync(code);
 
-      var args = [
-        'compile',
-        'js',
-        for (var experiment in enabledExperiments)
-          '--enable-experiment=$experiment',
-        '--enable-asserts',
-        wrapperPath,
-        '--out=$path',
-        '--packages=${await packageConfigUri}',
-        ..._extraArgs,
-        ...suiteConfig.dart2jsArgs
-      ];
+        var args = [
+          'compile',
+          'js',
+          for (var experiment in enabledExperiments)
+            '--enable-experiment=$experiment',
+          '--enable-asserts',
+          wrapperPath,
+          '--out=$path',
+          '--packages=${await packageConfigUri}',
+          ..._extraArgs,
+          ...suiteConfig.dart2jsArgs
+        ];
 
-      if (config.color) args.add('--enable-diagnostic-colors');
+        if (config.color) args.add('--enable-diagnostic-colors');
 
-      var process = await Process.start(Platform.resolvedExecutable, args);
-      if (closed) {
-        process.kill();
-        return;
-      }
+        var process = await Process.start(Platform.resolvedExecutable, args);
+        if (closed) {
+          process.kill();
+          return;
+        }
 
-      _processes.add(process);
+        _processes.add(process);
 
-      /// Wait until the process is entirely done to print out any output.
-      /// This can produce a little extra time for users to wait with no
-      /// update, but it also avoids some really nasty-looking interleaved
-      /// output. Write both stdout and stderr to the same buffer in case
-      /// they're intended to be printed in order.
-      var buffer = StringBuffer();
+        /// Wait until the process is entirely done to print out any output.
+        /// This can produce a little extra time for users to wait with no
+        /// update, but it also avoids some really nasty-looking interleaved
+        /// output. Write both stdout and stderr to the same buffer in case
+        /// they're intended to be printed in order.
+        var buffer = StringBuffer();
 
-      await Future.wait([
-        process.stdout.transform(utf8.decoder).forEach(buffer.write),
-        process.stderr.transform(utf8.decoder).forEach(buffer.write),
-      ]);
+        await Future.wait([
+          process.stdout.transform(utf8.decoder).forEach(buffer.write),
+          process.stderr.transform(utf8.decoder).forEach(buffer.write),
+        ]);
 
-      var exitCode = await process.exitCode;
-      _processes.remove(process);
-      if (closed) return;
+        var exitCode = await process.exitCode;
+        _processes.remove(process);
+        if (closed) return;
 
-      var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
-      if (output.isNotEmpty) print(output);
+        var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
+        if (output.isNotEmpty) print(output);
 
-      if (exitCode != 0) throw 'dart2js failed.';
+        if (exitCode != 0) throw 'dart2js failed.';
 
-      _fixSourceMap('$path.map');
-    });
-  }
+        _fixSourceMap('$path.map');
+      });
 
   // TODO(nweiz): Remove this when sdk#17544 is fixed.
   /// Fix up the source map at [mapPath] so that it points to absolute file:
   /// URIs that are resolvable by the browser.
   void _fixSourceMap(String mapPath) {
-    var map = jsonDecode(File(mapPath).readAsStringSync());
+    var map = jsonDecode(File(mapPath).readAsStringSync()) as Map;
     var root = map['sourceRoot'] as String;
 
-    map['sources'] = map['sources'].map((source) {
+    map['sources'] = (map['sources'] as List).map((source) {
       var url = Uri.parse('$root$source');
       if (url.scheme != '' && url.scheme != 'file') return source;
       if (url.path.endsWith('/runInBrowser.dart')) return '';

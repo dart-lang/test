@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 
@@ -22,31 +23,30 @@ void main() {
     await test.shouldExit(79);
   });
 
-  test('runs several successful tests and reports when each completes', () {
-    return _expectReport('''
+  test('runs several successful tests and reports when each completes',
+      () => _expectReport('''
         test('success 1', () {});
         test('success 2', () {});
         test('success 3', () {});''', '''
         ✅ success 1
         ✅ success 2
         ✅ success 3
-        🎉 3 tests passed.''');
-  });
+        🎉 3 tests passed.'''));
 
-  test('includes the platform name when multiple platforms are run', () {
-    return _expectReportLines('''
+  test(
+      'includes the platform name when multiple platforms are run',
+      () => _expectReportLines('''
         test('success 1', () {});''', [
-      '✅ [VM, Kernel] success 1',
-      '✅ [Chrome, Dart2Js] success 1',
-      '🎉 2 tests passed.',
-    ], args: [
-      '-p',
-      'vm,chrome'
-    ]);
-  });
+            '✅ [VM, Kernel] success 1',
+            '✅ [Chrome, Dart2Js] success 1',
+            '🎉 2 tests passed.',
+          ], args: [
+            '-p',
+            'vm,chrome'
+          ]));
 
-  test('runs several failing tests and reports when each fails', () {
-    return _expectReport('''
+  test('runs several failing tests and reports when each fails',
+      () => _expectReport('''
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
         test('failure 3', () => throw TestFailure('oh no'));''', '''
@@ -62,8 +62,7 @@ void main() {
         oh no
         test.dart 8:33  main.<fn>
         ::endgroup::
-        ::error::0 tests passed, 3 failed.''');
-  });
+        ::error::0 tests passed, 3 failed.'''));
 
   test('includes the full stack trace with --verbose-trace', () async {
     await d.file('test.dart', '''
@@ -82,8 +81,7 @@ void main() {
     await test.shouldExit(1);
   });
 
-  test('runs failing tests along with successful tests', () {
-    return _expectReport('''
+  test('runs failing tests along with successful tests', () => _expectReport('''
         test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
@@ -98,23 +96,22 @@ void main() {
         test.dart 8:33  main.<fn>
         ::endgroup::
         ✅ success 2
-        ::error::2 tests passed, 2 failed.''');
-  });
+        ::error::2 tests passed, 2 failed.'''));
 
-  test('always prints the full test name', () {
-    return _expectReport(
-      '''
+  test(
+      'always prints the full test name',
+      () => _expectReport(
+            '''
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. A little more... okay, that should do it.',
            () {});''',
-      '✅ really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.',
-      useContains: true,
-    );
-  });
+            '✅ really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.',
+            useContains: true,
+          ));
 
-  test('gracefully handles multiple test failures in a row', () {
-    return _expectReport('''
+  test('gracefully handles multiple test failures in a row',
+      () => _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = Completer();
@@ -134,12 +131,12 @@ void main() {
         test.dart 12:34  main.<fn>.<fn>
         ::endgroup::
         ✅ wait
-        ::error::1 test passed, 1 failed.''');
-  });
+        ::error::1 test passed, 1 failed.'''));
 
-  test('displays failures occuring after a test completes', () {
-    return _expectReport(
-      '''
+  test(
+      'displays failures occuring after a test completes',
+      () => _expectReport(
+            '''
       test('fail after completion', () {
         Future(() {
           Zone.current.handleUncaughtError('foo', StackTrace.current);
@@ -147,7 +144,7 @@ void main() {
       });
 
       test('second test so that the first failure is reported', () {});''',
-      '''
+            '''
         ✅ fail after completion
         ::group::❌ fail after completion (failed after test completion)
         foo
@@ -161,32 +158,30 @@ void main() {
         ::endgroup::
         ✅ second test so that the first failure is reported
         ::error::1 test passed, 1 failed.''',
-    );
-  });
+          ));
 
   group('print:', () {
-    test('handles multiple prints', () {
-      return _expectReport(
-        '''
+    test(
+        'handles multiple prints',
+        () => _expectReport(
+              '''
         test('test', () {
           print("one");
           print("two");
           print("three");
           print("four");
         });''',
-        '''
+              '''
         ::group::✅ test
         one
         two
         three
         four
         ::endgroup::''',
-        useContains: true,
-      );
-    });
+              useContains: true,
+            ));
 
-    test('handles a print after the test completes', () {
-      return _expectReport('''
+    test('handles a print after the test completes', () => _expectReport('''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = Completer();
@@ -211,24 +206,20 @@ void main() {
         three
         four
         ✅ wait
-        🎉 2 tests passed.''');
-    });
+        🎉 2 tests passed.'''));
   });
 
   group('skip:', () {
-    test('displays skipped tests', () {
-      return _expectReport('''
+    test('displays skipped tests', () => _expectReport('''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);''', '''
           ❎ skip 1 (skipped)
           ❎ skip 2 (skipped)
           ❎ skip 3 (skipped)
-          🎉 0 tests passed, 3 skipped.''');
-    });
+          🎉 0 tests passed, 3 skipped.'''));
 
-    test('displays a skipped group', () {
-      return _expectReport('''
+    test('displays a skipped group', () => _expectReport('''
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
@@ -237,11 +228,10 @@ void main() {
           ❎ skip test 1 (skipped)
           ❎ skip test 2 (skipped)
           ❎ skip test 3 (skipped)
-          🎉 0 tests passed, 3 skipped.''');
-    });
+          🎉 0 tests passed, 3 skipped.'''));
 
-    test('runs skipped tests along with successful tests', () {
-      return _expectReport('''
+    test('runs skipped tests along with successful tests',
+        () => _expectReport('''
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
@@ -250,11 +240,10 @@ void main() {
           ✅ success 1
           ❎ skip 2 (skipped)
           ✅ success 2
-          🎉 2 tests passed, 2 skipped.''');
-    });
+          🎉 2 tests passed, 2 skipped.'''));
 
-    test('runs skipped tests along with successful and failing tests', () {
-      return _expectReport('''
+    test('runs skipped tests along with successful and failing tests',
+        () => _expectReport('''
           test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
@@ -273,11 +262,9 @@ void main() {
           ::endgroup::
           ❎ skip 2 (skipped)
           ✅ success 2
-          ::error::2 tests passed, 2 failed, 2 skipped.''');
-    });
+          ::error::2 tests passed, 2 failed, 2 skipped.'''));
 
-    test('displays the skip reason if available', () {
-      return _expectReport('''
+    test('displays the skip reason if available', () => _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''', '''
           ::group::❎ skip 1 (skipped)
@@ -286,23 +273,21 @@ void main() {
           ::group::❎ skip 2 (skipped)
           Skip: or another
           ::endgroup::
-          🎉 0 tests passed, 2 skipped.''');
-    });
+          🎉 0 tests passed, 2 skipped.'''));
   });
 
-  test('loadSuite, setUpAll, and tearDownAll hidden if no content', () {
-    return _expectReport('''
+  test('loadSuite, setUpAll, and tearDownAll hidden if no content',
+      () => _expectReport('''
           group('one', () {
             setUpAll(() {/* nothing to do here */});
             tearDownAll(() {/* nothing to do here */});
             test('test 1', () {});
           });''', '''
           ✅ one test 1
-          🎉 1 test passed.''');
-  });
+          🎉 1 test passed.'''));
 
-  test('setUpAll and tearDownAll show when they have content', () {
-    return _expectReport('''
+  test('setUpAll and tearDownAll show when they have content',
+      () => _expectReport('''
           group('one', () {
             setUpAll(() { print('one'); });
             tearDownAll(() { print('two'); });
@@ -315,8 +300,7 @@ void main() {
           ::group::✅ one (tearDownAll)
           two
           ::endgroup::
-          🎉 1 test passed.''');
-  });
+          🎉 1 test passed.'''));
 }
 
 /// Expects exactly [expected] to appear in the test output.

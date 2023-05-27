@@ -225,12 +225,12 @@ class Declarer {
   }
 
   /// Creates a group of tests.
-  void group(String name, void Function() body,
+  void group(String name, dynamic Function() body,
       {String? testOn,
       Timeout? timeout,
-      skip,
+      Object? skip,
       Map<String, dynamic>? onPlatform,
-      tags,
+      Object? tags,
       int? retry,
       bool solo = false}) {
     _checkNotBuilt('group');
@@ -264,7 +264,7 @@ class Declarer {
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
-      var result = (body as dynamic)();
+      var result = body();
       if (result is! Future) return;
       throw ArgumentError('Groups may not be async.');
     });
@@ -350,21 +350,26 @@ class Declarer {
   Future _runSetUps() async {
     if (_parent != null) await _parent!._runSetUps();
     // TODO: why does type inference not work here?
-    await Future.forEach<Function>(_setUps, (setUp) => setUp());
+    await Future.forEach(_setUps, (setUp) => setUp());
   }
 
   /// Returns a [Test] that runs the callbacks in [_setUpAll], or `null`.
   Test? get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
-    return LocalTest(_prefix('(setUpAll)'), _metadata.change(timeout: _timeout),
-        () {
-      return runZoned(
-          () => Future.forEach<Function>(_setUpAlls, (setUp) => setUp()),
-          // Make the declarer visible to running scaffolds so they can add to
-          // the declarer's `tearDownAll()` list.
-          zoneValues: {#test.declarer: this});
-    }, trace: _setUpAllTrace, guarded: false, isScaffoldAll: true);
+    return LocalTest(
+      _prefix('(setUpAll)'),
+      _metadata.change(timeout: _timeout),
+      () => runZoned(
+        () => Future.forEach(_setUpAlls, (setUp) => setUp()),
+        // Make the declarer visible to running scaffolds so they can add to
+        // the declarer's `tearDownAll()` list.
+        zoneValues: {#test.declarer: this},
+      ),
+      trace: _setUpAllTrace,
+      guarded: false,
+      isScaffoldAll: true,
+    );
   }
 
   /// Returns a [Test] that runs the callbacks in [_tearDownAll], or `null`.
@@ -374,12 +379,16 @@ class Declarer {
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
     return LocalTest(
-        _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
-      return runZoned(() => Invoker.current!.runTearDowns(_tearDownAlls),
+      _prefix('(tearDownAll)'),
+      _metadata.change(timeout: _timeout),
+      () => runZoned(() => Invoker.current!.runTearDowns(_tearDownAlls),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
-          zoneValues: {#test.declarer: this});
-    }, trace: _tearDownAllTrace, guarded: false, isScaffoldAll: true);
+          zoneValues: {#test.declarer: this}),
+      trace: _tearDownAllTrace,
+      guarded: false,
+      isScaffoldAll: true,
+    );
   }
 
   void _addEntry(GroupEntry entry) {

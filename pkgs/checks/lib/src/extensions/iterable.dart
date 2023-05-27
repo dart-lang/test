@@ -59,9 +59,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// Expects that the iterable contains [element] according to
   /// [Iterable.contains].
   void contains(T element) {
-    context.expect(() {
-      return prefixFirst('contains ', literal(element));
-    }, (actual) {
+    context.expect(() => prefixFirst('contains ', literal(element)), (actual) {
       if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
       if (actual.contains(element)) return null;
       return Rejection(
@@ -252,9 +250,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// full expectation will be: "pairwise is less than $expected"
   void pairwiseComparesTo<S>(List<S> expected,
       Condition<T> Function(S) elementCondition, String description) {
-    context.expect(() {
-      return prefixFirst('pairwise $description ', literal(expected));
-    }, (actual) {
+    context
+        .expect(() => prefixFirst('pairwise $description ', literal(expected)),
+            (actual) {
       final iterator = actual.iterator;
       for (var i = 0; i < expected.length; i++) {
         final expectedValue = expected[i];

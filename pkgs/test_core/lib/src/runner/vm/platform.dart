@@ -60,7 +60,7 @@ class VMPlatform extends PlatformPlugin {
         process =
             await _spawnExecutable(path, suiteConfig.metadata, serverSocket);
       } catch (error) {
-        serverSocket.close();
+        await serverSocket.close();
         rethrow;
       }
       process.stdout.listen(stdout.add);
@@ -103,8 +103,8 @@ class VMPlatform extends PlatformPlugin {
       for (var fn in cleanupCallbacks) {
         fn();
       }
-      eventSub?.cancel();
-      client?.dispose();
+      await eventSub?.cancel();
+      await client?.dispose();
       sink.close();
     }));
 
@@ -255,10 +255,9 @@ stderr: ${processResult.stderr}''');
   }
 
   /// Runs [uri] in an isolate, passing [message].
-  Future<Isolate> _spawnIsolateWithUri(Uri uri, SendPort message) async {
-    return await Isolate.spawnUri(uri, [], message,
-        packageConfig: await packageConfigUri, checked: true);
-  }
+  Future<Isolate> _spawnIsolateWithUri(Uri uri, SendPort message) async =>
+      await Isolate.spawnUri(uri, [], message,
+          packageConfig: await packageConfigUri, checked: true);
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
       String precompiledPath, Compiler compiler) async {

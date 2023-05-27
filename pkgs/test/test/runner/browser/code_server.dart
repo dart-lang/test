@@ -9,7 +9,7 @@ import 'package:http_multi_server/http_multi_server.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:test/test.dart' show printOnFailure, TestFailure;
+import 'package:test/test.dart' show TestFailure, printOnFailure;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// A class that serves Dart and/or JS code and receives WebSocket connections.
@@ -38,21 +38,20 @@ class CodeServer {
   /// Sets up a handler for the root of the server, "/", that serves a basic
   /// HTML page with a script tag that will run [javaScript].
   void handleJavaScript(String javaScript) {
-    _handler.expect('GET', '/', (_) {
-      return shelf.Response.ok('''
+    _handler.expect('GET', '/', (_) => shelf.Response.ok('''
 <!doctype html>
 <html>
 <head>
   <script src="index.js"></script>
 </head>
 </html>
-''', headers: {'content-type': 'text/html'});
-    });
+''', headers: {'content-type': 'text/html'}));
 
-    _handler.expect('GET', '/index.js', (_) {
-      return shelf.Response.ok(javaScript,
-          headers: {'content-type': 'application/javascript'});
-    });
+    _handler.expect(
+        'GET',
+        '/index.js',
+        (_) => shelf.Response.ok(javaScript,
+            headers: {'content-type': 'application/javascript'}));
   }
 
   /// Handles a WebSocket connection to the root of the server, and returns a

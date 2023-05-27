@@ -56,20 +56,14 @@ void main() {
         shelf.Request('GET', Uri.parse('http://localhost/foo/bar/baz'));
 
     handler.add(
-        'foo',
-        expectAsync1((_) {
-          return shelf.Response.notFound('fake');
-        }, count: 0));
+        'foo', expectAsync1((_) => shelf.Response.notFound('fake'), count: 0));
     handler.add('foo/bar', expectAsync1((request) {
       expect(request.handlerPath, equals('/foo/bar/'));
       expect(request.url.path, 'baz');
       return shelf.Response.ok('good job!');
     }));
-    handler.add(
-        'foo/bar/baz/bang',
-        expectAsync1((_) {
-          return shelf.Response.notFound('fake');
-        }, count: 0));
+    handler.add('foo/bar/baz/bang',
+        expectAsync1((_) => shelf.Response.notFound('fake'), count: 0));
 
     var response = await localHandler(request);
     expect(response.statusCode, equals(200));

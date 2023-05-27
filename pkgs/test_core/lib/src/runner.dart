@@ -255,91 +255,89 @@ class Runner {
   ///
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
-  Stream<LoadSuite> _loadSuites() {
-    return StreamGroup.merge(_config.testSelections.entries.map((pathEntry) {
-      final testPath = pathEntry.key;
-      final testSelections = pathEntry.value;
-      final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
-      if (Directory(testPath).existsSync()) {
-        return _loader.loadDir(testPath, suiteConfig);
-      } else if (File(testPath).existsSync()) {
-        return _loader.loadFile(testPath, suiteConfig);
-      } else {
-        return Stream.fromIterable([
-          LoadSuite.forLoadException(
-            LoadException(testPath, 'Does not exist.'),
-            suiteConfig,
-          ),
-        ]);
-      }
-    })).map((loadSuite) {
-      return loadSuite.changeSuite((suite) {
-        _warnForUnknownTags(suite);
+  Stream<LoadSuite> _loadSuites() =>
+      StreamGroup.merge(_config.testSelections.entries.map((pathEntry) {
+        final testPath = pathEntry.key;
+        final testSelections = pathEntry.value;
+        final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+        if (Directory(testPath).existsSync()) {
+          return _loader.loadDir(testPath, suiteConfig);
+        } else if (File(testPath).existsSync()) {
+          return _loader.loadFile(testPath, suiteConfig);
+        } else {
+          return Stream.fromIterable([
+            LoadSuite.forLoadException(
+              LoadException(testPath, 'Does not exist.'),
+              suiteConfig,
+            ),
+          ]);
+        }
+      })).map((loadSuite) => loadSuite.changeSuite((suite) {
+            _warnForUnknownTags(suite);
 
-        return _shardSuite(suite.filter((test) {
-          // Skip any tests that don't match all the global patterns.
-          if (!_config.globalPatterns
-              .every((pattern) => test.name.contains(pattern))) {
-            return false;
-          }
-
-          // If the user provided tags, skip tests that don't match all of them.
-          if (!_config.includeTags.evaluate(test.metadata.tags.contains)) {
-            return false;
-          }
-
-          // Skip tests that do match any tags the user wants to exclude.
-          if (_config.excludeTags.evaluate(test.metadata.tags.contains)) {
-            return false;
-          }
-
-          final testSelections = suite.config.testSelections;
-          assert(testSelections.isNotEmpty, 'Tests should have been selected');
-          return testSelections.any((selection) {
-            // Skip tests that don't match all the suite specific patterns.
-            if (!selection.testPatterns
-                .every((pattern) => test.name.contains(pattern))) {
-              return false;
-            }
-            // Skip tests that don't start on `line` or `col` if specified.
-            var line = selection.line;
-            var col = selection.col;
-            if (line == null && col == null) return true;
-            var trace = test.trace;
-            if (trace == null) {
-              throw StateError(
-                  'Cannot filter by line/column for this test suite, no stack'
-                  'trace available.');
-            }
-            var path = suite.path;
-            if (path == null) {
-              throw StateError(
-                  'Cannot filter by line/column for this test suite, no suite'
-                  'path available.');
-            }
-            // The absolute path as it will appear in stack traces.
-            var absoluteSuitePath = File(path).absolute.uri.toFilePath();
-
-            bool matchLineAndCol(Frame frame) {
-              if (frame.uri.scheme != 'file' ||
-                  frame.uri.toFilePath() != absoluteSuitePath) {
+            return _shardSuite(suite.filter((test) {
+              // Skip any tests that don't match all the global patterns.
+              if (!_config.globalPatterns
+                  .every((pattern) => test.name.contains(pattern))) {
                 return false;
               }
-              if (line != null && frame.line != line) {
-                return false;
-              }
-              if (col != null && frame.column != col) {
-                return false;
-              }
-              return true;
-            }
 
-            return trace.frames.any(matchLineAndCol);
-          });
-        }));
-      });
-    });
-  }
+              // If the user provided tags, skip tests that don't match all of them.
+              if (!_config.includeTags.evaluate(test.metadata.tags.contains)) {
+                return false;
+              }
+
+              // Skip tests that do match any tags the user wants to exclude.
+              if (_config.excludeTags.evaluate(test.metadata.tags.contains)) {
+                return false;
+              }
+
+              final testSelections = suite.config.testSelections;
+              assert(
+                  testSelections.isNotEmpty, 'Tests should have been selected');
+              return testSelections.any((selection) {
+                // Skip tests that don't match all the suite specific patterns.
+                if (!selection.testPatterns
+                    .every((pattern) => test.name.contains(pattern))) {
+                  return false;
+                }
+                // Skip tests that don't start on `line` or `col` if specified.
+                var line = selection.line;
+                var col = selection.col;
+                if (line == null && col == null) return true;
+                var trace = test.trace;
+                if (trace == null) {
+                  throw StateError(
+                      'Cannot filter by line/column for this test suite, no stack'
+                      'trace available.');
+                }
+                var path = suite.path;
+                if (path == null) {
+                  throw StateError(
+                      'Cannot filter by line/column for this test suite, no suite'
+                      'path available.');
+                }
+                // The absolute path as it will appear in stack traces.
+                var absoluteSuitePath = File(path).absolute.uri.toFilePath();
+
+                bool matchLineAndCol(Frame frame) {
+                  if (frame.uri.scheme != 'file' ||
+                      frame.uri.toFilePath() != absoluteSuitePath) {
+                    return false;
+                  }
+                  if (line != null && frame.line != line) {
+                    return false;
+                  }
+                  if (col != null && frame.column != col) {
+                    return false;
+                  }
+                  return true;
+                }
+
+                return trace.frames.any(matchLineAndCol);
+              });
+            }));
+          }));
 
   /// Prints a warning for any unknown tags referenced in [suite] or its
   /// children.

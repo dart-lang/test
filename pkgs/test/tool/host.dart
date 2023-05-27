@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: avoid_dynamic_calls
+
 @JS()
 library test.host;
 
@@ -128,7 +130,7 @@ void main() {
   runZonedGuarded(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
-      if (message['command'] == 'loadSuite') {
+      if ((message as Map)['command'] == 'loadSuite') {
         var suiteChannel =
             serverChannel.virtualChannel((message['channel'] as num).toInt());
         var iframeChannel = _connectToIframe(
@@ -224,7 +226,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
     // running, but it's good practice to check the origin anyway.
-    dom.MessageEvent message = event as dom.MessageEvent;
+    var message = event as dom.MessageEvent;
     if (message.origin != dom.window.location.origin) return;
 
     // TODO(nweiz): Stop manually checking href here once issue 22554 is

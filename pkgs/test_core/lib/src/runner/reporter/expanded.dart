@@ -317,10 +317,9 @@ class ExpandedReporter implements Reporter {
   }
 
   /// Returns a representation of [duration] as `MM:SS`.
-  String _timeString(Duration duration) {
-    return "${duration.inMinutes.toString().padLeft(2, '0')}:"
-        "${(duration.inSeconds % 60).toString().padLeft(2, '0')}";
-  }
+  String _timeString(Duration duration) =>
+      "${duration.inMinutes.toString().padLeft(2, '0')}:"
+      "${(duration.inSeconds % 60).toString().padLeft(2, '0')}";
 
   /// Returns a description of [liveTest].
   ///

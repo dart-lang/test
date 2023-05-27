@@ -16,22 +16,21 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Subject<E> throws<E>() {
-    return context.nest<E>(() => ['throws an error of type $E'], (actual) {
-      try {
-        final result = actual();
-        return Extracted.rejection(
-          actual: prefixFirst('a function that returned ', literal(result)),
-          which: ['did not throw'],
-        );
-      } catch (e) {
-        if (e is E) return Extracted.value(e as E);
-        return Extracted.rejection(
-            actual: prefixFirst('a function that threw error ', literal(e)),
-            which: ['did not throw an $E']);
-      }
-    });
-  }
+  Subject<E> throws<E>() =>
+      context.nest<E>(() => ['throws an error of type $E'], (actual) {
+        try {
+          final result = actual();
+          return Extracted.rejection(
+            actual: prefixFirst('a function that returned ', literal(result)),
+            which: ['did not throw'],
+          );
+        } catch (e) {
+          if (e is E) return Extracted.value(e as E);
+          return Extracted.rejection(
+              actual: prefixFirst('a function that threw error ', literal(e)),
+              which: ['did not throw an $E']);
+        }
+      });
 
   /// Expects that the function returns without throwing.
   ///
@@ -39,18 +38,17 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Subject<T> returnsNormally() {
-    return context.nest<T>(() => ['returns a value'], (actual) {
-      try {
-        return Extracted.value(actual());
-      } catch (e, st) {
-        return Extracted.rejection(actual: [
-          'a function that throws'
-        ], which: [
-          ...prefixFirst('threw ', literal(e)),
-          ...st.toString().split('\n')
-        ]);
-      }
-    });
-  }
+  Subject<T> returnsNormally() =>
+      context.nest<T>(() => ['returns a value'], (actual) {
+        try {
+          return Extracted.value(actual());
+        } catch (e, st) {
+          return Extracted.rejection(actual: [
+            'a function that throws'
+          ], which: [
+            ...prefixFirst('threw ', literal(e)),
+            ...st.toString().split('\n')
+          ]);
+        }
+      });
 }

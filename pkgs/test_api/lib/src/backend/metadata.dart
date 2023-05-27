@@ -255,7 +255,7 @@ final class Metadata {
   }
 
   /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
-  Metadata.deserialize(serialized)
+  Metadata.deserialize(Map serialized)
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
             : PlatformSelector.parse(serialized['testOn'] as String),
@@ -268,19 +268,19 @@ final class Metadata {
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
           for (var pair in serialized['onPlatform'] as List)
-            PlatformSelector.parse(pair.first as String):
-                Metadata.deserialize(pair.last)
+            PlatformSelector.parse((pair as List).first as String):
+                Metadata.deserialize(pair.last as Map)
         },
         forTag = (serialized['forTag'] as Map).map((key, nested) => MapEntry(
             BooleanSelector.parse(key as String),
-            Metadata.deserialize(nested))),
+            Metadata.deserialize(nested as Map))),
         languageVersionComment =
             serialized['languageVersionComment'] as String?;
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
   static Timeout _deserializeTimeout(serialized) {
     if (serialized == 'none') return Timeout.none;
-    var scaleFactor = serialized['scaleFactor'];
+    var scaleFactor = (serialized as Map)['scaleFactor'];
     if (scaleFactor != null) return Timeout.factor(scaleFactor as num);
     return Timeout(
         Duration(microseconds: (serialized['duration'] as num).toInt()));

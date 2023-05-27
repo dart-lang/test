@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:io';
 import 'dart:math' as math;
@@ -348,11 +349,8 @@ $_usage''');
 
     test('defaulting to the test directory', () async {
       await d
-          .dir(
-              'test',
-              Iterable.generate(3, (i) {
-                return d.file('${i}_test.dart', _success);
-              }))
+          .dir('test',
+              Iterable.generate(3, (i) => d.file('${i}_test.dart', _success)))
           .create();
 
       var test = await runTest([]);
@@ -481,11 +479,8 @@ $_usage''');
 
     test('defaulting to the test directory', () async {
       await d
-          .dir(
-              'test',
-              Iterable.generate(3, (i) {
-                return d.file('${i}_test.dart', _failure);
-              }))
+          .dir('test',
+              Iterable.generate(3, (i) => d.file('${i}_test.dart', _failure)))
           .create();
 
       var test = await runTest([]);

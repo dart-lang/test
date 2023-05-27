@@ -43,9 +43,10 @@ class RunnerTest extends Test {
       _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
       testChannel.stream.listen((message) {
-        switch (message['type'] as String) {
+        switch ((message as Map)['type'] as String) {
           case 'error':
-            var asyncError = RemoteException.deserialize(message['error']);
+            var asyncError =
+                RemoteException.deserialize(message['error'] as Map);
             var stackTrace = asyncError.stackTrace;
             controller.addError(asyncError.error, stackTrace);
             break;

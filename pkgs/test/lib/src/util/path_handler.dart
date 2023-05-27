@@ -16,12 +16,10 @@ class PathHandler {
 
   /// Returns middleware that nests all requests beneath the URL prefix
   /// [beneath].
-  static shelf.Middleware nestedIn(String beneath) {
-    return (handler) {
-      var pathHandler = PathHandler()..add(beneath, handler);
-      return pathHandler.handler;
-    };
-  }
+  static shelf.Middleware nestedIn(String beneath) => (handler) {
+        var pathHandler = PathHandler()..add(beneath, handler);
+        return pathHandler.handler;
+      };
 
   /// Routes requests at or under [path] to [handler].
   ///
@@ -30,7 +28,7 @@ class PathHandler {
   void add(String path, shelf.Handler handler) {
     var node = _paths;
     for (var component in p.url.split(path)) {
-      node = node.children.putIfAbsent(component, () => _Node());
+      node = node.children.putIfAbsent(component, _Node.new);
     }
     node.handler = handler;
   }

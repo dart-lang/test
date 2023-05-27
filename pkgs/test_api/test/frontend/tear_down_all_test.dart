@@ -8,256 +8,256 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  test('runs once after all tests', () {
-    return expectTestsPass(() {
-      var test1Run = false;
-      var test2Run = false;
-      var tearDownAllRun = false;
-      tearDownAll(() {
-        expect(test1Run, isTrue);
-        expect(test2Run, isTrue);
-        expect(tearDownAllRun, isFalse);
-        tearDownAllRun = true;
-      });
+  test(
+      'runs once after all tests',
+      () => expectTestsPass(() {
+            var test1Run = false;
+            var test2Run = false;
+            var tearDownAllRun = false;
+            tearDownAll(() {
+              expect(test1Run, isTrue);
+              expect(test2Run, isTrue);
+              expect(tearDownAllRun, isFalse);
+              tearDownAllRun = true;
+            });
 
-      test('test 1', () {
-        expect(tearDownAllRun, isFalse);
-        test1Run = true;
-      });
+            test('test 1', () {
+              expect(tearDownAllRun, isFalse);
+              test1Run = true;
+            });
 
-      test('test 2', () {
-        expect(tearDownAllRun, isFalse);
-        test2Run = true;
-      });
-    });
-  });
+            test('test 2', () {
+              expect(tearDownAllRun, isFalse);
+              test2Run = true;
+            });
+          }));
 
-  test('runs once per group, inside-out', () {
-    return expectTestsPass(() {
-      var tearDownAll1Run = false;
-      var tearDownAll2Run = false;
-      var tearDownAll3Run = false;
-      var testRun = false;
-      tearDownAll(() {
-        expect(tearDownAll1Run, isFalse);
-        expect(tearDownAll2Run, isTrue);
-        expect(tearDownAll3Run, isTrue);
-        expect(testRun, isTrue);
-        tearDownAll1Run = true;
-      });
+  test(
+      'runs once per group, inside-out',
+      () => expectTestsPass(() {
+            var tearDownAll1Run = false;
+            var tearDownAll2Run = false;
+            var tearDownAll3Run = false;
+            var testRun = false;
+            tearDownAll(() {
+              expect(tearDownAll1Run, isFalse);
+              expect(tearDownAll2Run, isTrue);
+              expect(tearDownAll3Run, isTrue);
+              expect(testRun, isTrue);
+              tearDownAll1Run = true;
+            });
 
-      group('mid', () {
-        tearDownAll(() {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isTrue);
-          expect(testRun, isTrue);
-          tearDownAll2Run = true;
-        });
+            group('mid', () {
+              tearDownAll(() {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isTrue);
+                expect(testRun, isTrue);
+                tearDownAll2Run = true;
+              });
 
-        group('inner', () {
-          tearDownAll(() {
-            expect(tearDownAll1Run, isFalse);
-            expect(tearDownAll2Run, isFalse);
-            expect(tearDownAll3Run, isFalse);
-            expect(testRun, isTrue);
-            tearDownAll3Run = true;
-          });
+              group('inner', () {
+                tearDownAll(() {
+                  expect(tearDownAll1Run, isFalse);
+                  expect(tearDownAll2Run, isFalse);
+                  expect(tearDownAll3Run, isFalse);
+                  expect(testRun, isTrue);
+                  tearDownAll3Run = true;
+                });
 
-          test('test', () {
-            expect(tearDownAll1Run, isFalse);
-            expect(tearDownAll2Run, isFalse);
-            expect(tearDownAll3Run, isFalse);
-            testRun = true;
-          });
-        });
-      });
-    });
-  });
+                test('test', () {
+                  expect(tearDownAll1Run, isFalse);
+                  expect(tearDownAll2Run, isFalse);
+                  expect(tearDownAll3Run, isFalse);
+                  testRun = true;
+                });
+              });
+            });
+          }));
 
-  test('runs after tearDowns', () {
-    return expectTestsPass(() {
-      var tearDown1Run = false;
-      var tearDown2Run = false;
-      var tearDownAllRun = false;
-      tearDown(() {
-        expect(tearDownAllRun, isFalse);
-        tearDown1Run = true;
-      });
+  test(
+      'runs after tearDowns',
+      () => expectTestsPass(() {
+            var tearDown1Run = false;
+            var tearDown2Run = false;
+            var tearDownAllRun = false;
+            tearDown(() {
+              expect(tearDownAllRun, isFalse);
+              tearDown1Run = true;
+            });
 
-      tearDownAll(() {
-        expect(tearDown1Run, isTrue);
-        expect(tearDown2Run, isTrue);
-        expect(tearDownAllRun, isFalse);
-        tearDownAllRun = true;
-      });
+            tearDownAll(() {
+              expect(tearDown1Run, isTrue);
+              expect(tearDown2Run, isTrue);
+              expect(tearDownAllRun, isFalse);
+              tearDownAllRun = true;
+            });
 
-      tearDown(() {
-        expect(tearDownAllRun, isFalse);
-        tearDown2Run = true;
-      });
+            tearDown(() {
+              expect(tearDownAllRun, isFalse);
+              tearDown2Run = true;
+            });
 
-      test('test', () {
-        expect(tearDownAllRun, isFalse);
-      });
-    });
-  });
+            test('test', () {
+              expect(tearDownAllRun, isFalse);
+            });
+          }));
 
-  test('multiples run in reverse order', () {
-    return expectTestsPass(() {
-      var tearDownAll1Run = false;
-      var tearDownAll2Run = false;
-      var tearDownAll3Run = false;
-      tearDownAll(() {
-        expect(tearDownAll1Run, isFalse);
-        expect(tearDownAll2Run, isTrue);
-        expect(tearDownAll3Run, isTrue);
-        tearDownAll1Run = true;
-      });
+  test(
+      'multiples run in reverse order',
+      () => expectTestsPass(() {
+            var tearDownAll1Run = false;
+            var tearDownAll2Run = false;
+            var tearDownAll3Run = false;
+            tearDownAll(() {
+              expect(tearDownAll1Run, isFalse);
+              expect(tearDownAll2Run, isTrue);
+              expect(tearDownAll3Run, isTrue);
+              tearDownAll1Run = true;
+            });
 
-      tearDownAll(() {
-        expect(tearDownAll1Run, isFalse);
-        expect(tearDownAll2Run, isFalse);
-        expect(tearDownAll3Run, isTrue);
-        tearDownAll2Run = true;
-      });
+            tearDownAll(() {
+              expect(tearDownAll1Run, isFalse);
+              expect(tearDownAll2Run, isFalse);
+              expect(tearDownAll3Run, isTrue);
+              tearDownAll2Run = true;
+            });
 
-      tearDownAll(() {
-        expect(tearDownAll1Run, isFalse);
-        expect(tearDownAll2Run, isFalse);
-        expect(tearDownAll3Run, isFalse);
-        tearDownAll3Run = true;
-      });
+            tearDownAll(() {
+              expect(tearDownAll1Run, isFalse);
+              expect(tearDownAll2Run, isFalse);
+              expect(tearDownAll3Run, isFalse);
+              tearDownAll3Run = true;
+            });
 
-      test('test', () {
-        expect(tearDownAll1Run, isFalse);
-        expect(tearDownAll2Run, isFalse);
-        expect(tearDownAll3Run, isFalse);
-      });
-    });
-  });
+            test('test', () {
+              expect(tearDownAll1Run, isFalse);
+              expect(tearDownAll2Run, isFalse);
+              expect(tearDownAll3Run, isFalse);
+            });
+          }));
 
   group('asynchronously', () {
-    test('blocks additional tearDownAlls on in-band async', () {
-      return expectTestsPass(() {
-        var tearDownAll1Run = false;
-        var tearDownAll2Run = false;
-        var tearDownAll3Run = false;
-        tearDownAll(() async {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isTrue);
-          expect(tearDownAll3Run, isTrue);
-          await pumpEventQueue();
-          tearDownAll1Run = true;
-        });
+    test(
+        'blocks additional tearDownAlls on in-band async',
+        () => expectTestsPass(() {
+              var tearDownAll1Run = false;
+              var tearDownAll2Run = false;
+              var tearDownAll3Run = false;
+              tearDownAll(() async {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isTrue);
+                expect(tearDownAll3Run, isTrue);
+                await pumpEventQueue();
+                tearDownAll1Run = true;
+              });
 
-        tearDownAll(() async {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isTrue);
-          await pumpEventQueue();
-          tearDownAll2Run = true;
-        });
+              tearDownAll(() async {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isTrue);
+                await pumpEventQueue();
+                tearDownAll2Run = true;
+              });
 
-        tearDownAll(() async {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isFalse);
-          await pumpEventQueue();
-          tearDownAll3Run = true;
-        });
+              tearDownAll(() async {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isFalse);
+                await pumpEventQueue();
+                tearDownAll3Run = true;
+              });
 
-        test('test', () {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isFalse);
-        });
-      });
-    });
+              test('test', () {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isFalse);
+              });
+            }));
 
-    test("doesn't block additional tearDownAlls on out-of-band async", () {
-      return expectTestsPass(() {
-        var tearDownAll1Run = false;
-        var tearDownAll2Run = false;
-        var tearDownAll3Run = false;
-        tearDownAll(() {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isFalse);
+    test(
+        "doesn't block additional tearDownAlls on out-of-band async",
+        () => expectTestsPass(() {
+              var tearDownAll1Run = false;
+              var tearDownAll2Run = false;
+              var tearDownAll3Run = false;
+              tearDownAll(() {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isFalse);
 
-          expect(Future(() {
-            tearDownAll1Run = true;
-          }), completes);
-        });
+                expect(Future(() {
+                  tearDownAll1Run = true;
+                }), completes);
+              });
 
-        tearDownAll(() {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isFalse);
+              tearDownAll(() {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isFalse);
 
-          expect(Future(() {
-            tearDownAll2Run = true;
-          }), completes);
-        });
+                expect(Future(() {
+                  tearDownAll2Run = true;
+                }), completes);
+              });
 
-        tearDownAll(() {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isFalse);
+              tearDownAll(() {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isFalse);
 
-          expect(Future(() {
-            tearDownAll3Run = true;
-          }), completes);
-        });
+                expect(Future(() {
+                  tearDownAll3Run = true;
+                }), completes);
+              });
 
-        test('test', () {
-          expect(tearDownAll1Run, isFalse);
-          expect(tearDownAll2Run, isFalse);
-          expect(tearDownAll3Run, isFalse);
-        });
-      });
-    });
+              test('test', () {
+                expect(tearDownAll1Run, isFalse);
+                expect(tearDownAll2Run, isFalse);
+                expect(tearDownAll3Run, isFalse);
+              });
+            }));
 
-    test('blocks further tests on in-band async', () {
-      return expectTestsPass(() {
-        var tearDownAllRun = false;
-        group('group', () {
-          tearDownAll(() async {
-            expect(tearDownAllRun, isFalse);
-            await pumpEventQueue();
-            tearDownAllRun = true;
-          });
-
-          test('test', () {});
-        });
-
-        test('after', () {
-          expect(tearDownAllRun, isTrue);
-        });
-      });
-    });
-
-    test('blocks further tests on out-of-band async', () {
-      return expectTestsPass(() {
-        var tearDownAllRun = false;
-        group('group', () {
-          tearDownAll(() async {
-            expect(tearDownAllRun, isFalse);
-            expect(
-                pumpEventQueue().then((_) {
+    test(
+        'blocks further tests on in-band async',
+        () => expectTestsPass(() {
+              var tearDownAllRun = false;
+              group('group', () {
+                tearDownAll(() async {
+                  expect(tearDownAllRun, isFalse);
+                  await pumpEventQueue();
                   tearDownAllRun = true;
-                }),
-                completes);
-          });
+                });
 
-          test('test', () {});
-        });
+                test('test', () {});
+              });
 
-        test('after', () {
-          expect(tearDownAllRun, isTrue);
-        });
-      });
-    });
+              test('after', () {
+                expect(tearDownAllRun, isTrue);
+              });
+            }));
+
+    test(
+        'blocks further tests on out-of-band async',
+        () => expectTestsPass(() {
+              var tearDownAllRun = false;
+              group('group', () {
+                tearDownAll(() async {
+                  expect(tearDownAllRun, isFalse);
+                  expect(
+                      pumpEventQueue().then((_) {
+                        tearDownAllRun = true;
+                      }),
+                      completes);
+                });
+
+                test('test', () {});
+              });
+
+              test('after', () {
+                expect(tearDownAllRun, isTrue);
+              });
+            }));
   });
 
   test("isn't run for a skipped group", () async {
@@ -342,7 +342,7 @@ void main() {
       var shouldRun = expectAsync0(() {});
 
       var engine = declareEngine(() {
-        tearDownAll(() => throw 'error');
+        tearDownAll(() => throw UnimplementedError());
         tearDownAll(shouldRun);
 
         test('test', () {});
@@ -360,7 +360,7 @@ void main() {
         tearDownAll(shouldRun);
 
         group('group', () {
-          tearDownAll(() => throw 'error');
+          tearDownAll(() => throw UnimplementedError());
 
           test('test', () {});
         });

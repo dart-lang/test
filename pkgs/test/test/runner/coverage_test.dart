@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:convert';
 import 'dart:io';
@@ -26,7 +27,7 @@ void main() {
 
       final coverageFile = File(p.join(coverageDirectory.path, coveragePath));
       final coverage = await coverageFile.readAsString();
-      final jsonCoverage = json.decode(coverage);
+      final jsonCoverage = json.decode(coverage) as Map;
       expect(jsonCoverage['coverage'], isNotEmpty);
     }
 
@@ -119,10 +120,12 @@ void main() {
 
       const functionPattern = 'function foo';
       expect([jsLatin1, jsUtf8], everyElement(contains(functionPattern)));
-      expect(jsLatin1.indexOf(functionPattern),
-          isNot(jsUtf8.indexOf(functionPattern)),
-          reason:
-              'test setup: decoding should have shifted the position of the function');
+      expect(
+        jsLatin1.indexOf(functionPattern),
+        isNot(jsUtf8.indexOf(functionPattern)),
+        reason: 'test setup: decoding should have shifted the position of the '
+            'function',
+      );
 
       var test = await runTest([
         '--coverage',

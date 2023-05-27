@@ -181,84 +181,80 @@ class _Parser {
   /// Parses a `@Tags` annotation.
   ///
   /// [annotation] is the annotation.
-  Set<String> _parseTags(Annotation annotation) {
-    return _parseList(annotation.arguments!.arguments.first)
-        .map((tagExpression) {
-      var name = _parseString(tagExpression).stringValue!;
-      if (name.contains(anchoredHyphenatedIdentifier)) return name;
+  Set<String> _parseTags(Annotation annotation) =>
+      _parseList(annotation.arguments!.arguments.first).map((tagExpression) {
+        var name = _parseString(tagExpression).stringValue!;
+        if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
-      throw SourceSpanFormatException(
-          'Invalid tag name. Tags must be (optionally hyphenated) Dart '
-          'identifiers.',
-          _spanFor(tagExpression));
-    }).toSet();
-  }
+        throw SourceSpanFormatException(
+            'Invalid tag name. Tags must be (optionally hyphenated) Dart '
+            'identifiers.',
+            _spanFor(tagExpression));
+      }).toSet();
 
   /// Parses an `@OnPlatform` annotation.
   ///
   /// [annotation] is the annotation.
-  Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
-    return _parseMap(annotation.arguments!.arguments.first, key: (key) {
-      return _parsePlatformSelector(key);
-    }, value: (value) {
-      var expressions = <AstNode>[];
-      if (value is ListLiteral) {
-        expressions = _parseList(value);
-      } else if (value is InstanceCreationExpression ||
-          value is PrefixedIdentifier ||
-          value is MethodInvocation) {
-        expressions = [value];
-      } else {
-        throw SourceSpanFormatException(
-            'Expected a Timeout, Skip, or List of those.', _spanFor(value));
-      }
-
-      Timeout? timeout;
-      Object? skip;
-      for (var expression in expressions) {
-        if (expression is InstanceCreationExpression) {
-          var className = expression.constructorName.type.name2.lexeme;
-
-          if (className == 'Timeout') {
-            _assertSingle(timeout, 'Timeout', expression);
-            timeout = _parseTimeoutConstructor(expression);
-            continue;
-          } else if (className == 'Skip') {
-            _assertSingle(skip, 'Skip', expression);
-            skip = _parseSkipConstructor(expression);
-            continue;
-          }
-        } else if (expression is PrefixedIdentifier &&
-            expression.prefix.name == 'Timeout') {
-          if (expression.identifier.name != 'none') {
-            throw SourceSpanFormatException(
-                'Undefined value.', _spanFor(expression));
-          }
-
-          _assertSingle(timeout, 'Timeout', expression);
-          timeout = Timeout.none;
-          continue;
-        } else if (expression is MethodInvocation) {
-          var className =
-              _typeNameFromMethodInvocation(expression, ['Timeout', 'Skip']);
-          if (className == 'Timeout') {
-            _assertSingle(timeout, 'Timeout', expression);
-            timeout = _parseTimeoutConstructor(expression);
-            continue;
-          } else if (className == 'Skip') {
-            _assertSingle(skip, 'Skip', expression);
-            skip = _parseSkipConstructor(expression);
-            continue;
-          }
+  Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) =>
+      _parseMap(annotation.arguments!.arguments.first,
+          key: _parsePlatformSelector, value: (value) {
+        var expressions = <AstNode>[];
+        if (value is ListLiteral) {
+          expressions = _parseList(value);
+        } else if (value is InstanceCreationExpression ||
+            value is PrefixedIdentifier ||
+            value is MethodInvocation) {
+          expressions = [value];
+        } else {
+          throw SourceSpanFormatException(
+              'Expected a Timeout, Skip, or List of those.', _spanFor(value));
         }
 
-        throw SourceSpanFormatException(
-            'Expected a Timeout or Skip.', _spanFor(expression));
-      }
+        Timeout? timeout;
+        Object? skip;
+        for (var expression in expressions) {
+          if (expression is InstanceCreationExpression) {
+            var className = expression.constructorName.type.name2.lexeme;
 
-      return Metadata.parse(timeout: timeout, skip: skip);
-    });
-  }
+            if (className == 'Timeout') {
+              _assertSingle(timeout, 'Timeout', expression);
+              timeout = _parseTimeoutConstructor(expression);
+              continue;
+            } else if (className == 'Skip') {
+              _assertSingle(skip, 'Skip', expression);
+              skip = _parseSkipConstructor(expression);
+              continue;
+            }
+          } else if (expression is PrefixedIdentifier &&
+              expression.prefix.name == 'Timeout') {
+            if (expression.identifier.name != 'none') {
+              throw SourceSpanFormatException(
+                  'Undefined value.', _spanFor(expression));
+            }
+
+            _assertSingle(timeout, 'Timeout', expression);
+            timeout = Timeout.none;
+            continue;
+          } else if (expression is MethodInvocation) {
+            var className =
+                _typeNameFromMethodInvocation(expression, ['Timeout', 'Skip']);
+            if (className == 'Timeout') {
+              _assertSingle(timeout, 'Timeout', expression);
+              timeout = _parseTimeoutConstructor(expression);
+              continue;
+            } else if (className == 'Skip') {
+              _assertSingle(skip, 'Skip', expression);
+              skip = _parseSkipConstructor(expression);
+              continue;
+            }
+          }
+
+          throw SourceSpanFormatException(
+              'Expected a Timeout or Skip.', _spanFor(expression));
+        }
+
+        return Metadata.parse(timeout: timeout, skip: skip);
+      });
 
   /// Parses a `const Duration` expression.
   Duration _parseDuration(Expression expression) {
@@ -495,12 +491,11 @@ class _Parser {
   }
 
   /// Creates a [SourceSpan] for [node].
-  SourceSpan _spanFor(AstNode node) {
-    // Load a SourceFile from scratch here since we're only ever going to emit
-    // one error per file anyway.
-    return SourceFile.fromString(_contents, url: p.toUri(_path))
-        .span(node.offset, node.end);
-  }
+  SourceSpan _spanFor(AstNode node) =>
+      // Load a SourceFile from scratch here since we're only ever going to emit
+      // one error per file anyway.
+      SourceFile.fromString(_contents, url: p.toUri(_path))
+          .span(node.offset, node.end);
 
   /// Runs [fn] and contextualizes any [SourceSpanFormatException]s that occur
   /// in it relative to [literal].

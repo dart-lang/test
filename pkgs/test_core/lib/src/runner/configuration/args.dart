@@ -253,17 +253,17 @@ class _Parser {
       ..._readMulti('plain-name'),
     ];
 
-    var includeTags = {..._readMulti('tags'), ..._readMulti('tag')}
-        .fold<BooleanSelector>(BooleanSelector.all, (selector, tag) {
-      return selector.intersection(BooleanSelector.parse(tag));
-    });
+    var includeTags = {
+      ..._readMulti('tags'),
+      ..._readMulti('tag')
+    }.fold<BooleanSelector>(BooleanSelector.all,
+        (selector, tag) => selector.intersection(BooleanSelector.parse(tag)));
 
     var excludeTags = {
       ..._readMulti('exclude-tags'),
       ..._readMulti('exclude-tag')
-    }.fold<BooleanSelector>(BooleanSelector.none, (selector, tag) {
-      return selector.union(BooleanSelector.parse(tag));
-    });
+    }.fold<BooleanSelector>(BooleanSelector.none,
+        (selector, tag) => selector.union(BooleanSelector.parse(tag)));
 
     var shardIndex = _parseOption('shard-index', int.parse);
     var totalShards = _parseOption('total-shards', int.parse);
@@ -297,9 +297,8 @@ class _Parser {
 
     var color = _ifParsed<bool>('color') ?? canUseSpecialChars;
 
-    var runtimes = _ifParsed<List<String>>('platform')
-        ?.map((runtime) => RuntimeSelection(runtime))
-        .toList();
+    var runtimes =
+        _ifParsed<List<String>>('platform')?.map(RuntimeSelection.new).toList();
     var compilerSelections = _ifParsed<List<String>>('compiler')
         ?.map(CompilerSelection.parse)
         .toList();
