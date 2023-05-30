@@ -22,6 +22,12 @@ import 'extensions/iterable.dart';
 /// the generic [T].
 /// Expectation extension methods can use the [ContextExtension] to interact
 /// with the [Context] for this subject.
+///
+/// Create a subject that throws an exception for missed expectations with the
+/// [check] function.
+///
+/// Create a subject which records expectations and can be replayed as a
+/// [Condition] with the [it] function.
 final class Subject<T> {
   final Context<T> _context;
   Subject._(this._context);
