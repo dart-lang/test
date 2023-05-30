@@ -8,6 +8,7 @@
   `Retry`, `Skip`, `Tags`, `TestOn`, `Timeout`.
 * Mark an implementation class `interface`: `StackTraceMapper`.
 * Change the `Compiler` class into an `enum`.
+* Make `Fake` a `mixin class`.
 
 
 ## 0.6.0
