@@ -1,6 +1,6 @@
-## 1.3.2-dev
+## 1.3.2-wip
 
-* Require Dart 2.17.
+* Require Dart 3.0.0
 
 ## 1.3.1
 
