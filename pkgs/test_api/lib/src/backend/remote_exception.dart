@@ -67,12 +67,10 @@ final class RemoteException implements Exception {
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;
 
-    switch (serialized['supertype'] as String?) {
-      case 'TestFailure':
-        return _RemoteTestFailure(message, type, toString);
-      default:
-        return RemoteException._(message, type, toString);
-    }
+    return switch (serialized['supertype'] as String?) {
+      'TestFailure' => _RemoteTestFailure(message, type, toString),
+      _ => RemoteException._(message, type, toString),
+    };
   }
 
   RemoteException._(this.message, this.type, this._toString);

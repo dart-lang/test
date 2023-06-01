@@ -106,24 +106,15 @@ final class Timeout {
   }
 
   /// Returns the number of microseconds in [number] [unit]s.
-  static double _microsecondsFor(double number, String unit) {
-    switch (unit) {
-      case 'd':
-        return number * 24 * 60 * 60 * 1000000;
-      case 'h':
-        return number * 60 * 60 * 1000000;
-      case 'm':
-        return number * 60 * 1000000;
-      case 's':
-        return number * 1000000;
-      case 'ms':
-        return number * 1000;
-      case 'us':
-        return number;
-      default:
-        throw ArgumentError('Unknown unit $unit.');
-    }
-  }
+  static double _microsecondsFor(double number, String unit) => switch (unit) {
+        'd' => number * 24 * 60 * 60 * 1000000,
+        'h' => number * 60 * 60 * 1000000,
+        'm' => number * 60 * 1000000,
+        's' => number * 1000000,
+        'ms' => number * 1000,
+        'us' => number,
+        _ => throw ArgumentError('Unknown unit $unit.'),
+      };
 
   /// Returns a new [Timeout] that merges [this] with [other].
   ///
