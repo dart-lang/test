@@ -60,8 +60,7 @@ enum Status {
   /// to happen, which may cause further errors.
   complete;
 
-  factory Status.parse(String name) =>
-      Status.values.firstWhere((s) => s.name == name);
+  factory Status.parse(String name) => Status.values.byName(name);
 
   @override
   String toString() => name;
@@ -103,8 +102,7 @@ enum Result {
   /// error.
   bool get isFailing => !isPassing;
 
-  factory Result.parse(String name) =>
-      Result.values.firstWhere((r) => r.name == name);
+  factory Result.parse(String name) => Result.values.byName(name);
 
   @override
   String toString() => name;
