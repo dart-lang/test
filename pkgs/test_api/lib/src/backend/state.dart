@@ -64,16 +64,12 @@ final class Status {
   final String name;
 
   factory Status.parse(String name) {
-    switch (name) {
-      case 'pending':
-        return Status.pending;
-      case 'running':
-        return Status.running;
-      case 'complete':
-        return Status.complete;
-      default:
-        throw ArgumentError('Invalid status name "$name".');
-    }
+    return switch (name) {
+      'pending' => Status.pending,
+      'running' => Status.running,
+      'complete' => Status.complete,
+      _ => throw ArgumentError('Invalid status name "$name".'),
+    };
   }
 
   const Status._(this.name);
@@ -121,20 +117,13 @@ final class Result {
   /// error.
   bool get isFailing => !isPassing;
 
-  factory Result.parse(String name) {
-    switch (name) {
-      case 'success':
-        return Result.success;
-      case 'skipped':
-        return Result.skipped;
-      case 'failure':
-        return Result.failure;
-      case 'error':
-        return Result.error;
-      default:
-        throw ArgumentError('Invalid result name "$name".');
-    }
-  }
+  factory Result.parse(String name) => switch (name) {
+        'success' => Result.success,
+        'skipped' => Result.skipped,
+        'failure' => Result.failure,
+        'error' => Result.error,
+        _ => throw ArgumentError('Invalid result name "$name".'),
+      };
 
   const Result._(this.name);
 

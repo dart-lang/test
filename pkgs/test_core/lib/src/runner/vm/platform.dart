@@ -226,21 +226,18 @@ stderr: ${processResult.stderr}''');
         return _spawnPubServeIsolate(
             path, message, _config.pubServeUrl!, compiler);
       }
-      switch (compiler) {
-        case Compiler.kernel:
-          return _spawnIsolateWithUri(
-              await _compileToKernel(path, suiteMetadata), message);
-        case Compiler.source:
-          return _spawnIsolateWithUri(
-              _bootstrapIsolateTestFile(
-                  path,
-                  suiteMetadata.languageVersionComment ??
-                      await rootPackageLanguageVersionComment),
-              message);
-        default:
-          throw StateError(
-              'Unsupported compiler $compiler for the VM platform');
-      }
+      return switch (compiler) {
+        Compiler.kernel => _spawnIsolateWithUri(
+            await _compileToKernel(path, suiteMetadata), message),
+        Compiler.source => _spawnIsolateWithUri(
+            _bootstrapIsolateTestFile(
+                path,
+                suiteMetadata.languageVersionComment ??
+                    await rootPackageLanguageVersionComment),
+            message),
+        _ => throw StateError(
+            'Unsupported compiler $compiler for the VM platform'),
+      };
     } catch (_) {
       if (_closeMemo.hasRun) return null;
       rethrow;
