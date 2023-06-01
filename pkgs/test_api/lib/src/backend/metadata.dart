@@ -16,7 +16,7 @@ import 'util/pretty_print.dart';
 ///
 /// This metadata comes from declarations on the test itself; it doesn't include
 /// configuration from the user.
-class Metadata {
+final class Metadata {
   /// Empty metadata with only default values.
   ///
   /// Using this is slightly more efficient than manually constructing a new

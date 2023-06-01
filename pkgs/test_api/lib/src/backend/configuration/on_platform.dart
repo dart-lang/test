@@ -10,7 +10,7 @@ import 'package:meta/meta_meta.dart';
 ///
 /// [onPlatform]: https://github.com/dart-lang/test/tree/master/pkgs/test#platform-specific-configuration
 @Target({TargetKind.library})
-class OnPlatform {
+final class OnPlatform {
   final Map<String, dynamic> annotationsByPlatform;
 
   const OnPlatform(this.annotationsByPlatform);

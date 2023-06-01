@@ -1,4 +1,10 @@
-## 0.5.3-wip
+## 0.5.4-wip
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Add `final` modifier on some implementation classes: `Configuration`,
+  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`. 
+
+## 0.5.3
 
 * Fix compatibility with wasm number semantics.
 

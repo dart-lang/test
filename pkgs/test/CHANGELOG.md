@@ -1,4 +1,10 @@
-## 1.24.3-wip
+## 1.24.4-wip
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some annotation classes `final`: `OnPlatform`, `Retry`, `Skip`, `Tags`,
+  `TestOn`, `Timeout`.
+
+## 1.24.3
 
 * Fix compatibility with wasm number semantics.
 

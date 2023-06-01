@@ -1,11 +1,11 @@
 name: test
-version: 1.24.3-wip
+version: 1.24.4-wip
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test
 
 environment:
-  sdk: '>=2.18.0 <3.0.0'
+  sdk: ^3.0.0
 
 dependencies:
   analyzer: '>=5.12.0 <6.0.0'
@@ -32,11 +32,11 @@ dependencies:
   webkit_inspection_protocol: ^1.0.0
   yaml: ^3.0.0
   # Use an exact version until the test_api and test_core package are stable.
-  test_api: 0.5.3
-  test_core: 0.5.3
+  test_api: 0.6.1
+  test_core: 0.5.4
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.
-  matcher: '>=0.12.15 <0.12.16'
+  matcher: '>=0.12.16 <0.12.17'
 
 dev_dependencies:
   fake_async: ^1.0.0
