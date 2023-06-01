@@ -46,10 +46,10 @@ class State {
 /// Where the test is in its process of running.
 enum Status {
   /// The test has not yet begun running.
-  pending('pending'),
+  pending,
 
   /// The test is currently running.
-  running('running'),
+  running,
 
   /// The test has finished running.
   ///
@@ -58,15 +58,10 @@ enum Status {
   /// first error or when all [expectAsync] callbacks have been called and any
   /// returned [Future] has completed, but it's possible for further processing
   /// to happen, which may cause further errors.
-  complete('complete');
-
-  /// The name of the status.
-  final String name;
+  complete;
 
   factory Status.parse(String name) =>
       Status.values.firstWhere((s) => s.name == name);
-
-  const Status(this.name);
 
   @override
   String toString() => name;
@@ -77,27 +72,24 @@ enum Result {
   /// The test has not yet failed in any way.
   ///
   /// Note that this doesn't mean that the test won't fail in the future.
-  success('success'),
+  success,
 
   /// The test, or some part of it, has been skipped.
   ///
   /// This implies that the test hasn't failed *yet*. However, it this doesn't
   /// mean that the test won't fail in the future.
-  skipped('skipped'),
+  skipped,
 
   /// The test has failed.
   ///
   /// A failure is specifically caused by a [TestFailure] being thrown; any
   /// other exception causes an error.
-  failure('failure'),
+  failure,
 
   /// The test has crashed.
   ///
   /// Any exception other than a [TestFailure] is considered to be an error.
-  error('error');
-
-  /// The name of the result.
-  final String name;
+  error;
 
   /// Whether this is a passing result.
   ///
@@ -113,8 +105,6 @@ enum Result {
 
   factory Result.parse(String name) =>
       Result.values.firstWhere((r) => r.name == name);
-
-  const Result(this.name);
 
   @override
   String toString() => name;
