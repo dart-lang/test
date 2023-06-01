@@ -44,7 +44,7 @@ class State {
 }
 
 /// Where the test is in its process of running.
-class Status {
+final class Status {
   /// The test has not yet begun running.
   static const pending = Status._('pending');
 
@@ -83,7 +83,7 @@ class Status {
 }
 
 /// The outcome of the test, as far as it's known.
-class Result {
+final class Result {
   /// The test has not yet failed in any way.
   ///
   /// Note that this doesn't mean that the test won't fail in the future.

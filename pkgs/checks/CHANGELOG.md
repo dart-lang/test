@@ -1,5 +1,7 @@
 ## 0.2.3-wip
 
+-   Add class modifiers to restrict extension of implementation classes.
+
 ## 0.2.2
 
 -   Return the first failure from `softCheck` and `softCheckAsync` as
