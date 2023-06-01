@@ -152,18 +152,17 @@ class BrowserManager {
   ///
   /// If [debug] is true, starts the browser in debug mode.
   static Browser _newBrowser(Uri url, Runtime browser,
-      ExecutableSettings settings, Configuration configuration) {
-    return switch (browser.root) {
-      Runtime.chrome ||
-      Runtime.experimentalChromeWasm =>
-        Chrome(url, configuration, settings: settings),
-      Runtime.firefox => Firefox(url, settings: settings),
-      Runtime.safari => Safari(url, settings: settings),
-      Runtime.internetExplorer => InternetExplorer(url, settings: settings),
-      Runtime.edge => MicrosoftEdge(url, configuration, settings: settings),
-      _ => throw ArgumentError('$browser is not a browser.'),
-    };
-  }
+          ExecutableSettings settings, Configuration configuration) =>
+      switch (browser.root) {
+        Runtime.chrome ||
+        Runtime.experimentalChromeWasm =>
+          Chrome(url, configuration, settings: settings),
+        Runtime.firefox => Firefox(url, settings: settings),
+        Runtime.safari => Safari(url, settings: settings),
+        Runtime.internetExplorer => InternetExplorer(url, settings: settings),
+        Runtime.edge => MicrosoftEdge(url, configuration, settings: settings),
+        _ => throw ArgumentError('$browser is not a browser.'),
+      };
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
