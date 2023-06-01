@@ -159,11 +159,9 @@ Future<String> _languageVersionCommentFor(String url) async {
   return '';
 }
 
-Future<String> _readUri(Uri uri) async {
-  return switch (uri.scheme) {
-    '' || 'file' => await File.fromUri(uri).readAsString(),
-    'data' => uri.data!.contentAsString(),
-    _ => throw ArgumentError.value(uri, 'uri',
-        'Only data and file uris (as well as relative paths) are supported'),
-  };
-}
+Future<String> _readUri(Uri uri) async => switch (uri.scheme) {
+      '' || 'file' => await File.fromUri(uri).readAsString(),
+      'data' => uri.data!.contentAsString(),
+      _ => throw ArgumentError.value(uri, 'uri',
+          'Only data and file uris (as well as relative paths) are supported'),
+    };
