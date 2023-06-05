@@ -35,12 +35,13 @@ export 'package:test_api/scaffolding.dart'
         Tags,
         TestOn,
         Timeout,
-        spawnHybridUri,
-        spawnHybridCode,
+        addTearDown,
         markTestSkipped,
         printOnFailure,
         pumpEventQueue,
-        registerException;
+        registerException,
+        spawnHybridCode,
+        spawnHybridUri;
 
 /// The global declarer.
 ///
