@@ -37,6 +37,21 @@ void printOnFailure(String message) {
   _currentInvoker.printOnFailure(message);
 }
 
+/// Registers a function to be run after the current test.
+///
+/// This is called within a running test, and adds a tear-down only for the
+/// current test. It allows testing libraries to add cleanup logic as soon as
+/// there's something to clean up.
+///
+/// The [callback] is run before any callbacks registered with [tearDown]. Like
+/// [tearDown], the most recently registered callback is run first.
+///
+/// If this is called from within a [setUpAll] or [tearDownAll] callback, it
+/// instead runs the function after *all* tests in the current test suite.
+void addTearDown(dynamic Function() callback) {
+  _currentInvoker.addTearDown(callback);
+}
+
 /// Marks the current test as skipped.
 ///
 /// A skipped test may still fail if any exception is thrown, including uncaught
