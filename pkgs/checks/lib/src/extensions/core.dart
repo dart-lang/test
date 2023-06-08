@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:checks/context.dart';
 import 'package:meta/meta.dart' as meta;
 
@@ -12,12 +14,14 @@ class HasWhich<T, R> {
   HasWhich._(this._context, this._extract, this._name);
 
   void which(Condition<R> condition) {
-    _context.nest<R>('has $_name', (T value) {
+    _context.nest<R>(() => ['has $_name'], (T value) {
       try {
         return Extracted.value(_extract(value));
-      } catch (_) {
-        return Extracted.rejection(
-            which: ['threw while trying to read property']);
+      } catch (e, st) {
+        return Extracted.rejection(which: [
+          ...prefixFirst('threw while trying to read $_name: ', literal(e)),
+          ...(const LineSplitter()).convert(st.toString())
+        ]);
       }
     }, condition);
   }
@@ -39,7 +43,7 @@ extension CoreChecks<T> on Subject<T> {
   /// in a way that would conflict.
   ///
   /// ```
-  /// checkThat(something)
+  /// check(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
   ///   ..has((s) => s.bar, 'bar').which(it()
   ///     ..isLessThan(10)
@@ -82,7 +86,7 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// If the value is a [T], returns a [Subject] for further expectations.
   void isA<R>([Condition<R>? nestedCondition]) {
-    context.nest<R>('is a $R', (actual) {
+    context.nest<R>(() => ['is a $R'], (actual) {
       if (actual is! R) {
         return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
       }
@@ -130,7 +134,7 @@ extension BoolChecks on Subject<bool> {
 
 extension NullabilityChecks<T> on Subject<T?> {
   void isNotNull([Condition<T>? nonNullCondition]) {
-    context.nest<T>('is not null', (actual) {
+    context.nest<T>(() => ['is not null'], (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
     }, nonNullCondition, atSameLevel: true);
@@ -140,6 +144,50 @@ extension NullabilityChecks<T> on Subject<T?> {
     context.expect(() => const ['is null'], (actual) {
       if (actual != null) return Rejection();
       return null;
+    });
+  }
+}
+
+extension ComparableChecks<T> on Subject<Comparable<T>> {
+  /// Expects that this value is greater than [other].
+  void isGreaterThan(T other) {
+    context.expect(() => prefixFirst('is greater than ', literal(other)),
+        (actual) {
+      if (actual.compareTo(other) > 0) return null;
+      return Rejection(
+          which: prefixFirst('is not greater than ', literal(other)));
+    });
+  }
+
+  /// Expects that this value is greater than or equal to [other].
+  void isGreaterOrEqual(T other) {
+    context.expect(
+        () => prefixFirst('is greater than or equal to ', literal(other)),
+        (actual) {
+      if (actual.compareTo(other) >= 0) return null;
+      return Rejection(
+          which:
+              prefixFirst('is not greater than or equal to ', literal(other)));
+    });
+  }
+
+  /// Expects that this value is less than [other].
+  void isLessThan(T other) {
+    context.expect(() => prefixFirst('is less than ', literal(other)),
+        (actual) {
+      if (actual.compareTo(other) < 0) return null;
+      return Rejection(which: prefixFirst('is not less than ', literal(other)));
+    });
+  }
+
+  /// Expects that this value is less than or equal to [other].
+  void isLessOrEqual(T other) {
+    context
+        .expect(() => prefixFirst('is less than or equal to ', literal(other)),
+            (actual) {
+      if (actual.compareTo(other) <= 0) return null;
+      return Rejection(
+          which: prefixFirst('is not less than or equal to ', literal(other)));
     });
   }
 }

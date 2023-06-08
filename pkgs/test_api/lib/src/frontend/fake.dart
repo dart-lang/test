@@ -44,7 +44,7 @@
 /// [Fake] should strictly _not_ be used in any production code, especially if
 /// used within the context of Dart for Web (dart2js, DDC) and Dart for Mobile
 /// (Flutter).
-abstract class Fake {
+abstract mixin class Fake {
   @override
   dynamic noSuchMethod(Invocation invocation) {
     throw UnimplementedError(invocation.memberName.toString().split('"')[1]);

@@ -10,7 +10,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart' show isTest, isTestGroup;
 import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -54,8 +54,11 @@ Declarer get _declarer {
   () async {
     await pumpEventQueue();
 
-    var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-        _globalDeclarer!.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
+    var suite = RunnerSuite(
+        const PluginEnvironment(),
+        SuiteConfiguration.empty,
+        _globalDeclarer!.build(),
+        SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
 
     var engine = Engine();

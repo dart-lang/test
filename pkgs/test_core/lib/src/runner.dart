@@ -7,9 +7,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
@@ -169,14 +167,15 @@ class Runner {
     var unsupportedRuntimes = _config.suiteDefaults.runtimes
         .map(_loader.findRuntime)
         .whereType<Runtime>()
-        .where((runtime) => !testOn.evaluate(currentPlatform(runtime)))
+        .where((runtime) => !testOn.evaluate(currentPlatform(runtime, null)))
         .toList();
+
     if (unsupportedRuntimes.isEmpty) return;
 
     // Human-readable names for all unsupported runtimes.
     var unsupportedNames = [];
 
-    // If the user tried to run on one or moe unsupported browsers, figure out
+    // If the user tried to run on one or more unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
     // browsers are unsupported.
     var unsupportedBrowsers =
@@ -184,7 +183,7 @@ class Runner {
     if (unsupportedBrowsers.isNotEmpty) {
       var supportsAnyBrowser = _loader.allRuntimes
           .where((runtime) => runtime.isBrowser)
-          .any((runtime) => testOn.evaluate(currentPlatform(runtime)));
+          .any((runtime) => testOn.evaluate(currentPlatform(runtime, null)));
 
       if (supportsAnyBrowser) {
         unsupportedNames
@@ -197,8 +196,9 @@ class Runner {
     // If the user tried to run on the VM and it's not supported, figure out if
     // that's because of the current OS or whether the VM is unsupported.
     if (unsupportedRuntimes.contains(Runtime.vm)) {
-      var supportsAnyOS = OperatingSystem.all.any((os) => testOn
-          .evaluate(SuitePlatform(Runtime.vm, os: os, inGoogle: inGoogle)));
+      var supportsAnyOS = OperatingSystem.all.any((os) => testOn.evaluate(
+          SuitePlatform(Runtime.vm,
+              compiler: null, os: os, inGoogle: inGoogle)));
 
       if (supportsAnyOS) {
         unsupportedNames.add(currentOS.name);
@@ -317,7 +317,8 @@ class Runner {
                   'Cannot filter by line/column for this test suite, no suite'
                   'path available.');
             }
-            var absoluteSuitePath = p.absolute(path);
+            // The absolute path as it will appear in stack traces.
+            var absoluteSuitePath = File(path).absolute.uri.toFilePath();
 
             bool matchLineAndCol(Frame frame) {
               if (frame.uri.scheme != 'file' ||

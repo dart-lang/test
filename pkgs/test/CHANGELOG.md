@@ -1,9 +1,60 @@
-## 1.23.0-dev
+## 1.24.4-wip
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some annotation classes `final`: `OnPlatform`, `Retry`, `Skip`, `Tags`,
+  `TestOn`, `Timeout`.
+
+## 1.24.3
+
+* Fix compatibility with wasm number semantics.
+
+## 1.24.2
+
+* Copy an existing nonce from a script on the test HTML page to the script
+  created by the test runner host javascript. This only impacts environments
+  testing with custom HTML that includes a nonce.
+* Support the Microsoft Edge browser (use the `edge` platform in your the test
+  configuration file or `-p edge` on the command line).
+
+## 1.24.1
+
+* Handle a missing `'compiler'` value when running a test compiled against a
+  newer `test_api` than the runner back end is using. The expectation was that
+  the json protocol is only used across packages compatible with the same major
+  version of the `test_api` package, but `flutter test` does not check the
+  version of packages in the pub solve for user test code.
+
+## 1.24.0
+
+* Support the `--compiler` flag, which can be used to configure which compiler
+  to use.
+  * To specify a compiler by platform, the argument supports platform selectors
+    through this syntax `[<platform>:]<compiler>`. For example the command line
+    argument `--compiler vm:source` would run all vm tests from source instead
+    of compiling to kernel first.
+  * If no given compiler is compatible for a platform, it will use its default
+    compiler instead.
+* Add support for running tests as native executables (vm platform only).
+  * You can run tests this way with `--compiler exe`.
+* Support compiler identifiers in platform selectors.
+* List the supported compilers for each platform in the usage text.
+* Update all reporters to print the compiler along with the platform name
+  when configured to print the platform. Extend the logic for printing platofrm
+  information to do so if any compilers are explicitly configured.
+* Deprecate `--use-data-isolate-strategy`. It is now an alias for `-c vm:source`
+  which is roughly equivalent. If this is breaking for you please file an issue.
+
+## 1.23.1
+
+* Fix running paths by absolute path (with drive letter) on windows.
+
+## 1.23.0
 
 * Avoid empty expandable groups for tests without extra output in Github
   reporter.
 * Add support for CHROME_EXECUTABLE environment variable. This overrides any
   config file settings.
+* Support running tests by absolute file uri.
 
 ## 1.22.2
 

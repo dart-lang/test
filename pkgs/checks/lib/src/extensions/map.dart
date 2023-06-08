@@ -33,12 +33,10 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains [key] according to [Map.containsKey].
   void containsKey(K key, [Condition<V>? valueCondition]) {
-    final keyString = literal(key).join(r'\n');
-    context.nest<V>(
-        'contains key $keyString${valueCondition != null ? ' which reads a value' : ''}',
-        (actual) {
+    context.nest<V>(() => prefixFirst('contains key ', literal(key)), (actual) {
       if (actual.containsKey(key)) return Extracted.value(actual[key] as V);
-      return Extracted.rejection(which: ['does not contain key $keyString']);
+      return Extracted.rejection(
+          which: prefixFirst('does not contain key ', literal(key)));
     }, valueCondition);
   }
 
@@ -63,10 +61,11 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains [value] according to [Map.containsValue].
   void containsValue(V value) {
-    final valueString = literal(value).join(r'\n');
-    context.expect(() => ['contains value $valueString'], (actual) {
+    context.expect(() => prefixFirst('contains value ', literal(value)),
+        (actual) {
       if (actual.containsValue(value)) return null;
-      return Rejection(which: ['does not contain value $valueString']);
+      return Rejection(
+          which: prefixFirst('does not contain value ', literal(value)));
     });
   }
 

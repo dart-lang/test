@@ -7,6 +7,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -69,7 +70,13 @@ Selecting Tests:
 
 Running Tests:
 -p, --platform                        The platform(s) on which to run the tests.
-                                      $_runtimes
+                                      $_runtimes.
+                                      Each platform supports the following compilers:
+$_runtimeCompilers
+-c, --compiler                        The compiler(s) to use to run tests, supported compilers are [dart2js, dart2wasm, exe, kernel, source].
+                                      Each platform has a default compiler but may support other compilers.
+                                      You can target a compiler to a specific platform using arguments of the following form [<platform-selector>:]<compiler>.
+                                      If a platform is specified but no given compiler is supported for that platform, then it will use its default compiler.
 -P, --preset                          The configuration preset(s) to use.
 -j, --concurrency=<threads>           The number of concurrent test suites run.
                                       (defaults to "$_defaultConcurrency")
@@ -90,9 +97,6 @@ Running Tests:
                                       to provide improved test performance but at the cost of
                                       debuggability.
     --no-retry                        Don't rerun tests that have retry set.
-    --use-data-isolate-strategy       Use `data:` uri isolates when spawning VM tests instead of the
-                                      default strategy. This may be faster when you only ever run a
-                                      single test suite at a time.
     --test-randomize-ordering-seed    Use the specified seed to randomize the execution order of test cases.
                                       Must be a 32bit unsigned integer or "random".
                                       If "random", pick a random seed to use.
@@ -112,13 +116,23 @@ Output:
     --js-trace                        Emit raw JavaScript stack traces for browser tests.
     --[no-]color                      Use terminal colors.
                                       (auto-detected by default)
-
 ''';
 
 final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
-    '${Platform.isWindows ? ', ie' : ''}, node, '
+    '${Platform.isWindows ? ', ie' : ''}, edge, node, '
     'experimental-chrome-wasm]';
+
+final _runtimeCompilers = [
+  '[vm]: kernel (default), source, exe',
+  '[chrome]: dart2js (default)',
+  '[firefox]: dart2js (default)',
+  if (Platform.isMacOS) '[safari]: dart2js (default)',
+  if (Platform.isWindows) '[ie]: dart2js (default)',
+  '[edge]: dart2js (default)',
+  '[node]: dart2js (default)',
+  '[experimental-chrome-wasm]: dart2wasm (default)',
+].map((str) => '                                      $str').join('\n');
 
 void main() {
   setUpAll(precompileTestExecutable);
@@ -359,6 +373,37 @@ $_usage''');
       await d.dir('dir', [d.file('test.dart', _success)]).create();
 
       var test = await runTest(['dir/test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('given a file: uri', () async {
+      await d.file('test.dart', _success).create();
+      var fileUri = p.toUri(d.path('test.dart')).toString();
+      expect(fileUri, startsWith('file:///'));
+      var test = await runTest([fileUri]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('with platform specific relative paths', () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest([p.join('foo', 'test.dart')]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('with platform specific absolute paths', () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest([d.path(p.join('foo', 'test.dart'))]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('with platform specific relative paths containing query params',
+        () async {
+      await d.dir('foo', [d.file('test.dart', _success)]).create();
+      var test = await runTest(['${p.join('foo', 'test.dart')}?line=6']);
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });

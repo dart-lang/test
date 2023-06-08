@@ -12,8 +12,8 @@ extension RejectionChecks<T> on Subject<T> {
       {Iterable<String>? actual, Iterable<String>? which}) {
     late T actualValue;
     var didRunCallback = false;
-    context.nest<Rejection>('does not meet a condition with a Rejection',
-        (value) {
+    context.nest<Rejection>(
+        () => ['does not meet a condition with a Rejection'], (value) {
       actualValue = value;
       didRunCallback = true;
       final failure = softCheck(value, condition);
@@ -48,7 +48,8 @@ extension RejectionChecks<T> on Subject<T> {
     late T actualValue;
     var didRunCallback = false;
     await context.nestAsync<Rejection>(
-        'does not meet an async condition with a Rejection', (value) async {
+        () => ['does not meet an async condition with a Rejection'],
+        (value) async {
       actualValue = value;
       didRunCallback = true;
       final failure = await softCheckAsync(value, condition);
@@ -79,28 +80,33 @@ extension RejectionChecks<T> on Subject<T> {
   }
 }
 
+extension ConditionChecks<T> on Subject<Condition<T>> {
+  void hasDescriptionWhich(Condition<Iterable<String>> descriptionCondition) =>
+      has((c) => describe<T>(c), 'description').which(descriptionCondition);
+  Future<void> hasAsyncDescriptionWhich(
+          Condition<Iterable<String>> descriptionCondition) async =>
+      context.nestAsync(
+          () => ['has description'],
+          (condition) async =>
+              Extracted.value(await describeAsync<T>(condition)),
+          descriptionCondition);
+}
+
+/// A condition which can be defined at the time it is invoked instead of
+/// eagerly.
+///
+/// Allows basing the following condition in `isRejectedByAsync` on the actual
+/// value.
 class LazyCondition<T> implements Condition<T> {
-  final FutureOr<void> Function(Subject<T>) _callback;
-  LazyCondition(this._callback);
+  final FutureOr<void> Function(Subject<T>) _apply;
+  LazyCondition(this._apply);
   @override
   void apply(Subject<T> subject) {
-    _callback(subject);
+    _apply(subject);
   }
 
   @override
   Future<void> applyAsync(Subject<T> subject) async {
-    await _callback(subject);
+    await _apply(subject);
   }
-}
-
-extension ConditionChecks<T> on Subject<Condition<T>> {
-  void hasDescriptionWhich(Condition<Iterable<String>> descriptionCondition) =>
-      has((c) => describe<T>(c), 'description').which(descriptionCondition);
-  Future<void> asyncDescription(
-          Condition<Iterable<String>> descriptionCondition) async =>
-      context.nestAsync(
-          'has description',
-          (condition) async =>
-              Extracted.value(await describeAsync<T>(condition)),
-          descriptionCondition);
 }

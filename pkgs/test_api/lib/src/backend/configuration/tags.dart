@@ -10,7 +10,7 @@ import 'package:meta/meta_meta.dart';
 ///
 /// [tagging tests]: https://github.com/dart-lang/test/blob/master/pkgs/test/README.md#tagging-tests
 @Target({TargetKind.library})
-class Tags {
+final class Tags {
   /// The tags for the test suite.
   Set<String> get tags => _tags.toSet();
 

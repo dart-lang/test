@@ -8,9 +8,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
-    show
-        Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
@@ -19,6 +17,7 @@ import 'package:yaml/yaml.dart';
 import '../../util/errors.dart';
 import '../../util/io.dart';
 import '../../util/pretty_print.dart';
+import '../compiler_selection.dart';
 import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
@@ -272,6 +271,14 @@ class _ConfigurationLoader {
             _parseIdentifierLike(runtimeNode, 'Platform name'),
             runtimeNode.span));
 
+    var compilerSelections = _getList(
+        'compilers',
+        (node) => _parseNode(
+            node,
+            'compiler',
+            (option) =>
+                CompilerSelection.parse(option, parentSpan: node.span)));
+
     var chosenPresets = _getList('add_presets',
         (presetNode) => _parseIdentifierLike(presetNode, 'Preset name'));
 
@@ -286,6 +293,7 @@ class _ConfigurationLoader {
         reporter: reporter,
         fileReporters: fileReporters,
         concurrency: concurrency,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         chosenPresets: chosenPresets,
         overrideRuntimes: overrideRuntimes);

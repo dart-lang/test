@@ -1,15 +1,20 @@
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/dart-lang/test/badge)](https://api.securityscorecards.dev/projects/github.com/dart-lang/test)
+[![pub package](https://img.shields.io/pub/v/test.svg)](https://pub.dev/packages/test)
+[![package publisher](https://img.shields.io/pub/publisher/test.svg)](https://pub.dev/packages/test/publisher)
 
 `test` provides a standard way of writing and running tests in Dart.
+
+## Using package:test
 
 * [Writing Tests](#writing-tests)
 * [Running Tests](#running-tests)
   * [Sharding Tests](#sharding-tests)
+  * [Test Concurrency](#test-concurrency)
   * [Shuffling Tests](#shuffling-tests)
   * [Selecting a Test Reporter](#selecting-a-test-reporter)
   * [Collecting Code Coverage](#collecting-code-coverage)
   * [Restricting Tests to Certain Platforms](#restricting-tests-to-certain-platforms)
   * [Platform Selectors](#platform-selectors)
+  * [Compiler Selectors](#compiler-selectors)
   * [Running Tests on Node.js](#running-tests-on-nodejs)
 * [Asynchronous Tests](#asynchronous-tests)
   * [Stream Matchers](#stream-matchers)
@@ -30,12 +35,12 @@
 
 ## Writing Tests
 
-Tests are specified using the top-level [`test()`] function, and test assertions
-are made using [`expect()`]:
+Tests are specified using the top-level [`test()`] function.
+Test asserts can be made using [`expect` from `package:matcher`][expect]
 
 [`test()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/test.html
 
-[`expect()`]: https://pub.dev/documentation/test_api/latest/expect/expect.html
+[expect]: https://pub.dev/documentation/matcher/latest/expect/expect.html
 
 ```dart
 import 'package:test/test.dart';
@@ -86,42 +91,6 @@ void main() {
 }
 ```
 
-Any matchers from the [`matcher`] package can be used with `expect()` to do
-complex validations:
-
-[`matcher`]: https://pub.dev/documentation/matcher/latest/matcher/matcher-library.html
-
-```dart
-import 'package:test/test.dart';
-
-void main() {
-  test('.split() splits the string on the delimiter', () {
-    expect('foo,bar,baz', allOf([
-      contains('foo'),
-      isNot(startsWith('bar')),
-      endsWith('baz')
-    ]));
-  });
-}
-```
-
-You can also test exceptions with the [`throwsA()`] function or a matcher
-such as [`throwsFormatException`]:
-
-[`throwsA()`]: https://pub.dev/documentation/test_api/latest/expect/throwsA.html
-
-[`throwsFormatException`]: https://pub.dev/documentation/test_api/latest/expect/throwsFormatException-constant.html
-
-```dart
-import 'package:test/test.dart';
-
-void main() {
-  test('.parse() fails on invalid input', () {
-    expect(() => int.parse('X'), throwsFormatException);
-  });
-}
-```
-
 You can use the [`setUp()`] and [`tearDown()`] functions to share code between
 tests. The `setUp()` callback will run before every test in a group or test
 suite, and `tearDown()` will run after. `tearDown()` will run even if a test
@@ -167,9 +136,14 @@ It's also possible to run a test on the Dart VM only by invoking it using `dart
 path/to/test.dart`, but this doesn't load the full test runner and will be
 missing some features.
 
-The test runner considers any file that ends with `_test.dart` to be a test
-file. If you don't pass any paths, it will run all the test files in your
-`test/` directory, making it easy to test your entire application at once.
+The test runner accepts one or more path arguments. If there are no path
+arguments the runner defaults to running tests under the `test/` directory. When
+running for `test/` or any other directory, the runner will recursively search
+the directory for files that match the test name pattern `*_test.dart`. The
+pattern can be overridden in `dart_test.yaml`. When a path argument is a file
+instead of a directory it will be run as a test, regardless of the file name.
+Arguments which use shell globbing should avoid including non-test files in the
+path argument.
 
 You can select specific tests cases to run by name using `dart test -n "test
 name"`. The string is interpreted as a regular expression, and only tests whose
@@ -183,6 +157,12 @@ care of starting the browser and loading the tests, and all the results will be
 reported on the command line just like for VM tests. In fact, you can even run
 tests on both platforms with a single command: `dart test -p "chrome,vm"
 path/to/test.dart`.
+
+By default each platform has a default compiler, but some of them support
+more than one compiler. You can choose which compiler to use by passing
+`dart test -c source`, which would run all VM tests from source instead of
+compiling them to kernel. This also supports targeting a specific platform
+using normal platform selectors, like this `dart test -c vm:source`.
 
 ### Test Path Queries
 
@@ -223,6 +203,26 @@ dart test --total-shards 3 --shard-index 0 path/to/test.dart
 dart test --total-shards 3 --shard-index 1 path/to/test.dart
 dart test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
+Sharding: This refers to the process of splitting up a large test suite into
+smaller subsets (called shards) that can be run independently. Sharding is
+particularly useful for distributed testing, where multiple machines are used
+to run tests simultaneously. By dividing the test suite into smaller subsets,
+you can run tests in parallel across multiple machines, which can significantly
+reduce the overall testing time.
+
+### Test concurrency
+
+Test suites run concurrently by default, using half of the host's CPU cores. Use
+`--concurrency` to control the number of test suites that runs concurrently,
+meaning that multiple tests in independent suites or platforms can run at the
+same time. For example, if you wanted to run the tests on 4 threads, you could
+run the tests as follows:
+
+```bash
+dart test --concurrency=4
+```
+This can speed up the overall testing process, especially if you have a large
+number of test suites.
 
 ### Shuffling Tests
 
@@ -381,6 +381,14 @@ only supports boolean operations. The following identifiers are defined:
 * `posix`: Whether the test is running on a POSIX operating system. This is
   equivalent to `!windows`.
 
+* `dart2js`: Whether the test has been compiled with Dart2Js.
+
+* `dart2wasm`: Whether the test has been compiled with Dart2Wasm.
+
+* `kernel`: Whether the test has been compiled to kernel.
+
+* `source`: Whether the test has been run with no compiler (from source).
+
 For example, if you wanted to run a test on every browser but Chrome, you would
 write `@TestOn('browser && !chrome')`.
 
@@ -438,189 +446,6 @@ Avoid uncaught async errors by ensuring that all futures have an error handler
 [before they complete as an error][early-handler].
 
 [early-handler]:https://dart.dev/guides/libraries/futures-error-handling#potential-problem-failing-to-register-error-handlers-early
-
-### Future Matchers
-
-There are a number of useful functions and matchers for more advanced
-asynchrony. The [`completion()`] matcher can be used to test `Futures`; it
-ensures that the test doesn't finish until the `Future` completes, and runs a
-matcher against that `Future`'s value.
-
-[`completion()`]: https://pub.dev/documentation/test_api/latest/expect/completion.html
-
-```dart
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test('Future.value() returns the value', () {
-    expect(Future.value(10), completion(equals(10)));
-  });
-}
-```
-
-The [`throwsA()`] matcher and the various [`throwsExceptionType`] matchers work
-with both synchronous callbacks and asynchronous `Future`s. They ensure that a
-particular type of exception is thrown:
-
-[`throwsExceptionType`]: https://pub.dev/documentation/test_api/latest/expect/throwsException-constant.html
-
-```dart
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test('Future.error() throws the error', () {
-    expect(Future.error('oh no'), throwsA(equals('oh no')));
-    expect(Future.error(StateError('bad state')), throwsStateError);
-  });
-}
-```
-
-The [`expectAsync()`] function wraps another function and has two jobs. First,
-it asserts that the wrapped function is called a certain number of times, and
-will cause the test to fail if it's called too often; second, it keeps the test
-from finishing until the function is called the requisite number of times.
-
-```dart
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test('Stream.fromIterable() emits the values in the iterable', () {
-    var stream = Stream.fromIterable([1, 2, 3]);
-
-    stream.listen(expectAsync1((number) {
-      expect(number, inInclusiveRange(1, 3));
-    }, count: 3));
-  });
-}
-```
-
-[`expectAsync()`]: https://pub.dev/documentation/test_api/latest/test_api/expectAsync.html
-
-### Stream Matchers
-
-The `test` package provides a suite of powerful matchers for dealing with
-[asynchronous streams][Stream]. They're expressive and composable, and make it
-easy to write complex expectations about the values emitted by a stream. For
-example:
-
-[Stream]: https://api.dart.dev/stable/dart-async/Stream-class.html
-
-```dart
-import 'dart:async';
-
-import 'package:test/test.dart';
-
-void main() {
-  test('process emits status messages', () {
-    // Dummy data to mimic something that might be emitted by a process.
-    var stdoutLines = Stream.fromIterable([
-      'Ready.',
-      'Loading took 150ms.',
-      'Succeeded!'
-    ]);
-
-    expect(stdoutLines, emitsInOrder([
-      // Values match individual events.
-      'Ready.',
-
-      // Matchers also run against individual events.
-      startsWith('Loading took'),
-
-      // Stream matchers can be nested. This asserts that one of two events are
-      // emitted after the "Loading took" line.
-      emitsAnyOf(['Succeeded!', 'Failed!']),
-
-      // By default, more events are allowed after the matcher finishes
-      // matching. This asserts instead that the stream emits a done event and
-      // nothing else.
-      emitsDone
-    ]));
-  });
-}
-```
-
-A stream matcher can also match the [`async`] package's [`StreamQueue`] class,
-which allows events to be requested from a stream rather than pushed to the
-consumer. The matcher will consume the matched events, but leave the rest of the
-queue alone so that it can still be used by the test, unlike a normal `Stream`
-which can only have one subscriber. For example:
-
-[`async`]: https://pub.dev/packages/async
-
-[`StreamQueue`]: https://pub.dev/documentation/async/latest/async/StreamQueue-class.html
-
-```dart
-import 'dart:async';
-
-import 'package:async/async.dart';
-import 'package:test/test.dart';
-
-void main() {
-  test('process emits a WebSocket URL', () async {
-    // Wrap the Stream in a StreamQueue so that we can request events.
-    var stdout = StreamQueue(Stream.fromIterable([
-      'WebSocket URL:',
-      'ws://localhost:1234/',
-      'Waiting for connection...'
-    ]));
-
-    // Ignore lines from the process until it's about to emit the URL.
-    await expectLater(stdout, emitsThrough('WebSocket URL:'));
-
-    // Parse the next line as a URL.
-    var url = Uri.parse(await stdout.next);
-    expect(url.host, equals('localhost'));
-
-    // You can match against the same StreamQueue multiple times.
-    await expectLater(stdout, emits('Waiting for connection...'));
-  });
-}
-```
-
-The following built-in stream matchers are available:
-
-* [`emits()`] matches a single data event.
-* [`emitsError()`] matches a single error event.
-* [`emitsDone`] matches a single done event.
-* [`mayEmit()`] consumes events if they match an inner matcher, without
-  requiring them to match.
-* [`mayEmitMultiple()`] works like `mayEmit()`, but it matches events against
-  the matcher as many times as possible.
-* [`emitsAnyOf()`] consumes events matching one (or more) of several possible
-  matchers.
-* [`emitsInOrder()`] consumes events matching multiple matchers in a row.
-* [`emitsInAnyOrder()`] works like `emitsInOrder()`, but it allows the matchers
-  to match in any order.
-* [`neverEmits()`] matches a stream that finishes *without* matching an inner
-  matcher.
-
-You can also define your own custom stream matchers with [`StreamMatcher()`].
-
-[`emits()`]: https://pub.dev/documentation/test_api/latest/expect/emits.html
-
-[`emitsError()`]: https://pub.dev/documentation/test_api/latest/expect/emitsError.html
-
-[`emitsDone`]: https://pub.dev/documentation/test_api/latest/expect/emitsDone.html
-
-[`mayEmit()`]: https://pub.dev/documentation/test_api/latest/expect/mayEmit.html
-
-[`mayEmitMultiple()`]: https://pub.dev/documentation/test_api/latest/expect/mayEmitMultiple.html
-
-[`emitsAnyOf()`]: https://pub.dev/documentation/test_api/latest/expect/emitsAnyOf.html
-
-[`emitsInOrder()`]: https://pub.dev/documentation/test_api/latest/expect/emitsInOrder.html
-
-[`emitsInAnyOrder()`]: https://pub.dev/documentation/test_api/latest/expect/emitsInAnyOrder.html
-
-[`neverEmits()`]: https://pub.dev/documentation/test_api/latest/expect/neverEmits.html
-
-[`StreamMatcher()`]: https://pub.dev/documentation/test_api/latest/expect/StreamMatcher-class.html
 
 ## Running Tests With Custom HTML
 

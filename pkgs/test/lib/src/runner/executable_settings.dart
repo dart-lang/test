@@ -34,10 +34,16 @@ class ExecutableSettings {
   /// `PROGRAMFILES(X64)` environment variables.
   final String? _windowsExecutable;
 
+  /// The environment variable, if any, to use as an override for the default
+  /// path.
+  final String? _environmentOverride;
+
   /// The path to the executable for the current operating system.
   String get executable {
-    final envVariable = Platform.environment['CHROME_EXECUTABLE'];
-    if (envVariable != null) return envVariable;
+    if (_environmentOverride != null) {
+      final envVariable = Platform.environment[_environmentOverride];
+      if (envVariable != null) return envVariable;
+    }
 
     if (Platform.isMacOS) return _macOSExecutable!;
     if (!Platform.isWindows) return _linuxExecutable!;
@@ -172,11 +178,13 @@ class ExecutableSettings {
       String? linuxExecutable,
       String? macOSExecutable,
       String? windowsExecutable,
+      String? environmentOverride,
       bool? headless})
       : arguments = arguments == null ? const [] : List.unmodifiable(arguments),
         _linuxExecutable = linuxExecutable,
         _macOSExecutable = macOSExecutable,
         _windowsExecutable = windowsExecutable,
+        _environmentOverride = environmentOverride,
         _headless = headless;
 
   /// Merges [this] with [other], with [other]'s settings taking priority.

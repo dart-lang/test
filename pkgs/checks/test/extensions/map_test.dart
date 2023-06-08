@@ -14,10 +14,10 @@ const _testMap = {
 
 void main() {
   test('length', () {
-    checkThat(_testMap).hasLengthWhich(it()..equals(2));
+    check(_testMap).hasLengthWhich(it()..equals(2));
   });
   test('entries', () {
-    checkThat(_testMap).hasEntriesWhich(it()
+    check(_testMap).hasEntriesWhich(it()
       ..any(
         it()
           ..has((p0) => p0.key, 'key').which(it()..equals('a'))
@@ -25,51 +25,64 @@ void main() {
       ));
   });
   test('keys', () {
-    checkThat(_testMap).hasKeysWhich(it()..contains('a'));
+    check(_testMap).hasKeysWhich(it()..contains('a'));
   });
   test('values', () {
-    checkThat(_testMap).hasValuesWhich(it()..contains(1));
+    check(_testMap).hasValuesWhich(it()..contains(1));
   });
 
   test('isEmpty', () {
-    checkThat(<String, int>{}).isEmpty();
-    checkThat(_testMap).isRejectedBy(it()..isEmpty(), which: ['is not empty']);
+    check(<String, int>{}).isEmpty();
+    check(_testMap).isRejectedBy(it()..isEmpty(), which: ['is not empty']);
   });
   test('isNotEmpty', () {
-    checkThat(_testMap).isNotEmpty();
-    checkThat({}).isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
+    check(_testMap).isNotEmpty();
+    check({}).isRejectedBy(it()..isNotEmpty(), which: ['is not empty']);
   });
   test('containsKey', () {
-    checkThat(_testMap).containsKey('a');
-    checkThat(_testMap).containsKey('a', it()..equals(1));
+    check(_testMap).containsKey('a');
+    check(_testMap).containsKey('a', it()..equals(1));
 
-    checkThat(_testMap).isRejectedBy(
+    check(_testMap).isRejectedBy(
       it()..containsKey('c'),
       which: ["does not contain key 'c'"],
     );
-    checkThat(_testMap).isRejectedBy(
+    check(_testMap).isRejectedBy(
       it()..containsKey('a', it()..equals(2)),
       actual: ['<1>'],
       which: ['are not equal'],
     );
   });
   test('containsKeyThat', () {
-    checkThat(_testMap).containsKeyThat(it()..equals('a'));
-    checkThat(_testMap).isRejectedBy(
+    check(_testMap).containsKeyThat(it()..equals('a'));
+    check(_testMap).isRejectedBy(
       it()..containsKeyThat(it()..equals('c')),
       which: ['Contains no matching key'],
     );
   });
-  test('containsValue', () {
-    checkThat(_testMap).containsValue(1);
-    checkThat(_testMap).isRejectedBy(
-      it()..containsValue(3),
-      which: ['does not contain value <3>'],
-    );
+  group('containsValue', () {
+    test('succeeds for happy case', () {
+      check(_testMap).containsValue(1);
+    });
+    test('fails for missing value', () {
+      check(_testMap).isRejectedBy(
+        it()..containsValue(3),
+        which: ['does not contain value <3>'],
+      );
+    });
+    test('can be described', () {
+      check(it<Map<String, String>>()..containsValue('some\nlong\nkey'))
+          .hasDescriptionWhich(it()
+            ..deepEquals([
+              "  contains value 'some",
+              '  long',
+              "  key'",
+            ]));
+    });
   });
   test('containsValueThat', () {
-    checkThat(_testMap).containsValueThat(it()..equals(1));
-    checkThat(_testMap).isRejectedBy(
+    check(_testMap).containsValueThat(it()..equals(1));
+    check(_testMap).isRejectedBy(
       it()..containsValueThat(it()..equals(3)),
       which: ['Contains no matching value'],
     );

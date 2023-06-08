@@ -15,6 +15,7 @@ Future<void> main(List<String> args) async {
   registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
   registerPlatformPlugin([
     Runtime.chrome,
+    Runtime.edge,
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer

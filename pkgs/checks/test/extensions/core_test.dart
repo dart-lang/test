@@ -10,28 +10,36 @@ import '../test_shared.dart';
 void main() {
   group('TypeChecks', () {
     test('isA', () {
-      checkThat(1).isA<int>();
+      check(1).isA<int>();
 
-      checkThat(1).isRejectedBy(it()..isA<String>(), which: ['Is a int']);
+      check(1).isRejectedBy(it()..isA<String>(), which: ['Is a int']);
     });
   });
   group('HasField', () {
     test('has', () {
-      checkThat(1).has((v) => v.isOdd, 'isOdd').which(it()..isTrue());
+      check(1).has((v) => v.isOdd, 'isOdd').which(it()..isTrue());
 
-      checkThat(2).isRejectedBy(
-          it()..has((v) => throw UnimplementedError(), 'isOdd').which(it()),
-          which: ['threw while trying to read property']);
+      check(null).isRejectedBy(
+          it()
+            ..has((v) {
+              Error.throwWithStackTrace(
+                  UnimplementedError(), StackTrace.fromString('fake trace'));
+            }, 'foo')
+                .which(it()..isNotNull()),
+          which: [
+            'threw while trying to read foo: <UnimplementedError>',
+            'fake trace'
+          ]);
     });
 
     test('which', () {
-      checkThat(true).which(it()..isTrue());
+      check(true).which(it()..isTrue());
     });
 
     test('not', () {
-      checkThat(false).not(it()..isTrue());
+      check(false).not(it()..isTrue());
 
-      checkThat(true).isRejectedBy(it()..not(it()..isTrue()), which: [
+      check(true).isRejectedBy(it()..not(it()..isTrue()), which: [
         'is a value that: ',
         '    is true',
       ]);
@@ -39,11 +47,11 @@ void main() {
 
     group('anyOf', () {
       test('succeeds for happy case', () {
-        checkThat(-10).anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]);
+        check(-10).anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]);
       });
 
       test('rejects values that do not satisfy any condition', () {
-        checkThat(0).isRejectedBy(
+        check(0).isRejectedBy(
             it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
             which: ['did not match any condition']);
       });
@@ -52,41 +60,99 @@ void main() {
 
   group('BoolChecks', () {
     test('isTrue', () {
-      checkThat(true).isTrue();
+      check(true).isTrue();
 
-      checkThat(false).isRejectedBy(it()..isTrue());
+      check(false).isRejectedBy(it()..isTrue());
     });
 
     test('isFalse', () {
-      checkThat(false).isFalse();
+      check(false).isFalse();
 
-      checkThat(true).isRejectedBy(it()..isFalse());
+      check(true).isRejectedBy(it()..isFalse());
     });
   });
 
   group('EqualityChecks', () {
     test('equals', () {
-      checkThat(1).equals(1);
+      check(1).equals(1);
 
-      checkThat(1).isRejectedBy(it()..equals(2), which: ['are not equal']);
+      check(1).isRejectedBy(it()..equals(2), which: ['are not equal']);
     });
     test('identical', () {
-      checkThat(1).identicalTo(1);
+      check(1).identicalTo(1);
 
-      checkThat(1)
-          .isRejectedBy(it()..identicalTo(2), which: ['is not identical']);
+      check(1).isRejectedBy(it()..identicalTo(2), which: ['is not identical']);
     });
   });
   group('NullabilityChecks', () {
     test('isNotNull', () {
-      checkThat(1).isNotNull();
+      check(1).isNotNull();
 
-      checkThat(null).isRejectedBy(it()..isNotNull());
+      check(null).isRejectedBy(it()..isNotNull());
     });
     test('isNull', () {
-      checkThat(null).isNull();
+      check(null).isNull();
 
-      checkThat(1).isRejectedBy(it()..isNull());
+      check(1).isRejectedBy(it()..isNull());
+    });
+  });
+
+  group('ComparableChecks on Duration', () {
+    group('isGreaterThan', () {
+      test('succeeds for greater', () {
+        check(Duration(seconds: 10)).isGreaterThan(Duration(seconds: 1));
+      });
+      test('fails for equal', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isGreaterThan(Duration(seconds: 10)),
+            which: ['is not greater than <0:00:10.000000>']);
+      });
+      test('fails for less', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isGreaterThan(Duration(seconds: 50)),
+            which: ['is not greater than <0:00:50.000000>']);
+      });
+    });
+    group('isGreaterOrEqual', () {
+      test('succeeds for greater', () {
+        check(Duration(seconds: 10)).isGreaterOrEqual(Duration(seconds: 1));
+      });
+      test('succeeds for equal', () {
+        check(Duration(seconds: 10)).isGreaterOrEqual(Duration(seconds: 10));
+      });
+      test('fails for less', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isGreaterOrEqual(Duration(seconds: 50)),
+            which: ['is not greater than or equal to <0:00:50.000000>']);
+      });
+    });
+    group('isLessThan', () {
+      test('succeeds for less', () {
+        check(Duration(seconds: 1)).isLessThan(Duration(seconds: 10));
+      });
+      test('fails for equal', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isLessThan(Duration(seconds: 10)),
+            which: ['is not less than <0:00:10.000000>']);
+      });
+      test('fails for greater', () {
+        check(Duration(seconds: 50)).isRejectedBy(
+            it()..isLessThan(Duration(seconds: 10)),
+            which: ['is not less than <0:00:10.000000>']);
+      });
+    });
+    group('isLessOrEqual', () {
+      test('succeeds for less', () {
+        check(Duration(seconds: 10)).isLessOrEqual(Duration(seconds: 50));
+      });
+      test('succeeds for equal', () {
+        check(Duration(seconds: 10)).isLessOrEqual(Duration(seconds: 10));
+      });
+      test('fails for greater', () {
+        check(Duration(seconds: 10)).isRejectedBy(
+            it()..isLessOrEqual(Duration(seconds: 1)),
+            which: ['is not less than or equal to <0:00:01.000000>']);
+      });
     });
   });
 }
