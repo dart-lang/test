@@ -122,14 +122,12 @@ void main() {
         ..state.equals(State.failed)
         ..errors.unorderedMatches([
           (it) => it
-              .isA<AsyncError>()
               .has((e) => e.error, 'error')
               .isA<TestFailure>()
               .has((f) => f.message, 'message')
               .isNotNull()
               .endsWith('Which: foo'),
           (it) => it
-              .isA<AsyncError>()
               .has((e) => e.error, 'error')
               .isA<String>()
               .startsWith('This test failed after it had already completed.')
