@@ -11,12 +11,16 @@ tests.
 with `package:checks`, and old tests can continue to use matchers. Test cases
 within the same file can use a mix of `expect` and `check`.
 
-**Do I need to migrate right away?** No. When `package:test`stops exporting
-these members it will be possible to add a dependency on `package:matcher` and
-continue to use them. `package:matcher` will get deprecated and will not see new
-development, but the existing features will continue to work.
+**_Should_ I migrate all at once?** Probably not, it depends on your tolerance
+for having tests use a mix of APIs. As you add new tests, or need to make
+updates to existing tests, using `checks` will make testing easier. Tests which
+are stable and passing will not get significant benefits from a migration.
 
-**Why is the Dart team moving away from matcher?** The `matcher` package has a
+**Do I need to migrate at all?** No. When `package:test`stops exporting
+these members it will be possible to add a dependency on `package:matcher` and
+continue to use them. `package:matcher` will continue to be available.
+
+**Why is the Dart team adding a second framework?** The `matcher` package has a
 design which is fundamentally incompatible with using static types to validate
 correct use. With an entirely new design, the static types in `checks` give
 confidence that the expectation is appropriate for the value, and can narrow
@@ -24,11 +28,11 @@ autocomplete choices in the IDE for a better editing experience. The clean break
 from the legacy implementation and API also gives an opportunity to make small
 behavior and signature changes to align with modern Dart idioms.
 
-**Should I start using checks over matcher for new tests?** There is still a
+**Should I start using checks right away?** There is still a
 high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
 `matcher`. See some of the [improvements to look forward to in checks
-below][#improvements-you-can-expect].
+below](#improvements-you-can-expect).
 
 [matcher]: https://pub.dev/packages/matcher
 
@@ -50,7 +54,8 @@ below][#improvements-you-can-expect].
 
 ## Migrating from Matchers
 
-Replace calls to `expect` with a call to `check` passing the first argument.
+Replace calls to `expect` or `expectLater` with a call to `check` passing the
+first argument.
 When a direct replacement is available, change the second argument from calling
 a function returning a Matcher, to calling the relevant extension method on the
 `Subject`.
@@ -66,6 +71,9 @@ expect(actual, expected);
 check(actual).equals(expected);
 // or maybe
 check(actualCollection).deepEquals(expected);
+
+await expectLater(actual, completes());
+await check(actual).completes();
 ```
 
 If you use the `reason` argument to `expect`, rename it to `because`.
@@ -96,6 +104,11 @@ check(because: 'some explanation', actual).expectation();
     comparison uses [`String.allMatches`][allMatches].
     For backwards compatibility change `matches(regexString)` to
     `matchesPattern(RegExp(regexString))`.
+-   The `TypeMatcher.having` API is replace by the more general`.has`. While
+    `.having` could only be called on a `TypeMatcher` using `.isA`, `.has` works
+    on any `Subject`. `CoreChecks.has` takes 1 fewer arguments - instead of
+    taking the last argument, a `matcher` to apply to the field, it returns a
+    `Subject` for the field.
 
 [matches]:https://pub.dev/documentation/matcher/latest/matcher/Matcher/matches.html
 [allMatches]:https://api.dart.dev/stable/2.19.1/dart-core/Pattern/allMatches.html

@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
@@ -71,7 +70,8 @@ class RunnerTest extends Test {
             // this virtual channel and cause the spawned isolate to close as
             // well.
             spawnHybridUri(message['url'] as String, message['message'], suite)
-                .pipe(testChannel.virtualChannel(message['channel'] as int));
+                .pipe(testChannel
+                    .virtualChannel((message['channel'] as num).toInt()));
             break;
         }
       }, onDone: () {

@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore: deprecated_member_use
 export 'package:test_api/backend.dart' show SuitePlatform, Runtime;
 export 'package:test_core/src/runner/configuration.dart' show Configuration;
 export 'package:test_core/src/runner/environment.dart'

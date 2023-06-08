@@ -8,7 +8,6 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart' show Compiler, Runtime, StackTraceMapper;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
@@ -24,6 +23,7 @@ import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
 import 'internet_explorer.dart';
+import 'microsoft_edge.dart';
 import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -152,21 +152,17 @@ class BrowserManager {
   ///
   /// If [debug] is true, starts the browser in debug mode.
   static Browser _newBrowser(Uri url, Runtime browser,
-      ExecutableSettings settings, Configuration configuration) {
-    switch (browser.root) {
-      case Runtime.chrome:
-      case Runtime.experimentalChromeWasm:
-        return Chrome(url, configuration, settings: settings);
-      case Runtime.firefox:
-        return Firefox(url, settings: settings);
-      case Runtime.safari:
-        return Safari(url, settings: settings);
-      case Runtime.internetExplorer:
-        return InternetExplorer(url, settings: settings);
-      default:
-        throw ArgumentError('$browser is not a browser.');
-    }
-  }
+          ExecutableSettings settings, Configuration configuration) =>
+      switch (browser.root) {
+        Runtime.chrome ||
+        Runtime.experimentalChromeWasm =>
+          Chrome(url, configuration, settings: settings),
+        Runtime.firefox => Firefox(url, settings: settings),
+        Runtime.safari => Safari(url, settings: settings),
+        Runtime.internetExplorer => InternetExplorer(url, settings: settings),
+        Runtime.edge => MicrosoftEdge(url, configuration, settings: settings),
+        _ => throw ArgumentError('$browser is not a browser.'),
+      };
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].

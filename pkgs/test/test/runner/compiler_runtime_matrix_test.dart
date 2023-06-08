@@ -6,7 +6,7 @@
 import 'dart:io';
 
 import 'package:test/test.dart';
-import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
@@ -160,8 +160,9 @@ final _testWithStdOutAndErr = '''
 import 'dart:io';
 import 'package:test/test.dart';
 
-void main() {
+void main() async {
   stdout.writeln('hello');
+  await stdout.flush();
   stderr.writeln('world');
   test('success', () {});
 }''';

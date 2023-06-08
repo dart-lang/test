@@ -1,4 +1,30 @@
-## 1.24.0-dev
+## 1.24.4-wip
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some annotation classes `final`: `OnPlatform`, `Retry`, `Skip`, `Tags`,
+  `TestOn`, `Timeout`.
+
+## 1.24.3
+
+* Fix compatibility with wasm number semantics.
+
+## 1.24.2
+
+* Copy an existing nonce from a script on the test HTML page to the script
+  created by the test runner host javascript. This only impacts environments
+  testing with custom HTML that includes a nonce.
+* Support the Microsoft Edge browser (use the `edge` platform in your the test
+  configuration file or `-p edge` on the command line).
+
+## 1.24.1
+
+* Handle a missing `'compiler'` value when running a test compiled against a
+  newer `test_api` than the runner back end is using. The expectation was that
+  the json protocol is only used across packages compatible with the same major
+  version of the `test_api` package, but `flutter test` does not check the
+  version of packages in the pub solve for user test code.
+
+## 1.24.0
 
 * Support the `--compiler` flag, which can be used to configure which compiler
   to use.

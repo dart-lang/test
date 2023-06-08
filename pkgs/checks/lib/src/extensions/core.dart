@@ -2,20 +2,28 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
+
 import 'package:checks/context.dart';
+import 'package:meta/meta.dart' as meta;
 
 extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
+  @meta.useResult
   Subject<R> has<R>(R Function(T) extract, String name) {
-    return context.nest(() => ['has $name'], (T value) {
+    return context.nest(() => ['has $name'], (value) {
       try {
         return Extracted.value(extract(value));
-      } catch (_) {
+      } catch (e, st) {
         return Extracted.rejection(
-            which: () => ['threw while trying to read property']);
+            which: () => [
+                  ...prefixFirst(
+                      'threw while trying to read $name: ', literal(e)),
+                  ...(const LineSplitter()).convert(st.toString())
+                ]);
       }
     });
   }
@@ -128,6 +136,50 @@ extension NullableChecks<T> on Subject<T?> {
     context.expect(() => const ['is null'], (actual) {
       if (actual != null) return Rejection();
       return null;
+    });
+  }
+}
+
+extension ComparableChecks<T> on Subject<Comparable<T>> {
+  /// Expects that this value is greater than [other].
+  void isGreaterThan(T other) {
+    context.expect(() => prefixFirst('is greater than ', literal(other)),
+        (actual) {
+      if (actual.compareTo(other) > 0) return null;
+      return Rejection(
+          which: prefixFirst('is not greater than ', literal(other)));
+    });
+  }
+
+  /// Expects that this value is greater than or equal to [other].
+  void isGreaterOrEqual(T other) {
+    context.expect(
+        () => prefixFirst('is greater than or equal to ', literal(other)),
+        (actual) {
+      if (actual.compareTo(other) >= 0) return null;
+      return Rejection(
+          which:
+              prefixFirst('is not greater than or equal to ', literal(other)));
+    });
+  }
+
+  /// Expects that this value is less than [other].
+  void isLessThan(T other) {
+    context.expect(() => prefixFirst('is less than ', literal(other)),
+        (actual) {
+      if (actual.compareTo(other) < 0) return null;
+      return Rejection(which: prefixFirst('is not less than ', literal(other)));
+    });
+  }
+
+  /// Expects that this value is less than or equal to [other].
+  void isLessOrEqual(T other) {
+    context
+        .expect(() => prefixFirst('is less than or equal to ', literal(other)),
+            (actual) {
+      if (actual.compareTo(other) <= 0) return null;
+      return Rejection(
+          which: prefixFirst('is not less than or equal to ', literal(other)));
     });
   }
 }

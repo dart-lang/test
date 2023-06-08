@@ -13,7 +13,7 @@ import 'src/backend/stack_trace_formatter.dart';
 export 'src/backend/test_failure.dart' show TestFailure;
 export 'src/scaffolding/utils.dart' show pumpEventQueue;
 
-class TestHandle {
+final class TestHandle {
   /// Returns handle for the currently running test.
   ///
   /// This must be called from within the zone that the test is running in. If
@@ -65,7 +65,7 @@ class TestHandle {
       _stackTraceFormatter.formatStackTrace(stackTrace);
 }
 
-class OutstandingWork {
+final class OutstandingWork {
   final Invoker _invoker;
   final Zone _zone;
   var _isComplete = false;
@@ -79,4 +79,4 @@ class OutstandingWork {
   }
 }
 
-class OutsideTestException implements Exception {}
+final class OutsideTestException implements Exception {}

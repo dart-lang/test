@@ -49,22 +49,14 @@ class OperatingSystem {
   /// `Platform.operatingSystem`.
   ///
   /// If no operating system is found, returns [none].
-  static OperatingSystem findByIoName(String name) {
-    switch (name) {
-      case 'windows':
-        return windows;
-      case 'macos':
-        return macOS;
-      case 'linux':
-        return linux;
-      case 'android':
-        return android;
-      case 'ios':
-        return iOS;
-      default:
-        return none;
-    }
-  }
+  static OperatingSystem findByIoName(String name) => switch (name) {
+        'windows' => windows,
+        'macos' => macOS,
+        'linux' => linux,
+        'android' => android,
+        'ios' => iOS,
+        _ => none,
+      };
 
   /// The human-friendly of the operating system.
   final String name;

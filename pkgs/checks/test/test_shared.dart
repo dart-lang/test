@@ -65,7 +65,7 @@ extension RejectionChecks<T> on Subject<T> {
                 ['was accepted by the condition checking:', ...description]);
       }
       return Extracted.value(failure.rejection);
-    }, _LazyCondition((rejection) {
+    }, LazyCondition((rejection) {
       if (didRunCallback) {
         rejection
             .has((r) => r.actual, 'actual')
@@ -108,9 +108,9 @@ extension ConditionChecks<T> on Subject<Condition<T>> {
 ///
 /// Allows basing the following condition in `isRejectedByAsync` on the actual
 /// value.
-class _LazyCondition<T> implements Condition<T> {
+class LazyCondition<T> implements Condition<T> {
   final FutureOr<void> Function(Subject<T>) _apply;
-  _LazyCondition(this._apply);
+  LazyCondition(this._apply);
 
   @override
   void apply(Subject<T> subject) {

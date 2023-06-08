@@ -5,7 +5,7 @@
 import 'compiler.dart';
 
 /// An enum of all Dart runtimes supported by the test runner.
-class Runtime {
+final class Runtime {
   // When adding new runtimes, be sure to update the baseline and derived
   // variable tests in test/backend/platform_selector/evaluate_test.
 
@@ -34,6 +34,11 @@ class Runtime {
       'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
       isBrowser: true, isJS: true);
 
+  /// Microsoft Edge (based on Chromium).
+  static const Runtime edge = Runtime(
+      'Microsoft Edge', 'edge', Compiler.dart2js, [Compiler.dart2js],
+      isBrowser: true, isJS: true, isBlink: true);
+
   /// The command-line Node.js VM.
   static const Runtime nodeJS = Runtime(
       'Node.js', 'node', Compiler.dart2js, [Compiler.dart2js],
@@ -56,6 +61,7 @@ class Runtime {
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer,
+    Runtime.edge,
     Runtime.nodeJS,
     Runtime.experimentalChromeWasm,
   ];

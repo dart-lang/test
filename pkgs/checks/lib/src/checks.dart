@@ -22,7 +22,13 @@ import 'extensions/iterable.dart';
 /// the generic [T].
 /// Expectation extension methods can use the [ContextExtension] to interact
 /// with the [Context] for this subject.
-class Subject<T> {
+///
+/// Create a subject that throws an exception for missed expectations with the
+/// [check] function.
+///
+/// Create a subject which records expectations and can be replayed as a
+/// [Condition] with the [it] function.
+final class Subject<T> {
   final Context<T> _context;
   Subject._(this._context);
 }
@@ -96,7 +102,7 @@ CheckFailure? softCheck<T>(T value, Condition<T> condition) {
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
-      failure = f;
+      failure ??= f;
     },
     allowAsync: false,
     allowUnawaited: false,
@@ -119,7 +125,7 @@ Future<CheckFailure?> softCheckAsync<T>(T value, Condition<T> condition) async {
   final subject = Subject<T>._(_TestContext._root(
     value: _Present(value),
     fail: (f) {
-      failure = f;
+      failure ??= f;
     },
     allowAsync: true,
     allowUnawaited: false,
@@ -178,9 +184,7 @@ Future<Iterable<String>> describeAsync<T>(Condition<T> condition) async {
 
 /// A set of expectations that are checked against the value when applied to a
 /// [Subject].
-///
-/// This class should not be implemented or extended.
-abstract class Condition<T> {
+abstract interface class Condition<T> {
   /// Check the expectations of this condition against [subject].
   ///
   /// The [subject] should throw if any asynchronous expectations are checked.
@@ -398,9 +402,7 @@ extension ContextExtension<T> on Subject<T> {
 /// Utilities such as [prefixFirst], [postfixLast], and [literal] may be useful
 /// to format values which are potentially multiline.
 /// {@endtemplate}
-///
-/// This class should not be implemented or extended.
-abstract class Context<T> {
+abstract final class Context<T> {
   /// Expect that [predicate] will not return a [Rejection] for the checked
   /// value.
   ///
@@ -561,7 +563,7 @@ abstract class Context<T> {
 Iterable<String> _empty() => const [];
 
 /// A property extracted from a value being checked, or a rejection.
-class Extracted<T> {
+final class Extracted<T> {
   final Rejection? _rejection;
   final T? _value;
 
@@ -592,7 +594,7 @@ class Extracted<T> {
               actual: () => literal(actual), which: _rejection!.which);
 }
 
-abstract class _Optional<T> {
+abstract interface class _Optional<T> {
   R? apply<R extends FutureOr<Rejection?>>(R Function(T) callback);
   Future<Extracted<_Optional<R>>> mapAsync<R>(
       FutureOr<Extracted<R>> Function(T) transform);
@@ -632,7 +634,7 @@ class _Absent<T> implements _Optional<T> {
       Extracted.value(_Absent<R>());
 }
 
-class _TestContext<T> implements Context<T>, _ClauseDescription {
+final class _TestContext<T> implements Context<T>, _ClauseDescription {
   final _Optional<T> _value;
 
   /// A reference to find the root context which this context is nested under.
@@ -731,11 +733,14 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     _clauses.add(_ExpectationClause(clause));
     final outstandingWork = TestHandle.current.markPending();
-    final rejection = await _value.apply(
-        (actual) async => (await predicate(actual))?._fillActual(actual));
-    outstandingWork.complete();
-    if (rejection == null) return;
-    _fail(_failure(rejection));
+    try {
+      final rejection = await _value.apply(
+          (actual) async => (await predicate(actual))?._fillActual(actual));
+      if (rejection == null) return;
+      _fail(_failure(rejection));
+    } finally {
+      outstandingWork.complete();
+    }
   }
 
   @override
@@ -783,18 +788,21 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
           'Async expectations cannot be used on a synchronous subject');
     }
     final outstandingWork = TestHandle.current.markPending();
-    final result = await _value.mapAsync(
-        (actual) async => (await extract(actual))._fillActual(actual));
-    outstandingWork.complete();
-    final rejection = result._rejection;
-    if (rejection != null) {
-      _clauses.add(_ExpectationClause(label));
-      _fail(_failure(rejection));
+    try {
+      final result = await _value.mapAsync(
+          (actual) async => (await extract(actual))._fillActual(actual));
+      final rejection = result._rejection;
+      if (rejection != null) {
+        _clauses.add(_ExpectationClause(label));
+        _fail(_failure(rejection));
+      }
+      final value = result._value ?? _Absent<R>();
+      final context = _TestContext<R>._child(value, label, this);
+      _clauses.add(context);
+      await nestedCondition?.applyAsync(Subject<R>._(context));
+    } finally {
+      outstandingWork.complete();
     }
-    final value = result._value ?? _Absent<R>();
-    final context = _TestContext<R>._child(value, label, this);
-    _clauses.add(context);
-    await nestedCondition?.applyAsync(Subject<R>._(context));
   }
 
   CheckFailure _failure(Rejection rejection) =>
@@ -840,7 +848,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
 }
 
 /// A context which never runs expectations and can never fail.
-class _SkippedContext<T> implements Context<T> {
+final class _SkippedContext<T> implements Context<T> {
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
@@ -875,7 +883,7 @@ class _SkippedContext<T> implements Context<T> {
   }
 }
 
-abstract class _ClauseDescription {
+abstract interface class _ClauseDescription {
   FailureDetail detail(_TestContext failingContext);
 }
 
@@ -888,7 +896,7 @@ class _ExpectationClause implements _ClauseDescription {
 }
 
 /// The result an expectation that failed for a subject..
-class CheckFailure {
+final class CheckFailure {
   /// The specific rejected value within the overall subject that caused the
   /// failure.
   ///
@@ -912,7 +920,7 @@ class CheckFailure {
 /// of the subject. For example, in `check([]).length.equals(1)` the
 /// specific value that gets rejected is `0` from the length of the list, and
 /// the subject that sees the rejection is nested with the label "has length".
-class FailureDetail {
+final class FailureDetail {
   /// A description of all the conditions the subject was expected to satisfy.
   ///
   /// Each subject has a label. At the root the label is typically "a <Type>"
@@ -974,7 +982,7 @@ class FailureDetail {
 }
 
 /// A description of a value that failed an expectation.
-class Rejection {
+final class Rejection {
   /// A description of the actual value as it relates to the expectation.
   ///
   /// This may use [literal] to show a String representation of the value, or it
@@ -1016,7 +1024,7 @@ class Rejection {
 }
 
 /// A [Subject] which records expectations and can replay them as a [Condition].
-class ConditionSubject<T> implements Subject<T>, Condition<T> {
+final class ConditionSubject<T> implements Subject<T>, Condition<T> {
   ConditionSubject._();
 
   @override
@@ -1038,7 +1046,7 @@ class ConditionSubject<T> implements Subject<T>, Condition<T> {
   }
 }
 
-class _ReplayContext<T> implements Context<T>, Condition<T> {
+final class _ReplayContext<T> implements Context<T>, Condition<T> {
   final _interactions = <FutureOr<void> Function(Context<T>)>[];
 
   @override

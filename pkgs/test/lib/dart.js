@@ -65,7 +65,14 @@ script.onerror = function(event) {
   var message = "Failed to load script at " + script.src +
       (event.message ? ": " + event.message : ".");
   sendLoadException(message);
-}
+};
+
+Array.from(document.querySelectorAll('script')).some(currentScript => {
+  if (currentScript.nonce) {
+    script.nonce = currentScript.nonce;
+    return true;
+  }
+});
 
 var parent = link.parentNode;
 document.currentScript = script;

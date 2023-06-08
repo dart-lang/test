@@ -5,39 +5,6 @@
 import 'package:checks/context.dart';
 
 extension NumChecks on Subject<num> {
-  /// Expects that this number is greater than [other].
-  void isGreaterThan(num other) {
-    context.expect(() => ['is greater than <$other>'], (actual) {
-      if (actual > other) return null;
-      return Rejection(which: () => ['is not greater than <$other>']);
-    });
-  }
-
-  /// Expects that this number is greater than or equal to [other].
-  void isGreaterOrEqual(num other) {
-    context.expect(() => ['is greater than or equal to <$other>'], (actual) {
-      if (actual >= other) return null;
-      return Rejection(
-          which: () => ['is not greater than or equal to <$other>']);
-    });
-  }
-
-  /// Expects that this number is less than [other].
-  void isLessThan(num other) {
-    context.expect(() => ['is less than <$other>'], (actual) {
-      if (actual < other) return null;
-      return Rejection(which: () => ['is not less than <$other>']);
-    });
-  }
-
-  /// Expects that this number is less than or equal to [other].
-  void isLessOrEqual(num other) {
-    context.expect(() => ['is less than or equal to <$other>'], (actual) {
-      if (actual <= other) return null;
-      return Rejection(which: () => ['is not less than or equal to <$other>']);
-    });
-  }
-
   /// Expects that [num.isNaN] is true.
   void isNaN() {
     context.expect(() => ['is not a number (NaN)'], (actual) {

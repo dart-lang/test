@@ -1,4 +1,23 @@
-## 0.5.0-dev
+## 0.5.4-wip
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Add `final` modifier on some implementation classes: `Configuration`,
+  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`. 
+
+## 0.5.3
+
+* Fix compatibility with wasm number semantics.
+
+## 0.5.2
+
+* Use the version `0.5.2` of `packge:test_api`.
+
+## 0.5.1
+
+* Start adding experimental support for native_assets.yaml, when
+  `--enable-experiment=native_assets` is passed.
+
+## 0.5.0
 
 * Support the `--compiler` flag, which can be used to configure which compiler
   to use.
@@ -27,6 +46,7 @@
   not statically breaking but it will be confusing for users if it isn't
   supported.
 * **BREAKING** Remove `useDataIsolateStrategy` field from `Configuration`.
+* **BREAKING** Stop exporting APIs from `package:matcher/expect.dart`.
 
 ## 0.4.24
 
