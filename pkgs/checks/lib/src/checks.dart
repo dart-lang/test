@@ -74,12 +74,12 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(_TestContext._root(
       // TODO - switch between "a" and "an"
       label: 'a $T',
       fail: (f) {
-        final which = f.rejection.which;
+        final which = f.rejection.which?.call();
         throw TestFailure([
           ...prefixFirst('Expected: ', f.detail.expected),
           ...prefixFirst('Actual: ', f.detail.actual),
           ...indent(
-              prefixFirst('Actual: ', f.rejection.actual), f.detail.depth),
+              prefixFirst('Actual: ', f.rejection.actual()), f.detail.depth),
           if (which != null && which.isNotEmpty)
             ...indent(prefixFirst('Which: ', which), f.detail.depth),
           if (because != null) 'Reason: $because',
@@ -560,6 +560,8 @@ abstract final class Context<T> {
       Condition<R>? nestedCondition);
 }
 
+Iterable<String> _empty() => const [];
+
 /// A property extracted from a value being checked, or a rejection.
 final class Extracted<T> {
   final Rejection? _rejection;
@@ -571,7 +573,8 @@ final class Extracted<T> {
   /// When a nesting is rejected with an omitted or empty [actual] argument, it
   /// will be filled in with the [literal] representation of the value.
   Extracted.rejection(
-      {Iterable<String> actual = const [], Iterable<String>? which})
+      {Iterable<String> Function() actual = _empty,
+      Iterable<String> Function()? which})
       : _rejection = Rejection(actual: actual, which: which),
         _value = null;
   Extracted.value(T this._value) : _rejection = null;
@@ -584,10 +587,11 @@ final class Extracted<T> {
     return Extracted.value(transform(_value as T));
   }
 
-  Extracted<T> _fillActual(Object? actual) => _rejection == null ||
-          _rejection!.actual.isNotEmpty
-      ? this
-      : Extracted.rejection(actual: literal(actual), which: _rejection!.which);
+  Extracted<T> _fillActual(Object? actual) =>
+      _rejection == null || _rejection!.actual != _empty
+          ? this
+          : Extracted.rejection(
+              actual: () => literal(actual), which: _rejection!.which);
 }
 
 abstract interface class _Optional<T> {
@@ -996,7 +1000,7 @@ final class Rejection {
   /// message. All lines in the message will be indented to the level of the
   /// expectation in the description, and printed following the descriptions of
   /// any expectations that have already passed.
-  final Iterable<String> actual;
+  final Iterable<String> Function() actual;
 
   /// A description of the way that [actual] failed to meet the expectation.
   ///
@@ -1010,13 +1014,13 @@ final class Rejection {
   ///
   /// When provided, this is printed following a "Which: " label at the end of
   /// the output for the failure message.
-  final Iterable<String>? which;
+  final Iterable<String> Function()? which;
 
-  Rejection _fillActual(Object? value) => actual.isNotEmpty
+  Rejection _fillActual(Object? value) => actual != _empty
       ? this
-      : Rejection(actual: literal(value), which: which);
+      : Rejection(actual: () => literal(value), which: which);
 
-  Rejection({this.actual = const [], this.which});
+  Rejection({this.actual = _empty, this.which});
 }
 
 /// A [Subject] which records expectations and can replay them as a [Condition].

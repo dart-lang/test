@@ -21,14 +21,16 @@ extension FunctionChecks<T> on Subject<T Function()> {
       try {
         final result = actual();
         return Extracted.rejection(
-          actual: prefixFirst('a function that returned ', literal(result)),
-          which: ['did not throw'],
+          actual: () =>
+              prefixFirst('a function that returned ', literal(result)),
+          which: () => ['did not throw'],
         );
       } catch (e) {
         if (e is E) return Extracted.value(e as E);
         return Extracted.rejection(
-            actual: prefixFirst('a function that threw error ', literal(e)),
-            which: ['did not throw an $E']);
+            actual: () =>
+                prefixFirst('a function that threw error ', literal(e)),
+            which: () => ['did not throw an $E']);
       }
     });
   }
@@ -44,12 +46,12 @@ extension FunctionChecks<T> on Subject<T Function()> {
       try {
         return Extracted.value(actual());
       } catch (e, st) {
-        return Extracted.rejection(actual: [
-          'a function that throws'
-        ], which: [
-          ...prefixFirst('threw ', literal(e)),
-          ...st.toString().split('\n')
-        ]);
+        return Extracted.rejection(
+            actual: () => ['a function that throws'],
+            which: () => [
+                  ...prefixFirst('threw ', literal(e)),
+                  ...st.toString().split('\n')
+                ]);
       }
     });
   }

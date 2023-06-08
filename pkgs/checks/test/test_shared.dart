@@ -18,16 +18,18 @@ extension RejectionChecks<T> on Subject<T> {
       didRunCallback = true;
       final failure = softCheck(value, condition);
       if (failure == null) {
-        return Extracted.rejection(which: [
-          'was accepted by the condition checking:',
-          ...describe(condition)
-        ]);
+        return Extracted.rejection(
+            which: () => [
+                  'was accepted by the condition checking:',
+                  ...describe(condition)
+                ]);
       }
       return Extracted.value(failure.rejection);
     });
     if (didRunCallback) {
       rejection
           .has((r) => r.actual, 'actual')
+          .returnsNormally()
           .deepEquals(actual ?? literal(actualValue));
     } else {
       rejection
@@ -38,7 +40,11 @@ extension RejectionChecks<T> on Subject<T> {
     if (which == null) {
       rejection.has((r) => r.which, 'which').isNull();
     } else {
-      rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
+      rejection
+          .has((r) => r.which, 'which')
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals(which);
     }
   }
 
@@ -53,27 +59,33 @@ extension RejectionChecks<T> on Subject<T> {
       didRunCallback = true;
       final failure = await softCheckAsync(value, condition);
       if (failure == null) {
-        return Extracted.rejection(which: [
-          'was accepted by the condition checking:',
-          ...await describeAsync(condition)
-        ]);
+        final description = await describeAsync(condition);
+        return Extracted.rejection(
+            which: () =>
+                ['was accepted by the condition checking:', ...description]);
       }
       return Extracted.value(failure.rejection);
     }, LazyCondition((rejection) {
       if (didRunCallback) {
         rejection
             .has((r) => r.actual, 'actual')
+            .returnsNormally()
             .deepEquals(actual ?? literal(actualValue));
       } else {
         rejection
             .has((r) => r.actual, 'actual')
+            .returnsNormally()
             .context
             .expect(() => ['is left default'], (_) => null);
       }
       if (which == null) {
         rejection.has((r) => r.which, 'which').isNull();
       } else {
-        rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
+        rejection
+            .has((r) => r.which, 'which')
+            .isNotNull()
+            .returnsNormally()
+            .deepEquals(which);
       }
     }));
   }

@@ -112,7 +112,7 @@ void main() {
         check(null).context.expectUnawaited(() => [''], (actual, reject) {
           final completer = Completer<void>()
             ..future.then((_) {
-              reject(Rejection(which: ['foo']));
+              reject(Rejection(which: () => ['foo']));
             });
           callback = completer.complete;
         });
@@ -165,11 +165,13 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
     onError.context.expectUnawaited(() => ['emits no further errors'],
         (actual, reject) async {
       await for (var error in actual.rest) {
-        reject(Rejection(which: [
-          ...prefixFirst('threw late error', literal(error.error)),
-          ...(const LineSplitter().convert(
-              TestHandle.current.formatStackTrace(error.stackTrace).toString()))
-        ]));
+        reject(Rejection(
+            which: () => [
+                  ...prefixFirst('threw late error', literal(error.error)),
+                  ...(const LineSplitter().convert(TestHandle.current
+                      .formatStackTrace(error.stackTrace)
+                      .toString()))
+                ]));
       }
     });
   }
