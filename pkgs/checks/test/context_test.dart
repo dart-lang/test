@@ -105,8 +105,9 @@ void main() {
       await monitor.onDone;
       check(monitor)
         ..hasState(State.failed)
-        ..hasErrorsThat(it()..hasSingleWhich(
-            it()..has((e) => e.error, 'error').which(it()..equals('oh no!'))));
+        ..hasErrorsThat(it()
+          ..hasSingleWhich(it()
+            ..has((e) => e.error, 'error').which(it()..equals('oh no!'))));
     });
 
     test('expectUnawaited can fail the test after it completes', () async {
@@ -125,20 +126,21 @@ void main() {
       await pumpEventQueue();
       check(monitor)
         ..hasState(State.failed)
-        ..hasErrorsThat(it()..unorderedMatches([
-          it()
-            ..isA<AsyncError>(it()
-              ..has((e) => e.error, 'error').which(it()
-                ..isA<TestFailure>(it()
-                  ..has((f) => f.message, 'message')
-                      .which(it()..isNotNull(it()..endsWith('Which: foo')))))),
-          it()
-            ..isA<AsyncError>(it()
-              ..has((e) => e.error, 'error').which(it()
-                ..isA<String>(it()
-                  ..startsWith(
-                      'This test failed after it had already completed.'))))
-        ]));
+        ..hasErrorsThat(it()
+          ..unorderedMatches([
+            it()
+              ..isA<AsyncError>(it()
+                ..has((e) => e.error, 'error').which(it()
+                  ..isA<TestFailure>(it()
+                    ..has((f) => f.message, 'message').which(
+                        it()..isNotNull(it()..endsWith('Which: foo')))))),
+            it()
+              ..isA<AsyncError>(it()
+                ..has((e) => e.error, 'error').which(it()
+                  ..isA<String>(it()
+                    ..startsWith(
+                        'This test failed after it had already completed.'))))
+          ]));
     });
   });
 

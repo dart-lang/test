@@ -50,8 +50,7 @@ void main() {
       check([0, 1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
     });
     test('can use Condition<dynamic>', () {
-      check([0, 1])
-          .containsInOrder([it()..isA<int>(it()..isGreaterThan(0))]);
+      check([0, 1]).containsInOrder([it()..isA<int>(it()..isGreaterThan(0))]);
     });
     test('can use Condition<T>', () {
       check([0, 1]).containsInOrder([it<int>()..isGreaterThan(0)]);
