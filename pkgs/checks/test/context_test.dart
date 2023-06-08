@@ -137,14 +137,14 @@ void main() {
     });
   });
 
-  // group('SkipExtension', () {
-  //   test('marks the test as skipped', () async {
-  //     final monitor = await TestCaseMonitor.run(() {
-  //       check(null).skip('skip').isNotNull();
-  //     });
-  //     check(monitor).state.equals(State.skipped);
-  //   });
-  // });
+  group('SkipExtension', () {
+    test('marks the test as skipped', () async {
+      final monitor = await TestCaseMonitor.run(() {
+        check(null).skip('skip').isNotNull();
+      });
+      check(monitor).state.equals(State.skipped);
+    });
+  });
 }
 
 extension _MonitorChecks on Subject<TestCaseMonitor> {
