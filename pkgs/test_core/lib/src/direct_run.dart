@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/declarer.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; //ignore: implementation_imports

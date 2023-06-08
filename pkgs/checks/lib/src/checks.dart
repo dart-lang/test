@@ -22,7 +22,13 @@ import 'extensions/iterable.dart';
 /// the generic [T].
 /// Expectation extension methods can use the [ContextExtension] to interact
 /// with the [Context] for this subject.
-class Subject<T> {
+///
+/// Create a subject that throws an exception for missed expectations with the
+/// [check] function.
+///
+/// Create a subject which records expectations and can be replayed as a
+/// [Condition] with the [it] function.
+final class Subject<T> {
   final Context<T> _context;
   Subject._(this._context);
 }
@@ -382,9 +388,7 @@ extension ContextExtension<T> on Subject<T> {
 /// Utilities such as [prefixFirst], [postfixLast], and [literal] may be useful
 /// to format values which are potentially multiline.
 /// {@endtemplate}
-///
-/// This class should not be implemented or extended.
-abstract class Context<T> {
+abstract final class Context<T> {
   /// Expect that [predicate] will not return a [Rejection] for the checked
   /// value.
   ///
@@ -543,7 +547,7 @@ abstract class Context<T> {
 }
 
 /// A property extracted from a value being checked, or a rejection.
-class Extracted<T> {
+final class Extracted<T> {
   final Rejection? _rejection;
   final T? _value;
 
@@ -572,7 +576,7 @@ class Extracted<T> {
       : Extracted.rejection(actual: literal(actual), which: _rejection!.which);
 }
 
-abstract class _Optional<T> {
+abstract interface class _Optional<T> {
   R? apply<R extends FutureOr<Rejection?>>(R Function(T) callback);
   Future<Extracted<_Optional<R>>> mapAsync<R>(
       FutureOr<Extracted<R>> Function(T) transform);
@@ -612,7 +616,7 @@ class _Absent<T> implements _Optional<T> {
       Extracted.value(_Absent<R>());
 }
 
-class _TestContext<T> implements Context<T>, _ClauseDescription {
+final class _TestContext<T> implements Context<T>, _ClauseDescription {
   final _Optional<T> _value;
 
   /// A reference to find the root context which this context is nested under.
@@ -826,7 +830,7 @@ class _TestContext<T> implements Context<T>, _ClauseDescription {
 }
 
 /// A context which never runs expectations and can never fail.
-class _SkippedContext<T> implements Context<T> {
+final class _SkippedContext<T> implements Context<T> {
   @override
   void expect(
       Iterable<String> Function() clause, Rejection? Function(T) predicate) {
@@ -861,7 +865,7 @@ class _SkippedContext<T> implements Context<T> {
   }
 }
 
-abstract class _ClauseDescription {
+abstract interface class _ClauseDescription {
   FailureDetail detail(_TestContext failingContext);
 }
 
@@ -874,7 +878,7 @@ class _ExpectationClause implements _ClauseDescription {
 }
 
 /// The result an expectation that failed for a subject..
-class CheckFailure {
+final class CheckFailure {
   /// The specific rejected value within the overall subject that caused the
   /// failure.
   ///
@@ -898,7 +902,7 @@ class CheckFailure {
 /// of the subject. For example, in `check([]).length.equals(1)` the
 /// specific value that gets rejected is `0` from the length of the list, and
 /// the subject that sees the rejection is nested with the label "has length".
-class FailureDetail {
+final class FailureDetail {
   /// A description of all the conditions the subject was expected to satisfy.
   ///
   /// Each subject has a label. At the root the label is typically "a <Type>"
@@ -960,7 +964,7 @@ class FailureDetail {
 }
 
 /// A description of a value that failed an expectation.
-class Rejection {
+final class Rejection {
   /// A description of the actual value as it relates to the expectation.
   ///
   /// This may use [literal] to show a String representation of the value, or it

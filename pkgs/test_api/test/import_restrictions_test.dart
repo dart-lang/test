@@ -38,39 +38,6 @@ void main() {
       }
     });
   });
-
-  group('expect', () {
-    test('must not be imported from any other library', () async {
-      final entryPoints = [
-        _testApiLibrary('hooks.dart'),
-        _testApiLibrary('scaffolding.dart'),
-        _testApiLibrary('fake.dart')
-      ];
-      await for (final source
-          in importCheck.transitiveSamePackageSources(entryPoints)) {
-        for (final import in source.imports) {
-          expect(import.path, isNot(contains('test_api.dart')),
-              reason: 'Invalid import from ${source.uri} : $import.');
-          expect(import.path, isNot(contains('expect')),
-              reason: 'Invalid import from ${source.uri} : $import.');
-        }
-      }
-    });
-
-    test('may only import hooks', () async {
-      final entryPoint = _testApiLibrary('expect.dart');
-      await for (final source
-          in importCheck.transitiveSamePackageSources([entryPoint])) {
-        // Transitive imports through `hooks.dart` don't follow this restriction
-        if (!source.uri.path.contains('expect')) continue;
-        for (final import in source.imports) {
-          expect(import.path,
-              anyOf(['test_api/hooks.dart', startsWith('test_api/src/expect')]),
-              reason: 'Invalid import from ${source.uri} : $import');
-        }
-      }
-    });
-  });
 }
 
 Uri _testApiLibrary(String path) => Uri.parse('package:test_api/$path');

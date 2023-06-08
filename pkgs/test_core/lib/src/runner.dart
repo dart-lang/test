@@ -8,7 +8,6 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:stack_trace/stack_trace.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports

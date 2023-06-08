@@ -9,60 +9,6 @@ import '../test_shared.dart';
 
 void main() {
   group('num checks', () {
-    group('greater than', () {
-      test('succeeds for happy case', () {
-        check(42).isGreaterThan(7);
-      });
-      test('fails for less than', () {
-        check(42).isRejectedBy((it) => it.isGreaterThan(50),
-            which: ['is not greater than <50>']);
-      });
-      test('fails for equal', () {
-        check(42).isRejectedBy((it) => it.isGreaterThan(42),
-            which: ['is not greater than <42>']);
-      });
-    });
-
-    group('greater than or equal', () {
-      test('succeeds for happy case', () {
-        check(42).isGreaterOrEqual(7);
-      });
-      test('fails for less than', () {
-        check(42).isRejectedBy((it) => it.isGreaterOrEqual(50),
-            which: ['is not greater than or equal to <50>']);
-      });
-      test('succeeds for equal', () {
-        check(42).isGreaterOrEqual(42);
-      });
-    });
-
-    group('less than', () {
-      test('succeeds for happy case', () {
-        check(42).isLessThan(50);
-      });
-      test('fails for greater than', () {
-        check(42).isRejectedBy((it) => it.isLessThan(7),
-            which: ['is not less than <7>']);
-      });
-      test('fails for equal', () {
-        check(42).isRejectedBy((it) => it.isLessThan(42),
-            which: ['is not less than <42>']);
-      });
-    });
-
-    group('less than or equal', () {
-      test('succeeds for happy case', () {
-        check(42).isLessOrEqual(50);
-      });
-      test('fails for greater than', () {
-        check(42).isRejectedBy((it) => it.isLessOrEqual(7),
-            which: ['is not less than or equal to <7>']);
-      });
-      test('succeeds for equal', () {
-        check(42).isLessOrEqual(42);
-      });
-    });
-
     group('isNaN', () {
       test('succeeds for happy case', () {
         check(double.nan).isNaN();

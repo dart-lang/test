@@ -57,7 +57,7 @@ void main() {
   test('isNotEmpty', () {
     check(_testIterable).isNotEmpty();
     check(Iterable<int>.empty())
-        .isRejectedBy((it) => it.isNotEmpty(), which: ['is not empty']);
+        .isRejectedBy((it) => it.isNotEmpty(), which: ['is empty']);
   });
 
   test('contains', () {

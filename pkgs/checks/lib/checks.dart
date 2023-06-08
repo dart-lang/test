@@ -5,7 +5,8 @@
 export 'src/checks.dart' show SkipExtension, Subject, check;
 export 'src/extensions/async.dart'
     show FutureChecks, StreamChecks, WithQueueExtension;
-export 'src/extensions/core.dart' show BoolChecks, CoreChecks, NullableChecks;
+export 'src/extensions/core.dart'
+    show BoolChecks, ComparableChecks, CoreChecks, NullableChecks;
 export 'src/extensions/function.dart' show FunctionChecks;
 export 'src/extensions/iterable.dart' show IterableChecks;
 export 'src/extensions/map.dart' show MapChecks;

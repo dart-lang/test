@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A class for mapping JS stack traces to Dart stack traces using source maps.
-abstract class StackTraceMapper {
+abstract interface class StackTraceMapper {
   /// Converts [trace] into a Dart stack trace.
   StackTrace mapStackTrace(StackTrace trace);
 

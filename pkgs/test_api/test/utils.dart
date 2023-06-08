@@ -6,14 +6,10 @@ import 'dart:collection';
 
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
-import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
-import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/live_test.dart';
-import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/plugin/environment.dart';
@@ -77,33 +73,11 @@ void expectSingleError(LiveTest liveTest) {
   ]);
 }
 
-/// Returns a matcher that matches a callback or Future that throws a
-/// [TestFailure] with the given [message].
-///
-/// [message] can be a string or a [Matcher].
-Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
-
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
 Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
-
-/// Returns a local [LiveTest] that runs [body].
-LiveTest createTest(dynamic Function() body) {
-  var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
-  return test.load(suite);
-}
-
-/// Runs [body] as a test.
-///
-/// Once it completes, returns the [LiveTest] used to run it.
-Future<LiveTest> runTestBody(dynamic Function() body) async {
-  var liveTest = createTest(body);
-  await liveTest.run();
-  return liveTest;
-}
 
 /// Asserts that [liveTest] has completed and passed.
 ///
@@ -129,29 +103,6 @@ void expectTestFailed(LiveTest liveTest, message) {
   expect(liveTest.state.result, equals(Result.failure));
   expect(liveTest.errors, hasLength(1));
   expect(liveTest.errors.first.error, isTestFailure(message));
-}
-
-/// Assert that the [test] callback causes a test to block until [stopBlocking]
-/// is called at some later time.
-///
-/// [stopBlocking] is passed the return value of [test].
-Future expectTestBlocks(
-    dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
-  late LiveTest liveTest;
-  late Future future;
-  liveTest = createTest(() {
-    var value = test();
-    future = pumpEventQueue().then((_) {
-      expect(liveTest.state.status, equals(Status.running));
-      stopBlocking(value);
-    });
-  });
-
-  await liveTest.run();
-  expectTestPassed(liveTest);
-  // Ensure that the outer test doesn't complete until the inner future
-  // completes.
-  return future;
 }
 
 /// Runs [body] with a declarer, runs all the declared tests, and asserts that

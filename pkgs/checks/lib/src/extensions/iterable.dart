@@ -52,7 +52,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is not empty']);
+      return Rejection(which: ['is empty']);
     });
   }
 

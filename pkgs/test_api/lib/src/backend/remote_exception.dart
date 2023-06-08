@@ -12,7 +12,7 @@ import 'test_failure.dart';
 ///
 /// This could be an exception thrown in a different isolate, a different
 /// process, or on an entirely different computer.
-class RemoteException implements Exception {
+final class RemoteException implements Exception {
   /// The original exception's message, if it had one.
   ///
   /// If the original exception was a plain string, this will contain that
@@ -67,12 +67,10 @@ class RemoteException implements Exception {
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;
 
-    switch (serialized['supertype'] as String?) {
-      case 'TestFailure':
-        return _RemoteTestFailure(message, type, toString);
-      default:
-        return RemoteException._(message, type, toString);
-    }
+    return switch (serialized['supertype'] as String?) {
+      'TestFailure' => _RemoteTestFailure(message, type, toString),
+      _ => RemoteException._(message, type, toString),
+    };
   }
 
   RemoteException._(this.message, this.type, this._toString);
@@ -85,7 +83,7 @@ class RemoteException implements Exception {
 ///
 /// It's important to preserve [TestFailure]-ness, because tests have different
 /// results depending on whether an exception was a failure or an error.
-class _RemoteTestFailure extends RemoteException implements TestFailure {
+final class _RemoteTestFailure extends RemoteException implements TestFailure {
   _RemoteTestFailure(String? message, String type, String toString)
       : super._(message, type, toString);
 }

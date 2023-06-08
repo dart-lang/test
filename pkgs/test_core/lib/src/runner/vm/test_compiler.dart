@@ -10,9 +10,10 @@ import 'package:async/async.dart';
 import 'package:frontend_server_client/frontend_server_client.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
-import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 
 import '../../util/dart.dart';
+import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
 
@@ -158,13 +159,25 @@ class _TestCompilerForLanguageVersion {
     final platformDill = 'lib/_internal/vm_platform_strong.dill';
     final sdkRoot =
         p.relative(p.dirname(p.dirname(Platform.resolvedExecutable)));
+    final packageConfigUriAwaited = await packageConfigUri;
+
+    // If we have native assets for the host os in JIT mode, they are here.
+    Uri? nativeAssetsYaml;
+    if (enabledExperiments.contains('native-assets')) {
+      nativeAssetsYaml = packageConfigUriAwaited.resolve('native_assets.yaml');
+      if (!await File.fromUri(nativeAssetsYaml).exists()) {
+        nativeAssetsYaml = null;
+      }
+    }
+
     var client = _frontendServerClient = await FrontendServerClient.start(
       testUri.toString(),
       _outputDill.path,
       platformDill,
       enabledExperiments: enabledExperiments,
       sdkRoot: sdkRoot,
-      packagesJson: (await packageConfigUri).toFilePath(),
+      packagesJson: packageConfigUriAwaited.toFilePath(),
+      nativeAssets: nativeAssetsYaml?.toFilePath(),
       printIncrementalDependencies: false,
     );
     return client.compile();
@@ -182,7 +195,7 @@ class _TestCompilerForLanguageVersion {
         _frontendServerClient?.kill();
         _frontendServerClient = null;
         if (_outputDillDirectory.existsSync()) {
-          _outputDillDirectory.deleteSync(recursive: true);
+          await _outputDillDirectory.deleteWithRetry();
         }
       });
 }
