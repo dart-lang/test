@@ -147,7 +147,7 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
         (actual) {
       if (actual.compareTo(other) > 0) return null;
       return Rejection(
-          which: prefixFirst('is not greater than ', literal(other)));
+          which: () => prefixFirst('is not greater than ', literal(other)));
     });
   }
 
@@ -158,7 +158,7 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
         (actual) {
       if (actual.compareTo(other) >= 0) return null;
       return Rejection(
-          which:
+          which: () =>
               prefixFirst('is not greater than or equal to ', literal(other)));
     });
   }
@@ -168,7 +168,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     context.expect(() => prefixFirst('is less than ', literal(other)),
         (actual) {
       if (actual.compareTo(other) < 0) return null;
-      return Rejection(which: prefixFirst('is not less than ', literal(other)));
+      return Rejection(
+          which: () => prefixFirst('is not less than ', literal(other)));
     });
   }
 
@@ -179,7 +180,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
             (actual) {
       if (actual.compareTo(other) <= 0) return null;
       return Rejection(
-          which: prefixFirst('is not less than or equal to ', literal(other)));
+          which: () =>
+              prefixFirst('is not less than or equal to ', literal(other)));
     });
   }
 }

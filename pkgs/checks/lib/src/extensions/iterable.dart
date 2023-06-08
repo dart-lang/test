@@ -13,7 +13,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<T> get first => context.nest(() => ['has first element'], (actual) {
         final iterator = actual.iterator;
         if (!iterator.moveNext()) {
-          return Extracted.rejection(which: ['has no elements']);
+          return Extracted.rejection(which: () => ['has no elements']);
         }
         return Extracted.value(iterator.current);
       });
@@ -21,7 +21,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<T> get last => context.nest(() => ['has last element'], (actual) {
         final iterator = actual.iterator;
         if (!iterator.moveNext()) {
-          return Extracted.rejection(which: ['has no elements']);
+          return Extracted.rejection(which: () => ['has no elements']);
         }
         var current = iterator.current;
         while (iterator.moveNext()) {
@@ -33,11 +33,12 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<T> get single => context.nest(() => ['has single element'], (actual) {
         final iterator = actual.iterator;
         if (!iterator.moveNext()) {
-          return Extracted.rejection(which: ['has no elements']);
+          return Extracted.rejection(which: () => ['has no elements']);
         }
         final value = iterator.current;
         if (iterator.moveNext()) {
-          return Extracted.rejection(which: ['has more than one element']);
+          return Extracted.rejection(
+              which: () => ['has more than one element']);
         }
         return Extracted.value(value);
       });
