@@ -25,9 +25,6 @@ import 'extensions/iterable.dart';
 ///
 /// Create a subject that throws an exception for missed expectations with the
 /// [check] function.
-///
-/// Create a subject which records expectations and can be replayed as a
-/// [Condition] with the [it] function.
 final class Subject<T> {
   final Context<T> _context;
   Subject._(this._context);
@@ -365,22 +362,18 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// Some contexts disallow certain interactions.
 /// {@template async_limitations}
-/// Calls to [expectAsync] or [nestAsync] must not be performed by a [Condition]
-/// passed to [softCheck] or [describe].
+/// Calls to [expectAsync] or [nestAsync] must not be performed by a condition
+/// callback passed to [softCheck] or [describe].
 /// Use [softCheckAsync] or [describeAsync] for any condition which checks async
 /// expectations.
 /// {@endtemplate}
 /// {@template unawaited_limitations}
-/// Calls to [expectUnawaited] may not be performed by a [Condition] passed to
-/// [softCheck] or [softCheckAsync].
+/// Calls to [expectUnawaited] may not be performed by a condition callback
+/// passed to [softCheck] or [softCheckAsync].
 /// {@endtemplate}
 ///
 /// Expectation extension methods can access the context for the subject with
 /// the [ContextExtension].
-///
-/// The [it] utility returns a subject whose context will not directly invoke
-/// any callbacks, but stores them and passed them along  when the
-/// [ConditionSubject] is replayed as a [Condition] against another subject.
 ///
 /// {@template description_lines}
 /// Description callbacks return an `Iterable<String>` where each element is a
@@ -531,7 +524,8 @@ abstract final class Context<T> {
   /// {@macro async_limitations}
   ///
   /// ```dart
-  /// Future<void> someAsyncResult([Condition<Result> resultCondition]) async {
+  /// Future<void> someAsyncResult(
+  ///     [FutureOr<void> Function(Subject<Result>) resultCondition]) async {
   ///   await context.nestAsync(() => ['has someAsyncResult'], (actual) async {
   ///     if (await _asyncOperationFailed(actual)) {
   ///       return Extracted.rejection(which: ['cannot read someAsyncResult']);

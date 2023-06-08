@@ -10,16 +10,23 @@ import 'package:checks/context.dart';
 /// are unequal to the elements of [expected].
 ///
 /// {@template deep_collection_equals}
-/// Elements, keys, or values, which are a collections are deeply compared for
-/// equality, and do not use the native identity based equality or custom
-/// equality operator overrides.
+/// Elements, keys, or values within [expected] which are a collections are
+/// deeply compared for equality with a collection in the same position within
+/// [actual]. Elements which are collection types are note compared with the
+/// native identity based equality or custom equality operator overrides.
 ///
-/// Elements, keys, or values, which are a [Condition] instances are checked
-/// against actual values.
-/// Conditions must be a `Condition<dynamic>`, Use `it()..isA<Type>()` to check
-/// expecations for specific element types.
+/// Elements, keys, or values within [expected] which are `void
+/// Function(Subject)` condition callbacks are run against the value in the same
+/// position within [actual].
+/// Condition callbacks must take a `Subject<Object?>` or `Subject<dynamic>` and
+/// may not use a more specific generic.
+/// Use `(Subject<Object?> s) => s.isA<Type>()` to check expectations for
+/// specific element types.
+/// Note also that the argument type `Subject<Object?>` cannot be inferred and
+/// must be explicit in the function definition.
 ///
-/// All other value or key types use `operator ==`.
+/// Elements, keys, or values within [expected] which are any other type are
+/// compared using `operator ==` equality.
 ///
 /// Comparing sets or maps will have a runtime which is polynomial on the the
 /// size of those collections. Does not use [Set.contains] or [Map.containsKey],

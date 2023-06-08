@@ -232,9 +232,9 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// conditions.
   ///
   /// ```dart
-  /// await check(StreamQueue(someStream)).inOrder([
-  ///   it()..emits().that(it()..equals(0)),
-  ///   it()..emits().that(it()..equals(1)),
+  /// await check(someStream).withQueue.inOrder([
+  ///   (s) => s.emits((e) => e.equals(0)),
+  ///   (s) => s.emits((e) => e.equals(1)),
   //  ]);
   /// ```
   ///

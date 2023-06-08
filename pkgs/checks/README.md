@@ -67,7 +67,7 @@ value - for instance reading a field or awaiting the result of a Future.
 
 ```dart
 check(someString).length.equals(expectedLength);
-await check(someFuture).completes(it()..equals(expectedCompletion));
+await check(someFuture).completes((f) => f.equals(expectedCompletion));
 ```
 
 Fields can be extracted from objects for checking further properties with the
@@ -80,24 +80,21 @@ check(someValue)
 ```
 
 Some expectations take arguments which are themselves expectations to apply to
-other values. These expectations take `Condition` arguments, which check
-expectations when they are applied to a `Subject`. The `ConditionSubject`
-utility acts as both a condition and a subject. Any expectations checked on the
-value as a subject will be recorded and replayed when it is applied as a
-condition. The `it()` utility returns a `ConditionSubject`.
+other values. These expectations take `void Function(Subject)` arguments, which
+check expectations when they are called with a `Subject` argument.
 
 ```dart
-check(someList).any(it()..isGreaterThan(0));
+check(someList).any((e) => e.isGreaterThan(0));
 ```
 
 Some complicated checks may be not be possible to write with cascade syntax.
-There is a `which` utility for this use case which takes a `Condition`.
+There is a `which` utility for this use case which takes a condition callback.
 
 ```dart
 check(someString)
   ..startsWith('a')
   // A cascade would not be possible on `length`
-  ..length.which(it()
+  ..length.which((l) => l
     ..isGreatherThan(10)
     ..isLessThan(100));
 ```
@@ -110,11 +107,11 @@ when an expectation fails, add a "Reason" in the failure message by passing a
 check(
   because: 'log lines must start with the severity',
   logLines,
-).every(it()
+).every((l) => l
   ..anyOf([
-    it()..startsWith('ERROR'),
-    it()..startsWith('WARNING'),
-    it()..startsWith('INFO'),
+    (l) => l.startsWith('ERROR'),
+    (l) => l.startsWith('WARNING'),
+    (l) => l.startsWith('INFO'),
   ]));
 ```
 
@@ -129,7 +126,7 @@ future never completes, cannot be awaited and may cause a failure after the test
 has already appeared to complete.
 
 ```dart
-await check(someFuture).completes(it()..isGreaterThan(0));
+await check(someFuture).completes((r) => r.isGreaterThan(0));
 ```
 
 Subjects for `Stream` instances must first be wrapped into a `StreamQueue` to
@@ -141,16 +138,16 @@ wrapped with a `StreamQueue`.
 
 ```dart
 await check(someStream).withQueue.inOrder([
-  it()..emits(it()..equals(1)),
-  it()..emits(it()..equals(2)),
-  it()..emits(it()..equals(3)),
-  it()..isDone(),
+  (s) => s.emits((e) => e.equals(1)),
+  (s) => s.emits((e) => e.equals(2)),
+  (s) => s.emits((e) => e.equals(3)),
+  (s) => s.isDone(),
 ]);
 
 var someQueue = StreamQueue(someOtherStream);
-await check(someQueue).emits(it()..equals(1));
+await check(someQueue).emits((e) => e.equals(1));
 // do something
-await check(someQueue).emits(it()..equals(2));
+await check(someQueue).emits((e) => e.equals(2));
 // do something
 ```
 
@@ -170,9 +167,10 @@ or an `Extracted.rejection`, extensions should avoid throwing exceptions.
 Descriptions of the clause checked by an expectations are passed through a
 separate callback from the predicate which checks the value. Nesting calls are
 made with a label directly. When there are no failures the clause callbacks are
-not called. When a `Condition` is described, the clause callbacks are called,
-but the predicate callbacks are not called. Conditions can be checked against
-values without throwing an exception using `softCheck` or `softCheckAsync`.
+not called. When a condition callback is described, the clause callbacks are
+called, but the predicate callbacks are not called. Conditions can be checked
+against values without throwing an exception using `softCheck` or
+`softCheckAsync`.
 
 ```dart
 extension CustomChecks on Subject<CustomType> {

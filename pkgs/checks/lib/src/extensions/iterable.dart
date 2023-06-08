@@ -80,14 +80,14 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// ```
   ///
   /// Values in [elements] may be a `T`, a `void Function(Subject<T>)`, or a
-  /// `Condition<dynamic>`. If an expectation is a [Condition] it will be
-  /// checked against the actual values, and any other expectations, including
-  /// those that are not a `T` or a `Condition`, will be compared with the
-  /// equality operator.
+  /// `void Function(Subject<Object?>)`. If an expectation is a condition
+  /// callback it will be checked against the actual values, and any other
+  /// expectations, including those that are not a `T` or a condition callback,
+  /// will be compared with the equality operator.
   ///
   /// ```dart
   /// check([1, 0, 2, 0, 3])
-  ///   .containsInOrder([1, it<int>()..isGreaterThan(1), 3]);
+  ///   .containsInOrder([1, (Subject<int> v) => v.isGreaterThan(1), 3]);
   /// ```
   void containsInOrder(Iterable<Object?> elements) {
     context.expect(() => prefixFirst('contains, in order: ', literal(elements)),

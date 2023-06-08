@@ -35,7 +35,7 @@ extension CoreChecks<T> on Subject<T> {
   /// ```
   /// check(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
-  ///   ..has((s) => s.bar, 'bar').which(it()
+  ///   ..has((s) => s.bar, 'bar').which((b) => b
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
