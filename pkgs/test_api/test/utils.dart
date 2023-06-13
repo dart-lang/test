@@ -76,7 +76,7 @@ void expectSingleError(LiveTest liveTest) {
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
+Matcher isTestFailure(Object message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
 /// Asserts that [liveTest] has completed and passed.
@@ -98,7 +98,7 @@ void expectTestPassed(LiveTest liveTest) {
 
 /// Asserts that [liveTest] failed with a single [TestFailure] whose message
 /// matches [message].
-void expectTestFailed(LiveTest liveTest, message) {
+void expectTestFailed(LiveTest liveTest, Object message) {
   expect(liveTest.state.status, equals(Status.complete));
   expect(liveTest.state.result, equals(Result.failure));
   expect(liveTest.errors, hasLength(1));

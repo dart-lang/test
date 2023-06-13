@@ -13,7 +13,6 @@ analyzer:
     avoid_dynamic_calls: ignore
     lines_longer_than_80_chars: ignore
     only_throw_errors: ignore
-    type_annotate_public_apis: ignore
     unawaited_futures: ignore
     unsafe_html: ignore
 

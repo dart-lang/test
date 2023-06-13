@@ -141,7 +141,7 @@ final class Timeout {
   int get hashCode => duration.hashCode ^ 5 * scaleFactor.hashCode;
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is Timeout &&
       other.duration == duration &&
       other.scaleFactor == scaleFactor;
