@@ -56,14 +56,13 @@ final class RemoteException implements Exception {
   ///
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
-  static AsyncError deserialize(Map<String, dynamic> serialized) {
+  static AsyncError deserialize(Map serialized) {
     return AsyncError(_deserializeException(serialized),
         Chain.parse(serialized['stackChain'] as String));
   }
 
   /// Deserializes the exception portion of [serialized].
-  static RemoteException _deserializeException(
-      Map<String, dynamic> serialized) {
+  static RemoteException _deserializeException(Map serialized) {
     final message = serialized['message'] as String?;
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;

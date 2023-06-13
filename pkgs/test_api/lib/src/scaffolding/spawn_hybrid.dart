@@ -32,8 +32,7 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
       break;
 
     case 'error':
-      var error =
-          RemoteException.deserialize(message['error'] as Map<String, dynamic>);
+      var error = RemoteException.deserialize(message['error'] as Map);
       sink.addError(error.error, error.stackTrace);
       break;
   }
