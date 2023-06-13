@@ -133,7 +133,7 @@ Declarer get _declarer {
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(Object description, dynamic Function() body,
+void test(Object? description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
     Object? skip,
@@ -211,7 +211,7 @@ void test(Object description, dynamic Function() body,
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(Object description, dynamic Function() body,
+void group(Object? description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
     Object? skip,
