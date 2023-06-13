@@ -46,7 +46,7 @@ class CompilerSelection {
   }
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is CompilerSelection && other.compiler == compiler;
 
   @override

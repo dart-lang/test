@@ -94,7 +94,8 @@ RunnerSuiteController deserializeSuite(
             break;
 
           case 'error':
-            var asyncError = RemoteException.deserialize(response['error']);
+            var asyncError = RemoteException.deserialize(
+                response['error'] as Map<String, dynamic>);
             handleError(
                 LoadException(path, asyncError.error), asyncError.stackTrace);
             break;

@@ -28,7 +28,7 @@ class State {
   const State(this.status, this.result);
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is State && status == other.status && result == other.result;
 
   @override

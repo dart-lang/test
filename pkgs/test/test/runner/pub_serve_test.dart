@@ -345,7 +345,7 @@ final Iterable<String> _compilers = ['dart2js', 'dartdevc'];
 /// as the first argument.
 void testWithCompiler(
     String name, dynamic Function(List<String> compilerArgs) testFn,
-    {tags}) {
+    {Object? tags}) {
   for (var compiler in _compilers) {
     var compilerArgs = ['--web-compiler', compiler];
     test('$name with $compiler', () => testFn(compilerArgs), tags: tags);
