@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['node'])
+library;
 
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';

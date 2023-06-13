@@ -26,8 +26,8 @@ void main() {
     test('must not import from other subdirectories', () async {
       final entryPoints = [
         _testApiLibrary('backend.dart'),
-        ...(await _ImportCheck.findEntrypointsUnder(
-            _testApiLibrary('src/backend')))
+        ...await _ImportCheck.findEntrypointsUnder(
+            _testApiLibrary('src/backend'))
       ];
       await for (final source
           in importCheck.transitiveSamePackageSources(entryPoints)) {

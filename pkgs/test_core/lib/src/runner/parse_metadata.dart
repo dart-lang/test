@@ -198,9 +198,8 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
-    return _parseMap(annotation.arguments!.arguments.first, key: (key) {
-      return _parsePlatformSelector(key);
-    }, value: (value) {
+    return _parseMap(annotation.arguments!.arguments.first,
+        key: _parsePlatformSelector, value: (value) {
       var expressions = <AstNode>[];
       if (value is ListLiteral) {
         expressions = _parseList(value);

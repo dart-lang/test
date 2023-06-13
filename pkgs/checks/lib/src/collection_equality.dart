@@ -254,7 +254,7 @@ Iterable<String>? unorderedCompare<T, E>(
   final indexedExpected = expected.toList();
   final indexedActual = actual.toList();
   final adjacency = <List<int>>[];
-  for (int i = 0; i < indexedExpected.length; i++) {
+  for (var i = 0; i < indexedExpected.length; i++) {
     final expectedElement = indexedExpected[i];
     final pairs = [
       for (var j = 0; j < indexedActual.length; j++)
@@ -307,7 +307,7 @@ List<List<int>> _findUnpaired(List<List<int>> adjacency, int rightVertexCount) {
 
   bool bfs() {
     final queue = Queue<int>();
-    for (int leftIndex = 0; leftIndex < leftLength; leftIndex++) {
+    for (var leftIndex = 0; leftIndex < leftLength; leftIndex++) {
       if (leftPairs[leftIndex] == rightLength) {
         distances[leftIndex] = 0;
         queue.add(leftIndex);
@@ -346,7 +346,7 @@ List<List<int>> _findUnpaired(List<List<int>> adjacency, int rightVertexCount) {
   }
 
   while (bfs()) {
-    for (int leftIndex = 0; leftIndex < leftLength; leftIndex++) {
+    for (var leftIndex = 0; leftIndex < leftLength; leftIndex++) {
       if (leftPairs[leftIndex] == rightLength) {
         dfs(leftIndex);
       }

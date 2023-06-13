@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 @TestOn('vm')
 @Tags(['firefox'])
+library;
 
 import 'package:test/src/runner/browser/firefox.dart';
 import 'package:test/src/runner/executable_settings.dart';

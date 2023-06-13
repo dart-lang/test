@@ -165,8 +165,8 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
       await for (var error in actual.rest) {
         reject(Rejection(which: [
           ...prefixFirst('threw late error', literal(error.error)),
-          ...(const LineSplitter().convert(
-              TestHandle.current.formatStackTrace(error.stackTrace).toString()))
+          ...const LineSplitter().convert(
+              TestHandle.current.formatStackTrace(error.stackTrace).toString())
         ]));
       }
     });

@@ -206,7 +206,7 @@ fake trace''');
       test('uses a transaction', () async {
         final queue = _countingStream(1);
         await softCheckAsync<StreamQueue<int>>(queue, it()..emitsError());
-        await check(queue).emits((it()..equals(0)));
+        await check(queue).emits(it()..equals(0));
       });
     });
 
@@ -240,7 +240,7 @@ fake trace''');
       test('consumes events', () async {
         final queue = _countingStream(3);
         await check(queue).emitsThrough(it()..equals(1));
-        await check(queue).emits((it()..equals(2)));
+        await check(queue).emits(it()..equals(2));
       });
     });
 
@@ -432,7 +432,7 @@ fake trace''');
     group('emitsAnyOf', () {
       test('succeeds for a stream that matches one condition', () async {
         await check(_countingStream(1)).anyOf(
-            [it()..emits(it()..equals(42)), it()..emits((it()..equals(0)))]);
+            [it()..emits(it()..equals(42)), it()..emits(it()..equals(0))]);
       });
       test('fails for a stream that matches no conditions', () async {
         await check(_countingStream(0)).isRejectedByAsync(

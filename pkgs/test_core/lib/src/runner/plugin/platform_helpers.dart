@@ -62,7 +62,7 @@ RunnerSuiteController deserializeSuite(
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
     'allowDuplicateTestNames': suiteConfig.allowDuplicateTestNames,
     'ignoreTimeouts': suiteConfig.ignoreTimeouts,
-    ...(message as Map<String, dynamic>),
+    ...message as Map<String, dynamic>,
   });
 
   var completer = Completer<Group>();

@@ -297,9 +297,8 @@ class _Parser {
 
     var color = _ifParsed<bool>('color') ?? canUseSpecialChars;
 
-    var runtimes = _ifParsed<List<String>>('platform')
-        ?.map((runtime) => RuntimeSelection(runtime))
-        .toList();
+    var runtimes =
+        _ifParsed<List<String>>('platform')?.map(RuntimeSelection.new).toList();
     var compilerSelections = _ifParsed<List<String>>('compiler')
         ?.map(CompilerSelection.parse)
         .toList();
