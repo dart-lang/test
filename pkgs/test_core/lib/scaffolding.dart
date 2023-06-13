@@ -28,7 +28,7 @@ import 'src/util/print_sink.dart';
 // This file is an almost direct copy of import below, but with the global
 // declarer added.
 export 'package:test_api/scaffolding.dart'
-    hide test, group, setUp, setUpAll, tearDown, tearDownAll;
+    hide group, setUp, setUpAll, tearDown, tearDownAll, test;
 
 /// The global declarer.
 ///

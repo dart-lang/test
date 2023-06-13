@@ -608,12 +608,12 @@ class _Present<T> implements _Optional<T> {
   Future<Extracted<_Present<R>>> mapAsync<R>(
       FutureOr<Extracted<R>> Function(T) transform) async {
     final transformed = await transform(value);
-    return transformed._map((v) => _Present(v));
+    return transformed._map(_Present.new);
   }
 
   @override
   Extracted<_Present<R>> map<R>(Extracted<R> Function(T) transform) =>
-      transform(value)._map((v) => _Present(v));
+      transform(value)._map(_Present.new);
 }
 
 class _Absent<T> implements _Optional<T> {

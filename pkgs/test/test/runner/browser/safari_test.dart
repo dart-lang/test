@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['safari'])
+library;
 
 import 'package:test/src/runner/browser/safari.dart';
 import 'package:test/src/runner/executable_settings.dart';

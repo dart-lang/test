@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.src.runner.browser.post_message_channel;
-
 import 'dart:js_util';
 
 import 'package:js/js.dart';

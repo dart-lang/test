@@ -85,7 +85,7 @@ extension NodeExtension on Node {
   external Node appendChild(Node node);
   void remove() {
     if (parentNode != null) {
-      final Node parent = parentNode!;
+      final parent = parentNode!;
       parent.removeChild(this);
     }
   }
@@ -221,7 +221,7 @@ Object? _findConstructor(String constructorName) =>
     js_util.getProperty(window, constructorName);
 
 Object? _callConstructor(String constructorName, List<Object?> args) {
-  final Object? constructor = _findConstructor(constructorName);
+  final constructor = _findConstructor(constructorName);
   if (constructor == null) {
     return null;
   }

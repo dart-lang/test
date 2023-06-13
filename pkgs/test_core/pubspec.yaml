@@ -8,8 +8,8 @@ environment:
 
 dependencies:
   analyzer: '>=3.3.0 <6.0.0'
-  async: ^2.5.0
   args: ^2.0.0
+  async: ^2.5.0
   boolean_selector: ^2.1.0
   collection: ^1.15.0
   coverage: ^1.0.0
@@ -25,10 +25,10 @@ dependencies:
   source_span: ^1.8.0
   stack_trace: ^1.10.0
   stream_channel: ^2.1.0
-  vm_service: ">=6.0.0 <12.0.0"
-  yaml: ^3.0.0
   # Use an exact version until the test_api package is stable.
   test_api: 0.6.1
+  vm_service: ">=6.0.0 <12.0.0"
+  yaml: ^3.0.0
 
 dev_dependencies:
-  lints: '>=1.0.0 <3.0.0'
+  dart_flutter_team_lints: ^1.0.0

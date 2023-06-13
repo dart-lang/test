@@ -20,7 +20,7 @@ extension CoreChecks<T> on Subject<T> {
       } catch (e, st) {
         return Extracted.rejection(which: [
           ...prefixFirst('threw while trying to read $name: ', literal(e)),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]);
       }
     });

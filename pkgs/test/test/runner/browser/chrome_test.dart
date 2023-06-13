@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['chrome'])
+library;
 
 import 'package:test/src/runner/browser/chrome.dart';
 import 'package:test/src/runner/executable_settings.dart';
