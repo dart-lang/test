@@ -51,60 +51,9 @@ check(someList).deepEquals(expectedList);
 check(someString).contains('expected pattern');
 ```
 
-Multiple expectations can be checked against the same value using cascade
-syntax. When multiple expectations are checked against a single value, a failure
-will included descriptions of the expectations that already passed.
-
-```dart
-check(someString)
-  ..startsWith('a')
-  ..endsWith('z')
-  ..contains('lmno');
-```
-
-Some expectations return a `Subject` for another value derived from the original
-value - for instance reading a field or awaiting the result of a Future.
-
-```dart
-check(someString).length.equals(expectedLength);
-await check(someFuture).completes(it()..equals(expectedCompletion));
-```
-
-Fields can be extracted from objects for checking further properties with the
-`has` utility.
-
-```dart
-check(someValue)
-  .has((value) => value.property, 'property')
-  .equals(expectedPropertyValue);
-```
-
-Some expectations take arguments which are themselves expectations to apply to
-other values. These expectations take `Condition` arguments, which check
-expectations when they are applied to a `Subject`. The `ConditionSubject`
-utility acts as both a condition and a subject. Any expectations checked on the
-value as a subject will be recorded and replayed when it is applied as a
-condition. The `it()` utility returns a `ConditionSubject`.
-
-```dart
-check(someList).any(it()..isGreaterThan(0));
-```
-
-Some complicated checks may be not be possible to write with cascade syntax.
-There is a `which` utility for this use case which takes a `Condition`.
-
-```dart
-check(someString)
-  ..startsWith('a')
-  // A cascade would not be possible on `length`
-  ..length.which(it()
-    ..isGreatherThan(10)
-    ..isLessThan(100));
-```
-
-If a failure may not be have enough context about the actual or expected values
-when an expectation fails, add a "Reason" in the failure message by passing a
-`because:` argument to `check()`.
+If a failure may not have enough context about the actual or expected values
+from the expectation calls alone, add a "Reason" in the failure message by
+passing a `because:` argument to `check()`.
 
 ```dart
 check(
@@ -118,7 +67,64 @@ check(
   ]));
 ```
 
-## Asynchronous expectations
+
+### Composing expectations
+
+
+Multiple expectations can be checked against the same value using cascade
+syntax. When multiple expectations are checked against a single value, a failure
+will included descriptions of the expectations that already passed.
+
+```dart
+check(someString)
+  ..startsWith('a')
+  ..endsWith('z')
+  ..contains('lmno');
+```
+
+Some nested checks may be not be possible to write with cascade syntax.
+There is a `which` utility for this use case which takes a `Condition`.
+
+```dart
+check(someString)
+  ..startsWith('a')
+  // A cascade would not be possible on `length`
+  ..length.which(it()
+    ..isGreatherThan(10)
+    ..isLessThan(100));
+```
+
+
+Some expectations return a `Subject` for another value derived from the original
+value, such as the `length` extension.
+
+```dart
+check(someString).length.equals(expectedLength);
+```
+
+Fields or derived values can be extracted from objects for checking further
+properties with the `has` utility.
+
+```dart
+check(someValue)
+  .has((value) => value.property, 'property')
+  .equals(expectedPropertyValue);
+```
+
+### Passing a set of expectations as an argument
+
+Some expectations take arguments which are themselves expectations to apply to
+other values. These expectations take `Condition` arguments, which check
+expectations when they are applied to a `Subject`. The `ConditionSubject`
+utility acts as both a condition and a subject. Any expectations checked on the
+value as a subject will be recorded and replayed when it is applied as a
+condition. The `it()` utility returns a `ConditionSubject`.
+
+```dart
+check(someList).any(it()..isGreaterThan(0));
+```
+
+### Checking asynchronous expectations
 
 Expectation extension methods checking asynchronous behavior return a `Future`.
 The future should typically be awaited within the test body, however
@@ -127,6 +133,10 @@ complete before the expectation is complete.
 Expectations with no concrete end conditions, such as an expectation that a
 future never completes, cannot be awaited and may cause a failure after the test
 has already appeared to complete.
+
+Asynchronous expectations do not return a `Subject`. When an expectation
+extracts a derived value further expectations can be checked by passing a
+`Condition`.
 
 ```dart
 await check(someFuture).completes(it()..isGreaterThan(0));
