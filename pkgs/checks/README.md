@@ -157,7 +157,7 @@ await check(someQueue).emits(it()..equals(2));
 
 ## Writing custom expectations
 
-Expectations are written as extension on `Subject` with specific generics. The
+Expectations are written as extensions on `Subject` with specific generics. The
 library `package:checks/context.dart` gives access to a `context` getter on
 `Subject` which offers capabilities for defining expectations on the subject's
 value.
@@ -193,5 +193,19 @@ extension CustomChecks on Subject<CustomType> {
 
   // for field reads that will not get rejected, use `has`
   Subject<Bar> get someField => has((a) => a.someField, 'someField');
+}
+```
+
+Extensions may also compose existing expectations under a single name. When
+such expectations fail, the test output will refer to the individual
+expectations that were called.
+
+```dart
+extension ComposedChecks on Subject<Iterable> {
+  void hasLengthInRange(int min, int max) {
+    length
+      ..isGreaterThan(min)
+      ..isLessThan(max);
+  }
 }
 ```
