@@ -51,9 +51,9 @@ check(someList).deepEquals(expectedList);
 check(someString).contains('expected pattern');
 ```
 
-If a failure may not be have enough context about the actual or expected values
-when an expectation fails, add a "Reason" in the failure message by passing a
-`because:` argument to `check()`.
+If a failure may not have enough context about the actual or expected values
+from the expectation calls alone, add a "Reason" in the failure message by
+passing a `because:` argument to `check()`.
 
 ```dart
 check(
