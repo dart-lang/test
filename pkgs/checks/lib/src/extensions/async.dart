@@ -27,7 +27,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
           'a future that completes as an error'
         ], which: [
           ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]);
       }
     }, completionCondition);
@@ -52,7 +52,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
           'a future that completed as an error:'
         ], which: [
           ...prefixFirst('threw ', literal(e)),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]));
       }));
     });
@@ -83,7 +83,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
             actual: prefixFirst('completed to error ', literal(e)),
             which: [
               'threw an exception that is not a $E at:',
-              ...(const LineSplitter()).convert(st.toString())
+              ...const LineSplitter().convert(st.toString())
             ]);
       }
     }, errorCondition);
@@ -142,7 +142,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
             actual: prefixFirst('a stream with error ', literal(e)),
             which: [
               'emitted an error instead of a value at:',
-              ...(const LineSplitter()).convert(st.toString())
+              ...const LineSplitter().convert(st.toString())
             ]);
       }
     }, emittedCondition);
@@ -186,7 +186,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
             actual: prefixFirst('a stream with error ', literal(e)),
             which: [
               'emitted an error which is not $E at:',
-              ...(const LineSplitter()).convert(st.toString())
+              ...const LineSplitter().convert(st.toString())
             ]);
       }
     }, errorCondition);
@@ -461,7 +461,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           'a stream'
         ], which: [
           ...prefixFirst('emitted an unexpected error: ', literal(e)),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]);
       }
     });

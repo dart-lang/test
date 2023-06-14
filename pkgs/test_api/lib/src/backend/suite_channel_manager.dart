@@ -20,7 +20,7 @@ class SuiteChannelManager {
   /// Creates a connection to the test runnner's channel with the given [name].
   StreamChannel<Object?> connectOut(String name) {
     if (_incomingConnections.containsKey(name)) {
-      return (_incomingConnections[name])!;
+      return _incomingConnections[name]!;
     } else if (_names.contains(name)) {
       throw StateError('Duplicate suiteChannel() connection "$name".');
     } else {

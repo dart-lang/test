@@ -12,17 +12,17 @@ import 'runner/node/platform.dart';
 import 'runner/wasm/platform.dart';
 
 Future<void> main(List<String> args) async {
-  registerPlatformPlugin([Runtime.nodeJS], () => NodePlatform());
+  registerPlatformPlugin([Runtime.nodeJS], NodePlatform.new);
   registerPlatformPlugin([
     Runtime.chrome,
     Runtime.edge,
     Runtime.firefox,
     Runtime.safari,
     Runtime.internetExplorer
-  ], () => BrowserPlatform.start());
+  ], BrowserPlatform.start);
   registerPlatformPlugin([
     Runtime.experimentalChromeWasm,
-  ], () => BrowserWasmPlatform.start());
+  ], BrowserWasmPlatform.start);
 
   await executable.main(args);
 }

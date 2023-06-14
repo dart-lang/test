@@ -224,7 +224,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
     // running, but it's good practice to check the origin anyway.
-    dom.MessageEvent message = event as dom.MessageEvent;
+    var message = event as dom.MessageEvent;
     if (message.origin != dom.window.location.origin) return;
 
     // TODO(nweiz): Stop manually checking href here once issue 22554 is

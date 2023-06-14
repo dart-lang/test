@@ -65,7 +65,7 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
-    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
+    _registerPlatformPlugin([Runtime.vm], VMPlatform.new);
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);

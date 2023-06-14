@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['edge'])
+library;
 
 import 'package:test/src/runner/browser/microsoft_edge.dart';
 import 'package:test/src/runner/executable_settings.dart';

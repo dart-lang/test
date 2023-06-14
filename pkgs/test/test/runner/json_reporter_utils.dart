@@ -215,7 +215,7 @@ Map<String, Object> doneJson({bool success = true}) =>
     {'type': 'done', 'success': success};
 
 /// Returns the serialized metadata corresponding to [skip].
-Map<String, Object?> metadataJson({skip}) {
+Map<String, Object?> metadataJson({Object? skip}) {
   if (skip == true) {
     return {'skip': true, 'skipReason': null};
   } else if (skip is String) {

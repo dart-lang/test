@@ -108,7 +108,7 @@ final class PlatformSelector {
   String toString() => _inner.toString();
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is PlatformSelector && _inner == other._inner;
 
   @override

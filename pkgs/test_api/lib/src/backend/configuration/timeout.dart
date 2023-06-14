@@ -79,7 +79,7 @@ final class Timeout {
 
     // Scan a number. This will be either a time unit or a scale factor.
     scanner.expect(_untilUnit, name: 'number');
-    var number = double.parse((scanner.lastMatch![0])!);
+    var number = double.parse(scanner.lastMatch![0]!);
 
     // A number followed by "x" is a scale factor.
     if (scanner.scan('x') || scanner.scan('X')) {
@@ -92,13 +92,13 @@ final class Timeout {
     var microseconds = 0.0;
     while (true) {
       scanner.expect(_unit, name: 'unit');
-      microseconds += _microsecondsFor(number, (scanner.lastMatch![0])!);
+      microseconds += _microsecondsFor(number, scanner.lastMatch![0]!);
 
       scanner.scan(_whitespace);
 
       // Scan the next number, if it's available.
       if (!scanner.scan(_untilUnit)) break;
-      number = double.parse((scanner.lastMatch![0])!);
+      number = double.parse(scanner.lastMatch![0]!);
     }
 
     scanner.expectDone();
@@ -141,7 +141,7 @@ final class Timeout {
   int get hashCode => duration.hashCode ^ 5 * scaleFactor.hashCode;
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is Timeout &&
       other.duration == duration &&
       other.scaleFactor == scaleFactor;
