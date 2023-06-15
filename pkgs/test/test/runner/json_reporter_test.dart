@@ -549,7 +549,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
     });
 
     test('the root suite from an absolute path', () {
-      final path = p.join(d.sandbox, 'test.dart');
+      final path = p.prettyUri(p.join(d.sandbox, 'test.dart'));
       return _expectReport(
           '''
       customTest('success 1', () {});
