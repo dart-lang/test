@@ -559,7 +559,9 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
           [
             [
               suiteJson(0, path: path),
-              testStartJson(1, 'loading $path', groupIDs: []),
+              testStartJson(
+                  1, allOf(startsWith('loading '), endsWith('test.dart')),
+                  groupIDs: []),
               testDoneJson(1, hidden: true),
             ],
             [

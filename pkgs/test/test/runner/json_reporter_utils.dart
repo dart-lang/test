@@ -119,7 +119,7 @@ Map<String, Object> groupJson(int id,
 /// [skip] is `true`, the test is expected to be marked as skipped without a
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
-Map<String, Object> testStartJson(int id, String name,
+Map<String, Object> testStartJson(int id, Object /*String|Matcher*/ name,
     {int? suiteID,
     Iterable<int>? groupIDs,
     int? line,
