@@ -24,11 +24,12 @@ Future<void> expectJsonReport(
   expect(outputLines,
       hasLength(expected.fold<int>(3, (int a, m) => a + m.length)));
 
-  dynamic decodeLine(String l) => jsonDecode(l)
-    ..remove('time')
-    ..remove('stackTrace');
-
-  final decoded = [for (final line in outputLines) decodeLine(line)];
+  final decoded = [
+    for (final line in outputLines)
+      (jsonDecode(line) as Map)
+        ..remove('time')
+        ..remove('stackTrace')
+  ];
 
   // Should contain all suites message.
   expect(decoded, containsAll([_allSuitesJson()]));
