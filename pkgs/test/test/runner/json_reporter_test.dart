@@ -512,12 +512,49 @@ void main() {
           args: ['-p', 'chrome']);
     }, tags: ['chrome'], skip: 'https://github.com/dart-lang/test/issues/872');
 
-    test('the root suite if applicable', () {
+    test('the root suite from a relative path', () {
       return _expectReport(
           '''
       customTest('success 1', () {});
       test('success 2', () {});
     ''',
+          [
+            [
+              suiteJson(0),
+              testStartJson(1, 'loading test.dart', groupIDs: []),
+              testDoneJson(1, hidden: true),
+            ],
+            [
+              groupJson(2, testCount: 2),
+              testStartJson(3, 'success 1',
+                  line: 3,
+                  column: 60,
+                  url: p.toUri(p.join(d.sandbox, 'common.dart')).toString(),
+                  rootColumn: 7,
+                  rootLine: 7,
+                  rootUrl: p.toUri(p.join(d.sandbox, 'test.dart')).toString()),
+              testDoneJson(3),
+              testStartJson(4, 'success 2', line: 8, column: 7),
+              testDoneJson(4),
+            ]
+          ],
+          doneJson(),
+          externalLibraries: {
+            'common.dart': '''
+import 'package:test/test.dart';
+
+void customTest(String name, dynamic Function() testFn) => test(name, testFn);
+''',
+          });
+    });
+
+    test('the root suite from an absolute path', () {
+      return _expectReport(
+          '''
+      customTest('success 1', () {});
+      test('success 2', () {});
+    ''',
+          useRelativePath: false,
           [
             [
               suiteJson(0),
@@ -586,6 +623,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 Future<void> _expectReport(String tests,
     List<List<Object /*Map|Matcher*/ >> expected, Map<Object, Object> done,
     {List<String> args = const [],
+    bool useRelativePath = true,
     Map<String, String> externalLibraries = const {}}) async {
   var testContent = StringBuffer('''
 import 'dart:async';
@@ -603,8 +641,9 @@ import 'package:test/test.dart';
     ..writeln('}');
 
   await d.file('test.dart', testContent.toString()).create();
+  var testPath = useRelativePath ? 'test.dart' : p.join(d.sandbox, 'test.dart');
 
-  var test = await runTest(['test.dart', '--chain-stack-traces', ...args],
+  var test = await runTest([testPath, '--chain-stack-traces', ...args],
       reporter: 'json');
   await test.shouldExit();
 
