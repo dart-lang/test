@@ -549,6 +549,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
     });
 
     test('the root suite from an absolute path', () {
+      final path = p.join(d.sandbox, 'test.dart');
       return _expectReport(
           '''
       customTest('success 1', () {});
@@ -557,8 +558,8 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
           useRelativePath: false,
           [
             [
-              suiteJson(0),
-              testStartJson(1, 'loading test.dart', groupIDs: []),
+              suiteJson(0, path: path),
+              testStartJson(1, 'loading $path', groupIDs: []),
               testDoneJson(1, hidden: true),
             ],
             [
