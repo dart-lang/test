@@ -558,7 +558,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
           useRelativePath: false,
           [
             [
-              suiteJson(0, path: path),
+              suiteJson(0, path: equalsIgnoringCase(path)),
               testStartJson(
                   1, allOf(startsWith('loading '), endsWith('test.dart')),
                   groupIDs: []),
