@@ -61,15 +61,16 @@ Map<String, Object> _allSuitesJson({int count = 1}) =>
 /// Returns the event emitted by the JSON reporter indicating that a suite has
 /// begun running.
 ///
-/// The [platform] defaults to `"vm"`, the [path] defaults to `"test.dart"`.
+/// The [platform] defaults to `'vm'`.
+/// The [path] defaults to `equals('test.dart')`.
 Map<String, Object> suiteJson(int id,
-        {String platform = 'vm', String path = 'test.dart'}) =>
+        {String platform = 'vm', Matcher? path}) =>
     {
       'type': 'suite',
       'suite': {
         'id': id,
         'platform': platform,
-        'path': path,
+        'path': path ?? 'test.dart',
       }
     };
 
@@ -120,7 +121,7 @@ Map<String, Object> groupJson(int id,
 /// [skip] is `true`, the test is expected to be marked as skipped without a
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
-Map<String, Object> testStartJson(int id, String name,
+Map<String, Object> testStartJson(int id, Object /*String|Matcher*/ name,
     {int? suiteID,
     Iterable<int>? groupIDs,
     int? line,

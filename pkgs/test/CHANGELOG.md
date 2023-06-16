@@ -3,6 +3,8 @@
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
 * Make some annotation classes `final`: `OnPlatform`, `Retry`, `Skip`, `Tags`,
   `TestOn`, `Timeout`.
+* Fix the `root_` fields in the JSON reporter when running a test on Windows
+  with an absolute path.
 
 ## 1.24.3
 
