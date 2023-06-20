@@ -348,6 +348,7 @@ Configuration configuration(
         tags: tags,
         onPlatform: onPlatform,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        stopOnFirstFailure: false,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,

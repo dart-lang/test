@@ -69,6 +69,9 @@ class Engine {
   /// The same seed will shuffle the tests in the same way every time.
   int? testRandomizeOrderingSeed;
 
+  /// Whether to stop running tests after a failure.
+  bool _stopOnFirstFailure;
+
   /// A pool that limits the number of test suites running concurrently.
   final Pool _runPool;
 
@@ -202,8 +205,16 @@ class Engine {
   /// Omitting this argument or passing `0` disables shuffling.
   ///
   /// [coverage] specifies a directory to output coverage information.
-  Engine({int? concurrency, String? coverage, this.testRandomizeOrderingSeed})
-      : _runPool = Pool(concurrency ?? 1),
+  ///
+  /// If [stopOnFirstFailure] then a single failing test will cause the engine
+  /// to [close] and stop ruunning further tests.
+  Engine({
+    int? concurrency,
+    String? coverage,
+    this.testRandomizeOrderingSeed,
+    bool stopOnFirstFailure = false,
+  })  : _runPool = Pool(concurrency ?? 1),
+        _stopOnFirstFailure = stopOnFirstFailure,
         _coverage = coverage {
     _group.future.then((_) {
       _onTestStartedGroup.close();
@@ -371,7 +382,10 @@ class Engine {
     // loop pump to avoid starving non-microtask events.
     await Future(() {});
 
-    if (!_restarted.contains(liveTest)) return;
+    if (!_restarted.contains(liveTest)) {
+      if (_stopOnFirstFailure && liveTest.state.result.isFailing) close();
+      return;
+    }
     await _runLiveTest(suiteController, liveTest.copy(),
         countSuccess: countSuccess);
     _restarted.remove(liveTest);

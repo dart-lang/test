@@ -207,6 +207,11 @@ class Configuration {
   /// The same seed will shuffle the tests in the same way every time.
   final int? testRandomizeOrderingSeed;
 
+  final bool? _stopOnFirstFailure;
+
+  /// Whether to stop running subsequent tests after a test fails.
+  bool get stopOnFirstFailure => _stopOnFirstFailure ?? false;
+
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
@@ -270,6 +275,7 @@ class Configuration {
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
       required int? testRandomizeOrderingSeed,
+      required bool? stopOnFirstFailure,
 
       // Suite-level configuration
       required bool? allowDuplicateTestNames,
@@ -322,6 +328,7 @@ class Configuration {
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        stopOnFirstFailure: stopOnFirstFailure,
         includeTags: includeTags,
         excludeTags: excludeTags,
         globalPatterns: globalPatterns,
@@ -379,6 +386,7 @@ class Configuration {
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
           int? testRandomizeOrderingSeed,
+          bool? stopOnFirstFailure,
 
           // Suite-level configuration
           bool? allowDuplicateTestNames,
@@ -430,6 +438,7 @@ class Configuration {
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
           testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+          stopOnFirstFailure: stopOnFirstFailure,
           allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
@@ -496,6 +505,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         ignoreTimeouts: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
@@ -563,6 +573,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,
@@ -627,6 +638,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
         jsTrace: null,
@@ -689,6 +701,7 @@ class Configuration {
           overrideRuntimes: null,
           noRetry: null,
           testRandomizeOrderingSeed: null,
+          stopOnFirstFailure: null,
           allowDuplicateTestNames: null,
           allowTestRandomization: null,
           jsTrace: null,
@@ -754,6 +767,7 @@ class Configuration {
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
       required this.testRandomizeOrderingSeed,
+      required bool? stopOnFirstFailure,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
       required Iterable<Pattern>? globalPatterns,
@@ -786,6 +800,7 @@ class Configuration {
         globalPatterns = globalPatterns == null
             ? const {}
             : UnmodifiableSetView(globalPatterns.toSet()),
+        _stopOnFirstFailure = stopOnFirstFailure,
         suiteDefaults = (() {
           var config = suiteDefaults ?? SuiteConfiguration.empty;
           if (pauseAfterLoad == true) {
@@ -839,6 +854,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         includeTags: null,
         excludeTags: null,
       );
@@ -944,6 +960,7 @@ class Configuration {
         noRetry: other._noRetry ?? _noRetry,
         testRandomizeOrderingSeed:
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
+        stopOnFirstFailure: other._stopOnFirstFailure ?? _stopOnFirstFailure,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
         globalPatterns: globalPatterns.union(other.globalPatterns),
@@ -1034,6 +1051,7 @@ class Configuration {
         noRetry: noRetry ?? _noRetry,
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
+        stopOnFirstFailure: _stopOnFirstFailure,
         includeTags: includeTags,
         excludeTags: excludeTags,
         globalPatterns: globalPatterns,
