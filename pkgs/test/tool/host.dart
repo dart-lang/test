@@ -17,6 +17,8 @@ import 'package:test/src/runner/browser/dom.dart' as dom;
 /// A class defined in content shell, used to control its behavior.
 @JS()
 @staticInterop
+// TODO: https://github.com/dart-lang/linter/issues/4474 - Drop ignore.
+// ignore: unreachable_from_main
 class TestRunner {}
 
 extension TestRunnerExtension on TestRunner {
