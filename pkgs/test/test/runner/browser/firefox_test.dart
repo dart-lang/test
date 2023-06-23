@@ -81,6 +81,20 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test('can override firefox location with FIREFOX_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''').create();
+    var test = await runTest(['-p', 'firefox', 'test.dart'],
+        environment: {'FIREFOX_EXECUTABLE': '/some/bad/path'});
+    expect(test.stdout, emitsThrough(contains('Failed to run Firefox:')));
+    await test.shouldExit(1);
+  });
+
   test('not impacted by CHROME_EXECUTABLE var', () async {
     await d.file('test.dart', '''
 import 'dart:html';
