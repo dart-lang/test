@@ -1,4 +1,4 @@
-## 0.6.1-wip
+## 0.6.1
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
 * Make some implementation classes `final`. These classes were never intended to
