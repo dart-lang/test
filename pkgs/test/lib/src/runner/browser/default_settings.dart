@@ -30,6 +30,6 @@ final defaultSettings = UnmodifiableMapView({
   Runtime.internetExplorer:
       ExecutableSettings(windowsExecutable: r'Internet Explorer\iexplore.exe'),
   Runtime.safari: ExecutableSettings(
-    macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari',
-    environmentOverride: 'SAFARI_EXECUTABLE'),
+      macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari',
+      environmentOverride: 'SAFARI_EXECUTABLE'),
 });

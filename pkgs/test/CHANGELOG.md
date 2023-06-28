@@ -5,6 +5,8 @@
   `TestOn`, `Timeout`.
 * Fix the `root_` fields in the JSON reporter when running a test on Windows
   with an absolute path.
+* Add support for `SAFARI_EXECUTABLE`, `FIREFOX_EXECUTABLE` and
+  `MS_EDGE_EXECUTABLE` for custom browser installations.
 
 ## 1.24.3
 
