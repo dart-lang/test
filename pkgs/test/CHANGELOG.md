@@ -5,6 +5,7 @@
   `TestOn`, `Timeout`.
 * Fix the `root_` fields in the JSON reporter when running a test on Windows
   with an absolute path.
+* Allow the latest analyzer (6.x.x).
 
 ## 1.24.3
 

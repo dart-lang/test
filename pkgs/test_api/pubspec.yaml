@@ -19,7 +19,7 @@ dependencies:
   term_glyph: ^1.2.0
 
 dev_dependencies:
-  analyzer: '>=2.1.0 <6.0.0'
+  analyzer: '>=2.1.0 <7.0.0'
   dart_flutter_team_lints: ^1.0.0
   fake_async: ^1.2.0
   glob: ^2.0.0
