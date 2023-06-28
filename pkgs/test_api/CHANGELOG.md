@@ -9,7 +9,7 @@
 * Mark an implementation class `interface`: `StackTraceMapper`.
 * Change the `Compiler` class into an `enum`.
 * Make `Fake` a `mixin class`.
-
+* Allow the latest analyzer (6.x.x).
 
 ## 0.6.0
 

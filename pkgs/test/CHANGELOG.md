@@ -7,6 +7,7 @@
   with an absolute path.
 * Add support for `SAFARI_EXECUTABLE`, `FIREFOX_EXECUTABLE` and
   `MS_EDGE_EXECUTABLE` for custom browser installations.
+* Allow the latest analyzer (6.x.x).
 
 ## 1.24.3
 
