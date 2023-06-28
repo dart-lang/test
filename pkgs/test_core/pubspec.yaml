@@ -7,7 +7,7 @@ environment:
   sdk: ^3.0.0
 
 dependencies:
-  analyzer: '>=3.3.0 <6.0.0'
+  analyzer: '>=3.3.0 <7.0.0'
   args: ^2.0.0
   async: ^2.5.0
   boolean_selector: ^2.1.0

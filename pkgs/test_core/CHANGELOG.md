@@ -2,9 +2,10 @@
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
 * Add `final` modifier on some implementation classes: `Configuration`,
-  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`. 
+  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`.
 * Fix the `root_` fields in the JSON reporter when running a test on Windows
   with an absolute path.
+* Allow the latest analyzer (6.x.x).
 
 ## 0.5.3
 
