@@ -5,7 +5,11 @@
   `TestOn`, `Timeout`.
 * Fix the `root_` fields in the JSON reporter when running a test on Windows
   with an absolute path.
+* Add support for `SAFARI_EXECUTABLE`, `FIREFOX_EXECUTABLE` and
+  `MS_EDGE_EXECUTABLE` for custom browser installations.
 * Allow the latest analyzer (6.x.x).
+* Add `MOZ_AUTOMATION=1` environmental variable to Firefox runner, to make
+  launcher process on Windows wait for browser exit.
 
 ## 1.24.3
 

@@ -739,9 +739,9 @@ running with `pub run test`, or by passing them to the `dart` command before the
 Tests can be debugged interactively using platforms' built-in development tools.
 Tests running on browsers can use those browsers' development consoles to inspect
 the document, set breakpoints, and step through code. Those running on the Dart
-VM use [the Dart Observatory][observatory]'s .
+VM use [Dart DevTools][devtools].
 
-[observatory]: https://dart-lang.github.io/observatory/
+[devtools]: https://dart.dev/tools/dart-devtools
 
 The first step when debugging is to pass the `--pause-after-load` flag to the
 test runner. This pauses the browser after each test suite has loaded, so that
