@@ -10,3 +10,20 @@ updates:
       interval: "monthly"
     labels:
       - "autosubmit"
+
+  # Check daily for major version dependency updates for packages which depend
+  # on package:analyzer.
+  - package-ecosystem: "pub"
+    directory: "pkgs/test"
+    schedule:
+      interval: "daily"
+    versioning-strategy: increase-if-necessary
+    reviewers:
+      - "natebosch"
+  - package-ecosystem: "pub"
+    directory: "pkgs/test_core"
+    schedule:
+      interval: "daily"
+    versioning-strategy: increase-if-necessary
+    reviewers:
+      - "natebosch"
