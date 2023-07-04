@@ -11,7 +11,7 @@ void main() {
   test('Directory.rename', () async {
     await d.dir('parent', [
       d.file('sibling', 'sibling-contents'),
-      d.dir('old-name', [d.file('child', 'child-contents')])
+      d.dir('old-name', [d.file('child', 'child-contents')]),
     ]).create();
 
     await Directory('${d.sandbox}/parent/old-name')
@@ -19,7 +19,7 @@ void main() {
 
     await d.dir('parent', [
       d.file('sibling', 'sibling-contents'),
-      d.dir('new-name', [d.file('child', 'child-contents')])
+      d.dir('new-name', [d.file('child', 'child-contents')]),
     ]).validate();
   });
 }

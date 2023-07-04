@@ -131,7 +131,7 @@ void main() {
           toString(
             allOf([
               startsWith('Invalid contents for file "name.txt":'),
-              contains('�')
+              contains('�'),
             ]),
           ),
         ),

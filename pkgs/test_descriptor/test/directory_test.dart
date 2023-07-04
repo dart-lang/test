@@ -21,10 +21,10 @@ void main() {
       await d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
-          d.file('subfile2.txt', 'subcontents2')
+          d.file('subfile2.txt', 'subcontents2'),
         ]),
         d.file('file1.txt', 'contents1'),
-        d.file('file2.txt', 'contents2')
+        d.file('file2.txt', 'contents2'),
       ]).create();
 
       expect(
@@ -72,10 +72,10 @@ void main() {
       await d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
-          d.file('subfile2.txt', 'subcontents2')
+          d.file('subfile2.txt', 'subcontents2'),
         ]),
         d.file('file1.txt', 'contents1'),
-        d.file('file2.txt', 'contents2')
+        d.file('file2.txt', 'contents2'),
       ]).validate();
     });
 
@@ -89,10 +89,10 @@ void main() {
         d.dir('dir', [
           d.dir('subdir', [
             d.file('subfile1.txt', 'subcontents1'),
-            d.file('subfile2.txt', 'subcontents2')
+            d.file('subfile2.txt', 'subcontents2'),
           ]),
           d.file('file1.txt', 'contents1'),
-          d.file('file2.txt', 'contents2')
+          d.file('file2.txt', 'contents2'),
         ]).validate(),
         throwsA(
           toString(
@@ -117,10 +117,10 @@ void main() {
           d.dir('dir', [
             d.dir('subdir', [
               d.file('subfile1.txt', 'subcontents1'),
-              d.file('subfile2.txt', 'subcontents2')
+              d.file('subfile2.txt', 'subcontents2'),
             ]),
             d.file('file1.txt', 'contents1'),
-            d.file('file2.txt', 'contents2')
+            d.file('file2.txt', 'contents2'),
           ]).validate();
         },
         expectAsync2(
@@ -170,7 +170,7 @@ void main() {
           [d.file('name.txt', 'subcontents'), d.file('other.txt', 'wrong')],
         ),
         d.dir('otherdir', [d.file('other.txt', 'wrong')]),
-        d.file('name.txt', 'contents')
+        d.file('name.txt', 'contents'),
       ]);
 
       expect(
@@ -182,9 +182,9 @@ void main() {
     test('fails to load a nested directory', () {
       final dir = d.dir('dir', [
         d.dir('subdir', [
-          d.dir('subsubdir', [d.file('name.txt', 'subcontents')])
+          d.dir('subsubdir', [d.file('name.txt', 'subcontents')]),
         ]),
-        d.file('name.txt', 'contents')
+        d.file('name.txt', 'contents'),
       ]);
 
       expect(
@@ -210,7 +210,7 @@ void main() {
 
     test("fails to load a file that doesn't exist", () {
       final dir = d.dir('dir', [
-        d.dir('subdir', [d.file('name.txt', 'contents')])
+        d.dir('subdir', [d.file('name.txt', 'contents')]),
       ]);
 
       expect(
@@ -229,7 +229,7 @@ void main() {
         d.dir(
           'subdir',
           [d.file('name.txt', 'contents'), d.file('name.txt', 'contents')],
-        )
+        ),
       ]);
 
       expect(
@@ -246,7 +246,7 @@ void main() {
     test('loads a file next to a subdirectory with the same name', () {
       final dir = d.dir('dir', [
         d.file('name', 'contents'),
-        d.dir('name', [d.file('subfile', 'contents')])
+        d.dir('name', [d.file('subfile', 'contents')]),
       ]);
 
       expect(
@@ -287,9 +287,9 @@ void main() {
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
           d.file('subfile2.txt', 'subcontents2'),
-          d.dir('subsubdir', [d.file('subsubfile.txt', 'subsubcontents')])
+          d.dir('subsubdir', [d.file('subsubfile.txt', 'subsubcontents')]),
         ]),
-        d.file('file2.txt', 'contents2')
+        d.file('file2.txt', 'contents2'),
       ]);
 
       expect(
@@ -315,10 +315,10 @@ void main() {
       final dir = d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
-          d.file('subfile2.txt', 'subcontents2')
+          d.file('subfile2.txt', 'subcontents2'),
         ]),
         d.file('file1.txt', 'contents1'),
-        d.file('file2.txt', 'contents2')
+        d.file('file2.txt', 'contents2'),
       ]);
 
       await dir.create();
@@ -332,10 +332,10 @@ void main() {
       await d.dir('dir', [
         d.dir('subdir', [
           d.file('subfile1.txt', 'subcontents1'),
-          d.file('.hidden', 'subcontents2')
+          d.file('.hidden', 'subcontents2'),
         ]),
         d.file('file1.txt', 'contents1'),
-        d.file('.DS_Store', 'contents2')
+        d.file('.DS_Store', 'contents2'),
       ]).create();
 
       final descriptor = d.DirectoryDescriptor.fromFilesystem(
@@ -350,7 +350,7 @@ void main() {
           [d.file('subfile1.txt', 'subcontents1'), d.nothing('.hidden')],
         ),
         d.file('file1.txt', 'contents1'),
-        d.nothing('.DS_Store')
+        d.nothing('.DS_Store'),
       ]).validate();
     });
   });
