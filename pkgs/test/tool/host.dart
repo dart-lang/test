@@ -104,7 +104,6 @@ final _currentUrl = Uri.parse(dom.window.location.href);
 /// does mean that the server needs to be sure to nest its [MultiChannel]s at
 /// the same place the client does.
 void main() {
-
   if (_currentUrl.queryParameters['debug'] == 'true') {
     dom.document.body!.classList.add('debug');
   }
