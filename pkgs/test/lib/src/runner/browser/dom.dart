@@ -11,6 +11,7 @@ import 'package:js/js.dart';
 class Window extends EventTarget {}
 
 extension WindowExtension on Window {
+  external Window get parent;
   external Location get location;
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       js_util.callMethod(this, 'getComputedStyle', <Object>[
@@ -135,7 +136,16 @@ extension MessageEventExtension on MessageEvent {
   external String get origin;
   List<MessagePort> get ports =>
       js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+  /// The source may be a `WindowProxy`, a `MessagePort`, or a `ServiceWorker`.
+  ///
+  /// When a message is sent from an iframe through `window.parent.postMessage`
+  /// the source will be a `WindowProxy` which has the same methods as [Window].
+  external MessageEventSource source;
 }
+
+@JS()
+@staticInterop
+class MessageEventSource {}
 
 @JS()
 @staticInterop

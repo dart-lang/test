@@ -91,7 +91,7 @@ final _currentUrl = Uri.parse(dom.window.location.href);
 /// connected to each test suite's iframe via a [MessageChannel].
 ///
 /// Each iframe runs a `RemoteListener` which creates its own [MultiChannel] on
-/// top of the [MessageChannel] connection. One connection is used for
+/// top of a [MessageChannel] connection. One connection is used for
 /// the `RemoteListener`, which sends messages like "here are all the tests in
 /// this suite". The rest are used for each test, receiving messages like
 /// "start running". A new connection is also created whenever a test begins
@@ -178,30 +178,35 @@ MultiChannel<dynamic> _connectToServer() {
   return MultiChannel(controller.foreign);
 }
 
-/// Creates an iframe with `src` [url] and establishes a connection to it using
-/// a [MessageChannel].
+/// Creates an iframe with `src` [url] and expects a message back with a
+/// [MessagePort] to communicate with the remote listener.
 ///
 /// [id] identifies the suite loaded in this iframe.
+///
+/// While the iframe is starting, adds a listener for `window.onMessage` which
+/// filters to only the messages coming from this frame (by it's URL) and
+/// expects the first message to be either the string 'port' with an attached
+/// message port (coming from the browser bootstrap message channel
+/// initialization), or a map with the key 'exception' set to true and details
+/// in the value for 'data' (coming from `dart.js` due to a load exception).
+///
+/// Returns a channel which will be connected to the frame once it has sent the
+/// port.
 StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var iframe = dom.createHTMLIFrameElement();
   _iframes[id] = iframe;
   iframe.src = url;
   dom.document.body!.appendChild(iframe);
 
-  // Use this to communicate securely with the iframe.
-  var channel = dom.createMessageChannel();
   var controller = StreamChannelController(sync: true);
-
-  // Use this to avoid sending a message to the iframe before it's sent a
-  // message to us. This ensures that no messages get dropped on the floor.
-  var readyCompleter = Completer();
 
   var subscriptions = <StreamSubscription<void>>[];
   var domSubscriptions = <dom.Subscription>[];
   _subscriptions[id] = subscriptions;
   _domSubscriptions[id] = domSubscriptions;
 
-  domSubscriptions.add(
+  late dom.Subscription portSubscription;
+  portSubscription =
       dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
@@ -209,42 +214,29 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     // running, but it's good practice to check the origin anyway.
     var message = event as dom.MessageEvent;
     if (message.origin != dom.window.location.origin) return;
-
-    // TODO(nweiz): Stop manually checking href here once issue 22554 is
-    // fixed.
-    if (message.data['href'] != iframe.src) return;
+    // Disambiguate between frames for different test suites.
+    // Depending on the source type, the `location.href` may be missing.
+    var location = js_util.getProperty(message.source, 'location') as Object?;
+    if (location == null) return;
+    if (js_util.getProperty(location, 'href') != iframe.src) return;
 
     message.stopPropagation();
 
-    if (message.data['ready'] == true) {
-      // This message indicates that the iframe is actively listening for
-      // events, so the message channel's second port can now be transferred.
-      channel.port2.start();
-      // TODO(#1758): This is a work around for a crash in package:build.
-      js_util.callMethod(
-          js_util.getProperty(iframe, 'contentWindow'), 'postMessage', [
-        'port',
-        dom.window.location.origin,
-        [channel.port2]
-      ]);
-      readyCompleter.complete();
+    if (message.data == 'port') {
+      final port = message.ports.first;
+      domSubscriptions
+          .add(dom.Subscription(port, 'message', allowInterop((event) {
+        controller.local.sink.add((event as dom.MessageEvent).data);
+      })));
+      port.start();
+
+      subscriptions.add(controller.local.stream.listen(port.postMessage));
     } else if (message.data['exception'] == true) {
       // This message from `dart.js` indicates that an exception occurred
       // loading the test.
       controller.local.sink.add(message.data['data']);
     }
-  })));
-
-  channel.port1.start();
-  domSubscriptions.add(dom.Subscription(channel.port1, 'message',
-      allowInterop((dom.Event event) {
-    controller.local.sink.add((event as dom.MessageEvent).data['data']);
-  })));
-
-  subscriptions.add(controller.local.stream.listen((message) async {
-    await readyCompleter.future;
-
-    channel.port1.postMessage(message);
+    portSubscription.cancel();
   }));
 
   return controller.foreign;
