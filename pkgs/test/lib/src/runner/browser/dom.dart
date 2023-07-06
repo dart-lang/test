@@ -135,7 +135,12 @@ extension MessageEventExtension on MessageEvent {
   external String get origin;
   List<MessagePort> get ports =>
       js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+  external MessageEventSource source;
 }
+
+@JS()
+@staticInterop
+class MessageEventSource {}
 
 @JS()
 @staticInterop

@@ -16954,7 +16954,7 @@
       if (A._asString($event.origin) !== A._asString(t1._as(self.window.location).origin))
         return;
       t2 = _this.iframe;
-      if (!J.$eq$(J.$index$asx(A.dartify($event.data), "href"), A._asStringQ(t2.src)))
+      if (A._asString(t1._as(t1._as($event.source).location).href) !== A._asStringQ(t2.src))
         return;
       $event.stopPropagation();
       if (J.$eq$(J.$index$asx(A.dartify($event.data), "ready"), true)) {

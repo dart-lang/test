@@ -209,10 +209,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     // running, but it's good practice to check the origin anyway.
     var message = event as dom.MessageEvent;
     if (message.origin != dom.window.location.origin) return;
-
-    // TODO(nweiz): Stop manually checking href here once issue 22554 is
-    // fixed.
-    if (message.data['href'] != iframe.src) return;
+    if ((message.source as dom.Window).location.href != iframe.src) return;
 
     message.stopPropagation();
 
