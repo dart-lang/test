@@ -136,6 +136,7 @@ extension MessageEventExtension on MessageEvent {
   external String get origin;
   List<MessagePort> get ports =>
       js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+
   /// The source may be a `WindowProxy`, a `MessagePort`, or a `ServiceWorker`.
   ///
   /// When a message is sent from an iframe through `window.parent.postMessage`
