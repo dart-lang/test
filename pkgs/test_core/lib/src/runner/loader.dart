@@ -215,12 +215,7 @@ class Loader {
           continue;
         }
 
-        var name =
-            (platform.runtime.isJS && platformConfig.precompiledPath == null
-                    ? 'compiling '
-                    : 'loading ') +
-                path;
-        yield LoadSuite(name, platformConfig, platform, () async {
+        yield LoadSuite('loading $path', platformConfig, platform, () async {
           var memo = _platformPlugins[platform.runtime]!;
 
           var retriesLeft = suiteConfig.metadata.retry;

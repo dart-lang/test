@@ -132,7 +132,7 @@ void main() {
         expect(
             test.stdout,
             containsInOrder([
-              '-1: compiling ${p.join("test", "my_test.dart")} [E]',
+              '-1: loading ${p.join("test", "my_test.dart")} [E]',
               'Failed to load "${p.join("test", "my_test.dart")}":',
               '404 Not Found',
               'Make sure "pub serve" is serving the test/ directory.'
@@ -153,7 +153,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling ${p.join("test", "my_test.dart")} [E]',
+            '-1: loading ${p.join("test", "my_test.dart")} [E]',
             'Failed to load "${p.join("test", "my_test.dart")}":',
             '404 Not Found',
             'Make sure "pub serve" is serving the test/ directory.'
@@ -294,7 +294,7 @@ void main() {
     expect(
         test.stdout,
         containsInOrder([
-          '-1: compiling ${p.join("test", "my_test.dart")} [E]',
+          '-1: loading ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           'Error getting http://localhost:54321/my_test.dart.browser_test.dart.js'
               '.map: $message',
@@ -312,7 +312,7 @@ void main() {
     expect(
         test.stdout,
         containsInOrder([
-          '-1: compiling ${p.join("test", "my_test.dart")} [E]',
+          '-1: loading ${p.join("test", "my_test.dart")} [E]',
           'Failed to load "${p.join("test", "my_test.dart")}":',
           'Error getting http://localhost:54321/my_test.dart.node_test.dart.js:'
               ' $message',
