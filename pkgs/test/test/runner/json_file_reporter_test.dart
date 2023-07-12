@@ -25,6 +25,7 @@ void main() {
       test('success 2', () {});
       test('success 3', () {});
     ''', '''
+      +0: loading test.dart
       +0: success 1
       +1: success 2
       +2: success 3
@@ -52,6 +53,7 @@ void main() {
       test('failure 2', () => throw new TestFailure('oh no'));
       test('failure 3', () => throw new TestFailure('oh no'));
     ''', '''
+      +0: loading test.dart
       +0: failure 1
       +0 -1: failure 1 [E]
         oh no
