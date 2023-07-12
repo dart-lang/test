@@ -275,7 +275,7 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(test.stderr,
-          containsInOrder(['Invalid name: Unterminated group(foo', '^^^^^^']));
+          containsInOrder(['Invalid name: Unterminated group', '^^^^^^']));
       await test.shouldExit(exit_codes.data);
     });
   });
