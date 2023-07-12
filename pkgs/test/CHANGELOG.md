@@ -1,5 +1,9 @@
 ## 1.24.5-wip
 
+* Change "compiling <path>" to "loading <path>" message in all cases. Surface
+  the "loading" messages in the situations where previously only "compiling"
+  message would be used.
+
 ## 1.24.4
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
