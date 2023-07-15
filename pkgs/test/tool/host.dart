@@ -14,21 +14,6 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/src/runner/browser/dom.dart' as dom;
 
-/// A class defined in content shell, used to control its behavior.
-@JS()
-@staticInterop
-// TODO: https://github.com/dart-lang/linter/issues/4474 - Drop ignore.
-// ignore: unreachable_from_main
-class TestRunner {}
-
-extension TestRunnerExtension on TestRunner {
-  external void waitUntilDone();
-}
-
-/// Returns the current content shell runner, or `null` if none exists.
-@JS()
-external TestRunner? get testRunner;
-
 /// A class that exposes the test API to JS.
 ///
 /// These are exposed so that tools like IDEs can interact with them via remote
@@ -119,10 +104,6 @@ final _currentUrl = Uri.parse(dom.window.location.href);
 /// does mean that the server needs to be sure to nest its [MultiChannel]s at
 /// the same place the client does.
 void main() {
-  // This tells content_shell not to close immediately after the page has
-  // rendered.
-  testRunner?.waitUntilDone();
-
   if (_currentUrl.queryParameters['debug'] == 'true') {
     dom.document.body!.classList.add('debug');
   }
