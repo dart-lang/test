@@ -212,8 +212,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
         controller.local.sink.add((event as dom.MessageEvent).data['data']);
       }));
 
-  _subscriptions[id] = 
-      
+      _subscriptions[id] =
           controller.local.stream.listen(channel.port1.postMessage);
       channel
         ..port2.start()
