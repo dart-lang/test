@@ -217,12 +217,11 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
       final port = message.ports.first;
       _domSubscriptions[id] =
           dom.Subscription(port, 'message', allowInterop((event) {
-            controller.local.sink.add((event as dom.MessageEvent).data);
-          }));
+        controller.local.sink.add((event as dom.MessageEvent).data);
+      }));
       port.start();
 
-      _subscriptions[id] =
-      controller.local.stream.listen(port.postMessage);
+      _subscriptions[id] = controller.local.stream.listen(port.postMessage);
     } else if (message.data['ready'] == true) {
       // This message indicates that the iframe is actively listening for
       // events, so the message channel's second port can now be transferred.
