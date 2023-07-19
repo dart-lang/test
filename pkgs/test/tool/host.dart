@@ -46,8 +46,8 @@ external set _jsApi(_JSApi api);
 final _iframes = <int, dom.HTMLIFrameElement>{};
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = <int, List<StreamSubscription<void>>>{};
-final _domSubscriptions = <int, List<dom.Subscription>>{};
+final _subscriptions = <int, StreamSubscription<void>>{};
+final _domSubscriptions = <int, dom.Subscription>{};
 
 /// The URL for the current page.
 final _currentUrl = Uri.parse(dom.window.location.href);
@@ -124,13 +124,8 @@ void main() {
       } else {
         assert(message['command'] == 'closeSuite');
         _iframes.remove(message['id'])!.remove();
-
-        for (var subscription in _subscriptions.remove(message['id'])!) {
-          subscription.cancel();
-        }
-        for (var subscription in _domSubscriptions.remove(message['id'])!) {
-          subscription.cancel();
-        }
+        _subscriptions.remove(message['id'])?.cancel();
+        _domSubscriptions.remove(message['id'])?.cancel();
       }
     });
 
@@ -188,20 +183,10 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
   iframe.src = url;
   dom.document.body!.appendChild(iframe);
 
-  // Use this to communicate securely with the iframe.
-  var channel = dom.createMessageChannel();
   var controller = StreamChannelController(sync: true);
 
-  // Use this to avoid sending a message to the iframe before it's sent a
-  // message to us. This ensures that no messages get dropped on the floor.
-  var readyCompleter = Completer();
-
-  var subscriptions = <StreamSubscription<void>>[];
-  var domSubscriptions = <dom.Subscription>[];
-  _subscriptions[id] = subscriptions;
-  _domSubscriptions[id] = domSubscriptions;
-
-  domSubscriptions.add(
+  late dom.Subscription windowSubscription;
+  windowSubscription =
       dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
@@ -216,11 +201,24 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     if (js_util.getProperty(location, 'href') != iframe.src) return;
 
     message.stopPropagation();
+    windowSubscription.cancel();
 
     if (message.data['ready'] == true) {
       // This message indicates that the iframe is actively listening for
       // events, so the message channel's second port can now be transferred.
-      channel.port2.start();
+      var channel = dom.createMessageChannel();
+      assert(!_domSubscriptions.containsKey(id));
+      _domSubscriptions[id] = dom.Subscription(channel.port1, 'message',
+          allowInterop((dom.Event event) {
+        controller.local.sink.add((event as dom.MessageEvent).data['data']);
+      }));
+
+      assert(!_subscriptions.containsKey(id));
+      _subscriptions[id] =
+          controller.local.stream.listen(channel.port1.postMessage);
+      channel
+        ..port2.start()
+        ..port1.start();
       // TODO(#1758): This is a work around for a crash in package:build.
       js_util.callMethod(
           js_util.getProperty(iframe, 'contentWindow'), 'postMessage', [
@@ -228,24 +226,11 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
         dom.window.location.origin,
         [channel.port2]
       ]);
-      readyCompleter.complete();
     } else if (message.data['exception'] == true) {
       // This message from `dart.js` indicates that an exception occurred
       // loading the test.
       controller.local.sink.add(message.data['data']);
     }
-  })));
-
-  channel.port1.start();
-  domSubscriptions.add(dom.Subscription(channel.port1, 'message',
-      allowInterop((dom.Event event) {
-    controller.local.sink.add((event as dom.MessageEvent).data['data']);
-  })));
-
-  subscriptions.add(controller.local.stream.listen((message) async {
-    await readyCompleter.future;
-
-    channel.port1.postMessage(message);
   }));
 
   return controller.foreign;
