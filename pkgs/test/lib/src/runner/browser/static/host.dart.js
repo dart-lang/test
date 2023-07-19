@@ -7335,7 +7335,7 @@
       return A._MultiChannel$(t1, t2);
     },
     _connectToIframe(url, id) {
-      var controller, subscriptions, domSubscriptions, portSubscription,
+      var controller, windowSubscription,
         t1 = self.document,
         t2 = A._setArrayType(["iframe"], type$.JSArray_Object),
         t3 = type$.dynamic,
@@ -7345,12 +7345,8 @@
       iframe.src = url;
       t4._as(type$.nullable_JavaScriptObject._as(self.document.body).appendChild(iframe));
       controller = A.StreamChannelController$(true, t3);
-      subscriptions = A._setArrayType([], type$.JSArray_StreamSubscription_void);
-      domSubscriptions = A._setArrayType([], type$.JSArray_Subscription);
-      $._subscriptions.$indexSet(0, id, subscriptions);
-      $._domSubscriptions.$indexSet(0, id, domSubscriptions);
-      portSubscription = A._Cell$named("portSubscription");
-      portSubscription._value = A.Subscription$(self.window, "message", A.allowInterop(new A._connectToIframe_closure(iframe, domSubscriptions, controller, subscriptions, portSubscription), type$.void_Function_JavaScriptObject));
+      windowSubscription = A._Cell$named("windowSubscription");
+      windowSubscription._value = A.Subscription$(self.window, "message", A.allowInterop(new A._connectToIframe_closure(iframe, windowSubscription, id, controller), type$.void_Function_JavaScriptObject));
       t3 = controller.__StreamChannelController__foreign_F;
       t3 === $ && A.throwLateFieldNI("_foreign");
       return t3;
@@ -7380,15 +7376,17 @@
     _connectToServer_closure0: function _connectToServer_closure0(t0) {
       this.webSocket = t0;
     },
-    _connectToIframe_closure: function _connectToIframe_closure(t0, t1, t2, t3, t4) {
+    _connectToIframe_closure: function _connectToIframe_closure(t0, t1, t2, t3) {
       var _ = this;
       _.iframe = t0;
-      _.domSubscriptions = t1;
-      _.controller = t2;
-      _.subscriptions = t3;
-      _.portSubscription = t4;
+      _.windowSubscription = t1;
+      _.id = t2;
+      _.controller = t3;
     },
     _connectToIframe__closure: function _connectToIframe__closure(t0) {
+      this.controller = t0;
+    },
+    _connectToIframe__closure0: function _connectToIframe__closure0(t0) {
       this.controller = t0;
     },
     max(a, b, $T) {
@@ -7779,6 +7777,9 @@
     },
     allMatches$2$s(receiver, a0, a1) {
       return J.getInterceptor$s(receiver).allMatches$2(receiver, a0, a1);
+    },
+    cancel$0$z(receiver) {
+      return J.getInterceptor$z(receiver).cancel$0(receiver);
     },
     cast$1$0$ax(receiver, $T1) {
       return J.getInterceptor$ax(receiver).cast$1$0(receiver, $T1);
@@ -17025,7 +17026,7 @@
       }
       return A.callMethod(this._this, "postMessage", t1, type$.void);
     },
-    $signature: 6
+    $signature: 7
   };
   A.Subscription.prototype = {};
   A.main_closure.prototype = {
@@ -17071,17 +17072,11 @@
         if (t3._as(t2.parentNode) != null)
           type$.JavaScriptObject._as(t3._as(t2.parentNode).removeChild(t2));
         t2 = $._subscriptions.remove$1(0, t1.$index(message, _s2_));
-        t2.toString;
-        t2 = J.get$iterator$ax(t2);
-        for (; t2.moveNext$0();)
-          t2.get$current(t2).cancel$0(0);
+        if (t2 != null)
+          J.cancel$0$z(t2);
         t1 = $._domSubscriptions.remove$1(0, t1.$index(message, _s2_));
-        t1.toString;
-        t1 = J.get$iterator$ax(t1);
-        for (; t1.moveNext$0();) {
-          t2 = t1.get$current(t1);
-          A.EventTargetExtension_removeEventListener(t2.target, t2.type, t2.listener);
-        }
+        if (t1 != null)
+          A.EventTargetExtension_removeEventListener(t1.target, t1.type, t1.listener);
       }
     },
     $signature: 4
@@ -17115,7 +17110,7 @@
       t2 = type$.String;
       t1.add$1(0, A.LinkedHashMap_LinkedHashMap$_literal(["command", "resume"], t2, t2));
     },
-    $signature: 7
+    $signature: 6
   };
   A.main__closure2.prototype = {
     call$0() {
@@ -17169,7 +17164,7 @@
       t1 === $ && A.throwLateFieldNI("_sink");
       t1.add$1(0, B.C_JsonCodec.decode$2$reviver(0, A._asString(A.dartify(message.data)), null));
     },
-    $signature: 7
+    $signature: 6
   };
   A._connectToServer_closure0.prototype = {
     call$1(message) {
@@ -17179,7 +17174,8 @@
   };
   A._connectToIframe_closure.prototype = {
     call$1($event) {
-      var $location, port, _this = this,
+      var $location, t2, t3, port, t4, t5, _this = this, _s6_ = "_local",
+        _s17_ = "_streamController",
         t1 = type$.JavaScriptObject;
       t1._as($event);
       if (A._asString($event.origin) !== A._asString(t1._as(self.window.location).origin))
@@ -17187,31 +17183,48 @@
       $location = t1._as($event.source).location;
       if ($location == null)
         return;
-      if (!J.$eq$($location.href, A._asStringQ(_this.iframe.src)))
+      t2 = _this.iframe;
+      if (!J.$eq$($location.href, A._asStringQ(t2.src)))
         return;
       $event.stopPropagation();
+      t3 = _this.windowSubscription._readLocal$0();
+      A.EventTargetExtension_removeEventListener(t3.target, t3.type, t3.listener);
       if (J.$eq$(A.dartify($event.data), "port")) {
         t1 = J.cast$1$0$ax(type$.List_dynamic._as($event.ports), t1);
         port = t1.get$first(t1);
-        t1 = _this.controller;
-        B.JSArray_methods.add$1(_this.domSubscriptions, A.Subscription$(port, "message", A.allowInterop(new A._connectToIframe__closure(t1), type$.void_Function_JavaScriptObject)));
+        t1 = _this.id;
+        t2 = _this.controller;
+        $._domSubscriptions.$indexSet(0, t1, A.Subscription$(port, "message", A.allowInterop(new A._connectToIframe__closure(t2), type$.void_Function_JavaScriptObject)));
         port.start();
-        t1 = t1.__StreamChannelController__local_F;
-        t1 === $ && A.throwLateFieldNI("_local");
-        t1 = t1.__GuaranteeChannel__streamController_F;
-        t1 === $ && A.throwLateFieldNI("_streamController");
-        B.JSArray_methods.add$1(_this.subscriptions, new A._ControllerStream(t1, A._instanceType(t1)._eval$1("_ControllerStream<1>")).listen$1(A.MessagePortExtension_get_postMessage(port)));
+        t2 = t2.__StreamChannelController__local_F;
+        t2 === $ && A.throwLateFieldNI(_s6_);
+        t2 = t2.__GuaranteeChannel__streamController_F;
+        t2 === $ && A.throwLateFieldNI(_s17_);
+        $._subscriptions.$indexSet(0, t1, new A._ControllerStream(t2, A._instanceType(t2)._eval$1("_ControllerStream<1>")).listen$1(A.MessagePortExtension_get_postMessage(port)));
+      } else if (J.$eq$(J.$index$asx(A.dartify($event.data), "ready"), true)) {
+        t3 = A._callConstructor("MessageChannel", A._setArrayType([], type$.JSArray_Object));
+        t3.toString;
+        t1._as(t3);
+        t4 = _this.id;
+        t5 = _this.controller;
+        $._domSubscriptions.$indexSet(0, t4, A.Subscription$(t1._as(t3.port1), "message", A.allowInterop(new A._connectToIframe__closure0(t5), type$.void_Function_JavaScriptObject)));
+        t5 = t5.__StreamChannelController__local_F;
+        t5 === $ && A.throwLateFieldNI(_s6_);
+        t5 = t5.__GuaranteeChannel__streamController_F;
+        t5 === $ && A.throwLateFieldNI(_s17_);
+        $._subscriptions.$indexSet(0, t4, new A._ControllerStream(t5, A._instanceType(t5)._eval$1("_ControllerStream<1>")).listen$1(A.MessagePortExtension_get_postMessage(t1._as(t3.port1))));
+        t1._as(t3.port2).start();
+        t1._as(t3.port1).start();
+        type$.Object._as(t2.contentWindow).postMessage("port", A._asString(t1._as(self.window.location).origin), A._setArrayType([t1._as(t3.port2)], type$.JSArray_JavaScriptObject));
       } else if (J.$eq$(J.$index$asx(A.dartify($event.data), "exception"), true)) {
         t1 = _this.controller.__StreamChannelController__local_F;
-        t1 === $ && A.throwLateFieldNI("_local");
+        t1 === $ && A.throwLateFieldNI(_s6_);
         t1 = t1.__GuaranteeChannel__sink_F;
         t1 === $ && A.throwLateFieldNI("_sink");
         t1.add$1(0, J.$index$asx(A.dartify($event.data), "data"));
       }
-      t1 = _this.portSubscription._readLocal$0();
-      A.EventTargetExtension_removeEventListener(t1.target, t1.type, t1.listener);
     },
-    $signature: 7
+    $signature: 6
   };
   A._connectToIframe__closure.prototype = {
     call$1($event) {
@@ -17223,7 +17236,19 @@
       t1 === $ && A.throwLateFieldNI("_sink");
       t1.add$1(0, A.dartify($event.data));
     },
-    $signature: 7
+    $signature: 6
+  };
+  A._connectToIframe__closure0.prototype = {
+    call$1($event) {
+      var t1;
+      type$.JavaScriptObject._as($event);
+      t1 = this.controller.__StreamChannelController__local_F;
+      t1 === $ && A.throwLateFieldNI("_local");
+      t1 = t1.__GuaranteeChannel__sink_F;
+      t1 === $ && A.throwLateFieldNI("_sink");
+      t1.add$1(0, J.$index$asx(A.dartify($event.data), "data"));
+    },
+    $signature: 6
   };
   (function aliases() {
     var _ = J.Interceptor.prototype;
@@ -17243,7 +17268,7 @@
       _instance_2_u = hunkHelpers._instance_2u,
       _instance_1_i = hunkHelpers._instance_1i,
       _instance_0_u = hunkHelpers._instance_0u;
-    _instance_1_u(A.CastStreamSubscription.prototype, "get$__internal$_onData", "__internal$_onData$1", 6);
+    _instance_1_u(A.CastStreamSubscription.prototype, "get$__internal$_onData", "__internal$_onData$1", 7);
     _static_1(A, "async__AsyncRun__scheduleImmediateJsOverride$closure", "_AsyncRun__scheduleImmediateJsOverride", 12);
     _static_1(A, "async__AsyncRun__scheduleImmediateWithSetImmediate$closure", "_AsyncRun__scheduleImmediateWithSetImmediate", 12);
     _static_1(A, "async__AsyncRun__scheduleImmediateWithTimer$closure", "_AsyncRun__scheduleImmediateWithTimer", 12);
@@ -17282,11 +17307,11 @@
     }, ["call$1", "call$0"], ["complete$1", "complete$0"], 44, 0, 0);
     _instance_2_u(A._Future.prototype, "get$_completeError", "_completeError$2", 10);
     var _;
-    _instance_1_i(_ = A._StreamController.prototype, "get$add", "add$1", 6);
+    _instance_1_i(_ = A._StreamController.prototype, "get$add", "add$1", 7);
     _instance(_, "get$addError", 0, 1, function() {
       return [null];
     }, ["call$2", "call$1"], ["addError$2", "addError$1"], 11, 0, 0);
-    _instance_1_i(A._StreamSinkWrapper.prototype, "get$add", "add$1", 6);
+    _instance_1_i(A._StreamSinkWrapper.prototype, "get$add", "add$1", 7);
     _instance_0_u(A._DoneStreamSubscription.prototype, "get$_sendDone", "_sendDone$0", 0);
     _static_1(A, "convert___defaultToEncodable$closure", "_defaultToEncodable", 14);
     _static_1(A, "core_Uri_decodeComponent$closure", "Uri_decodeComponent", 17);
@@ -17327,7 +17352,7 @@
     _inheritMany(A.Error, [A.LateError, A.TypeError, A.JsNoSuchMethodError, A.UnknownJsTypeError, A._CyclicInitializationError, A.RuntimeError, A.AssertionError, A._Error, A.JsonUnsupportedObjectError, A.ArgumentError, A.NoSuchMethodError, A.UnsupportedError, A.UnimplementedError, A.StateError, A.ConcurrentModificationError]);
     _inherit(A.UnmodifiableListBase, A.ListBase);
     _inherit(A.CodeUnits, A.UnmodifiableListBase);
-    _inheritMany(A.Closure, [A.Closure0Args, A.Instantiation, A.Closure2Args, A.TearOffClosure, A.JsLinkedHashMap_values_closure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_pipe_closure, A.Stream_length_closure, A._CustomZone_bindUnaryCallback_closure, A._CustomZone_bindUnaryCallbackGuarded_closure, A._RootZone_bindUnaryCallback_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.runZonedGuarded_closure, A._Uri__makePath_closure, A._createTables_setChars, A._createTables_setRange, A.jsify__convert, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.dartify_convert, A.Context_joinAll_closure, A.Context_split_closure, A._validateArgList_closure, A.WindowsStyle_absolutePathToUri_closure, A.Chain_Chain$parse_closure, A.Chain_toTrace_closure, A.Chain_toString_closure0, A.Chain_toString__closure0, A.Chain_toString_closure, A.Chain_toString__closure, A.Trace__parseVM_closure, A.Trace$parseV8_closure, A.Trace$parseJSCore_closure, A.Trace$parseFirefox_closure, A.Trace$parseFriendly_closure, A.Trace_terse_closure, A.Trace_foldFrames_closure, A.Trace_foldFrames_closure0, A.Trace_toString_closure0, A.Trace_toString_closure, A._GuaranteeSink_addStream_closure, A._MultiChannel_closure, A._MultiChannel_closure1, A._MultiChannel_virtualChannel_closure, A.MessagePortExtension_get_postMessage_closure, A.main__closure, A.main__closure0, A.main__closure1, A._connectToServer_closure, A._connectToServer_closure0, A._connectToIframe_closure, A._connectToIframe__closure]);
+    _inheritMany(A.Closure, [A.Closure0Args, A.Instantiation, A.Closure2Args, A.TearOffClosure, A.JsLinkedHashMap_values_closure, A.initHooks_closure, A.initHooks_closure1, A._AsyncRun__initializeScheduleImmediate_internalCallback, A._AsyncRun__initializeScheduleImmediate_closure, A._Future__chainForeignFuture_closure, A._Future__propagateToListeners_handleWhenCompleteCallback_closure, A.Stream_pipe_closure, A.Stream_length_closure, A._CustomZone_bindUnaryCallback_closure, A._CustomZone_bindUnaryCallbackGuarded_closure, A._RootZone_bindUnaryCallback_closure, A._RootZone_bindUnaryCallbackGuarded_closure, A.runZonedGuarded_closure, A._Uri__makePath_closure, A._createTables_setChars, A._createTables_setRange, A.jsify__convert, A.promiseToFuture_closure, A.promiseToFuture_closure0, A.dartify_convert, A.Context_joinAll_closure, A.Context_split_closure, A._validateArgList_closure, A.WindowsStyle_absolutePathToUri_closure, A.Chain_Chain$parse_closure, A.Chain_toTrace_closure, A.Chain_toString_closure0, A.Chain_toString__closure0, A.Chain_toString_closure, A.Chain_toString__closure, A.Trace__parseVM_closure, A.Trace$parseV8_closure, A.Trace$parseJSCore_closure, A.Trace$parseFirefox_closure, A.Trace$parseFriendly_closure, A.Trace_terse_closure, A.Trace_foldFrames_closure, A.Trace_foldFrames_closure0, A.Trace_toString_closure0, A.Trace_toString_closure, A._GuaranteeSink_addStream_closure, A._MultiChannel_closure, A._MultiChannel_closure1, A._MultiChannel_virtualChannel_closure, A.MessagePortExtension_get_postMessage_closure, A.main__closure, A.main__closure0, A.main__closure1, A._connectToServer_closure, A._connectToServer_closure0, A._connectToIframe_closure, A._connectToIframe__closure, A._connectToIframe__closure0]);
     _inheritMany(A.Closure0Args, [A.nullFuture_closure, A._AsyncRun__scheduleImmediateJsOverride_internalCallback, A._AsyncRun__scheduleImmediateWithSetImmediate_internalCallback, A._TimerImpl_internalCallback, A._TimerImpl$periodic_closure, A._Future__addListener_closure, A._Future__prependListeners_closure, A._Future__chainForeignFuture_closure1, A._Future__chainCoreFutureAsync_closure, A._Future__asyncCompleteWithValue_closure, A._Future__asyncCompleteError_closure, A._Future__propagateToListeners_handleWhenCompleteCallback, A._Future__propagateToListeners_handleValueCallback, A._Future__propagateToListeners_handleError, A.Stream_length_closure0, A._StreamController__subscribe_closure, A._StreamController__recordCancel_complete, A._AddStreamState_cancel_closure, A._BufferingStreamSubscription__sendError_sendError, A._BufferingStreamSubscription__sendDone_sendDone, A._PendingEvents_schedule_closure, A._CustomZone_bindCallback_closure, A._CustomZone_bindCallbackGuarded_closure, A._rootHandleError_closure, A._RootZone_bindCallback_closure, A._RootZone_bindCallbackGuarded_closure, A.Utf8Decoder__decoder_closure, A.Utf8Decoder__decoderNonfatal_closure, A.NullStreamSink_addStream_closure, A.Frame_Frame$parseVM_closure, A.Frame_Frame$parseV8_closure, A.Frame_Frame$_parseFirefoxEval_closure, A.Frame_Frame$parseFirefox_closure, A.Frame_Frame$parseFriendly_closure, A.LazyTrace_terse_closure, A.Trace_Trace$from_closure, A.GuaranteeChannel_closure, A.GuaranteeChannel__closure, A._MultiChannel_closure0, A._MultiChannel__closure, A._MultiChannel_virtualChannel_closure0, A.main_closure, A.main__closure2, A.main__closure3]);
     _inheritMany(A.EfficientLengthIterable, [A.ListIterable, A.EmptyIterable, A.LinkedHashMapKeyIterable, A._HashMapKeyIterable]);
     _inheritMany(A.ListIterable, [A.SubListIterable, A.MappedListIterable, A.ReversedListIterable, A._JsonMapKeyIterable]);
@@ -17491,7 +17516,7 @@
     typeUniverse: {eC: new Map(), tR: {}, eT: {}, tPV: {}, sEA: []},
     mangledGlobalNames: {int: "int", double: "double", num: "num", String: "String", bool: "bool", Null: "Null", List: "List"},
     mangledNames: {},
-    types: ["~()", "bool(String)", "Null()", "~(String,@)", "~(@)", "Frame()", "~(Object?)", "~(JavaScriptObject)", "Frame(String)", "Null(@)", "~(Object,StackTrace)", "~(Object[StackTrace?])", "~(~())", "Trace(String)", "@(@)", "~(Object?,Object?)", "@()", "String(String)", "~(Uint8List,String,int)", "Object?(Object?)", "int(Frame)", "String(Frame)", "Trace()", "bool(Frame)", "~(String,int)", "Uint8List(@,@)", "Null(Object,StackTrace)", "~(String,String)", "_Future<@>(@)", "Future<@>(@)", "Null(~())", "String(String?)", "List<Frame>(Trace)", "int(Trace)", "~(Zone,ZoneDelegate,Zone,Object,StackTrace)", "String(Trace)", "@(@,String)", "@(String)", "Frame(String,String)", "~(Symbol0,@)", "Map<String,String>(Map<String,String>,String)", "0^(0^,0^)<num>", "~(List<@>)", "~(Timer)", "~([Object?])", "~(String,int?)", "~(Zone?,ZoneDelegate?,Zone,Object,StackTrace)", "0^(Zone?,ZoneDelegate?,Zone,0^())<Object?>", "0^(Zone?,ZoneDelegate?,Zone,0^(1^),1^)<Object?,Object?>", "0^(Zone?,ZoneDelegate?,Zone,0^(1^,2^),1^,2^)<Object?,Object?,Object?>", "0^()(Zone,ZoneDelegate,Zone,0^())<Object?>", "0^(1^)(Zone,ZoneDelegate,Zone,0^(1^))<Object?,Object?>", "0^(1^,2^)(Zone,ZoneDelegate,Zone,0^(1^,2^))<Object?,Object?,Object?>", "AsyncError?(Zone,ZoneDelegate,Zone,Object,StackTrace?)", "~(Zone?,ZoneDelegate?,Zone,~())", "Timer(Zone,ZoneDelegate,Zone,Duration,~())", "Timer(Zone,ZoneDelegate,Zone,Duration,~(Timer))", "~(Zone,ZoneDelegate,Zone,String)", "~(String)", "Zone(Zone?,ZoneDelegate?,Zone,ZoneSpecification?,Map<Object?,Object?>?)", "int(int,int)", "Future<Null>()", "Frame(Frame)"],
+    types: ["~()", "bool(String)", "Null()", "~(String,@)", "~(@)", "Frame()", "~(JavaScriptObject)", "~(Object?)", "Frame(String)", "Null(@)", "~(Object,StackTrace)", "~(Object[StackTrace?])", "~(~())", "Trace(String)", "@(@)", "~(Object?,Object?)", "@()", "String(String)", "~(Uint8List,String,int)", "Object?(Object?)", "int(Frame)", "String(Frame)", "Trace()", "bool(Frame)", "~(String,int)", "Uint8List(@,@)", "Null(Object,StackTrace)", "~(String,String)", "_Future<@>(@)", "Future<@>(@)", "Null(~())", "String(String?)", "List<Frame>(Trace)", "int(Trace)", "~(Zone,ZoneDelegate,Zone,Object,StackTrace)", "String(Trace)", "@(@,String)", "@(String)", "Frame(String,String)", "~(Symbol0,@)", "Map<String,String>(Map<String,String>,String)", "0^(0^,0^)<num>", "~(List<@>)", "~(Timer)", "~([Object?])", "~(String,int?)", "~(Zone?,ZoneDelegate?,Zone,Object,StackTrace)", "0^(Zone?,ZoneDelegate?,Zone,0^())<Object?>", "0^(Zone?,ZoneDelegate?,Zone,0^(1^),1^)<Object?,Object?>", "0^(Zone?,ZoneDelegate?,Zone,0^(1^,2^),1^,2^)<Object?,Object?,Object?>", "0^()(Zone,ZoneDelegate,Zone,0^())<Object?>", "0^(1^)(Zone,ZoneDelegate,Zone,0^(1^))<Object?,Object?>", "0^(1^,2^)(Zone,ZoneDelegate,Zone,0^(1^,2^))<Object?,Object?,Object?>", "AsyncError?(Zone,ZoneDelegate,Zone,Object,StackTrace?)", "~(Zone?,ZoneDelegate?,Zone,~())", "Timer(Zone,ZoneDelegate,Zone,Duration,~())", "Timer(Zone,ZoneDelegate,Zone,Duration,~(Timer))", "~(Zone,ZoneDelegate,Zone,String)", "~(String)", "Zone(Zone?,ZoneDelegate?,Zone,ZoneSpecification?,Map<Object?,Object?>?)", "int(int,int)", "Future<Null>()", "Frame(Frame)"],
     interceptorsByTag: null,
     leafTags: null,
     arrayRti: Symbol("$ti")
@@ -17534,10 +17559,9 @@
       Iterable_dynamic: findType("Iterable<@>"),
       Iterable_nullable_Object: findType("Iterable<Object?>"),
       JSArray_Frame: findType("JSArray<Frame>"),
+      JSArray_JavaScriptObject: findType("JSArray<JavaScriptObject>"),
       JSArray_Object: findType("JSArray<Object>"),
-      JSArray_StreamSubscription_void: findType("JSArray<StreamSubscription<~>>"),
       JSArray_String: findType("JSArray<String>"),
-      JSArray_Subscription: findType("JSArray<Subscription>"),
       JSArray_Trace: findType("JSArray<Trace>"),
       JSArray_Uint8List: findType("JSArray<Uint8List>"),
       JSArray_dynamic: findType("JSArray<@>"),
@@ -17858,8 +17882,8 @@
     $._currentUriBase = null;
     $._current = null;
     $._iframes = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, type$.JavaScriptObject);
-    $._subscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("List<StreamSubscription<~>>"));
-    $._domSubscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("List<Subscription>"));
+    $._subscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("StreamSubscription<~>"));
+    $._domSubscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("Subscription"));
   })();
   (function lazyInitializers() {
     var _lazyFinal = hunkHelpers.lazyFinal;

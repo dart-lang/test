@@ -46,8 +46,8 @@ external set _jsApi(_JSApi api);
 final _iframes = <int, dom.HTMLIFrameElement>{};
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = <int, List<StreamSubscription<void>>>{};
-final _domSubscriptions = <int, List<dom.Subscription>>{};
+final _subscriptions = <int, StreamSubscription<void>>{};
+final _domSubscriptions = <int, dom.Subscription>{};
 
 /// The URL for the current page.
 final _currentUrl = Uri.parse(dom.window.location.href);
@@ -124,13 +124,8 @@ void main() {
       } else {
         assert(message['command'] == 'closeSuite');
         _iframes.remove(message['id'])!.remove();
-
-        for (var subscription in _subscriptions.remove(message['id'])!) {
-          subscription.cancel();
-        }
-        for (var subscription in _domSubscriptions.remove(message['id'])!) {
-          subscription.cancel();
-        }
+        _subscriptions.remove(message['id'])?.cancel();
+        _domSubscriptions.remove(message['id'])?.cancel();
       }
     });
 
@@ -200,13 +195,8 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
 
   var controller = StreamChannelController(sync: true);
 
-  var subscriptions = <StreamSubscription<void>>[];
-  var domSubscriptions = <dom.Subscription>[];
-  _subscriptions[id] = subscriptions;
-  _domSubscriptions[id] = domSubscriptions;
-
-  late dom.Subscription portSubscription;
-  portSubscription =
+  late dom.Subscription windowSubscription;
+  windowSubscription =
       dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
@@ -221,22 +211,46 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     if (js_util.getProperty(location, 'href') != iframe.src) return;
 
     message.stopPropagation();
+    windowSubscription.cancel();
 
     if (message.data == 'port') {
       final port = message.ports.first;
-      domSubscriptions
-          .add(dom.Subscription(port, 'message', allowInterop((event) {
-        controller.local.sink.add((event as dom.MessageEvent).data);
-      })));
+      _domSubscriptions[id] =
+          dom.Subscription(port, 'message', allowInterop((event) {
+            controller.local.sink.add((event as dom.MessageEvent).data);
+          }));
       port.start();
 
-      subscriptions.add(controller.local.stream.listen(port.postMessage));
+      _subscriptions[id] =
+      controller.local.stream.listen(port.postMessage);
+    } else if (message.data['ready'] == true) {
+      // This message indicates that the iframe is actively listening for
+      // events, so the message channel's second port can now be transferred.
+      var channel = dom.createMessageChannel();
+      assert(!_domSubscriptions.containsKey(id));
+      _domSubscriptions[id] = dom.Subscription(channel.port1, 'message',
+          allowInterop((dom.Event event) {
+        controller.local.sink.add((event as dom.MessageEvent).data['data']);
+      }));
+
+      assert(!_subscriptions.containsKey(id));
+      _subscriptions[id] =
+          controller.local.stream.listen(channel.port1.postMessage);
+      channel
+        ..port2.start()
+        ..port1.start();
+      // TODO(#1758): This is a work around for a crash in package:build.
+      js_util.callMethod(
+          js_util.getProperty(iframe, 'contentWindow'), 'postMessage', [
+        'port',
+        dom.window.location.origin,
+        [channel.port2]
+      ]);
     } else if (message.data['exception'] == true) {
       // This message from `dart.js` indicates that an exception occurred
       // loading the test.
       controller.local.sink.add(message.data['data']);
     }
-    portSubscription.cancel();
   }));
 
   return controller.foreign;
