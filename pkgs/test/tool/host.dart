@@ -46,7 +46,7 @@ external set _jsApi(_JSApi api);
 final _iframes = <int, dom.HTMLIFrameElement>{};
 
 /// Subscriptions created for each loaded test suite, indexed by the suite id.
-final _subscriptions = <int, List<StreamSubscription<void>>>{};
+final _subscriptions = <int, StreamSubscription<void>>{};
 final _domSubscriptions = <int, dom.Subscription>{};
 
 /// The URL for the current page.
@@ -124,10 +124,7 @@ void main() {
       } else {
         assert(message['command'] == 'closeSuite');
         _iframes.remove(message['id'])!.remove();
-
-        for (var subscription in _subscriptions.remove(message['id'])!) {
-          subscription.cancel();
-        }
+        _subscriptions.remove(message['id'])?.cancel();
         _domSubscriptions.remove(message['id'])?.cancel();
       }
     });
@@ -188,9 +185,6 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
 
   var controller = StreamChannelController(sync: true);
 
-  var subscriptions = <StreamSubscription<void>>[];
-  _subscriptions[id] = subscriptions;
-
   late dom.Subscription windowSubscription;
   windowSubscription =
       dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
@@ -218,8 +212,9 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
         controller.local.sink.add((event as dom.MessageEvent).data['data']);
       }));
 
-      subscriptions
-          .add(controller.local.stream.listen(channel.port1.postMessage));
+  _subscriptions[id] = 
+      
+          controller.local.stream.listen(channel.port1.postMessage);
       channel
         ..port2.start()
         ..port1.start();

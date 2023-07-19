@@ -7271,7 +7271,7 @@
       return A._MultiChannel$(t1, t2);
     },
     _connectToIframe(url, id) {
-      var controller, subscriptions, windowSubscription,
+      var controller, windowSubscription,
         t1 = self.document,
         t2 = A._setArrayType(["iframe"], type$.JSArray_Object),
         t3 = type$.dynamic,
@@ -7281,10 +7281,8 @@
       iframe.src = url;
       t4._as(type$.nullable_JavaScriptObject._as(self.document.body).appendChild(iframe));
       controller = A.StreamChannelController$(true, t3);
-      subscriptions = A._setArrayType([], type$.JSArray_StreamSubscription_void);
-      $._subscriptions.$indexSet(0, id, subscriptions);
       windowSubscription = A._Cell$named("windowSubscription");
-      windowSubscription._value = A.Subscription$(self.window, "message", A.allowInterop(new A._connectToIframe_closure(iframe, windowSubscription, id, controller, subscriptions), type$.void_Function_JavaScriptObject));
+      windowSubscription._value = A.Subscription$(self.window, "message", A.allowInterop(new A._connectToIframe_closure(iframe, windowSubscription, id, controller), type$.void_Function_JavaScriptObject));
       t3 = controller.__StreamChannelController__foreign_F;
       t3 === $ && A.throwLateFieldNI("_foreign");
       return t3;
@@ -7314,13 +7312,12 @@
     _connectToServer_closure0: function _connectToServer_closure0(t0) {
       this.webSocket = t0;
     },
-    _connectToIframe_closure: function _connectToIframe_closure(t0, t1, t2, t3, t4) {
+    _connectToIframe_closure: function _connectToIframe_closure(t0, t1, t2, t3) {
       var _ = this;
       _.iframe = t0;
       _.windowSubscription = t1;
       _.id = t2;
       _.controller = t3;
-      _.subscriptions = t4;
     },
     _connectToIframe__closure: function _connectToIframe__closure(t0) {
       this.controller = t0;
@@ -7710,6 +7707,9 @@
     },
     allMatches$2$s(receiver, a0, a1) {
       return J.getInterceptor$s(receiver).allMatches$2(receiver, a0, a1);
+    },
+    cancel$0$z(receiver) {
+      return J.getInterceptor$z(receiver).cancel$0(receiver);
     },
     codeUnitAt$1$s(receiver, a0) {
       return J.getInterceptor$s(receiver).codeUnitAt$1(receiver, a0);
@@ -16746,10 +16746,8 @@
         if (t3._as(t2.parentNode) != null)
           type$.JavaScriptObject._as(t3._as(t2.parentNode).removeChild(t2));
         t2 = $._subscriptions.remove$1(0, t1.$index(message, _s2_));
-        t2.toString;
-        t2 = J.get$iterator$ax(t2);
-        for (; t2.moveNext$0();)
-          t2.get$current(t2).cancel$0(0);
+        if (t2 != null)
+          J.cancel$0$z(t2);
         t1 = $._domSubscriptions.remove$1(0, t1.$index(message, _s2_));
         if (t1 != null)
           A.EventTargetExtension_removeEventListener(t1.target, t1.type, t1.listener);
@@ -16850,7 +16848,7 @@
   };
   A._connectToIframe_closure.prototype = {
     call$1($event) {
-      var $location, t2, t3, t4, _this = this,
+      var $location, t2, t3, t4, t5, _this = this,
         t1 = type$.JavaScriptObject;
       t1._as($event);
       if (A._asString($event.origin) !== A._asString(t1._as(self.window.location).origin))
@@ -16868,13 +16866,14 @@
         t3 = A._callConstructor("MessageChannel", A._setArrayType([], type$.JSArray_Object));
         t3.toString;
         t1._as(t3);
-        t4 = _this.controller;
-        $._domSubscriptions.$indexSet(0, _this.id, A.Subscription$(t1._as(t3.port1), "message", A.allowInterop(new A._connectToIframe__closure(t4), type$.void_Function_JavaScriptObject)));
-        t4 = t4.__StreamChannelController__local_F;
-        t4 === $ && A.throwLateFieldNI("_local");
-        t4 = t4.__GuaranteeChannel__streamController_F;
-        t4 === $ && A.throwLateFieldNI("_streamController");
-        B.JSArray_methods.add$1(_this.subscriptions, new A._ControllerStream(t4, A._instanceType(t4)._eval$1("_ControllerStream<1>")).listen$1(A.MessagePortExtension_get_postMessage(t1._as(t3.port1))));
+        t4 = _this.id;
+        t5 = _this.controller;
+        $._domSubscriptions.$indexSet(0, t4, A.Subscription$(t1._as(t3.port1), "message", A.allowInterop(new A._connectToIframe__closure(t5), type$.void_Function_JavaScriptObject)));
+        t5 = t5.__StreamChannelController__local_F;
+        t5 === $ && A.throwLateFieldNI("_local");
+        t5 = t5.__GuaranteeChannel__streamController_F;
+        t5 === $ && A.throwLateFieldNI("_streamController");
+        $._subscriptions.$indexSet(0, t4, new A._ControllerStream(t5, A._instanceType(t5)._eval$1("_ControllerStream<1>")).listen$1(A.MessagePortExtension_get_postMessage(t1._as(t3.port1))));
         t1._as(t3.port2).start();
         t1._as(t3.port1).start();
         type$.Object._as(t2.contentWindow).postMessage("port", A._asString(t1._as(self.window.location).origin), A._setArrayType([t1._as(t3.port2)], type$.JSArray_JavaScriptObject));
@@ -17205,7 +17204,6 @@
       JSArray_Frame: findType("JSArray<Frame>"),
       JSArray_JavaScriptObject: findType("JSArray<JavaScriptObject>"),
       JSArray_Object: findType("JSArray<Object>"),
-      JSArray_StreamSubscription_void: findType("JSArray<StreamSubscription<~>>"),
       JSArray_String: findType("JSArray<String>"),
       JSArray_Trace: findType("JSArray<Trace>"),
       JSArray_Uint8List: findType("JSArray<Uint8List>"),
@@ -17527,7 +17525,7 @@
     $._currentUriBase = null;
     $._current = null;
     $._iframes = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, type$.JavaScriptObject);
-    $._subscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("List<StreamSubscription<~>>"));
+    $._subscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("StreamSubscription<~>"));
     $._domSubscriptions = A.LinkedHashMap_LinkedHashMap$_empty(type$.int, A.findType("Subscription"));
   })();
   (function lazyInitializers() {
