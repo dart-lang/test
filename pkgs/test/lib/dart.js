@@ -12,6 +12,11 @@ window.onload = function() {
 // This mimics a MultiChannel-formatted message.
 var sendLoadException = function(message) {
   window.parent.postMessage({
+<<<<<<< HEAD
+=======
+    // TODO: https://github.com/dart-lang/test/issues/2065 -  remove href
+    "href": window.location.href,
+>>>>>>> master
     "data": [0, {"type": "loadException", "message": message}],
     "exception": true,
   }, window.location.origin);

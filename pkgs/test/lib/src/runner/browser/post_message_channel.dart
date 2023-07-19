@@ -2,7 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:js/js.dart';
+import 'dart:js_util';
+
 import 'package:stream_channel/stream_channel.dart';
 
 import 'dom.dart' as dom;
