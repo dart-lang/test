@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'checks.dart' show Subject, describe;
+import 'checks.dart' show Condition, describe;
 
 /// Returns a pretty-printed representation of [object].
 ///
@@ -61,7 +61,7 @@ Iterable<String> _prettyPrint(
         .map((line) => line.replaceAll("'", r"\'"))
         .toList();
     return prefixFirst("'", postfixLast("'", escaped));
-  } else if (object is void Function(Subject)) {
+  } else if (object is Condition) {
     final value = ['A value that:', ...describe(object)];
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
   } else {

@@ -75,11 +75,11 @@ void main() {
     test('succeeds for happy case', () {
       check([0, 1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
     });
-    test('can use void Function(Subject<dynamic>)', () {
+    test('can use Condition<dynamic>', () {
       check([0, 1]).containsInOrder(
           [(Subject<dynamic> it) => it.isA<int>().isGreaterThan(0)]);
     });
-    test('can use void Function(Subject<T>)', () {
+    test('can use Condition<T>', () {
       check([0, 1]).containsInOrder([(Subject<int> it) => it.isGreaterThan(0)]);
     });
     test('fails for not found elements by equality', () async {

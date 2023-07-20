@@ -8,7 +8,7 @@ import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 
 extension RejectionChecks<T> on Subject<T> {
-  void isRejectedBy(void Function(Subject<T>) condition,
+  void isRejectedBy(Condition<T> condition,
       {Iterable<String>? actual, Iterable<String>? which}) {
     late T actualValue;
     var didRunCallback = false;
@@ -42,7 +42,7 @@ extension RejectionChecks<T> on Subject<T> {
     }
   }
 
-  Future<void> isRejectedByAsync(void Function(Subject<T>) condition,
+  Future<void> isRejectedByAsync(Condition<T> condition,
       {Iterable<String>? actual, Iterable<String>? which}) async {
     late T actualValue;
     var didRunCallback = false;
@@ -79,11 +79,11 @@ extension RejectionChecks<T> on Subject<T> {
   }
 }
 
-extension ConditionChecks<T> on Subject<void Function(Subject<T>)> {
+extension ConditionChecks<T> on Subject<Condition<T>> {
   Subject<Iterable<String>> get description =>
       has((c) => describe<T>(c), 'description');
   Future<void> hasAsyncDescriptionWhich(
-          void Function(Subject<Iterable<String>>) descriptionCondition) =>
+          Condition<Iterable<String>> descriptionCondition) =>
       context.nestAsync(
           () => ['has description'],
           (condition) async =>

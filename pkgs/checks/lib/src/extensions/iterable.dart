@@ -79,11 +79,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
   /// ```
   ///
-  /// Values in [elements] may be a `T`, a `void Function(Subject<T>)`, or a
-  /// `void Function(Subject<Object?>)`. If an expectation is a condition
-  /// callback it will be checked against the actual values, and any other
-  /// expectations, including those that are not a `T` or a condition callback,
-  /// will be compared with the equality operator.
+  /// Values in [elements] may be a `T`, a `Condition<T>`, or a
+  /// `Condition<Object?>`. If an expectation is a condition callback it will be
+  /// checked against the actual values, and any other expectations, including
+  /// those that are not a `T` or a condition callback, will be compared with
+  /// the equality operator.
   ///
   /// ```dart
   /// check([1, 0, 2, 0, 3])
@@ -99,9 +99,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
       var expectedIndex = 0;
       for (final element in actual) {
         final currentExpected = expected[expectedIndex];
-        final matches = currentExpected is void Function(Subject<T>)
+        final matches = currentExpected is Condition<T>
             ? softCheck(element, currentExpected) == null
-            : currentExpected is void Function(Subject<dynamic>)
+            : currentExpected is Condition<dynamic>
                 ? softCheck(element, currentExpected) == null
                 : currentExpected == element;
         if (matches && ++expectedIndex >= expected.length) return null;
@@ -117,7 +117,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
 
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
-  void any(void Function(Subject<T>) elementCondition) {
+  void any(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
@@ -138,7 +138,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [elementCondition].
   ///
   /// Empty iterables will pass always pass this expectation.
-  void every(void Function(Subject<T>) elementCondition) {
+  void every(Condition<T> elementCondition) {
     context.expect(() {
       final conditionDescription = describe(elementCondition);
       assert(conditionDescription.isNotEmpty);
@@ -215,7 +215,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// Should not be used for very large collections, runtime is O(n^2.5) in the
   /// worst case where conditions match many elements, and O(n^2) in more
   /// typical cases.
-  void unorderedMatches(Iterable<void Function(Subject<T>)> expected) {
+  void unorderedMatches(Iterable<Condition<T>> expected) {
     context.expect(() => prefixFirst('unordered matches ', literal(expected)),
         (actual) {
       final which = unorderedCompare(
@@ -250,10 +250,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [description] is used in the Expected clause. It should be a predicate
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
-  void pairwiseComparesTo<S>(
-      List<S> expected,
-      void Function(Subject<T>) Function(S) elementCondition,
-      String description) {
+  void pairwiseComparesTo<S>(List<S> expected,
+      Condition<T> Function(S) elementCondition, String description) {
     context.expect(() {
       return prefixFirst('pairwise $description ', literal(expected));
     }, (actual) {

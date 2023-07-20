@@ -39,13 +39,13 @@ extension CoreChecks<T> on Subject<T> {
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  void which(void Function(Subject<T>) condition) => condition(this);
+  void which(Condition<T> condition) => condition(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.
   ///
   /// Asynchronous expectations are not allowed in [condition].
-  void not(void Function(Subject<T>) condition) {
+  void not(Condition<T> condition) {
     context.expect(
       () => ['is not a value that:', ...indent(describe(condition))],
       (actual) {
@@ -61,7 +61,7 @@ extension CoreChecks<T> on Subject<T> {
   /// condition from [conditions].
   ///
   /// Asynchronous expectations are not allowed in [conditions].
-  void anyOf(Iterable<void Function(Subject<T>)> conditions) {
+  void anyOf(Iterable<Condition<T>> conditions) {
     context.expect(
         () => prefixFirst('matches any condition in ', literal(conditions)),
         (actual) {

@@ -114,8 +114,9 @@ check(someValue)
 ### Passing a set of expectations as an argument
 
 Some expectations take arguments which are themselves expectations to apply to
-other values. These expectations take `void Function(Subject)` arguments, which
-check expectations when they called with a `Subject` argument.
+other values. These expectations take `Condition` arguments which have the
+signature void Function(Subject)`. THe conditions check expectations when they
+called with a `Subject` argument.
 
 ```dart
 check(someList).any((e) => e.isGreaterThan(0));

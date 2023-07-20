@@ -15,9 +15,8 @@ import 'package:checks/context.dart';
 /// [actual]. Elements which are collection types are note compared with the
 /// native identity based equality or custom equality operator overrides.
 ///
-/// Elements, keys, or values within [expected] which are `void
-/// Function(Subject)` condition callbacks are run against the value in the same
-/// position within [actual].
+/// Elements, keys, or values within [expected] which are `Condition` callbacks
+/// are run against the value in the same position within [actual].
 /// Condition callbacks must take a `Subject<Object?>` or `Subject<dynamic>` and
 /// may not use a more specific generic.
 /// Use `(Subject<Object?> s) => s.isA<Type>()` to check expectations for
@@ -107,7 +106,7 @@ List<String>? _findIterableDifference(Object? actual,
       if (depth + 1 > _maxDepth) throw _ExceededDepthError();
       queue.addLast(
           _Search(path.append(index), actualValue, expectedValue, depth + 1));
-    } else if (expectedValue is void Function(Subject)) {
+    } else if (expectedValue is Condition) {
       final failure = softCheck(actualValue, expectedValue);
       if (failure != null) {
         final which = failure.rejection.which;
@@ -139,7 +138,7 @@ bool _elementMatches(Object? actual, Object? expected, int depth) {
     return actual != null &&
         _deepCollectionEquals(actual, expected, depth) == null;
   }
-  if (expected is void Function(Subject)) {
+  if (expected is Condition) {
     return softCheck(actual, expected) == null;
   }
   return expected == actual;
