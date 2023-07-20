@@ -213,42 +213,43 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     message.stopPropagation();
     windowSubscription.cancel();
 
-    if (message.data == 'port') {
-      final port = message.ports.first;
-      _domSubscriptions[id] =
-          dom.Subscription(port, 'message', allowInterop((event) {
-        controller.local.sink.add((event as dom.MessageEvent).data);
-      }));
-      port.start();
+    switch (message.data) {
+      case 'port':
+        final port = message.ports.first;
+        _domSubscriptions[id] =
+            dom.Subscription(port, 'message', allowInterop((event) {
+          controller.local.sink.add((event as dom.MessageEvent).data);
+        }));
+        port.start();
 
-      _subscriptions[id] = controller.local.stream.listen(port.postMessage);
-    } else if (message.data['ready'] == true) {
-      // This message indicates that the iframe is actively listening for
-      // events, so the message channel's second port can now be transferred.
-      var channel = dom.createMessageChannel();
-      assert(!_domSubscriptions.containsKey(id));
-      _domSubscriptions[id] = dom.Subscription(channel.port1, 'message',
-          allowInterop((dom.Event event) {
-        controller.local.sink.add((event as dom.MessageEvent).data['data']);
-      }));
+        _subscriptions[id] = controller.local.stream.listen(port.postMessage);
+      case {'ready': true}:
+        // This message indicates that the iframe is actively listening for
+        // events, so the message channel's second port can now be transferred.
+        var channel = dom.createMessageChannel();
+        assert(!_domSubscriptions.containsKey(id));
+        _domSubscriptions[id] = dom.Subscription(channel.port1, 'message',
+            allowInterop((dom.Event event) {
+          controller.local.sink.add((event as dom.MessageEvent).data['data']);
+        }));
 
-      assert(!_subscriptions.containsKey(id));
-      _subscriptions[id] =
-          controller.local.stream.listen(channel.port1.postMessage);
-      channel
-        ..port2.start()
-        ..port1.start();
-      // TODO(#1758): This is a work around for a crash in package:build.
-      js_util.callMethod(
-          js_util.getProperty(iframe, 'contentWindow'), 'postMessage', [
-        'port',
-        dom.window.location.origin,
-        [channel.port2]
-      ]);
-    } else if (message.data['exception'] == true) {
-      // This message from `dart.js` indicates that an exception occurred
-      // loading the test.
-      controller.local.sink.add(message.data['data']);
+        assert(!_subscriptions.containsKey(id));
+        _subscriptions[id] =
+            controller.local.stream.listen(channel.port1.postMessage);
+        channel
+          ..port2.start()
+          ..port1.start();
+        // TODO(#1758): This is a work around for a crash in package:build.
+        js_util.callMethod(
+            js_util.getProperty(iframe, 'contentWindow'), 'postMessage', [
+          'port',
+          dom.window.location.origin,
+          [channel.port2]
+        ]);
+      case {'exception': true, 'data': final data}:
+        // This message from `dart.js` indicates that an exception occurred
+        // loading the test.
+        controller.local.sink.add(data);
     }
   }));
 
