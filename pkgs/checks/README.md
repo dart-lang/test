@@ -1,8 +1,8 @@
 [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
 [![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
 
-`package:checks` ia a library for expressing test expectations and features a
-literate API.
+`package:checks` is a library for expressing test expectations and it features
+a literate API.
 
 ## package:checks preview
 
@@ -169,7 +169,7 @@ library `package:checks/context.dart` gives access to a `context` getter on
 `Subject` which offers capabilities for defining expectations on the subject's
 value.
 
-The `Context` allows checking a expectation with `expect`, `expectAsync` and
+The `Context` allows checking an expectation with `expect`, `expectAsync` and
 `expectUnawaited`, or extracting a derived value for performing other checks
 with `nest` and `nestAsync`. Failures are reported by returning a `Rejection`,
 or an `Extracted.rejection`, extensions should avoid throwing exceptions.

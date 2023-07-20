@@ -1,10 +1,21 @@
-## 1.24.4-wip
+## 1.24.5-wip
+
+* Change "compiling <path>" to "loading <path>" message in all cases. Surface
+  the "loading" messages in the situations where previously only "compiling"
+  message would be used.
+
+## 1.24.4
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
 * Make some annotation classes `final`: `OnPlatform`, `Retry`, `Skip`, `Tags`,
   `TestOn`, `Timeout`.
 * Fix the `root_` fields in the JSON reporter when running a test on Windows
   with an absolute path.
+* Add support for `SAFARI_EXECUTABLE`, `FIREFOX_EXECUTABLE` and
+  `MS_EDGE_EXECUTABLE` for custom browser installations.
+* Allow the latest analyzer (6.x.x).
+* Add `MOZ_AUTOMATION=1` environmental variable to Firefox runner, to make
+  launcher process on Windows wait for browser exit.
 
 ## 1.24.3
 

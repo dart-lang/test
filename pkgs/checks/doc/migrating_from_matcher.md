@@ -195,4 +195,4 @@ it was up to the author to correctly use `await expecLater` for asynchronous
 cases, and `expect` for synchronous cases, and if `expect` was used with an
 asynchronous matcher the expectation could fail at any point.
 
-[unawaited lint]:https://dart-lang.github.io/linter/lints/unawaited_futures.html
+[unawaited lint]: https://dart.dev/lints/unawaited_futures
