@@ -30,7 +30,14 @@ final class Subject<T> {
   Subject._(this._context);
 }
 
+/// A callback that synchronously checks expectations against a subject.
+///
+/// Asynchronous expectations should not be used within a `Condition` callback.
 typedef Condition<T> = void Function(Subject<T>);
+
+/// A callback that asynchronously checks expectations against a subject.
+///
+/// Any expectations may be used within an `AsyncCondition` callback.
 typedef AsyncCondition<T> = FutureOr<void> Function(Subject<T>);
 
 extension SkipExtension<T> on Subject<T> {
