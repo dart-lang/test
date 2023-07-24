@@ -91,11 +91,12 @@ check(because: 'some explanation', actual).expectation();
 -   Streams must be explicitly wrapped into a `StreamQueue` before they can be
     tested for behavior. Use `check(actualStream).withQueue`.
 -   `emitsAnyOf` is `Subject<StreamQueue>.anyOf`. `emitsInOrder` is `inOrder`.
-    The arguments are `Condition<StreamQueue>` and match a behavior of the
-    entire stream. In `matcher` the elements to expect could have been a bare
-    value to check for equality, a matcher for the emitted value, or a matcher
-    for the entire queue which would match multiple values. Use `it()..emits()`
-    to check the emitted elements.
+    The arguments are `FutureOr<void> Function(Subject<StreamQueue>)` and match
+    a behavior of the entire stream. In `matcher` the elements to expect could
+    have been a bare value to check for equality, a matcher for the emitted
+    value, or a matcher for the entire queue which would match multiple values.
+    Use `(s) => s.emits((e) => e.interestingCheck())` to check the emitted
+    elements.
 -   In `package:matcher` the [`matches` Matcher][matches] converted a `String`
     argument into a `Regex`, so `matches(r'\d')` would match the value `'1'`.
     This was potentially confusing, because even though `String` is a subtype of
@@ -117,10 +118,10 @@ check(because: 'some explanation', actual).expectation();
 
 -   `anyElement` -> `Subject<Iterable>.any`
 -   `everyElement` -> `Subject<Iterable>.every`
--   `completion(Matcher)` -> `completes(Condition)`
+-   `completion(Matcher)` -> `completes(conditionCallback)`
 -   `containsPair(key, value)` -> Use `Subject<Map>[key].equals(value)`
 -   `hasLength(expected)` -> `length.equals(expected)`
--   `isNot(Matcher)` -> `not(Condition)`
+-   `isNot(Matcher)` -> `not(conditionCallback)`
 -   `pairwiseCompare` -> `pairwiseComparesTo`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
@@ -130,8 +131,8 @@ check(because: 'some explanation', actual).expectation();
 -   `checks` does not ship with any type checking matchers for specific types.
     Instead of, for example,  `isArgumentError` use `isA<ArgumentError>`, and
     similary `throws<ArgumentError>` over `throwsArgumentError`.
--   `anything`. When a `Condition` is needed that should accept any value, pass
-    `it()` without cascading any expectation checks.
+-   `anything`. When a condition callback is needed that should accept any
+    value, pass `(_) {}`.
 -   Specific numeric comparison - `isNegative`, `isPositive`, `isZero` and their
     inverses. Use `isLessThan`, `isGreaterThan`, `isLessOrEqual`, and
     `isGreaterOrEqual` with appropriate numeric arguments.
@@ -146,7 +147,7 @@ check(because: 'some explanation', actual).expectation();
 -   `orderedEquals`: Use `deepEquals`. If the equality needs to specifically
     *not* be deep equality (this is unusual, nested collections are unlikely to
     have a meaningful equality), force using `operator ==` at the first level
-    with `check(actual).deepEquals(expected.map((e) => it()..equals(e)))`;
+    with `.deepEquals(expected.map((e) => (Subject<Object?> s) => s.equals(e)))`;
 -   `prints`: TODO add missing expectation? Is this one worth replacing?
 -   `predicate`: TODO add missing expectation
 
