@@ -115,7 +115,7 @@ check(someValue)
 
 Some expectations take arguments which are themselves expectations to apply to
 other values. These expectations take `Condition` arguments which have the
-signature void Function(Subject)`. THe conditions check expectations when they
+signature void Function(Subject)`. The conditions check expectations when they
 called with a `Subject` argument.
 
 ```dart
