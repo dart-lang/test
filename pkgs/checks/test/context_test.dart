@@ -12,8 +12,6 @@ import 'package:test/scaffolding.dart';
 import 'package:test_api/hooks.dart';
 import 'package:test_api/hooks_testing.dart';
 
-import 'test_shared.dart';
-
 void main() {
   group('Context', () {
     test('expectAsync holds test open', () async {
@@ -74,11 +72,11 @@ void main() {
       final monitor = TestCaseMonitor.start(() {
         check(null).context.nestAsync(() => [''], (actual) async {
           return Extracted.value(null);
-        }, LazyCondition((it) async {
+        }, (it) async {
           final completer = Completer<void>();
           callback = completer.complete;
           await completer.future;
-        }));
+        });
       });
       await pumpEventQueue();
       check(monitor).state.equals(State.running);
@@ -123,16 +121,16 @@ void main() {
       check(monitor)
         ..state.equals(State.failed)
         ..errors.unorderedMatches([
-          it()
-            ..has((e) => e.error, 'error')
-                .isA<TestFailure>()
-                .has((f) => f.message, 'message')
-                .isNotNull()
-                .endsWith('Which: foo'),
-          it()
-            ..has((e) => e.error, 'error')
-                .isA<String>()
-                .startsWith('This test failed after it had already completed.')
+          (it) => it
+              .has((e) => e.error, 'error')
+              .isA<TestFailure>()
+              .has((f) => f.message, 'message')
+              .isNotNull()
+              .endsWith('Which: foo'),
+          (it) => it
+              .has((e) => e.error, 'error')
+              .isA<String>()
+              .startsWith('This test failed after it had already completed.')
         ]);
     });
   });
