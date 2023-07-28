@@ -3,6 +3,7 @@
 * Change "compiling <path>" to "loading <path>" message in all cases. Surface
   the "loading" messages in the situations where previously only "compiling"
   message would be used.
+* Support browser tests where the frame creates the message channel.
 
 ## 1.24.4
 
