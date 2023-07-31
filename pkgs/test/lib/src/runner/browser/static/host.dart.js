@@ -7351,14 +7351,14 @@
         t4 = type$.JavaScriptObject,
         iframe = t4._as(A.callMethod(t1, "createElement", t2, t3));
       $._iframes.$indexSet(0, id, iframe);
-      iframe.src = url;
-      t4._as(type$.nullable_JavaScriptObject._as(self.document.body).appendChild(iframe));
       controller = A.StreamChannelController$(true, t3);
       windowSubscription = A._Cell$named("windowSubscription");
       windowSubscription._value = A.Subscription$(self.window, "message", A.allowInterop(new A._connectToIframe_closure(iframe, windowSubscription, id, controller), type$.void_Function_JavaScriptObject));
-      t3 = controller.__StreamChannelController__foreign_F;
-      t3 === $ && A.throwLateFieldNI("_foreign");
-      return t3;
+      iframe.src = url;
+      t4._as(type$.nullable_JavaScriptObject._as(self.document.body).appendChild(iframe));
+      t4 = controller.__StreamChannelController__foreign_F;
+      t4 === $ && A.throwLateFieldNI("_foreign");
+      return t4;
     },
     main_closure: function main_closure() {
     },
