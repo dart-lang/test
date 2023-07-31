@@ -4,9 +4,9 @@
 
 export 'src/checks.dart'
     show
+        AsyncCondition,
         CheckFailure,
         Condition,
-        ConditionSubject,
         Context,
         ContextExtension,
         Extracted,

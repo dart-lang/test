@@ -178,7 +178,7 @@ MultiChannel<dynamic> _connectToServer() {
 ///
 /// [id] identifies the suite loaded in this iframe.
 ///
-/// While the iframe is starting, adds a listener for `window.onMessage` which
+/// Before the frame is attached, adds a listener for `window.onMessage` which
 /// filters to only the messages coming from this frame (by it's URL) and
 /// expects the first message to be either an initialization message, (coming
 /// from the browser bootstrap message channel initialization), or a map with
@@ -197,9 +197,6 @@ MultiChannel<dynamic> _connectToServer() {
 StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var iframe = dom.createHTMLIFrameElement();
   _iframes[id] = iframe;
-  iframe.src = url;
-  dom.document.body!.appendChild(iframe);
-
   var controller = StreamChannelController(sync: true);
 
   late dom.Subscription windowSubscription;
@@ -260,6 +257,9 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
         controller.local.sink.add(data);
     }
   }));
+
+  iframe.src = url;
+  dom.document.body!.appendChild(iframe);
 
   return controller.foreign;
 }
