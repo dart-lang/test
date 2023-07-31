@@ -1,4 +1,4 @@
-## 1.24.5-wip
+## 1.24.5
 
 * Change "compiling <path>" to "loading <path>" message in all cases. Surface
   the "loading" messages in the situations where previously only "compiling"
