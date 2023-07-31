@@ -195,7 +195,6 @@ MultiChannel<dynamic> _connectToServer() {
 /// Returns a [StreamChannel] which will be connected to the frame once the
 /// message channel port is active.
 StreamChannel<dynamic> _connectToIframe(String url, int id) {
-
   var iframe = dom.createHTMLIFrameElement();
   _iframes[id] = iframe;
   var controller = StreamChannelController(sync: true);
