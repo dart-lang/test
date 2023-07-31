@@ -1,8 +1,8 @@
 [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
 [![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
 
-`package:checks` ia a library for expressing test expectations and features a
-literate API.
+`package:checks` is a library for expressing test expectations and it features
+a literate API.
 
 ## package:checks preview
 
@@ -59,11 +59,11 @@ passing a `because:` argument to `check()`.
 check(
   because: 'log lines must start with the severity',
   logLines,
-).every(it()
+).every((l) => l
   ..anyOf([
-    it()..startsWith('ERROR'),
-    it()..startsWith('WARNING'),
-    it()..startsWith('INFO'),
+    (l) => l.startsWith('ERROR'),
+    (l) => l.startsWith('WARNING'),
+    (l) => l.startsWith('INFO'),
   ]));
 ```
 
@@ -89,7 +89,7 @@ There is a `which` utility for this use case which takes a `Condition`.
 check(someString)
   ..startsWith('a')
   // A cascade would not be possible on `length`
-  ..length.which(it()
+  ..length.which((l) => l
     ..isGreatherThan(10)
     ..isLessThan(100));
 ```
@@ -114,14 +114,12 @@ check(someValue)
 ### Passing a set of expectations as an argument
 
 Some expectations take arguments which are themselves expectations to apply to
-other values. These expectations take `Condition` arguments, which check
-expectations when they are applied to a `Subject`. The `ConditionSubject`
-utility acts as both a condition and a subject. Any expectations checked on the
-value as a subject will be recorded and replayed when it is applied as a
-condition. The `it()` utility returns a `ConditionSubject`.
+other values. These expectations take `Condition` arguments which have the
+signature void Function(Subject)`. The conditions check expectations when they
+are called with a `Subject` argument.
 
 ```dart
-check(someList).any(it()..isGreaterThan(0));
+check(someList).any((e) => e.isGreaterThan(0));
 ```
 
 ### Checking asynchronous expectations
@@ -139,7 +137,7 @@ extracts a derived value further expectations can be checked by passing a
 `Condition`.
 
 ```dart
-await check(someFuture).completes(it()..isGreaterThan(0));
+await check(someFuture).completes((r) => r.isGreaterThan(0));
 ```
 
 Subjects for `Stream` instances must first be wrapped into a `StreamQueue` to
@@ -151,16 +149,16 @@ wrapped with a `StreamQueue`.
 
 ```dart
 await check(someStream).withQueue.inOrder([
-  it()..emits(it()..equals(1)),
-  it()..emits(it()..equals(2)),
-  it()..emits(it()..equals(3)),
-  it()..isDone(),
+  (s) => s.emits((e) => e.equals(1)),
+  (s) => s.emits((e) => e.equals(2)),
+  (s) => s.emits((e) => e.equals(3)),
+  (s) => s.isDone(),
 ]);
 
 var someQueue = StreamQueue(someOtherStream);
-await check(someQueue).emits(it()..equals(1));
+await check(someQueue).emits((e) => e.equals(1));
 // do something
-await check(someQueue).emits(it()..equals(2));
+await check(someQueue).emits((e) => e.equals(2));
 // do something
 ```
 
@@ -172,7 +170,7 @@ library `package:checks/context.dart` gives access to a `context` getter on
 `Subject` which offers capabilities for defining expectations on the subject's
 value.
 
-The `Context` allows checking a expectation with `expect`, `expectAsync` and
+The `Context` allows checking an expectation with `expect`, `expectAsync` and
 `expectUnawaited`, or extracting a derived value for performing other checks
 with `nest` and `nestAsync`. Failures are reported by returning a `Rejection`,
 or an `Extracted.rejection`, extensions should avoid throwing exceptions.
@@ -180,9 +178,10 @@ or an `Extracted.rejection`, extensions should avoid throwing exceptions.
 Descriptions of the clause checked by an expectations are passed through a
 separate callback from the predicate which checks the value. Nesting calls are
 made with a label directly. When there are no failures the clause callbacks are
-not called. When a `Condition` is described, the clause callbacks are called,
-but the predicate callbacks are not called. Conditions can be checked against
-values without throwing an exception using `softCheck` or `softCheckAsync`.
+not called. When a condition callback is described, the clause callbacks are
+called, but the predicate callbacks are not called. Conditions can be checked
+against values without throwing an exception using `softCheck` or
+`softCheckAsync`.
 
 ```dart
 extension CustomChecks on Subject<CustomType> {

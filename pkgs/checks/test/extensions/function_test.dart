@@ -14,13 +14,13 @@ void main() {
         check(() => throw StateError('oops!')).throws<StateError>();
       });
       test('fails for functions that return normally', () {
-        check(() {}).isRejectedBy(it()..throws<StateError>(),
+        check(() {}).isRejectedBy((it) => it.throws<StateError>(),
             actual: ['a function that returned <null>'],
             which: ['did not throw']);
       });
       test('fails for functions that throw the wrong type', () {
         check(() => throw StateError('oops!')).isRejectedBy(
-          it()..throws<ArgumentError>(),
+          (it) => it.throws<ArgumentError>(),
           actual: ['a function that threw error <Bad state: oops!>'],
           which: ['did not throw an ArgumentError'],
         );
@@ -35,7 +35,7 @@ void main() {
         check(() {
           Error.throwWithStackTrace(
               StateError('oops!'), StackTrace.fromString('fake trace'));
-        }).isRejectedBy(it()..returnsNormally(),
+        }).isRejectedBy((it) => it.returnsNormally(),
             actual: ['a function that throws'],
             which: ['threw <Bad state: oops!>', 'fake trace']);
       });

@@ -49,7 +49,7 @@ void main() {
 
       var test = await _runTest(['-p', 'chrome', 'test.dart']);
       await expectLater(
-          test.stdout, emitsThrough(endsWith('compiling test.dart')));
+          test.stdout, emitsThrough(endsWith('loading test.dart')));
       await signalAndQuit(test);
 
       expectTempDirEmpty(skip: 'Failing on Travis.');

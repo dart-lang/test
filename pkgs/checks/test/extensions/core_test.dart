@@ -12,7 +12,7 @@ void main() {
     test('isA', () {
       check(1).isA<int>();
 
-      check(1).isRejectedBy(it()..isA<String>(), which: ['Is a int']);
+      check(1).isRejectedBy((it) => it.isA<String>(), which: ['Is a int']);
     });
   });
   group('HasField', () {
@@ -20,12 +20,10 @@ void main() {
       check(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
       check(null).isRejectedBy(
-          it()
-            ..has((v) {
-              Error.throwWithStackTrace(
-                  UnimplementedError(), StackTrace.fromString('fake trace'));
-            }, 'foo')
-                .isNotNull(),
+          (it) => it.has((v) {
+                Error.throwWithStackTrace(
+                    UnimplementedError(), StackTrace.fromString('fake trace'));
+              }, 'foo').isNotNull(),
           which: [
             'threw while trying to read foo: <UnimplementedError>',
             'fake trace'
@@ -33,13 +31,12 @@ void main() {
     });
 
     test('which', () {
-      check(true).which(it()..isTrue());
+      check(true).which((it) => it.isTrue());
     });
 
     test('not', () {
-      check(false).not(it()..isTrue());
-
-      check(true).isRejectedBy(it()..not(it()..isTrue()), which: [
+      check(false).not((it) => it.isTrue());
+      check(true).isRejectedBy((it) => it.not((it) => it.isTrue()), which: [
         'is a value that: ',
         '    is true',
       ]);
@@ -47,12 +44,13 @@ void main() {
 
     group('anyOf', () {
       test('succeeds for happy case', () {
-        check(-10).anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]);
+        check(-10)
+            .anyOf([(it) => it.isGreaterThan(1), (it) => it.isLessThan(-1)]);
       });
-
       test('rejects values that do not satisfy any condition', () {
         check(0).isRejectedBy(
-            it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
+            (it) => it.anyOf(
+                [(it) => it.isGreaterThan(1), (it) => it.isLessThan(-1)]),
             which: ['did not match any condition']);
       });
     });
@@ -62,13 +60,13 @@ void main() {
     test('isTrue', () {
       check(true).isTrue();
 
-      check(false).isRejectedBy(it()..isTrue());
+      check(false).isRejectedBy((it) => it.isTrue());
     });
 
     test('isFalse', () {
       check(false).isFalse();
 
-      check(true).isRejectedBy(it()..isFalse());
+      check(true).isRejectedBy((it) => it.isFalse());
     });
   });
 
@@ -76,24 +74,25 @@ void main() {
     test('equals', () {
       check(1).equals(1);
 
-      check(1).isRejectedBy(it()..equals(2), which: ['are not equal']);
+      check(1).isRejectedBy((it) => it.equals(2), which: ['are not equal']);
     });
     test('identical', () {
       check(1).identicalTo(1);
 
-      check(1).isRejectedBy(it()..identicalTo(2), which: ['is not identical']);
+      check(1)
+          .isRejectedBy((it) => it.identicalTo(2), which: ['is not identical']);
     });
   });
   group('NullabilityChecks', () {
     test('isNotNull', () {
       check(1).isNotNull();
 
-      check(null).isRejectedBy(it()..isNotNull());
+      check(null).isRejectedBy((it) => it.isNotNull());
     });
     test('isNull', () {
       check(null).isNull();
 
-      check(1).isRejectedBy(it()..isNull());
+      check(1).isRejectedBy((it) => it.isNull());
     });
   });
 
@@ -104,12 +103,12 @@ void main() {
       });
       test('fails for equal', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isGreaterThan(Duration(seconds: 10)),
+            (it) => it.isGreaterThan(Duration(seconds: 10)),
             which: ['is not greater than <0:00:10.000000>']);
       });
       test('fails for less', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isGreaterThan(Duration(seconds: 50)),
+            (it) => it.isGreaterThan(Duration(seconds: 50)),
             which: ['is not greater than <0:00:50.000000>']);
       });
     });
@@ -122,7 +121,7 @@ void main() {
       });
       test('fails for less', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isGreaterOrEqual(Duration(seconds: 50)),
+            (it) => it.isGreaterOrEqual(Duration(seconds: 50)),
             which: ['is not greater than or equal to <0:00:50.000000>']);
       });
     });
@@ -132,12 +131,12 @@ void main() {
       });
       test('fails for equal', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isLessThan(Duration(seconds: 10)),
+            (it) => it.isLessThan(Duration(seconds: 10)),
             which: ['is not less than <0:00:10.000000>']);
       });
       test('fails for greater', () {
         check(Duration(seconds: 50)).isRejectedBy(
-            it()..isLessThan(Duration(seconds: 10)),
+            (it) => it.isLessThan(Duration(seconds: 10)),
             which: ['is not less than <0:00:10.000000>']);
       });
     });
@@ -150,7 +149,7 @@ void main() {
       });
       test('fails for greater', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isLessOrEqual(Duration(seconds: 1)),
+            (it) => it.isLessOrEqual(Duration(seconds: 1)),
             which: ['is not less than or equal to <0:00:01.000000>']);
       });
     });
