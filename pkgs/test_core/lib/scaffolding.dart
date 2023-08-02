@@ -28,7 +28,20 @@ import 'src/util/print_sink.dart';
 // This file is an almost direct copy of import below, but with the global
 // declarer added.
 export 'package:test_api/scaffolding.dart'
-    hide group, setUp, setUpAll, tearDown, tearDownAll, test;
+    show
+        OnPlatform,
+        Retry,
+        Skip,
+        Tags,
+        TestOn,
+        Timeout,
+        addTearDown,
+        markTestSkipped,
+        printOnFailure,
+        pumpEventQueue,
+        registerException,
+        spawnHybridCode,
+        spawnHybridUri;
 
 /// The global declarer.
 ///

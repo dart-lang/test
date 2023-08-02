@@ -1,3 +1,9 @@
+## 0.7.0-wip
+
+* Remove the definitions of `group`, `test`, `setUp`, `tearDown`, `setUpAll`,
+  and `tearDownAll`. These methods are available in `package:test_core` and
+  re-exported in `package:test`.
+
 ## 0.6.1
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
