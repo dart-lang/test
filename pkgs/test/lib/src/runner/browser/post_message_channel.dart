@@ -8,47 +8,23 @@ import 'package:stream_channel/stream_channel.dart';
 
 import 'dom.dart' as dom;
 
-/// Constructs a [StreamChannel] wrapping [MessageChannel] communication with
-/// the host page.
+/// Constructs a [StreamChannel] wrapping a new [MessageChannel] communicating
+/// with the host page.
+///
+/// Sends a [MessagePort] to the host page for the channel.
 StreamChannel<Object?> postMessageChannel() {
   var controller = StreamChannelController<Object?>(sync: true);
-
-  // Listen for a message from the host that transfers a message port, then
-  // cancel the subscription.  This is important to prevent multiple
-  // subscriptions if the test is ever hot restarted.
-  late final dom.Subscription subscription;
-  subscription =
-      dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
-    // A message on the Window can theoretically come from any website. It's
-    // very unlikely that a malicious site would care about hacking someone's
-    // unit tests, let alone be able to find the test server while it's
-    // running, but it's good practice to check the origin anyway.
-    final message = event as dom.MessageEvent;
-    if (message.origin == dom.window.location.origin &&
-        message.data == 'port') {
-      subscription.cancel();
-      var port = message.ports.first;
-      port.start();
-      var portSubscription =
-          dom.Subscription(port, 'message', allowInterop((dom.Event event) {
-        controller.local.sink.add((event as dom.MessageEvent).data);
-      }));
-
-      controller.local.stream.listen((data) {
-        port.postMessage({'data': data});
-      }, onDone: () {
-        port.postMessage({'event': 'done'});
-        portSubscription.cancel();
-      });
-    }
+  var channel = dom.createMessageChannel();
+  dom.window.parent
+      .postMessage('port', dom.window.location.origin, [channel.port2]);
+  var portSubscription = dom.Subscription(channel.port1, 'message',
+      allowInterop((dom.Event event) {
+    controller.local.sink.add((event as dom.MessageEvent).data);
   }));
+  channel.port1.start();
 
-  // Send a ready message once we're listening so the host knows it's safe to
-  // start sending events.
-  // TODO: https://github.com/dart-lang/test/issues/2065 -  remove href
-  dom.window.parent.postMessage(
-      jsify({'href': dom.window.location.href, 'ready': true}) as Object,
-      dom.window.location.origin);
+  controller.local.stream
+      .listen(channel.port1.postMessage, onDone: portSubscription.cancel);
 
   return controller.foreign;
 }
