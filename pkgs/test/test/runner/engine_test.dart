@@ -129,7 +129,8 @@ void main() {
     expect(engine.run(), completion(isFalse));
   });
 
-  test('.run() stops immediately for failFast', () async {
+  test('.run() does not run more tests after failure for stopOnFirstFailure',
+      () async {
     var secondTestRan = false;
     var engine = declareEngine(() {
       test('failure', () => throw 'oh no');
