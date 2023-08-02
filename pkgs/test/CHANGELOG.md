@@ -1,3 +1,8 @@
+## 1.24.6-wip
+
+* Simplify the initialization of the per-suite message channel within browser
+  tests. See https://github.com/dart-lang/test/issues/2065
+
 ## 1.24.5
 
 * Change "compiling <path>" to "loading <path>" message in all cases. Surface
