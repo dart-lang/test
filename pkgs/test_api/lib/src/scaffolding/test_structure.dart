@@ -2,93 +2,17 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Deprecated('package:test_core is not intended for general use. '
-    'Please use package:test.')
-library test_core.scaffolding;
-
 import 'dart:async';
 
-import 'package:meta/meta.dart' show isTest, isTestGroup;
-import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart';
-import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
-import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:meta/meta.dart';
 
-import 'src/runner/engine.dart';
-import 'src/runner/plugin/environment.dart';
-import 'src/runner/reporter/expanded.dart';
-import 'src/runner/runner_suite.dart';
-import 'src/runner/suite.dart';
-import 'src/util/async.dart';
-import 'src/util/os.dart';
-import 'src/util/print_sink.dart';
+import '../backend/configuration/timeout.dart';
+import '../backend/declarer.dart';
+import '../backend/invoker.dart';
 
-// Hide implementations which don't support being run directly.
-// This file is an almost direct copy of import below, but with the global
-// declarer added.
-export 'package:test_api/scaffolding.dart'
-    show
-        OnPlatform,
-        Retry,
-        Skip,
-        Tags,
-        TestOn,
-        Timeout,
-        addTearDown,
-        markTestSkipped,
-        printOnFailure,
-        pumpEventQueue,
-        registerException,
-        spawnHybridCode,
-        spawnHybridUri;
-
-/// The global declarer.
-///
-/// This is used if a test file is run directly, rather than through the runner.
-Declarer? _globalDeclarer;
-
-/// Gets the declarer for the current scope.
-///
-/// When using the runner, this returns the [Zone]-scoped declarer that's set by
-/// [RemoteListener]. If the test file is run directly, this returns
-/// [_globalDeclarer] (and sets it up on the first call).
-Declarer get _declarer {
-  var declarer = Declarer.current;
-  if (declarer != null) return declarer;
-  if (_globalDeclarer != null) return _globalDeclarer!;
-
-  // Since there's no Zone-scoped declarer, the test file is being run directly.
-  // In order to run the tests, we set up our own Declarer via
-  // [_globalDeclarer], and pump the event queue as a best effort to wait for
-  // all tests to be defined before starting them.
-  _globalDeclarer = Declarer();
-
-  () async {
-    await pumpEventQueue();
-
-    var suite = RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.empty,
-        _globalDeclarer!.build(),
-        SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
-        path: p.prettyUri(Uri.base));
-
-    var engine = Engine();
-    engine.suiteSink.add(suite);
-    engine.suiteSink.close();
-    ExpandedReporter.watch(engine, PrintSink(),
-        color: true, printPath: false, printPlatform: false);
-
-    var success = await runZoned(() => Invoker.guard(engine.run),
-        zoneValues: {#test.declarer: _globalDeclarer});
-    if (success == true) return null;
-    print('');
-    unawaited(Future.error('Dummy exception to set exit code.'));
-  }();
-
-  return _globalDeclarer!;
-}
+// test_core does not support running tests directly, so the Declarer should
+// always be on the Zone.
+Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 
 // TODO(nweiz): This and other top-level functions should throw exceptions if
 // they're called after the declarer has finished declaring.
@@ -275,6 +199,25 @@ void setUp(dynamic Function() callback) => _declarer.setUp(callback);
 ///
 /// See also [addTearDown], which adds tear-downs to a running test.
 void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
+
+/// Registers a function to be run after the current test.
+///
+/// This is called within a running test, and adds a tear-down only for the
+/// current test. It allows testing libraries to add cleanup logic as soon as
+/// there's something to clean up.
+///
+/// The [callback] is run before any callbacks registered with [tearDown]. Like
+/// [tearDown], the most recently registered callback is run first.
+///
+/// If this is called from within a [setUpAll] or [tearDownAll] callback, it
+/// instead runs the function after *all* tests in the current test suite.
+void addTearDown(dynamic Function() callback) {
+  if (Invoker.current == null) {
+    throw StateError('addTearDown() may only be called within a test.');
+  }
+
+  Invoker.current!.addTearDown(callback);
+}
 
 /// Registers a function to be run once before all tests.
 ///

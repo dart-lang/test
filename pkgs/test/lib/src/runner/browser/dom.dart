@@ -11,6 +11,7 @@ import 'package:js/js.dart';
 class Window extends EventTarget {}
 
 extension WindowExtension on Window {
+  external Window get parent;
   external Location get location;
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       js_util.callMethod(this, 'getComputedStyle', <Object>[
@@ -85,7 +86,7 @@ extension NodeExtension on Node {
   external Node appendChild(Node node);
   void remove() {
     if (parentNode != null) {
-      final Node parent = parentNode!;
+      final parent = parentNode!;
       parent.removeChild(this);
     }
   }
@@ -135,7 +136,17 @@ extension MessageEventExtension on MessageEvent {
   external String get origin;
   List<MessagePort> get ports =>
       js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+
+  /// The source may be a `WindowProxy`, a `MessagePort`, or a `ServiceWorker`.
+  ///
+  /// When a message is sent from an iframe through `window.parent.postMessage`
+  /// the source will be a `WindowProxy` which has the same methods as [Window].
+  external MessageEventSource source;
 }
+
+@JS()
+@staticInterop
+class MessageEventSource {}
 
 @JS()
 @staticInterop
@@ -221,7 +232,7 @@ Object? _findConstructor(String constructorName) =>
     js_util.getProperty(window, constructorName);
 
 Object? _callConstructor(String constructorName, List<Object?> args) {
-  final Object? constructor = _findConstructor(constructorName);
+  final constructor = _findConstructor(constructorName);
   if (constructor == null) {
     return null;
   }

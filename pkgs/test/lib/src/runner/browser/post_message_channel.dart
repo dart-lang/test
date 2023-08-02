@@ -2,18 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library test.src.runner.browser.post_message_channel;
-
 import 'dart:js_util';
 
-import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 import 'dom.dart' as dom;
-
-// Avoid using this from dart:html to work around dart-lang/sdk#32113.
-@JS('window.parent.postMessage')
-external void _postParentMessage(Object message, String targetOrigin);
 
 /// Constructs a [StreamChannel] wrapping [MessageChannel] communication with
 /// the host page.
@@ -52,8 +45,8 @@ StreamChannel<Object?> postMessageChannel() {
 
   // Send a ready message once we're listening so the host knows it's safe to
   // start sending events.
-  // TODO(nweiz): Stop manually adding href here once issue 22554 is fixed.
-  _postParentMessage(
+  // TODO: https://github.com/dart-lang/test/issues/2065 -  remove href
+  dom.window.parent.postMessage(
       jsify({'href': dom.window.location.href, 'ready': true}) as Object,
       dom.window.location.origin);
 

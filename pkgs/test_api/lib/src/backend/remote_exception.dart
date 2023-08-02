@@ -29,7 +29,7 @@ final class RemoteException implements Exception {
   ///
   /// Other than JSON- and isolate-safety, no guarantees are made about the
   /// serialized format.
-  static Map<String, dynamic> serialize(error, StackTrace stackTrace) {
+  static Map<String, dynamic> serialize(dynamic error, StackTrace stackTrace) {
     String? message;
     if (error is String) {
       message = error;
@@ -56,13 +56,13 @@ final class RemoteException implements Exception {
   ///
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
-  static AsyncError deserialize(serialized) {
+  static AsyncError deserialize(Map serialized) {
     return AsyncError(_deserializeException(serialized),
         Chain.parse(serialized['stackChain'] as String));
   }
 
   /// Deserializes the exception portion of [serialized].
-  static RemoteException _deserializeException(serialized) {
+  static RemoteException _deserializeException(Map serialized) {
     final message = serialized['message'] as String?;
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;

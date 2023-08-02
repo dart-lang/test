@@ -1,5 +1,8 @@
-## 0.2.3-wip
+## 0.3.0-wip
 
+-   **Breaking Changes**
+    -   Remove the `Condition` class and the `it()` utility. Replace calls to
+        `(it()..someExpectation())` with `((it) => it.someExpectation())`.
 -   Add class modifiers to restrict extension of implementation classes.
 
 ## 0.2.2

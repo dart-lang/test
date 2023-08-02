@@ -1,5 +1,11 @@
 ## 0.7.0-wip
 
+* Remove the definitions of `group`, `test`, `setUp`, `tearDown`, `setUpAll`,
+  and `tearDownAll`. These methods are available in `package:test_core` and
+  re-exported in `package:test`.
+
+## 0.6.1
+
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
 * Make some implementation classes `final`. These classes were never intended to
   be extended or implemented. `Metadata`, `PlatformSelector`, `RemoteListener`,
@@ -9,10 +15,7 @@
 * Mark an implementation class `interface`: `StackTraceMapper`.
 * Change the `Compiler` class into an `enum`.
 * Make `Fake` a `mixin class`.
-* Remove the definitions of `group`, `test`, `setUp`, `tearDown`, `setUpAll`,
-  and `tearDownAll`. These methods are available in `package:test_core` and
-  re-exported in `package:test`.
-
+* Allow the latest analyzer (6.x.x).
 
 ## 0.6.0
 

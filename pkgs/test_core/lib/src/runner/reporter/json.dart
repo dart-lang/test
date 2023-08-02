@@ -303,7 +303,7 @@ class JsonReporter implements Reporter {
   /// all be `null`.
   Map<String, dynamic> _frameInfo(SuiteConfiguration suiteConfig, Trace? trace,
       Runtime runtime, String suitePath) {
-    var absoluteSuitePath = p.absolute(suitePath);
+    var absoluteSuitePath = p.canonicalize(p.absolute(suitePath));
     var frame = trace?.frames.first;
     if (frame == null || (suiteConfig.jsTrace && runtime.isJS)) {
       return {'line': null, 'column': null, 'url': null};
@@ -311,7 +311,7 @@ class JsonReporter implements Reporter {
 
     var rootFrame = trace?.frames.firstWhereOrNull((frame) =>
         frame.uri.scheme == 'file' &&
-        frame.uri.toFilePath() == absoluteSuitePath);
+        p.canonicalize(frame.uri.toFilePath()) == absoluteSuitePath);
     return {
       'line': frame.line,
       'column': frame.column,

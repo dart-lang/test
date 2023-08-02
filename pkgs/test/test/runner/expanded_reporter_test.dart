@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 
@@ -27,6 +28,7 @@ void main() {
         test('success 1', () {});
         test('success 2', () {});
         test('success 3', () {});''', '''
+        +0: loading test.dart
         +0: success 1
         +1: success 2
         +2: success 3
@@ -38,6 +40,7 @@ void main() {
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
         test('failure 3', () => throw TestFailure('oh no'));''', '''
+        +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
           oh no
@@ -78,6 +81,7 @@ void main() {
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
         test('success 2', () {});''', '''
+        +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
           oh no
@@ -99,6 +103,7 @@ void main() {
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. A little more... okay, that should do it.',
            () {});''', '''
+        +0: loading test.dart
         +0: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
         +1: All tests passed!''');
   });
@@ -115,6 +120,7 @@ void main() {
           Future.microtask(completer.complete);
         });
         test('wait', () => completer.future);''', '''
+        +0: loading test.dart
         +0: failures
         +0 -1: failures [E]
           first error
@@ -148,6 +154,7 @@ void main() {
           print("three");
           print("four");
         });''', '''
+        +0: loading test.dart
         +0: test
         one
         two
@@ -176,6 +183,7 @@ void main() {
           waitStarted.complete();
           return testDone.future;
         });''', '''
+        +0: loading test.dart
         +0: test
         +1: wait
         +1: test
@@ -210,6 +218,7 @@ void main() {
         });
 
         test('wait', () => completer.future);''', '''
+        +0: loading test.dart
         +0: test
         one
         two
@@ -238,6 +247,7 @@ void main() {
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);''', '''
+          +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 2
           +0 ~2: skip 3
@@ -251,6 +261,7 @@ void main() {
             test('test 2', () {});
             test('test 3', () {});
           }, skip: true);''', '''
+          +0: loading test.dart
           +0: skip test 1
           +0 ~1: skip test 2
           +0 ~2: skip test 3
@@ -263,6 +274,7 @@ void main() {
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''', '''
+          +0: loading test.dart
           +0: skip 1
           +0 ~1: success 1
           +1 ~1: skip 2
@@ -278,6 +290,7 @@ void main() {
           test('failure 2', () => throw TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''', '''
+          +0: loading test.dart
           +0: failure 1
           +0 -1: failure 1 [E]
             oh no
@@ -299,6 +312,7 @@ void main() {
       return _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''', '''
+          +0: loading test.dart
           +0: skip 1
             Skip: some reason
           +0 ~1: skip 2
@@ -310,6 +324,7 @@ void main() {
       return _expectReport('''
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''', '''
+          +0: loading test.dart
           +0: skip 1
           +1: skip 2
           +2: All tests passed!''', args: ['--run-skipped']);
@@ -319,6 +334,7 @@ void main() {
   test('Directs users to enable stack trace chaining if disabled', () async {
     await _expectReport(
         '''test('failure 1', () => throw TestFailure('oh no'));''', '''
+        +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
           oh no

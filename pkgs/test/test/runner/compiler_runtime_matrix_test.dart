@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -74,14 +76,10 @@ void main() {
         test('fails gracefully if a test file throws in main', () async {
           await d.file('test.dart', _throwingTest).create();
           var test = await runTest(testArgs);
-          var compileOrLoadMessage =
-              compiler == Compiler.dart2js ? 'compiling' : 'loading';
-
           expect(
               test.stdout,
               containsInOrder([
-                '-1: [${runtime.name}, ${compiler.name}] $compileOrLoadMessage '
-                    'test.dart [E]',
+                '-1: [${runtime.name}, ${compiler.name}] loading test.dart [E]',
                 'Failed to load "test.dart": oh no'
               ]));
           await test.shouldExit(1);

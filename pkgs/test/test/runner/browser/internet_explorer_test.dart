@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['ie'])
+library;
 
 import 'package:test/src/runner/browser/internet_explorer.dart';
 import 'package:test/src/runner/executable_settings.dart';

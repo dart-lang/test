@@ -39,6 +39,7 @@ Future<void> main(List<String> args) async {
   completeShutdown();
 }
 
+// ignore: unreachable_from_main
 Future<void> runTests(List<String> args) async {
   await _execute(args);
 }

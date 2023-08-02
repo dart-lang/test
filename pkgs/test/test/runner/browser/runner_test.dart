@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:convert';
 
 import 'package:test/test.dart';
@@ -38,7 +40,7 @@ void main() {
           test.stdout,
           containsInOrder([
             'Error: Compilation failed.',
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": dart2js failed.'
           ]));
       await test.shouldExit(1);
@@ -51,7 +53,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": oh no'
           ]));
       await test.shouldExit(1);
@@ -64,7 +66,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": No top-level main() function defined.'
           ]));
       await test.shouldExit(1);
@@ -77,7 +79,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Top-level main getter is not a function.'
           ]));
       await test.shouldExit(1);
@@ -90,7 +92,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Top-level main() function takes arguments.'
           ]));
       await test.shouldExit(1);
@@ -111,7 +113,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": "test.html" must contain '
                 '<script src="packages/test/dart.js"></script>.'
           ]));
@@ -133,7 +135,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Expected exactly 1 '
                 '<link rel="x-dart-test"> in test.html, found 0.'
           ]));
@@ -157,7 +159,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Expected exactly 1 '
                 '<link rel="x-dart-test"> in test.html, found 2.'
           ]));
@@ -180,7 +182,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Expected <link rel="x-dart-test"> in '
                 'test.html to have an "href" attribute.'
           ]));
@@ -203,7 +205,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Failed to load script at '
           ]));
       await test.shouldExit(1);
@@ -246,7 +248,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": "test.html" must contain '
                 '<script src="packages/test/dart.js"></script>.'
           ]));
@@ -270,7 +272,7 @@ void main() {
         expect(
             test.stdout,
             containsInOrder([
-              '-1: compiling test.dart [E]',
+              '-1: loading test.dart [E]',
               'Failed to load "test.dart": "html_template.html.tpl" does not exist or is not readable'
             ]));
         await test.shouldExit(1);
@@ -293,7 +295,7 @@ void main() {
         expect(
             test.stdout,
             containsInOrder([
-              '-1: compiling test.dart [E]',
+              '-1: loading test.dart [E]',
               'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
             ]));
         await test.shouldExit(1);
@@ -318,7 +320,7 @@ void main() {
         expect(
             test.stdout,
             containsInOrder([
-              '-1: compiling test.dart [E]',
+              '-1: loading test.dart [E]',
               'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
             ]));
         await test.shouldExit(1);
@@ -338,7 +340,7 @@ void main() {
         expect(
             test.stdout,
             containsInOrder([
-              '-1: compiling test.dart [E]',
+              '-1: loading test.dart [E]',
               'Failed to load "test.dart": "html_template.html.tpl" must contain '
                   '<script src="packages/test/dart.js"></script>.'
             ]));
@@ -364,7 +366,7 @@ void main() {
         expect(
             test.stdout,
             containsInOrder([
-              '-1: compiling test.dart [E]',
+              '-1: loading test.dart [E]',
               'Failed to load "test.dart": template file "test.html" cannot be named '
                   'like the test file.'
             ]));

@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['edge'])
+library;
 
 import 'package:test/src/runner/browser/microsoft_edge.dart';
 import 'package:test/src/runner/executable_settings.dart';
@@ -71,6 +72,20 @@ void main() {
 
     var test = await runTest(['-p', 'edge', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
+    await test.shouldExit(1);
+  });
+
+  test('can override edge location with MS_EDGE_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''').create();
+    var test = await runTest(['-p', 'edge', 'test.dart'],
+        environment: {'MS_EDGE_EXECUTABLE': '/some/bad/path'});
+    expect(test.stdout, emitsThrough(contains('Failed to run Edge:')));
     await test.shouldExit(1);
   });
 }
