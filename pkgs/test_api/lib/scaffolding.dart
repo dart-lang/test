@@ -16,7 +16,7 @@ export 'src/backend/configuration/skip.dart' show Skip;
 export 'src/backend/configuration/tags.dart' show Tags;
 export 'src/backend/configuration/test_on.dart' show TestOn;
 export 'src/backend/configuration/timeout.dart' show Timeout;
-export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridUri, spawnHybridCode;
+export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridCode, spawnHybridUri;
 export 'src/scaffolding/utils.dart'
     show
         addTearDown,
