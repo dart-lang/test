@@ -233,8 +233,12 @@ class Engine {
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
   factory Engine.withSuites(List<RunnerSuite> suites,
-      {int? concurrency, String? coverage}) {
-    var engine = Engine(concurrency: concurrency, coverage: coverage);
+      {int? concurrency, String? coverage, bool stopOnFirstFailure = false}) {
+    var engine = Engine(
+      concurrency: concurrency,
+      coverage: coverage,
+      stopOnFirstFailure: stopOnFirstFailure,
+    );
     for (var suite in suites) {
       engine.suiteSink.add(suite);
     }
