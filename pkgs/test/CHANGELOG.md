@@ -1,7 +1,6 @@
 ## 1.24.6-wip
 
-* add support for discontinuing immediately after the first failing test with
-  `--fail-fast`.
+* Add support for discontinuing after the first failing test with `--fail-fast`.
 
 ## 1.24.5
 
