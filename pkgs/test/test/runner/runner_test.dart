@@ -102,6 +102,7 @@ $_runtimeCompilers
                                       Must be a 32bit unsigned integer or "random".
                                       If "random", pick a random seed to use.
                                       If not passed, do not randomize test case execution order.
+    --[no-]fail-fast                  Stop running tests after the first failure.
 
 Output:
 -r, --reporter=<option>               Set how to print test results.

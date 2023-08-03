@@ -1,3 +1,7 @@
+## 1.24.6-wip
+
+* Add support for discontinuing after the first failing test with `--fail-fast`.
+
 ## 1.24.5
 
 * Change "compiling <path>" to "loading <path>" message in all cases. Surface
