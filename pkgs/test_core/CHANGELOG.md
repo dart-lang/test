@@ -1,4 +1,4 @@
-## 0.5.6-wip
+## 0.5.6
 
 * Add support for discontinuing after the first failing test with `--fail-fast`.
 
