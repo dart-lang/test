@@ -1,7 +1,13 @@
-## 1.24.6-wip
+## 1.24.7-wip
 
 * Simplify the initialization of the per-suite message channel within browser
   tests. See https://github.com/dart-lang/test/issues/2065
+
+## 1.24.6
+
+* Fix communication failures between minified test apps and the non-minified
+  host app.
+* Add support for discontinuing after the first failing test with `--fail-fast`.
 
 ## 1.24.5
 

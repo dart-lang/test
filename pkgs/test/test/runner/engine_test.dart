@@ -129,6 +129,19 @@ void main() {
     expect(engine.run(), completion(isFalse));
   });
 
+  test('.run() does not run more tests after failure for stopOnFirstFailure',
+      () async {
+    var secondTestRan = false;
+    var engine = declareEngine(() {
+      test('failure', () => throw 'oh no');
+      test('subsequent', () {
+        secondTestRan = true;
+      });
+    }, stopOnFirstFailure: true);
+    await expectLater(engine.run(), completion(isFalse));
+    expect(secondTestRan, false);
+  });
+
   test('.run() may not be called more than once', () {
     var engine = Engine.withSuites([]);
     expect(engine.run(), completes);
