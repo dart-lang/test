@@ -11,7 +11,8 @@ import 'package:js/js.dart';
 class Window extends EventTarget {}
 
 extension WindowExtension on Window {
-  external Window get parent;
+  @pragma('dart2js:as:trust')
+  Window get parent => js_util.getProperty<dynamic>(this, 'parent') as Window;
   external Location get location;
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       js_util.callMethod(this, 'getComputedStyle', <Object>[
@@ -141,7 +142,9 @@ extension MessageEventExtension on MessageEvent {
   ///
   /// When a message is sent from an iframe through `window.parent.postMessage`
   /// the source will be a `WindowProxy` which has the same methods as [Window].
-  external MessageEventSource source;
+  @pragma('dart2js:as:trust')
+  MessageEventSource get source =>
+      js_util.getProperty<dynamic>(this, 'source') as MessageEventSource;
 }
 
 @JS()

@@ -195,16 +195,24 @@ List<GroupEntry> declare(void Function() body) {
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
-Engine declareEngine(void Function() body,
-    {bool runSkipped = false, String? coverage}) {
+Engine declareEngine(
+  void Function() body, {
+  bool runSkipped = false,
+  String? coverage,
+  bool stopOnFirstFailure = false,
+}) {
   var declarer = Declarer()..declare(body);
-  return Engine.withSuites([
-    RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.runSkipped(runSkipped),
-        declarer.build(),
-        suitePlatform)
-  ], coverage: coverage);
+  return Engine.withSuites(
+    [
+      RunnerSuite(
+          const PluginEnvironment(),
+          SuiteConfiguration.runSkipped(runSkipped),
+          declarer.build(),
+          suitePlatform)
+    ],
+    coverage: coverage,
+    stopOnFirstFailure: stopOnFirstFailure,
+  );
 }
 
 /// Returns a [RunnerSuite] with a default environment and configuration.
@@ -348,6 +356,7 @@ Configuration configuration(
         tags: tags,
         onPlatform: onPlatform,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        stopOnFirstFailure: false,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,
