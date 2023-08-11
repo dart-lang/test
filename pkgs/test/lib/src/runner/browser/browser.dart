@@ -44,9 +44,9 @@ abstract class Browser {
   final _onExitCompleter = Completer<void>();
 
   /// Standard IO streams for the underlying browser process.
-  final _ioSubscriptions = <StreamSubscription<List<int>>>[];
+  final _ioSubscriptions = <StreamSubscription<String>>[];
 
-  final output = Uint8Buffer();
+  final output = <String>[];
 
   /// Creates a new browser.
   ///
@@ -64,8 +64,10 @@ abstract class Browser {
 
       void drainOutput(Stream<List<int>> stream) {
         try {
-          _ioSubscriptions
-              .add(stream.listen(output.addAll, cancelOnError: true));
+          _ioSubscriptions.add(stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(output.add, cancelOnError: true));
         } on StateError catch (_) {}
       }
 
@@ -90,7 +92,7 @@ abstract class Browser {
       }
 
       if (!_closed && exitCode != 0) {
-        var outputString = utf8.decode(output);
+        var outputString = output.join('\n');
         var message = '$name failed with exit code $exitCode.';
         if (outputString.isNotEmpty) {
           message += '\nStandard output:\n$outputString';
