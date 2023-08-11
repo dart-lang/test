@@ -13,6 +13,7 @@ import 'dom.dart' as dom;
 ///
 /// Sends a [MessagePort] to the host page for the channel.
 StreamChannel<Object?> postMessageChannel() {
+  dom.window.console.log('Suite starting, sending channel to host');
   var controller = StreamChannelController<Object?>(sync: true);
   var channel = dom.createMessageChannel();
   dom.window.parent

@@ -14,6 +14,7 @@ extension WindowExtension on Window {
   @pragma('dart2js:as:trust')
   Window get parent => js_util.getProperty<dynamic>(this, 'parent') as Window;
   external Location get location;
+  Console get console => js_util.getProperty(this, 'console') as Console;
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       js_util.callMethod(this, 'getComputedStyle', <Object>[
         elt,
@@ -31,6 +32,15 @@ extension WindowExtension on Window {
 
 @JS('window')
 external Window get window;
+
+@JS()
+@staticInterop
+class Console {}
+
+extension ConsoleExtension on Console {
+  external void log(Object? object);
+  external void warn(Object? object);
+}
 
 @JS()
 @staticInterop
