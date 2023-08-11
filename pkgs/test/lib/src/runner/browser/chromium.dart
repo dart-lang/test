@@ -54,8 +54,7 @@ enum ChromiumBasedBrowser {
       ...additionalArgs,
     ];
 
-    var process = await Process.start(settings.executable, args
-        );
+    var process = await Process.start(settings.executable, args);
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
