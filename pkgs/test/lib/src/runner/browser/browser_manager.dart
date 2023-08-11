@@ -201,10 +201,9 @@ class BrowserManager {
   }
 
   /// Loads [_BrowserEnvironment].
-  Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
-    return _BrowserEnvironment(this, await _browser.observatoryUrl,
-        await _browser.remoteDebuggerUrl, _onRestartController.stream);
-  }
+  Future<_BrowserEnvironment> _loadBrowserEnvironment() async =>
+      _BrowserEnvironment(
+          this, await _browser.remoteDebuggerUrl, _onRestartController.stream);
 
   /// Tells the browser the load a test suite from the URL [url].
   ///
@@ -339,7 +338,7 @@ class _BrowserEnvironment implements Environment {
   final supportsDebugging = true;
 
   @override
-  final Uri? observatoryUrl;
+  Null get observatoryUrl => null;
 
   @override
   final Uri? remoteDebuggerUrl;
@@ -347,8 +346,7 @@ class _BrowserEnvironment implements Environment {
   @override
   final Stream<void> onRestart;
 
-  _BrowserEnvironment(this._manager, this.observatoryUrl,
-      this.remoteDebuggerUrl, this.onRestart);
+  _BrowserEnvironment(this._manager, this.remoteDebuggerUrl, this.onRestart);
 
   @override
   CancelableOperation<void> displayPause() => _manager._displayPause();
