@@ -21,12 +21,6 @@ import 'package:typed_data/typed_data.dart';
 abstract class Browser {
   String get name;
 
-  /// The Observatory URL for this browser.
-  ///
-  /// This will complete to `null` for browsers that aren't running the Dart VM,
-  /// or if the Observatory URL can't be found.
-  Future<Uri?> get observatoryUrl async => null;
-
   /// The remote debugger URL for this browser.
   ///
   /// This will  complete to `null` for browsers that don't support remote
