@@ -278,8 +278,14 @@ class BrowserPlatform extends PlatformPlugin
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
+    const defaultTimeout = Duration(seconds: 30);
     final timeout =
-        suiteConfig.metadata.timeout.apply(const Duration(seconds: 30));
+        switch (suiteConfig.metadata.timeout.apply(defaultTimeout)) {
+      final suiteTimeout? when suiteTimeout.compareTo(defaultTimeout) < 0 =>
+        defaultTimeout,
+      final suiteTimeout? => suiteTimeout,
+      _ => defaultTimeout
+    };
     var suite = await browserManager.load(
         path, suiteUrl, suiteConfig, message, platform.compiler,
         mapper: _mappers[path], timeout: timeout);
