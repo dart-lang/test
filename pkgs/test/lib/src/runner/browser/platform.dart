@@ -280,7 +280,7 @@ class BrowserPlatform extends PlatformPlugin
 
     var suite = await browserManager.load(
         path, suiteUrl, suiteConfig, message, platform.compiler,
-        mapper: _mappers[path], timeout: const Duration(seconds: 30));
+        mapper: _mappers[path]);
     if (_closed) return null;
     return suite;
   }

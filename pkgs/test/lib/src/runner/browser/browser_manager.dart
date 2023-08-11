@@ -216,7 +216,7 @@ class BrowserManager {
   /// from this test suite.
   Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
       Map<String, Object?> message, Compiler compiler,
-      {StackTraceMapper? mapper, Duration? timeout}) async {
+      {StackTraceMapper? mapper}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
       'metadata': suiteConfig.metadata.serialize(),
@@ -242,7 +242,7 @@ class BrowserManager {
       sink.close();
     }));
 
-    var suite = _pool.withResource<RunnerSuite>(() async {
+    return _pool.withResource<RunnerSuite>(() async {
       _channel.sink.add({
         'command': 'loadSuite',
         'url': url.toString(),
@@ -274,16 +274,12 @@ class BrowserManager {
         closeIframe();
         rethrow;
       }
+    }).timeout(const Duration(seconds: 30), onTimeout: () {
+      throw LoadException(
+          path,
+          'Timed out waiting for browser to load test suite. '
+          'Browser output: ${_browser.output.join('\n')}');
     });
-    if (timeout != null) {
-      suite = suite.timeout(timeout, onTimeout: () {
-        throw LoadException(
-            path,
-            'Timed out waiting for browser to load test suite. '
-            'Browser output: ${_browser.output.join('\n')}');
-      });
-    }
-    return suite;
   }
 
   /// An implementation of [Environment.displayPause].
