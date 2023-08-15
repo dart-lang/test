@@ -118,6 +118,8 @@ class VMPlatform extends PlatformPlugin {
       }
       var info =
           await Service.controlWebServer(enable: true, silenceOutput: true);
+      // ignore: deprecated_member_use, Remove when SDK constraint can be bumped
+      // to 3.2.0
       var isolateID = Service.getIsolateID(isolate!)!;
 
       var libraryPath = _absolute(path).toString();
