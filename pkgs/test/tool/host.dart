@@ -104,6 +104,7 @@ final _currentUrl = Uri.parse(dom.window.location.href);
 /// does mean that the server needs to be sure to nest its [MultiChannel]s at
 /// the same place the client does.
 void main() {
+  dom.window.console.log('Dart test runner browser host running');
   if (_currentUrl.queryParameters['debug'] == 'true') {
     dom.document.body!.classList.add('debug');
   }
@@ -111,21 +112,27 @@ void main() {
   runZonedGuarded(() {
     var serverChannel = _connectToServer();
     serverChannel.stream.listen((message) {
-      if (message['command'] == 'loadSuite') {
-        var suiteChannel =
-            serverChannel.virtualChannel((message['channel'] as num).toInt());
-        var iframeChannel = _connectToIframe(
-            message['url'] as String, (message['id'] as num).toInt());
-        suiteChannel.pipe(iframeChannel);
-      } else if (message['command'] == 'displayPause') {
-        dom.document.body!.classList.add('paused');
-      } else if (message['command'] == 'resume') {
-        dom.document.body!.classList.remove('paused');
-      } else {
-        assert(message['command'] == 'closeSuite');
-        _iframes.remove(message['id'])!.remove();
-        _subscriptions.remove(message['id'])?.cancel();
-        _domSubscriptions.remove(message['id'])?.cancel();
+      switch (message) {
+        case {
+            'command': 'loadSuite',
+            'channel': final num channel,
+            'url': final String url,
+            'id': final num id
+          }:
+          var suiteChannel = serverChannel.virtualChannel(channel.toInt());
+          var iframeChannel = _connectToIframe(url, id.toInt());
+          suiteChannel.pipe(iframeChannel);
+        case {'command': 'displayPause'}:
+          dom.document.body!.classList.add('paused');
+        case {'command': 'resume'}:
+          dom.document.body!.classList.remove('paused');
+        case {'command': 'closeSuite', 'id': final id}:
+          _iframes.remove(id)!.remove();
+          _subscriptions.remove(id)?.cancel();
+          _domSubscriptions.remove(id)?.cancel();
+        default:
+          dom.window.console
+              .warn('Unhandled message from test runner: $message');
       }
     });
 
@@ -149,7 +156,7 @@ void main() {
       serverChannel.sink.add({'command': 'restart'});
     }));
   }, (error, stackTrace) {
-    print('$error\n${Trace.from(stackTrace).terse}');
+    dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}');
   });
 }
 
@@ -195,6 +202,8 @@ MultiChannel<dynamic> _connectToServer() {
 /// Returns a [StreamChannel] which will be connected to the frame once the
 /// message channel port is active.
 StreamChannel<dynamic> _connectToIframe(String url, int id) {
+  var suiteUrl = Uri.parse(url).removeFragment();
+  dom.window.console.log('Starting suite $suiteUrl');
   var iframe = dom.createHTMLIFrameElement();
   _iframes[id] = iframe;
   var controller = StreamChannelController(sync: true);
@@ -219,6 +228,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
 
     switch (message.data) {
       case 'port':
+        dom.window.console.log('Connecting channel for suite $suiteUrl');
         // The frame is starting and sending a port to forward for the suite.
         final port = message.ports.first;
         _domSubscriptions[id] =
