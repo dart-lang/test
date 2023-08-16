@@ -9,7 +9,7 @@ import 'package:test/scaffolding.dart';
 void main() {
   group('deepCollectionEquals', () {
     test('allows nested collections with equal elements', () {
-      checkThat(deepCollectionEquals([
+      check(deepCollectionEquals([
         'a',
         {'b': 1},
         {'c', 'd'},
@@ -27,7 +27,7 @@ void main() {
     });
 
     test('allows collections inside sets', () {
-      checkThat(deepCollectionEquals({
+      check(deepCollectionEquals({
         {'a': 1}
       }, {
         {'a': 1}
@@ -35,7 +35,7 @@ void main() {
     });
 
     test('allows collections as Map keys', () {
-      checkThat(deepCollectionEquals([
+      check(deepCollectionEquals([
         {
           {'a': 1}: {'b': 2}
         }
@@ -47,38 +47,45 @@ void main() {
     });
 
     test('allows conditions in place of elements in lists', () {
-      checkThat(deepCollectionEquals([
+      check(deepCollectionEquals([
         'a',
         'b'
       ], [
-        it()
-          ..isA<String>().which(it()
-            ..startsWith('a')
-            ..length.isLessThan(2)),
-        it()..isA<String>().startsWith('b')
+        (Subject<dynamic> it) => it.isA<String>().which((it) => it
+          ..startsWith('a')
+          ..length.isLessThan(2)),
+        (Subject<dynamic> it) => it.isA<String>().startsWith('b')
       ])).isNull();
     });
 
     test('allows conditions in place of values in maps', () {
-      checkThat(deepCollectionEquals([
+      check(deepCollectionEquals([
         {'a': 'b'}
       ], [
-        {'a': it()..isA<String>().startsWith('b')}
+        {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('b')}
       ])).isNull();
     });
 
     test('allows conditions in place of elements in sets', () {
-      checkThat(deepCollectionEquals(
-          {'b', 'a'}, {'a', it()..isA<String>().startsWith('b')})).isNull();
+      check(deepCollectionEquals({
+        'b',
+        'a'
+      }, {
+        'a',
+        (Subject<dynamic> it) => it.isA<String>().startsWith('b')
+      })).isNull();
     });
 
     test('allows conditions in place of keys in maps', () {
-      checkThat(deepCollectionEquals(
-          {'a': 'b'}, {it()..isA<String>().startsWith('a'): 'b'})).isNull();
+      check(deepCollectionEquals({
+        'a': 'b'
+      }, {
+        (Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'b'
+      })).isNull();
     });
 
     test('reports non-Set elements', () {
-      checkThat(deepCollectionEquals([
+      check(deepCollectionEquals([
         ['a']
       ], [
         {'a'}
@@ -86,27 +93,28 @@ void main() {
     });
 
     test('reports long iterables', () {
-      checkThat(deepCollectionEquals([0], [])).isNotNull().deepEquals([
+      check(deepCollectionEquals([0], [])).isNotNull().deepEquals([
         'has more elements than expected',
         'expected an iterable with 0 element(s)'
       ]);
     });
 
     test('reports short iterables', () {
-      checkThat(deepCollectionEquals([], [0])).isNotNull().deepEquals([
+      check(deepCollectionEquals([], [0])).isNotNull().deepEquals([
         'has too few elements',
         'expected an iterable with at least 1 element(s)'
       ]);
     });
 
     test('reports unequal elements in iterables', () {
-      checkThat(deepCollectionEquals([0], [1]))
+      check(deepCollectionEquals([0], [1]))
           .isNotNull()
           .deepEquals(['at [<0>] is <0>', 'which does not equal <1>']);
     });
 
     test('reports unmet conditions in iterables', () {
-      checkThat(deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]))
+      check(deepCollectionEquals(
+              [0], [(Subject<dynamic> it) => it.isA<int>().isGreaterThan(0)]))
           .isNotNull()
           .deepEquals([
         'has an element at [<0>] that:',
@@ -116,10 +124,11 @@ void main() {
     });
 
     test('reports unmet conditions in map values', () {
-      checkThat(deepCollectionEquals(
-              {'a': 'b'}, {'a': it()..isA<String>().startsWith('a')}))
-          .isNotNull()
-          .deepEquals([
+      check(deepCollectionEquals({
+        'a': 'b'
+      }, {
+        'a': (Subject<dynamic> it) => it.isA<String>().startsWith('a')
+      })).isNotNull().deepEquals([
         "has no entry to match 'a': <A value that:",
         '  is a String',
         "  starts with 'a'>",
@@ -127,10 +136,11 @@ void main() {
     });
 
     test('reports unmet conditions in map keys', () {
-      checkThat(deepCollectionEquals(
-              {'b': 'a'}, {it()..isA<String>().startsWith('a'): 'a'}))
-          .isNotNull()
-          .deepEquals([
+      check(deepCollectionEquals({
+        'b': 'a'
+      }, {
+        (Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'a'
+      })).isNotNull().deepEquals([
         'has no entry to match <A value that:',
         '  is a String',
         "  starts with 'a'>: 'a'",
@@ -140,7 +150,7 @@ void main() {
     test('reports recursive lists', () {
       var l = [];
       l.add(l);
-      checkThat(deepCollectionEquals(l, l))
+      check(deepCollectionEquals(l, l))
           .isNotNull()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
@@ -148,7 +158,7 @@ void main() {
     test('reports recursive sets', () {
       var s = <Object>{};
       s.add(s);
-      checkThat(deepCollectionEquals(s, s))
+      check(deepCollectionEquals(s, s))
           .isNotNull()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
@@ -156,7 +166,7 @@ void main() {
     test('reports maps with recursive keys', () {
       var m = <Object, Object>{};
       m[m] = 0;
-      checkThat(deepCollectionEquals(m, m))
+      check(deepCollectionEquals(m, m))
           .isNotNull()
           .deepEquals(['exceeds the depth limit of 1000']);
     });
@@ -164,7 +174,7 @@ void main() {
     test('reports maps with recursive values', () {
       var m = <Object, Object>{};
       m[0] = m;
-      checkThat(deepCollectionEquals(m, m))
+      check(deepCollectionEquals(m, m))
           .isNotNull()
           .deepEquals(['exceeds the depth limit of 1000']);
     });

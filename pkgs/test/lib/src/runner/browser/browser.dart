@@ -8,7 +8,6 @@ import 'dart:io';
 
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
-import 'package:typed_data/typed_data.dart';
 
 /// An interface for running browser instances.
 ///
@@ -20,12 +19,6 @@ import 'package:typed_data/typed_data.dart';
 /// [onExit].
 abstract class Browser {
   String get name;
-
-  /// The Observatory URL for this browser.
-  ///
-  /// This will complete to `null` for browsers that aren't running the Dart VM,
-  /// or if the Observatory URL can't be found.
-  Future<Uri?> get observatoryUrl async => null;
 
   /// The remote debugger URL for this browser.
   ///
@@ -50,9 +43,9 @@ abstract class Browser {
   final _onExitCompleter = Completer<void>();
 
   /// Standard IO streams for the underlying browser process.
-  final _ioSubscriptions = <StreamSubscription<List<int>>>[];
+  final _ioSubscriptions = <StreamSubscription<String>>[];
 
-  final output = Uint8Buffer();
+  final output = <String>[];
 
   /// Creates a new browser.
   ///
@@ -70,8 +63,10 @@ abstract class Browser {
 
       void drainOutput(Stream<List<int>> stream) {
         try {
-          _ioSubscriptions
-              .add(stream.listen(output.addAll, cancelOnError: true));
+          _ioSubscriptions.add(stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(output.add, cancelOnError: true));
         } on StateError catch (_) {}
       }
 
@@ -96,7 +91,7 @@ abstract class Browser {
       }
 
       if (!_closed && exitCode != 0) {
-        var outputString = utf8.decode(output);
+        var outputString = output.join('\n');
         var message = '$name failed with exit code $exitCode.';
         if (outputString.isNotEmpty) {
           message += '\nStandard output:\n$outputString';

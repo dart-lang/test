@@ -4,6 +4,7 @@
 
 // Windows doesn't support sending signals.
 @TestOn('vm && !windows')
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -48,7 +49,7 @@ void main() {
 
       var test = await _runTest(['-p', 'chrome', 'test.dart']);
       await expectLater(
-          test.stdout, emitsThrough(endsWith('compiling test.dart')));
+          test.stdout, emitsThrough(endsWith('loading test.dart')));
       await signalAndQuit(test);
 
       expectTempDirEmpty(skip: 'Failing on Travis.');
@@ -230,6 +231,6 @@ Future<void> signalAndQuit(TestProcess test) async {
   await expectLater(test.stderr, emitsDone);
 }
 
-void expectTempDirEmpty({skip}) {
+void expectTempDirEmpty({Object? skip}) {
   expect(Directory(_tempDir).listSync(), isEmpty, skip: skip);
 }

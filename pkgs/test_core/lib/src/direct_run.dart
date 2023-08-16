@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/declarer.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; //ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; //ignore: implementation_imports
@@ -68,8 +68,11 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
       allowDuplicateTestNames: allowDuplicateTestNames);
   await declarer.declare(testMain);
 
-  final suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-      declarer.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
+  final suite = RunnerSuite(
+      const PluginEnvironment(),
+      SuiteConfiguration.empty,
+      declarer.build(),
+      SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
       path: p.prettyUri(Uri.base));
 
   final engine = Engine()

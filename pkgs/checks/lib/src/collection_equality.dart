@@ -10,12 +10,22 @@ import 'package:checks/context.dart';
 /// are unequal to the elements of [expected].
 ///
 /// {@template deep_collection_equals}
-/// Elements, keys, or values, which are a collections are deeply compared for
-/// equality, and do not use the native identity based equality or custom
-/// equality operator overrides.
-/// Elements, keys, or values, which are a [Condition] instances are checked
-/// against actual values.
-/// All other value or key types use `operator ==`.
+/// Elements, keys, or values within [expected] which are a collections are
+/// deeply compared for equality with a collection in the same position within
+/// [actual]. Elements which are collection types are note compared with the
+/// native identity based equality or custom equality operator overrides.
+///
+/// Elements, keys, or values within [expected] which are `Condition` callbacks
+/// are run against the value in the same position within [actual].
+/// Condition callbacks must take a `Subject<Object?>` or `Subject<dynamic>` and
+/// may not use a more specific generic.
+/// Use `(Subject<Object?> s) => s.isA<Type>()` to check expectations for
+/// specific element types.
+/// Note also that the argument type `Subject<Object?>` cannot be inferred and
+/// must be explicit in the function definition.
+///
+/// Elements, keys, or values within [expected] which are any other type are
+/// compared using `operator ==` equality.
 ///
 /// Comparing sets or maps will have a runtime which is polynomial on the the
 /// size of those collections. Does not use [Set.contains] or [Map.containsKey],
@@ -250,7 +260,7 @@ Iterable<String>? unorderedCompare<T, E>(
   final indexedExpected = expected.toList();
   final indexedActual = actual.toList();
   final adjacency = <List<int>>[];
-  for (int i = 0; i < indexedExpected.length; i++) {
+  for (var i = 0; i < indexedExpected.length; i++) {
     final expectedElement = indexedExpected[i];
     final pairs = [
       for (var j = 0; j < indexedActual.length; j++)
@@ -303,7 +313,7 @@ List<List<int>> _findUnpaired(List<List<int>> adjacency, int rightVertexCount) {
 
   bool bfs() {
     final queue = Queue<int>();
-    for (int leftIndex = 0; leftIndex < leftLength; leftIndex++) {
+    for (var leftIndex = 0; leftIndex < leftLength; leftIndex++) {
       if (leftPairs[leftIndex] == rightLength) {
         distances[leftIndex] = 0;
         queue.add(leftIndex);
@@ -342,7 +352,7 @@ List<List<int>> _findUnpaired(List<List<int>> adjacency, int rightVertexCount) {
   }
 
   while (bfs()) {
-    for (int leftIndex = 0; leftIndex < leftLength; leftIndex++) {
+    for (var leftIndex = 0; leftIndex < leftLength; leftIndex++) {
       if (leftPairs[leftIndex] == rightLength) {
         dfs(leftIndex);
       }

@@ -1,3 +1,48 @@
+## 0.6.1
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some implementation classes `final`. These classes were never intended to
+  be extended or implemented. `Metadata`, `PlatformSelector`, `RemoteListener`,
+  `Runtime`, `StackTraceFormatter`, `SuitePlatform`, `RemoteException`,
+  `TestHandle`, `OutstandingWork`, `OutsideTestException`, `OnPlatform`,
+  `Retry`, `Skip`, `Tags`, `TestOn`, `Timeout`.
+* Mark an implementation class `interface`: `StackTraceMapper`.
+* Change the `Compiler` class into an `enum`.
+* Make `Fake` a `mixin class`.
+* Allow the latest analyzer (6.x.x).
+
+## 0.6.0
+
+* Remove the `package:test_api/expect.dart' library. `test` will export from
+  `package:matcher` directly.
+* Fix compatibility with wasm number semantics.
+
+## 0.5.2
+
+* Remove deprecation for the `scaffolding.dart` and `backend.dart` libraries.
+* Export `registerException` from the `scaffolding.dart` library.
+
+## 0.5.1
+
+* Handle a missing `'compiler'` value when running a test compiled against a
+  newer `test_api` than the runner back end is using. The expectation was that
+  the json protocol is only used across packages compatible with the same major
+  version of the `test_api` package, but `flutter test` does not check the
+  version of packages in the pub solve for user test code.
+
+## 0.5.0
+
+* Add `Compiler` class, exposed through `backend.dart`.
+* Support compiler identifiers in platform selectors.
+* Add `compiler` field to `SuitePlatform`. This will become required in the next
+  major release.
+* **BREAKING** Add required `defaultCompiler` and `supportedCompilers` fields
+  to `Runtime`.
+* Add `package:test_api/hooks_testing.dart` library for writing tests against
+  code that uses `package:test_api/hooks.dart`.
+* **BREAKING** Remove `ErrorFormatter`, `expectAsync`,  `throws`, and `Throws`
+  from `package:test_api/test_api.dart`.
+
 ## 0.4.18
 
 * Don't run `tearDown` until the test body and outstanding work is complete,

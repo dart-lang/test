@@ -11,9 +11,8 @@ import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
-    show Runtime, StackTraceMapper, SuitePlatform;
+    show Compiler, Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
@@ -82,7 +81,11 @@ class NodePlatform extends PlatformPlugin
   @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
-    var pair = await _loadChannel(path, platform.runtime, suiteConfig);
+    if (platform.compiler != Compiler.dart2js) {
+      throw StateError(
+          'Unsupported compiler for the Node platform ${platform.compiler}.');
+    }
+    var pair = await _loadChannel(path, platform, suiteConfig);
     var controller = deserializeSuite(
         path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
 
@@ -96,12 +99,14 @@ class NodePlatform extends PlatformPlugin
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
   Future<Pair<StreamChannel<Object?>, StackTraceMapper?>> _loadChannel(
-      String path, Runtime runtime, SuiteConfiguration suiteConfig) async {
+      String path,
+      SuitePlatform platform,
+      SuiteConfiguration suiteConfig) async {
     final servers = await _loopback();
 
     try {
-      var pair =
-          await _spawnProcess(path, runtime, suiteConfig, servers.first.port);
+      var pair = await _spawnProcess(
+          path, platform.runtime, suiteConfig, servers.first.port);
       var process = pair.first;
 
       // Forward Node's standard IO to the print handler so it's associated with
@@ -292,7 +297,7 @@ class NodePlatform extends PlatformPlugin
         await _compilers.close();
 
         if (_config.pubServeUrl == null) {
-          Directory(_compiledDir).deleteSync(recursive: true);
+          await Directory(_compiledDir).deleteWithRetry();
         } else {
           _http!.close();
         }

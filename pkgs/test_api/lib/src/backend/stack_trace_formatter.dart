@@ -17,13 +17,13 @@ final _currentKey = Object();
 ///
 /// This can convert JavaScript stack traces to Dart using source maps, and fold
 /// irrelevant frames out of the stack trace.
-class StackTraceFormatter {
+final class StackTraceFormatter {
   /// A class that converts [trace] into a Dart stack trace, or `null` to use it
   /// as-is.
   StackTraceMapper? _mapper;
 
   /// The set of packages to fold when producing terse [Chain]s.
-  var _except = {'test', 'stream_channel', 'test_api'};
+  var _except = {'matcher', 'stream_channel', 'test', 'test_api'};
 
   /// If non-empty, all packages not in this list will be folded when producing
   /// terse [Chain]s.

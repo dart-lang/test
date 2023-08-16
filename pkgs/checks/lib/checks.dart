@@ -2,12 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-export 'src/checks.dart' show checkThat, Subject, Skip, it;
+export 'src/checks.dart'
+    show AsyncCondition, Condition, SkipExtension, Subject, check;
 export 'src/extensions/async.dart'
-    show ChainAsync, FutureChecks, StreamChecks, StreamQueueWrap;
+    show FutureChecks, StreamChecks, WithQueueExtension;
 export 'src/extensions/core.dart'
-    show BoolChecks, CoreChecks, NullabilityChecks, equals;
-export 'src/extensions/function.dart' show ThrowsCheck;
+    show BoolChecks, ComparableChecks, CoreChecks, NullableChecks, equals;
+export 'src/extensions/function.dart' show FunctionChecks;
 export 'src/extensions/iterable.dart' show IterableChecks;
 export 'src/extensions/map.dart' show MapChecks;
 export 'src/extensions/math.dart' show NumChecks;

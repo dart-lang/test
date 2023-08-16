@@ -20,6 +20,7 @@ import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/application_exception.dart';
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:test_core/src/runner/configuration.dart';
 import 'package:test_core/src/runner/configuration/custom_runtime.dart';
 import 'package:test_core/src/runner/configuration/runtime_settings.dart';
@@ -31,7 +32,7 @@ import 'package:test_core/src/runner/runtime_selection.dart';
 import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
-final suitePlatform = SuitePlatform(Runtime.vm);
+final suitePlatform = SuitePlatform(Runtime.vm, compiler: null);
 
 // The last state change detected via [expectStates].
 State? lastState;
@@ -90,19 +91,19 @@ void expectSingleError(LiveTest liveTest) {
 /// [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher throwsTestFailure(message) => throwsA(isTestFailure(message));
+Matcher throwsTestFailure(Object message) => throwsA(isTestFailure(message));
 
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
+Matcher isTestFailure(Object message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
 /// Returns a matcher that matches a [ApplicationException] with the given
 /// [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isApplicationException(message) =>
+Matcher isApplicationException(Object message) =>
     const TypeMatcher<ApplicationException>()
         .having((e) => e.message, 'message', message);
 
@@ -141,7 +142,7 @@ void expectTestPassed(LiveTest liveTest) {
 
 /// Asserts that [liveTest] failed with a single [TestFailure] whose message
 /// matches [message].
-void expectTestFailed(LiveTest liveTest, message) {
+void expectTestFailed(LiveTest liveTest, Object message) {
   expect(liveTest.state.status, equals(Status.complete));
   expect(liveTest.state.result, equals(Result.failure));
   expect(liveTest.errors, hasLength(1));
@@ -194,16 +195,24 @@ List<GroupEntry> declare(void Function() body) {
 }
 
 /// Runs [body] with a declarer and returns an engine that runs those tests.
-Engine declareEngine(void Function() body,
-    {bool runSkipped = false, String? coverage}) {
+Engine declareEngine(
+  void Function() body, {
+  bool runSkipped = false,
+  String? coverage,
+  bool stopOnFirstFailure = false,
+}) {
   var declarer = Declarer()..declare(body);
-  return Engine.withSuites([
-    RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.runSkipped(runSkipped),
-        declarer.build(),
-        suitePlatform)
-  ], coverage: coverage);
+  return Engine.withSuites(
+    [
+      RunnerSuite(
+          const PluginEnvironment(),
+          SuiteConfiguration.runSkipped(runSkipped),
+          declarer.build(),
+          suitePlatform)
+    ],
+    coverage: coverage,
+    stopOnFirstFailure: stopOnFirstFailure,
+  );
 }
 
 /// Returns a [RunnerSuite] with a default environment and configuration.
@@ -221,6 +230,7 @@ SuiteConfiguration suiteConfiguration(
         bool? runSkipped,
         Iterable<String>? dart2jsArgs,
         String? precompiledPath,
+        Iterable<CompilerSelection>? compilerSelections,
         Iterable<RuntimeSelection>? runtimes,
         Map<BooleanSelector, SuiteConfiguration>? tags,
         Map<PlatformSelector, SuiteConfiguration>? onPlatform,
@@ -242,6 +252,7 @@ SuiteConfiguration suiteConfiguration(
         runSkipped: runSkipped,
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         tags: tags,
         onPlatform: onPlatform,
@@ -279,7 +290,6 @@ Configuration configuration(
         Map<String, RuntimeSettings>? overrideRuntimes,
         Map<String, CustomRuntime>? defineRuntimes,
         bool? noRetry,
-        bool? useDataIsolateStrategy,
         bool? ignoreTimeouts,
 
         // Suite-level configuration
@@ -290,6 +300,7 @@ Configuration configuration(
         Iterable<String>? dart2jsArgs,
         String? precompiledPath,
         Iterable<Pattern>? globalPatterns,
+        Iterable<CompilerSelection>? compilerSelections,
         Iterable<RuntimeSelection>? runtimes,
         BooleanSelector? includeTags,
         BooleanSelector? excludeTags,
@@ -330,7 +341,6 @@ Configuration configuration(
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
-        useDataIsolateStrategy: useDataIsolateStrategy,
         ignoreTimeouts: ignoreTimeouts,
         allowDuplicateTestNames: allowDuplicateTestNames,
         allowTestRandomization: allowTestRandomization,
@@ -339,12 +349,14 @@ Configuration configuration(
         dart2jsArgs: dart2jsArgs,
         precompiledPath: precompiledPath,
         globalPatterns: globalPatterns,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         includeTags: includeTags,
         excludeTags: excludeTags,
         tags: tags,
         onPlatform: onPlatform,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        stopOnFirstFailure: false,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,

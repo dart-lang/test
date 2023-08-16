@@ -10,13 +10,12 @@ import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
-    show
-        Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
 import '../util/io.dart';
+import 'compiler_selection.dart';
 import 'configuration/args.dart' as args;
 import 'configuration/custom_runtime.dart';
 import 'configuration/load.dart';
@@ -190,14 +189,6 @@ class Configuration {
       });
   Set<String>? _knownPresets;
 
-  /// Whether to use the original `data:` URI isolate spawning strategy for VM
-  /// tests.
-  ///
-  /// This can make more sense than the default strategy in systems such as
-  /// `bazel` where only a single test suite is ran at a time.
-  bool get useDataIsolateStrategy => _useDataIsolateStrategy ?? false;
-  final bool? _useDataIsolateStrategy;
-
   /// Built-in runtimes whose settings are overridden by the user.
   final Map<String, RuntimeSettings> overrideRuntimes;
 
@@ -215,6 +206,11 @@ class Configuration {
   /// If null or zero no shuffling will occur.
   /// The same seed will shuffle the tests in the same way every time.
   final int? testRandomizeOrderingSeed;
+
+  final bool? _stopOnFirstFailure;
+
+  /// Whether to stop running subsequent tests after a test fails.
+  bool get stopOnFirstFailure => _stopOnFirstFailure ?? false;
 
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
@@ -278,8 +274,8 @@ class Configuration {
       required Map<String, RuntimeSettings>? overrideRuntimes,
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
-      required bool? useDataIsolateStrategy,
       required int? testRandomizeOrderingSeed,
+      required bool? stopOnFirstFailure,
 
       // Suite-level configuration
       required bool? allowDuplicateTestNames,
@@ -289,6 +285,7 @@ class Configuration {
       required Iterable<String>? dart2jsArgs,
       required String? precompiledPath,
       required Iterable<Pattern>? globalPatterns,
+      required Iterable<CompilerSelection>? compilerSelections,
       required Iterable<RuntimeSelection>? runtimes,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
@@ -330,8 +327,8 @@ class Configuration {
         overrideRuntimes: overrideRuntimes,
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
-        useDataIsolateStrategy: useDataIsolateStrategy,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        stopOnFirstFailure: stopOnFirstFailure,
         includeTags: includeTags,
         excludeTags: excludeTags,
         globalPatterns: globalPatterns,
@@ -342,6 +339,7 @@ class Configuration {
             runSkipped: runSkipped,
             dart2jsArgs: dart2jsArgs,
             precompiledPath: precompiledPath,
+            compilerSelections: compilerSelections,
             runtimes: runtimes,
             tags: tags,
             onPlatform: onPlatform,
@@ -387,8 +385,8 @@ class Configuration {
           Map<String, RuntimeSettings>? overrideRuntimes,
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
-          bool? useDataIsolateStrategy,
           int? testRandomizeOrderingSeed,
+          bool? stopOnFirstFailure,
 
           // Suite-level configuration
           bool? allowDuplicateTestNames,
@@ -398,6 +396,7 @@ class Configuration {
           Iterable<String>? dart2jsArgs,
           String? precompiledPath,
           Iterable<Pattern>? globalPatterns,
+          Iterable<CompilerSelection>? compilerSelections,
           Iterable<RuntimeSelection>? runtimes,
           BooleanSelector? includeTags,
           BooleanSelector? excludeTags,
@@ -438,8 +437,8 @@ class Configuration {
           overrideRuntimes: overrideRuntimes,
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
-          useDataIsolateStrategy: useDataIsolateStrategy,
           testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+          stopOnFirstFailure: stopOnFirstFailure,
           allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
@@ -447,6 +446,7 @@ class Configuration {
           dart2jsArgs: dart2jsArgs,
           precompiledPath: precompiledPath,
           globalPatterns: globalPatterns,
+          compilerSelections: compilerSelections,
           runtimes: runtimes,
           includeTags: includeTags,
           excludeTags: excludeTags,
@@ -504,8 +504,8 @@ class Configuration {
         overrideRuntimes: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         ignoreTimeouts: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
@@ -513,6 +513,7 @@ class Configuration {
         dart2jsArgs: null,
         precompiledPath: null,
         globalPatterns: null,
+        compilerSelections: null,
         runtimes: null,
         includeTags: null,
         excludeTags: null,
@@ -571,13 +572,14 @@ class Configuration {
         overrideRuntimes: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,
         precompiledPath: null,
         globalPatterns: null,
+        compilerSelections: null,
         runtimes: null,
         includeTags: null,
         excludeTags: null,
@@ -604,6 +606,7 @@ class Configuration {
           required String? reporter,
           required Map<String, String>? fileReporters,
           required int? concurrency,
+          required Iterable<CompilerSelection>? compilerSelections,
           required Iterable<RuntimeSelection>? runtimes,
           required Iterable<String>? chosenPresets,
           required Map<String, RuntimeSettings>? overrideRuntimes}) =>
@@ -614,6 +617,7 @@ class Configuration {
         reporter: reporter,
         fileReporters: fileReporters,
         concurrency: concurrency,
+        compilerSelections: compilerSelections,
         runtimes: runtimes,
         chosenPresets: chosenPresets,
         overrideRuntimes: overrideRuntimes,
@@ -633,8 +637,8 @@ class Configuration {
         presets: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
         jsTrace: null,
@@ -696,14 +700,15 @@ class Configuration {
           presets: null,
           overrideRuntimes: null,
           noRetry: null,
-          useDataIsolateStrategy: null,
           testRandomizeOrderingSeed: null,
+          stopOnFirstFailure: null,
           allowDuplicateTestNames: null,
           allowTestRandomization: null,
           jsTrace: null,
           runSkipped: null,
           dart2jsArgs: null,
           precompiledPath: null,
+          compilerSelections: null,
           runtimes: null,
           tags: null,
           onPlatform: null,
@@ -761,8 +766,8 @@ class Configuration {
       required Map<String, RuntimeSettings>? overrideRuntimes,
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
-      required bool? useDataIsolateStrategy,
       required this.testRandomizeOrderingSeed,
+      required bool? stopOnFirstFailure,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
       required Iterable<Pattern>? globalPatterns,
@@ -790,12 +795,12 @@ class Configuration {
         overrideRuntimes = _map(overrideRuntimes),
         defineRuntimes = _map(defineRuntimes),
         _noRetry = noRetry,
-        _useDataIsolateStrategy = useDataIsolateStrategy,
         includeTags = includeTags ?? BooleanSelector.all,
         excludeTags = excludeTags ?? BooleanSelector.none,
         globalPatterns = globalPatterns == null
             ? const {}
             : UnmodifiableSetView(globalPatterns.toSet()),
+        _stopOnFirstFailure = stopOnFirstFailure,
         suiteDefaults = (() {
           var config = suiteDefaults ?? SuiteConfiguration.empty;
           if (pauseAfterLoad == true) {
@@ -848,8 +853,8 @@ class Configuration {
         overrideRuntimes: null,
         defineRuntimes: null,
         noRetry: null,
-        useDataIsolateStrategy: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         includeTags: null,
         excludeTags: null,
       );
@@ -953,10 +958,9 @@ class Configuration {
         defineRuntimes:
             mergeUnmodifiableMaps(defineRuntimes, other.defineRuntimes),
         noRetry: other._noRetry ?? _noRetry,
-        useDataIsolateStrategy:
-            other._useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
+        stopOnFirstFailure: other._stopOnFirstFailure ?? _stopOnFirstFailure,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
         globalPatterns: globalPatterns.union(other.globalPatterns),
@@ -997,7 +1001,6 @@ class Configuration {
       Map<String, RuntimeSettings>? overrideRuntimes,
       Map<String, CustomRuntime>? defineRuntimes,
       bool? noRetry,
-      bool? useDataIsolateStrategy,
       int? testRandomizeOrderingSeed,
       bool? ignoreTimeouts,
 
@@ -1046,10 +1049,9 @@ class Configuration {
         overrideRuntimes: overrideRuntimes ?? this.overrideRuntimes,
         defineRuntimes: defineRuntimes ?? this.defineRuntimes,
         noRetry: noRetry ?? _noRetry,
-        useDataIsolateStrategy:
-            useDataIsolateStrategy ?? _useDataIsolateStrategy,
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
+        stopOnFirstFailure: _stopOnFirstFailure,
         includeTags: includeTags,
         excludeTags: excludeTags,
         globalPatterns: globalPatterns,

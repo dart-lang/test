@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['node'])
+library;
 
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
@@ -39,7 +40,7 @@ void main() {
           test.stdout,
           containsInOrder([
             'Error: Compilation failed.',
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": dart2js failed.'
           ]));
       await test.shouldExit(1);
@@ -52,7 +53,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": oh no'
           ]));
       await test.shouldExit(1);
@@ -65,7 +66,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": No top-level main() function defined.'
           ]));
       await test.shouldExit(1);
@@ -78,7 +79,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Top-level main getter is not a function.'
           ]));
       await test.shouldExit(1);
@@ -91,7 +92,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: compiling test.dart [E]',
+            '-1: loading test.dart [E]',
             'Failed to load "test.dart": Top-level main() function takes arguments.'
           ]));
       await test.shouldExit(1);

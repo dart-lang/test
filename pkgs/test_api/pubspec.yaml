@@ -1,11 +1,11 @@
 name: test_api
-version: 0.4.18
+version: 0.6.1
 description: >-
   The user facing API for structuring Dart tests and checking expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
 
 environment:
-  sdk: ">=2.18.0 <3.0.0"
+  sdk: ^3.0.0
 
 dependencies:
   async: ^2.5.0
@@ -18,16 +18,12 @@ dependencies:
   string_scanner: ^1.1.0
   term_glyph: ^1.2.0
 
-  # Use a tight version constraint to ensure that a constraint on matcher
-  # properly constrains all features it provides.
-  matcher: '>=0.12.11 <0.12.15'
-
 dev_dependencies:
-  analyzer: '>=2.1.0 <6.0.0'
+  analyzer: '>=2.1.0 <7.0.0'
+  dart_flutter_team_lints: ^1.0.0
   fake_async: ^1.2.0
   glob: ^2.0.0
   graphs: ^2.0.0
   path: ^1.8.0
-  lints: '>=1.0.0 <3.0.0'
   test: any
   test_core: any

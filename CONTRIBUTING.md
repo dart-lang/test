@@ -39,13 +39,31 @@ You can run all additional presubmit checks locally if you wish, by using the
 `mono_repo` tool. From the root of the repository, run
 `pub global run mono_repo presubmit`.
 
+### Versioning
+
+You will also need to potentially update the pubspec.yaml and/or CHANGELOG.md of
+any package you are updating. If the current version is not a `-dev` version
+then you should update it and add a new header to the changelog. If you have no
+publicly facing change to list, it is OK for there to be no changes listed.
+
+We follow pretty strict semantic versioning, feel free to ask on the PR if you
+are unsure about what version number you should choose (or do your best, and a
+code reviewers will bring it up if it is incorrect).
+
 ### File headers
 
 All files in the project must start with the following header.
 
-    // Copyright (c) 2021, the Dart project authors.  Please see the AUTHORS file
+    // Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
     // for details. All rights reserved. Use of this source code is governed by a
     // BSD-style license that can be found in the LICENSE file.
+
+### Publishing
+
+Publishing is done by package owners creating a tag of the form
+`<package>-v<version>`, either manually or through the github release ui
+(preferred). The pubspec and changelog must already be updated to the desired
+release version in the master branch for this process to work.
 
 ### The small print
 

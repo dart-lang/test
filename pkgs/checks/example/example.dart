@@ -8,14 +8,17 @@ import 'package:test/scaffolding.dart';
 void main() {
   test('sample test', () {
     final someValue = 5;
-    checkThat(someValue).equals(5);
+    check(someValue).equals(5);
 
     final someList = [1, 2, 3, 4, 5];
-    checkThat(someList).deepEquals([1, 2, 3, 4, 5]);
+    check(someList).deepEquals([1, 2, 3, 4, 5]);
 
     final someString = 'abcdefghijklmnopqrstuvwxyz';
 
-    checkThat(someString)
+    check(
+      because: 'it should contain the beginning, middle and end',
+      someString,
+    )
       ..startsWith('a')
       ..endsWith('z')
       ..contains('lmno');

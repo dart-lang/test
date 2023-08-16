@@ -11,6 +11,7 @@ import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
@@ -64,7 +65,7 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
-    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
+    _registerPlatformPlugin([Runtime.vm], VMPlatform.new);
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
@@ -182,60 +183,67 @@ class Loader {
 
     for (var runtimeName in suiteConfig.runtimes) {
       var runtime = findRuntime(runtimeName);
-      assert(runtime != null, 'Unknown platform "$runtimeName".');
-
-      var platform = currentPlatform(runtime!);
-      if (!suiteConfig.metadata.testOn.evaluate(platform)) {
-        continue;
+      if (runtime == null) {
+        throw ArgumentError.value(runtimeName, 'platform', 'Unknown platform');
       }
+      final compilers = {
+        for (var selection
+            in suiteConfig.compilerSelections ?? <CompilerSelection>[])
+          if (runtime.supportedCompilers.contains(selection.compiler) &&
+              (selection.platformSelector == null ||
+                  selection.platformSelector!
+                      .evaluate(currentPlatform(runtime, selection.compiler))))
+            selection.compiler,
+      };
+      if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
 
-      var platformConfig = suiteConfig.forPlatform(platform);
+      for (var compiler in compilers) {
+        var platform = currentPlatform(runtime, compiler);
+        if (!suiteConfig.metadata.testOn.evaluate(platform)) continue;
 
-      // Don't load a skipped suite.
-      if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
-        yield LoadSuite.forSuite(RunnerSuite(
-            const PluginEnvironment(),
-            platformConfig,
-            Group.root([LocalTest('(suite)', platformConfig.metadata, () {})],
-                metadata: platformConfig.metadata),
-            platform,
-            path: path));
-        continue;
-      }
+        var platformConfig = suiteConfig.forPlatform(platform);
 
-      var name =
-          (platform.runtime.isJS && platformConfig.precompiledPath == null
-                  ? 'compiling '
-                  : 'loading ') +
-              path;
-      yield LoadSuite(name, platformConfig, platform, () async {
-        var memo = _platformPlugins[platform.runtime]!;
-
-        var retriesLeft = suiteConfig.metadata.retry;
-        while (true) {
-          try {
-            var plugin =
-                await memo.runOnce(_platformCallbacks[platform.runtime]!);
-            _customizePlatform(plugin, platform.runtime);
-            var suite = await plugin.load(path, platform, platformConfig,
-                {'platformVariables': _runtimeVariables.toList()});
-            if (suite != null) _suites.add(suite);
-            return suite;
-          } on Object catch (error, stackTrace) {
-            if (retriesLeft > 0) {
-              retriesLeft--;
-              print('Retrying load of $path in 1s ($retriesLeft remaining)');
-              await Future.delayed(Duration(seconds: 1));
-              continue;
-            }
-            if (error is LoadException) {
-              rethrow;
-            }
-            await Future.error(LoadException(path, error), stackTrace);
-            return null;
-          }
+        // Don't load a skipped suite.
+        if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
+          yield LoadSuite.forSuite(RunnerSuite(
+              const PluginEnvironment(),
+              platformConfig,
+              Group.root([LocalTest('(suite)', platformConfig.metadata, () {})],
+                  metadata: platformConfig.metadata),
+              platform,
+              path: path));
+          continue;
         }
-      }, path: path);
+
+        yield LoadSuite('loading $path', platformConfig, platform, () async {
+          var memo = _platformPlugins[platform.runtime]!;
+
+          var retriesLeft = suiteConfig.metadata.retry;
+          while (true) {
+            try {
+              var plugin =
+                  await memo.runOnce(_platformCallbacks[platform.runtime]!);
+              _customizePlatform(plugin, platform.runtime);
+              var suite = await plugin.load(path, platform, platformConfig,
+                  {'platformVariables': _runtimeVariables.toList()});
+              if (suite != null) _suites.add(suite);
+              return suite;
+            } on Object catch (error, stackTrace) {
+              if (retriesLeft > 0) {
+                retriesLeft--;
+                print('Retrying load of $path in 1s ($retriesLeft remaining)');
+                await Future.delayed(Duration(seconds: 1));
+                continue;
+              }
+              if (error is LoadException) {
+                rethrow;
+              }
+              await Future.error(LoadException(path, error), stackTrace);
+              return null;
+            }
+          }
+        }, path: path);
+      }
     }
   }
 

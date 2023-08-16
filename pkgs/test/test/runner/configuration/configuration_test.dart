@@ -3,9 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
-
 import 'package:test_core/src/runner/configuration/reporters.dart';
 import 'package:test_core/src/runner/suite.dart';
 import 'package:test_core/src/util/io.dart';

@@ -36,20 +36,23 @@ final _allReporters = <String, ReporterDetails>{
           color: config.color,
           printPath: config.testSelections.length > 1 ||
               Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1)),
+          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
+              config.suiteDefaults.compilerSelections != null)),
   'compact': ReporterDetails(
       'A single line, updated continuously.',
       (config, engine, sink) => CompactReporter.watch(engine, sink,
           color: config.color,
           printPath: config.testSelections.length > 1 ||
               Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1)),
+          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
+              config.suiteDefaults.compilerSelections != null)),
   'github': ReporterDetails(
       'A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).',
       (config, engine, sink) => GithubReporter.watch(engine, sink,
           printPath: config.testSelections.length > 1 ||
               Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1)),
+          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
+              config.suiteDefaults.compilerSelections != null)),
   'json': ReporterDetails(
       'A machine-readable format (see '
       'https://dart.dev/go/test-docs/json_reporter.md).',

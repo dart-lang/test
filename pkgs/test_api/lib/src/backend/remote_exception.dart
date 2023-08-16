@@ -12,7 +12,7 @@ import 'test_failure.dart';
 ///
 /// This could be an exception thrown in a different isolate, a different
 /// process, or on an entirely different computer.
-class RemoteException implements Exception {
+final class RemoteException implements Exception {
   /// The original exception's message, if it had one.
   ///
   /// If the original exception was a plain string, this will contain that
@@ -29,7 +29,7 @@ class RemoteException implements Exception {
   ///
   /// Other than JSON- and isolate-safety, no guarantees are made about the
   /// serialized format.
-  static Map<String, dynamic> serialize(error, StackTrace stackTrace) {
+  static Map<String, dynamic> serialize(dynamic error, StackTrace stackTrace) {
     String? message;
     if (error is String) {
       message = error;
@@ -56,23 +56,21 @@ class RemoteException implements Exception {
   ///
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
-  static AsyncError deserialize(serialized) {
+  static AsyncError deserialize(Map serialized) {
     return AsyncError(_deserializeException(serialized),
         Chain.parse(serialized['stackChain'] as String));
   }
 
   /// Deserializes the exception portion of [serialized].
-  static RemoteException _deserializeException(serialized) {
+  static RemoteException _deserializeException(Map serialized) {
     final message = serialized['message'] as String?;
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;
 
-    switch (serialized['supertype'] as String?) {
-      case 'TestFailure':
-        return _RemoteTestFailure(message, type, toString);
-      default:
-        return RemoteException._(message, type, toString);
-    }
+    return switch (serialized['supertype'] as String?) {
+      'TestFailure' => _RemoteTestFailure(message, type, toString),
+      _ => RemoteException._(message, type, toString),
+    };
   }
 
   RemoteException._(this.message, this.type, this._toString);
@@ -85,7 +83,7 @@ class RemoteException implements Exception {
 ///
 /// It's important to preserve [TestFailure]-ness, because tests have different
 /// results depending on whether an exception was a failure or an error.
-class _RemoteTestFailure extends RemoteException implements TestFailure {
+final class _RemoteTestFailure extends RemoteException implements TestFailure {
   _RemoteTestFailure(String? message, String type, String toString)
       : super._(message, type, toString);
 }

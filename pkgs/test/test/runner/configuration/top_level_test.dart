@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 import 'dart:convert';
@@ -481,7 +482,8 @@ transformers:
     ''').create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stdout, containsInOrder(['[VM] success', '[Chrome] success']));
+    expect(test.stdout,
+        containsInOrder(['[VM, Kernel] success', '[Chrome, Dart2Js] success']));
     await test.shouldExit(0);
   }, tags: 'chrome');
 

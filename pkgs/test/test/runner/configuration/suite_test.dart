@@ -3,11 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
-
 import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
+import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:test_core/src/runner/runtime_selection.dart';
 
 import '../../utils.dart';
@@ -21,6 +23,7 @@ void main() {
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, isNull);
         expect(merged.runtimes, equals([Runtime.vm.identifier]));
+        expect(merged.compilerSelections, isNull);
       });
 
       test("if only the old configuration's is defined, uses it", () {
@@ -28,13 +31,16 @@ void main() {
                 jsTrace: true,
                 runSkipped: true,
                 precompiledPath: '/tmp/js',
-                runtimes: [RuntimeSelection(Runtime.chrome.identifier)])
+                runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
+                compilerSelections: [CompilerSelection.parse('dart2js')])
             .merge(suiteConfiguration());
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals('/tmp/js'));
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
+        expect(merged.compilerSelections,
+            equals([CompilerSelection.parse('dart2js')]));
       });
 
       test("if only the configuration's is defined, uses it", () {
@@ -42,12 +48,15 @@ void main() {
             jsTrace: true,
             runSkipped: true,
             precompiledPath: '/tmp/js',
-            runtimes: [RuntimeSelection(Runtime.chrome.identifier)]));
+            runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
+            compilerSelections: [CompilerSelection.parse('dart2js')]));
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals('/tmp/js'));
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
+        expect(merged.compilerSelections,
+            equals([CompilerSelection.parse('dart2js')]));
       });
 
       test(
@@ -57,18 +66,22 @@ void main() {
             jsTrace: false,
             runSkipped: true,
             precompiledPath: '/tmp/js',
-            runtimes: [RuntimeSelection(Runtime.chrome.identifier)]);
+            runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
+            compilerSelections: [CompilerSelection.parse('dart2js')]);
         var newer = suiteConfiguration(
             jsTrace: true,
             runSkipped: false,
             precompiledPath: '../js',
-            runtimes: [RuntimeSelection(Runtime.firefox.identifier)]);
+            runtimes: [RuntimeSelection(Runtime.firefox.identifier)],
+            compilerSelections: [CompilerSelection.parse('source')]);
         var merged = older.merge(newer);
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, equals('../js'));
         expect(merged.runtimes, equals([Runtime.firefox.identifier]));
+        expect(merged.compilerSelections,
+            equals([CompilerSelection.parse('source')]));
       });
     });
 

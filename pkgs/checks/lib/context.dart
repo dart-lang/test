@@ -4,7 +4,7 @@
 
 export 'src/checks.dart'
     show
-        Subject,
+        AsyncCondition,
         CheckFailure,
         Condition,
         Context,
@@ -12,6 +12,7 @@ export 'src/checks.dart'
         Extracted,
         FailureDetail,
         Rejection,
+        Subject,
         describe,
         describeAsync,
         softCheck,

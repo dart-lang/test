@@ -121,14 +121,14 @@ verbose_trace: true
 
 ### `chain_stack_traces`
 
-This boolean field controls whether or not stack traces are chained. 
+This boolean field controls whether or not stack traces are chained.
 Disabling [`stack trace chaining`][stack trace chaining] will improve
-performance for heavily asynchronous code at the cost of debuggability. 
+performance for heavily asynchronous code at the cost of debuggability.
 
 [stack trace chaining]: https://github.com/dart-lang/stack_trace/blob/master/README.md#stack-chains
 
 ```yaml
-chain_stack_traces: false 
+chain_stack_traces: false
 ```
 
 ### `js_trace`
@@ -163,7 +163,7 @@ This field is not supported in the
 
 ### `retry`
 
-This int field controls how many times a test is retried upon failure. 
+This int field controls how many times a test is retried upon failure.
 
 ```yaml
 tags:
@@ -417,6 +417,19 @@ platforms:
 - firefox
 ```
 
+### `compilers`
+
+This field indicates which compilers tests should be compiled with by default.
+It allows the same compiler selectors that can be passed to `--compiler`. If
+a given platform has no supported compiler configured, it will use its default.
+
+```yaml
+compilers: [source]
+
+compilers:
+- source
+```
+
 ### `concurrency`
 
 This field indicates the default number of test suites to run in parallel. More
@@ -511,8 +524,8 @@ package are folded.
 ```yaml
 fold_stack_frames:
   except:
-  - test 
-  - stream_channel 
+  - test
+  - stream_channel
 ```
 
 Sample stack trace, note the absence of `package:test`

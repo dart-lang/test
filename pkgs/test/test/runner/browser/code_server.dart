@@ -9,7 +9,7 @@ import 'package:http_multi_server/http_multi_server.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:test/test.dart' show printOnFailure, TestFailure;
+import 'package:test/test.dart' show TestFailure, printOnFailure;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// A class that serves Dart and/or JS code and receives WebSocket connections.

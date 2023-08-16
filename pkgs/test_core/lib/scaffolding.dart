@@ -10,7 +10,7 @@ import 'dart:async';
 
 import 'package:meta/meta.dart' show isTest, isTestGroup;
 import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart'; //ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -28,7 +28,7 @@ import 'src/util/print_sink.dart';
 // This file is an almost direct copy of import below, but with the global
 // declarer added.
 export 'package:test_api/scaffolding.dart'
-    hide test, group, setUp, setUpAll, tearDown, tearDownAll;
+    hide group, setUp, setUpAll, tearDown, tearDownAll, test;
 
 /// The global declarer.
 ///
@@ -54,8 +54,11 @@ Declarer get _declarer {
   () async {
     await pumpEventQueue();
 
-    var suite = RunnerSuite(const PluginEnvironment(), SuiteConfiguration.empty,
-        _globalDeclarer!.build(), SuitePlatform(Runtime.vm, os: currentOSGuess),
+    var suite = RunnerSuite(
+        const PluginEnvironment(),
+        SuiteConfiguration.empty,
+        _globalDeclarer!.build(),
+        SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
         path: p.prettyUri(Uri.base));
 
     var engine = Engine();
@@ -130,11 +133,11 @@ Declarer get _declarer {
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(description, dynamic Function() body,
+void test(Object? description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
-    skip,
-    tags,
+    Object? skip,
+    Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
     @Deprecated('Debug only') bool solo = false}) {
@@ -208,11 +211,11 @@ void test(description, dynamic Function() body,
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(description, dynamic Function() body,
+void group(Object? description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
-    skip,
-    tags,
+    Object? skip,
+    Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
     @Deprecated('Debug only') bool solo = false}) {

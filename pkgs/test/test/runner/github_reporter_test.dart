@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 
@@ -36,8 +37,8 @@ void main() {
   test('includes the platform name when multiple platforms are run', () {
     return _expectReportLines('''
         test('success 1', () {});''', [
-      '✅ [VM] success 1',
-      '✅ [Chrome] success 1',
+      '✅ [VM, Kernel] success 1',
+      '✅ [Chrome, Dart2Js] success 1',
       '🎉 2 tests passed.',
     ], args: [
       '-p',
@@ -154,8 +155,9 @@ void main() {
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
         ::group::❌ fail after completion (failed after test completion)
-        This test failed after it had already completed. Make sure to use [expectAsync]
-        or the [completes] matcher when testing async code.
+        This test failed after it had already completed.
+        Make sure to use a matching library which informs the test runner
+        of pending async work.
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
         ✅ second test so that the first failure is reported

@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @OnPlatform({'windows': Skip('https://github.com/dart-lang/test/issues/1613')})
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -115,7 +116,7 @@ void main() {
 
     var nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: [Firefox] success'));
+      expect(line, contains('+0: [Firefox, Dart2Js] success'));
       nextLineFired = true;
     })));
 
@@ -137,7 +138,7 @@ void main() {
 
     nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+1: [Chrome] success'));
+      expect(line, contains('+1: [Chrome, Dart2Js] success'));
       nextLineFired = true;
     })));
 
@@ -158,7 +159,7 @@ void main() {
 
     nextLineFired = false;
     unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+2: [VM] success'));
+      expect(line, contains('+2: [VM, Kernel] success'));
       nextLineFired = true;
     })));
 

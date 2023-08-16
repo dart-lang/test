@@ -3,8 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
@@ -42,7 +43,7 @@ void main() {
       expect(
           test.stdout,
           containsInOrder(
-              ['-1: [Chrome] test [E]', '+1 -1: Some tests failed.']));
+              ['-1: [Chrome, Dart2Js] test [E]', '+1 -1: Some tests failed.']));
       await test.shouldExit(1);
     }, tags: ['chrome']);
 
@@ -71,8 +72,8 @@ void main() {
       expect(
           test.stdout,
           containsInOrder([
-            '-1: [Chrome] test [E]',
-            '-2: [VM] test [E]',
+            '-1: [Chrome, Dart2Js] test [E]',
+            '-2: [VM, Kernel] test [E]',
             '-2: Some tests failed.'
           ]));
       await test.shouldExit(1);
@@ -205,10 +206,8 @@ void main() {
       var test = await runTest(['.']);
       expect(
           test.stdout,
-          containsInOrder([
-            '+0: .${Platform.pathSeparator}test_foo.dart: test_foo',
-            '+1: All tests passed!'
-          ]));
+          containsInOrder(
+              ['+0: ./test_foo.dart: test_foo', '+1: All tests passed!']));
       await test.shouldExit(0);
     });
 
@@ -243,10 +242,8 @@ void main() {
       var test = await runTest(['.']);
       expect(
           test.stdout,
-          containsInOrder([
-            '+0: .${Platform.pathSeparator}foo_test.dart: foo_test',
-            '+1: All tests passed!'
-          ]));
+          containsInOrder(
+              ['+0: ./foo_test.dart: foo_test', '+1: All tests passed!']));
       await test.shouldExit(0);
     });
 

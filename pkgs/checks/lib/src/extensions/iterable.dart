@@ -9,9 +9,38 @@ import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<int> get length => has((l) => l.length, 'length');
-  Subject<T> get first => has((l) => l.first, 'first element');
-  Subject<T> get last => has((l) => l.last, 'last element');
-  Subject<T> get single => has((l) => l.single, 'single element');
+
+  Subject<T> get first => context.nest(() => ['has first element'], (actual) {
+        final iterator = actual.iterator;
+        if (!iterator.moveNext()) {
+          return Extracted.rejection(which: ['has no elements']);
+        }
+        return Extracted.value(iterator.current);
+      });
+
+  Subject<T> get last => context.nest(() => ['has last element'], (actual) {
+        final iterator = actual.iterator;
+        if (!iterator.moveNext()) {
+          return Extracted.rejection(which: ['has no elements']);
+        }
+        var current = iterator.current;
+        while (iterator.moveNext()) {
+          current = iterator.current;
+        }
+        return Extracted.value(current);
+      });
+
+  Subject<T> get single => context.nest(() => ['has single element'], (actual) {
+        final iterator = actual.iterator;
+        if (!iterator.moveNext()) {
+          return Extracted.rejection(which: ['has no elements']);
+        }
+        final value = iterator.current;
+        if (iterator.moveNext()) {
+          return Extracted.rejection(which: ['has more than one element']);
+        }
+        return Extracted.value(value);
+      });
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
@@ -23,7 +52,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is not empty']);
+      return Rejection(which: ['is empty']);
     });
   }
 
@@ -47,18 +76,18 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// For example, the following will succeed:
   ///
   /// ```dart
-  /// checkThat([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
+  /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
   /// ```
   ///
   /// Values in [elements] may be a `T`, a `Condition<T>`, or a
-  /// `Condition<dynamic>`. If an expectation is a [Condition] it will be
+  /// `Condition<Object?>`. If an expectation is a condition callback it will be
   /// checked against the actual values, and any other expectations, including
-  /// those that are not a `T` or a `Condition`, will be compared with the
-  /// equality operator.
+  /// those that are not a `T` or a condition callback, will be compared with
+  /// the equality operator.
   ///
   /// ```dart
-  /// checkThat([1, 0, 2, 0, 3])
-  ///   .containsInOrder([1, it<int>()..isGreaterThan(1), 3]);
+  /// check([1, 0, 2, 0, 3])
+  ///   .containsInOrder([1, (Subject<int> v) => v.isGreaterThan(1), 3]);
   /// ```
   void containsInOrder(Iterable<Object?> elements) {
     context.expect(() => prefixFirst('contains, in order: ', literal(elements)),

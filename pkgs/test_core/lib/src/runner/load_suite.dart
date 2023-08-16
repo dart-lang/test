@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -136,7 +135,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     return LoadSuite(
         'loading ${exception.path}',
         config ?? SuiteConfiguration.empty,
-        platform ?? currentPlatform(Runtime.vm),
+        platform ?? currentPlatform(Runtime.vm, null),
         () => Future.error(exception, stackTrace),
         path: exception.path);
   }

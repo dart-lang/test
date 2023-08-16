@@ -171,9 +171,9 @@ class ExpandedReporter implements Reporter {
     } else if (_engine.active.isEmpty &&
         _engine.activeSuiteLoads.length == 1 &&
         _engine.activeSuiteLoads.first == liveTest &&
-        liveTest.test.name.startsWith('compiling ')) {
-      // Print a progress line for load tests that come from compiling JS, since
-      // that takes a long time.
+        liveTest.test.name.startsWith('loading ')) {
+      // Print a progress line for ongoing suite loading synthetic test since it
+      // may be slow (or stuck) depending on the platform.
       _progressLine(_description(liveTest));
     }
 
@@ -336,7 +336,8 @@ class ExpandedReporter implements Reporter {
     }
 
     if (_printPlatform) {
-      name = '[${liveTest.suite.platform.runtime.name}] $name';
+      name = '[${liveTest.suite.platform.runtime.name}, '
+          '${liveTest.suite.platform.compiler.name}] $name';
     }
 
     if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';

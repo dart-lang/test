@@ -26,46 +26,13 @@ void main() {
     test('must not import from other subdirectories', () async {
       final entryPoints = [
         _testApiLibrary('backend.dart'),
-        ...(await _ImportCheck.findEntrypointsUnder(
-            _testApiLibrary('src/backend')))
+        ...await _ImportCheck.findEntrypointsUnder(
+            _testApiLibrary('src/backend'))
       ];
       await for (final source
           in importCheck.transitiveSamePackageSources(entryPoints)) {
         for (final import in source.imports) {
           expect(import.pathSegments.skip(1).take(2), ['src', 'backend'],
-              reason: 'Invalid import from ${source.uri} : $import');
-        }
-      }
-    });
-  });
-
-  group('expect', () {
-    test('must not be imported from any other library', () async {
-      final entryPoints = [
-        _testApiLibrary('hooks.dart'),
-        _testApiLibrary('scaffolding.dart'),
-        _testApiLibrary('fake.dart')
-      ];
-      await for (final source
-          in importCheck.transitiveSamePackageSources(entryPoints)) {
-        for (final import in source.imports) {
-          expect(import.path, isNot(contains('test_api.dart')),
-              reason: 'Invalid import from ${source.uri} : $import.');
-          expect(import.path, isNot(contains('expect')),
-              reason: 'Invalid import from ${source.uri} : $import.');
-        }
-      }
-    });
-
-    test('may only import hooks', () async {
-      final entryPoint = _testApiLibrary('expect.dart');
-      await for (final source
-          in importCheck.transitiveSamePackageSources([entryPoint])) {
-        // Transitive imports through `hooks.dart` don't follow this restriction
-        if (!source.uri.path.contains('expect')) continue;
-        for (final import in source.imports) {
-          expect(import.path,
-              anyOf(['test_api/hooks.dart', startsWith('test_api/src/expect')]),
               reason: 'Invalid import from ${source.uri} : $import');
         }
       }

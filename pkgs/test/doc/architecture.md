@@ -100,6 +100,7 @@ to the `Engine`'s streams and exposes the information there to the user, usually
 by printing human-readable text. [`CompactReporter`][CompactReporter] is the
 default on Posix platforms, but others may be selected based on the
 `Configuration`. Nearly everything the user sees comes through the reporter.
+
 [Reporter]: https://github.com/dart-lang/test/tree/master/lib/src/runner/reporter.dart
 [CompactReporter]: https://github.com/dart-lang/test/tree/master/lib/src/runner/reporter/compact.dart
 

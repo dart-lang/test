@@ -10,58 +10,70 @@ import '../test_shared.dart';
 void main() {
   group('StringChecks', () {
     test('contains', () {
-      checkThat('bob').contains('bo');
-      checkThat('bob').isRejectedBy(it()..contains('kayleb'),
+      check('bob').contains('bo');
+      check('bob').isRejectedBy((it) => it.contains('kayleb'),
           which: ["Does not contain 'kayleb'"]);
     });
     test('length', () {
-      checkThat('bob').length.equals(3);
+      check('bob').length.equals(3);
     });
     test('isEmpty', () {
-      checkThat('').isEmpty();
-      checkThat('bob').isRejectedBy(it()..isEmpty(), which: ['is not empty']);
+      check('').isEmpty();
+      check('bob').isRejectedBy((it) => it.isEmpty(), which: ['is not empty']);
     });
     test('isNotEmpty', () {
-      checkThat('bob').isNotEmpty();
-      checkThat('').isRejectedBy(it()..isNotEmpty(), which: ['is empty']);
+      check('bob').isNotEmpty();
+      check('').isRejectedBy((it) => it.isNotEmpty(), which: ['is empty']);
     });
     test('startsWith', () {
-      checkThat('bob').startsWith('bo');
-      checkThat('bob').isRejectedBy(it()..startsWith('kayleb'),
+      check('bob').startsWith('bo');
+      check('bob').isRejectedBy((it) => it.startsWith('kayleb'),
           which: ["does not start with 'kayleb'"]);
     });
     test('endsWith', () {
-      checkThat('bob').endsWith('ob');
-      checkThat('bob').isRejectedBy(it()..endsWith('kayleb'),
+      check('bob').endsWith('ob');
+      check('bob').isRejectedBy((it) => it.endsWith('kayleb'),
           which: ["does not end with 'kayleb'"]);
     });
 
     group('matches', () {
-      test('succeeds for strings that match', () {
-        checkThat('123').matches(RegExp(r'\d\d\d'));
+      test('succeeds for strings that match a regex', () {
+        check('123').matchesPattern(RegExp(r'\d\d\d'));
       });
-      test('fails for non-matching strings', () {
-        checkThat('abc').isRejectedBy(it()..matches(RegExp(r'\d\d\d')),
+      test('succeeds for strings that match a string pattern', () {
+        check(r'\d').matchesPattern(r'\d');
+      });
+      test('fails for non-matching regex', () {
+        check('abc').isRejectedBy((it) => it.matchesPattern(RegExp(r'\d\d\d')),
             which: [r'does not match <RegExp: pattern=\d\d\d flags=>']);
       });
+      test('fails for non-matching string pattern', () {
+        // A string is _not_ converted to a regex, string patterns must match
+        // directly.
+        check('123').isRejectedBy((it) => it.matchesPattern(r'\d\d\d'),
+            which: [r"does not match '\\d\\d\\d'"]);
+      });
       test('can be described', () {
-        checkThat(it<String>()..matches(RegExp(r'\d\d\d')))
+        check((Subject<String> it) => it.matchesPattern(RegExp(r'\d\d\d')))
             .description
             .deepEquals([r'  matches <RegExp: pattern=\d\d\d flags=>']);
+        check((Subject<String> it) => it.matchesPattern('abc'))
+            .description
+            .deepEquals([r"  matches 'abc'"]);
       });
     });
 
     group('containsInOrder', () {
       test('happy case', () {
-        checkThat('foo bar baz').containsInOrder(['foo', 'baz']);
+        check('foo bar baz').containsInOrder(['foo', 'baz']);
       });
       test('reports when first substring is missing', () {
-        checkThat('baz').isRejectedBy(it()..containsInOrder(['foo', 'baz']),
+        check('baz').isRejectedBy((it) => it.containsInOrder(['foo', 'baz']),
             which: ['does not have a match for the substring \'foo\'']);
       });
       test('reports when substring is missing following a match', () {
-        checkThat('foo bar')
-            .isRejectedBy(it()..containsInOrder(['foo', 'baz']), which: [
+        check('foo bar')
+            .isRejectedBy((it) => it.containsInOrder(['foo', 'baz']), which: [
           'does not have a match for the substring \'baz\'',
           'following the other matches up to character 3'
         ]);
@@ -70,42 +82,44 @@ void main() {
 
     group('equals', () {
       test('succeeeds for happy case', () {
-        checkThat('foo').equals('foo');
+        check('foo').equals('foo');
       });
       test('succeeeds for equal empty strings', () {
-        checkThat('').equals('');
+        check('').equals('');
       });
       test('reports extra characters for long string', () {
-        checkThat('foobar').isRejectedBy(equals('foo'),
+        check('foobar').isRejectedBy((it) => it.equals('foo'),
             which: ['is too long with unexpected trailing characters:', 'bar']);
       });
       test('reports extra characters for long string against empty', () {
-        checkThat('foo')
-            .isRejectedBy(equals(''), which: ['is not the empty string']);
+        check('foo').isRejectedBy((it) => it.equals(''),
+            which: ['is not the empty string']);
       });
       test('reports truncated extra characters for very long string', () {
-        checkThat('foobar baz more stuff').isRejectedBy(equals('foo'), which: [
-          'is too long with unexpected trailing characters:',
-          'bar baz mo ...'
-        ]);
+        check('foobar baz more stuff').isRejectedBy((it) => it.equals('foo'),
+            which: [
+              'is too long with unexpected trailing characters:',
+              'bar baz mo ...'
+            ]);
       });
       test('reports missing characters for short string', () {
-        checkThat('foo').isRejectedBy(equals('foobar'),
+        check('foo').isRejectedBy((it) => it.equals('foobar'),
             which: ['is too short with missing trailing characters:', 'bar']);
       });
       test('reports missing characters for empty string', () {
-        checkThat('').isRejectedBy(equals('foo bar baz'),
+        check('').isRejectedBy((it) => it.equals('foo bar baz'),
             actual: ['an empty string'],
             which: ['is missing all expected characters:', 'foo bar ba ...']);
       });
       test('reports truncated missing characters for very short string', () {
-        checkThat('foo').isRejectedBy(equals('foobar baz more stuff'), which: [
-          'is too short with missing trailing characters:',
-          'bar baz mo ...'
-        ]);
+        check('foo').isRejectedBy((it) => it.equals('foobar baz more stuff'),
+            which: [
+              'is too short with missing trailing characters:',
+              'bar baz mo ...'
+            ]);
       });
       test('reports index of different character', () {
-        checkThat('hit').isRejectedBy(equals('hat'), which: [
+        check('hit').isRejectedBy((it) => it.equals('hat'), which: [
           'differs at offset 1:',
           'hat',
           'hit',
@@ -114,31 +128,32 @@ void main() {
       });
       test('reports truncated index of different character in large string',
           () {
-        checkThat('blah blah blah hit blah blah blah')
-            .isRejectedBy(equals('blah blah blah hat blah blah blah'), which: [
-          'differs at offset 16:',
-          '... lah blah hat blah bl ...',
-          '... lah blah hit blah bl ...',
-          '              ^',
-        ]);
+        check('blah blah blah hit blah blah blah').isRejectedBy(
+            (it) => it.equals('blah blah blah hat blah blah blah'),
+            which: [
+              'differs at offset 16:',
+              '... lah blah hat blah bl ...',
+              '... lah blah hit blah bl ...',
+              '              ^',
+            ]);
       });
     });
 
     group('equalsIgnoringCase', () {
       test('succeeeds for happy case', () {
-        checkThat('FOO').equalsIgnoringCase('foo');
-        checkThat('foo').equalsIgnoringCase('FOO');
+        check('FOO').equalsIgnoringCase('foo');
+        check('foo').equalsIgnoringCase('FOO');
       });
       test('reports original extra characters for long string', () {
-        checkThat('FOOBAR').isRejectedBy(it()..equalsIgnoringCase('foo'),
+        check('FOOBAR').isRejectedBy((it) => it.equalsIgnoringCase('foo'),
             which: ['is too long with unexpected trailing characters:', 'BAR']);
       });
       test('reports original missing characters for short string', () {
-        checkThat('FOO').isRejectedBy(it()..equalsIgnoringCase('fooBAR'),
+        check('FOO').isRejectedBy((it) => it.equalsIgnoringCase('fooBAR'),
             which: ['is too short with missing trailing characters:', 'BAR']);
       });
       test('reports index of different character with original characters', () {
-        checkThat('HiT').isRejectedBy(it()..equalsIgnoringCase('hAt'), which: [
+        check('HiT').isRejectedBy((it) => it.equalsIgnoringCase('hAt'), which: [
           'differs at offset 1:',
           'hAt',
           'HiT',
@@ -149,34 +164,36 @@ void main() {
 
     group('equalsIgnoringWhitespace', () {
       test('allows differing internal whitespace', () {
-        checkThat('foo \t\n bar').equalsIgnoringWhitespace('foo bar');
+        check('foo \t\n bar').equalsIgnoringWhitespace('foo bar');
       });
       test('allows extra leading/trailing whitespace', () {
-        checkThat(' foo ').equalsIgnoringWhitespace('foo');
+        check(' foo ').equalsIgnoringWhitespace('foo');
       });
       test('allows missing leading/trailing whitespace', () {
-        checkThat('foo').equalsIgnoringWhitespace(' foo ');
+        check('foo').equalsIgnoringWhitespace(' foo ');
       });
       test('reports original extra characters for long string', () {
-        checkThat('foo \t bar \n baz')
-            .isRejectedBy(it()..equalsIgnoringWhitespace('foo bar'), which: [
-          'is too long with unexpected trailing characters:',
-          ' baz'
-        ]);
+        check('foo \t bar \n baz').isRejectedBy(
+            (it) => it.equalsIgnoringWhitespace('foo bar'),
+            which: [
+              'is too long with unexpected trailing characters:',
+              ' baz'
+            ]);
       });
       test('reports original missing characters for short string', () {
-        checkThat('foo  bar').isRejectedBy(
-            it()..equalsIgnoringWhitespace('foo bar baz'),
+        check('foo  bar').isRejectedBy(
+            (it) => it.equalsIgnoringWhitespace('foo bar baz'),
             which: ['is too short with missing trailing characters:', ' baz']);
       });
       test('reports index of different character with original characters', () {
-        checkThat('x  hit  x')
-            .isRejectedBy(it()..equalsIgnoringWhitespace('x hat x'), which: [
-          'differs at offset 3:',
-          'x hat x',
-          'x hit x',
-          '   ^',
-        ]);
+        check('x  hit  x').isRejectedBy(
+            (it) => it.equalsIgnoringWhitespace('x hat x'),
+            which: [
+              'differs at offset 3:',
+              'x hat x',
+              'x hit x',
+              '   ^',
+            ]);
       });
     });
   });

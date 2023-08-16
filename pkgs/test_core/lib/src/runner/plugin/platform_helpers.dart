@@ -7,7 +7,6 @@ import 'dart:io';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
@@ -63,7 +62,7 @@ RunnerSuiteController deserializeSuite(
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
     'allowDuplicateTestNames': suiteConfig.allowDuplicateTestNames,
     'ignoreTimeouts': suiteConfig.ignoreTimeouts,
-    ...(message as Map<String, dynamic>),
+    ...message as Map<String, dynamic>,
   });
 
   var completer = Completer<Group>();
@@ -95,7 +94,8 @@ RunnerSuiteController deserializeSuite(
             break;
 
           case 'error':
-            var asyncError = RemoteException.deserialize(response['error']);
+            var asyncError = RemoteException.deserialize(
+                response['error'] as Map<String, dynamic>);
             handleError(
                 LoadException(path, asyncError.error), asyncError.stackTrace);
             break;
@@ -156,7 +156,7 @@ class _Deserializer {
     var metadata = Metadata.deserialize(test['metadata']);
     var trace =
         test['trace'] == null ? null : Trace.parse(test['trace'] as String);
-    var testChannel = _channel.virtualChannel(test['channel'] as int);
+    var testChannel = _channel.virtualChannel((test['channel'] as num).toInt());
     return RunnerTest(test['name'] as String, metadata, trace, testChannel);
   }
 }

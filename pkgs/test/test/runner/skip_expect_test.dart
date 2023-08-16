@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -197,9 +198,9 @@ void main() {
             '+0: skip',
             '+1: wait',
             '+0 -1: skip',
-            'This test was marked as skipped after it had already completed. '
-                'Make sure to use',
-            '[expectAsync] or the [completes] matcher when testing async code.',
+            'This test was marked as skipped after it had already completed.',
+            'Make sure to use a matching library which informs the test runner',
+            'of pending async work.',
             '+1 -1: Some tests failed.'
           ]));
       await test.shouldExit(1);
@@ -239,9 +240,9 @@ void main() {
             '+0: skip',
             '+1: wait',
             '+0 -1: skip',
-            'This test was marked as skipped after it had already completed. '
-                'Make sure to use',
-            '[expectAsync] or the [completes] matcher when testing async code.',
+            'This test was marked as skipped after it had already completed.',
+            'Make sure to use a matching library which informs the test runner',
+            'of pending async work.',
             '+1 -1: Some tests failed.'
           ]));
       await test.shouldExit(1);

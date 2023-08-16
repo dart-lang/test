@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -28,8 +29,8 @@ void main() {
       'test.dart'
     ]);
 
-    expect(test.stdoutStream(), emitsThrough(contains('[VM]')));
-    expect(test.stdout, emitsThrough(contains('[Chrome]')));
+    expect(test.stdoutStream(), emitsThrough(contains('[VM, Kernel]')));
+    expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
     await test.shouldExit(0);
   }, tags: ['chrome']);
 }

@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
@@ -30,15 +32,23 @@ void main() {
         "@foo.TestOn('vm')\n"
         "import 'package:test/test.dart' as foo;",
         {});
-    expect(metadata.testOn.evaluate(SuitePlatform(Runtime.vm)), isTrue);
-    expect(metadata.testOn.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
+    expect(metadata.testOn.evaluate(SuitePlatform(Runtime.vm, compiler: null)),
+        isTrue);
+    expect(
+        metadata.testOn.evaluate(SuitePlatform(Runtime.chrome, compiler: null)),
+        isFalse);
   });
 
   group('@TestOn:', () {
     test('parses a valid annotation', () {
       var metadata = parseMetadata(_path, "@TestOn('vm')\nlibrary foo;", {});
-      expect(metadata.testOn.evaluate(SuitePlatform(Runtime.vm)), isTrue);
-      expect(metadata.testOn.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
+      expect(
+          metadata.testOn.evaluate(SuitePlatform(Runtime.vm, compiler: null)),
+          isTrue);
+      expect(
+          metadata.testOn
+              .evaluate(SuitePlatform(Runtime.chrome, compiler: null)),
+          isFalse);
     });
 
     test('ignores a constructor named TestOn', () {
@@ -237,14 +247,16 @@ library foo;
 library foo;''', {});
 
       var key = metadata.onPlatform.keys.first;
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isFalse);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isTrue);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
       key = metadata.onPlatform.keys.last;
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isTrue);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isFalse);
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));
@@ -260,14 +272,16 @@ import 'package:test/test.dart' as test;
 ''', {});
 
       var key = metadata.onPlatform.keys.first;
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isFalse);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isTrue);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
 
       key = metadata.onPlatform.keys.last;
-      expect(key.evaluate(SuitePlatform(Runtime.vm)), isTrue);
-      expect(key.evaluate(SuitePlatform(Runtime.chrome)), isFalse);
+      expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isTrue);
+      expect(
+          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isFalse);
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));

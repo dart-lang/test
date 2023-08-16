@@ -9,7 +9,7 @@ import 'package:meta/meta_meta.dart';
 /// A suite-level retry configuration will enable retries for every test in the
 /// suite, unless the group or test is configured with a more specific retry.
 @Target({TargetKind.library})
-class Retry {
+final class Retry {
   /// The number of times the tests in the suite will be retried.
   final int count;
 
