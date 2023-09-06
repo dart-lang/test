@@ -1,5 +1,8 @@
 ## 0.5.7-wip
 
+* Pass --disable-program-split to dart2js to fix tests which use deferred
+  loading.
+
 ## 0.5.6
 
 * Add support for discontinuing after the first failing test with `--fail-fast`.
