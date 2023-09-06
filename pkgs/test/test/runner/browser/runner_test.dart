@@ -615,6 +615,39 @@ void main() {
     }, tags: 'chrome');
   });
 
+  test('stack trace mapping works for deferred loaded libraries', () async {
+    await d.file('deferred.dart', '''
+int get x {
+  throw 'Oh no!';
+}
+''').create();
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+import 'deferred.dart' deferred as d;
+
+void main() {
+  test("failure", () async {
+    await d.loadLibrary();
+    expect(d.x, 1);
+  });
+}
+''').create();
+
+    var test = await runTest(['-p', 'chrome', 'test.dart']);
+    expect(
+        test.stdout,
+        containsInOrder([
+          'deferred.dart',
+          'test.dart',
+          'package:test',
+          'org-dartlang-sdk:///lib/async/zone.dart'
+        ]));
+    await test.shouldExit(1);
+  },
+      tags: 'chrome',
+      skip: 'Fails, `deferred.dart` does not appear as it should');
+
   group('runs failing tests', () {
     test('that fail only on the browser', () async {
       await d.file('test.dart', '''
@@ -719,9 +752,13 @@ void main() {
     await d.file('test.dart', _failure).create();
 
     var test = await runTest(['-p', 'chrome', '--verbose-trace', 'test.dart']);
-    expect(test.stdout,
-        containsInOrder([' main.<fn>', 'package:test', 'dart:async/zone.dart']),
-        skip: 'https://github.com/dart-lang/sdk/issues/41949');
+    expect(
+        test.stdout,
+        containsInOrder([
+          ' main.<fn>',
+          'package:test',
+          'org-dartlang-sdk:///lib/async/zone.dart'
+        ]));
     await test.shouldExit(1);
   }, tags: 'chrome');
 

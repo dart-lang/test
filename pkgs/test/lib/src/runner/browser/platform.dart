@@ -398,14 +398,13 @@ class BrowserPlatform extends PlatformPlugin
 
         // Set up the stack trace mapper for source maps, unless JS stack
         // traces are enabled.
-        if (!suiteConfig.jsTrace && outputPath.endsWith('.js.map')) {
-          final relativePath = p.relative(outputPath, from: dir);
-          _mappers[relativePath.substring(
-                  0, relativePath.length - '.js.map'.length)] =
-              JSStackTraceMapper(File(outputPath).readAsStringSync(),
-                  mapUrl: p.toUri(outputPath),
-                  sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-                  packageMap: (await currentPackageConfig).toPackageMap());
+        if (!suiteConfig.jsTrace && outputPath.endsWith('$dartPath.js.map')) {
+          // TODO: What about deferred loaded libraries? Do we need multiple mappers?
+          _mappers[dartPath] = JSStackTraceMapper(
+              File(outputPath).readAsStringSync(),
+              mapUrl: p.toUri(outputPath),
+              sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+              packageMap: (await currentPackageConfig).toPackageMap());
         }
       }
     });
