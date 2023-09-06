@@ -14,7 +14,7 @@ import 'suite.dart';
 /// A pool of compiler instances.
 ///
 /// This limits the number of compiler instances running concurrently.
-abstract class CompilerPool {
+abstract class CompilerPool<T> {
   /// The test runner configuration.
   final config = Configuration.current;
 
@@ -33,7 +33,7 @@ abstract class CompilerPool {
   /// Compiles [code] to [path] using [_pool] and [compileInternal].
   ///
   /// Should not be overridden.
-  Future<void> compile(
+  Future<T?> compile(
           String code, String path, SuiteConfiguration suiteConfig) =>
       _pool.withResource(() {
         if (closed) return null;
@@ -43,7 +43,7 @@ abstract class CompilerPool {
   /// The actual function a given compiler pool should implement to compile a
   /// suite.
   @protected
-  Future<void> compileInternal(
+  Future<T?> compileInternal(
       String code, String path, SuiteConfiguration suiteConfig);
 
   /// Shuts down the compiler pool, invoking `closeInternal` exactly once.

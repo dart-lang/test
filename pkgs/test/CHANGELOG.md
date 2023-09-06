@@ -3,6 +3,7 @@
 * Simplify the initialization of the per-suite message channel within browser
   tests. See https://github.com/dart-lang/test/issues/2065
 * Add a timeout to browser test suite loads.
+* Support deferred loaded libraries in browser tests.
 
 ## 1.24.6
 

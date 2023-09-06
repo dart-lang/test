@@ -1,5 +1,11 @@
 ## 0.5.7-wip
 
+* Update the CompilerPool to be generic, so that custom compiler pools can
+  return their own data for each compile step.
+* Update `withTempDir` to be generic so that you can get return values out of
+  the provided callback.
+
+
 ## 0.5.6
 
 * Add support for discontinuing after the first failing test with `--fail-fast`.

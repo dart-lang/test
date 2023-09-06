@@ -20,7 +20,7 @@ final _dart2jsStatus =
 /// A pool of `dart2js` instances.
 ///
 /// This limits the number of compiler instances running concurrently.
-class Dart2JsCompilerPool extends CompilerPool {
+class Dart2JsCompilerPool extends CompilerPool<List<String>> {
   /// Extra arguments to pass to dart2js.
   final List<String> _extraArgs;
 
@@ -33,13 +33,15 @@ class Dart2JsCompilerPool extends CompilerPool {
 
   /// Compiles [code] to [path].
   ///
+  /// Returns a list of absolute paths for all the output files.
+  ///
   /// This wraps the Dart code in the standard browser-testing wrapper.
   ///
   /// The returned [Future] will complete once the `dart2js` process completes
   /// *and* all its output has been printed to the command line.
   @override
-  Future compileInternal(
-      String code, String path, SuiteConfiguration suiteConfig) {
+  Future<List<String>?> compileInternal(
+      String code, String outputPath, SuiteConfiguration suiteConfig) {
     return withTempDir((dir) async {
       var wrapperPath = p.join(dir, 'runInBrowser.dart');
       File(wrapperPath).writeAsStringSync(code);
@@ -51,7 +53,7 @@ class Dart2JsCompilerPool extends CompilerPool {
           '--enable-experiment=$experiment',
         '--enable-asserts',
         wrapperPath,
-        '--out=$path',
+        '--out=$outputPath',
         '--packages=${await packageConfigUri}',
         ..._extraArgs,
         ...suiteConfig.dart2jsArgs
@@ -62,7 +64,7 @@ class Dart2JsCompilerPool extends CompilerPool {
       var process = await Process.start(Platform.resolvedExecutable, args);
       if (closed) {
         process.kill();
-        return;
+        return null;
       }
 
       _processes.add(process);
@@ -81,14 +83,28 @@ class Dart2JsCompilerPool extends CompilerPool {
 
       var exitCode = await process.exitCode;
       _processes.remove(process);
-      if (closed) return;
+      if (closed) return null;
 
       var output = buffer.toString().replaceFirst(_dart2jsStatus, '');
       if (output.isNotEmpty) print(output);
 
       if (exitCode != 0) throw 'dart2js failed.';
 
-      _fixSourceMap('$path.map');
+      // Return all paths that have the output path name as a prefix.
+      final outputName = p.basename(outputPath);
+      final outputPaths = <String>[];
+      await for (final entity in Directory(p.join(dir, p.dirname(outputPath)))
+          .list(followLinks: false)) {
+        if (entity is! File) continue;
+        final name = p.basename(entity.path);
+        if (name.startsWith(outputName)) {
+          outputPaths.add(entity.path);
+          if (name.endsWith('.map')) {
+            _fixSourceMap(entity.path);
+          }
+        }
+      }
+      return outputPaths;
     });
   }
 

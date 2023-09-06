@@ -372,8 +372,9 @@ class BrowserPlatform extends PlatformPlugin
         }
       ''';
 
-      await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
-      if (_closed) return;
+      final outputPaths =
+          await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
+      if (_closed || outputPaths == null) return;
 
       var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart';
@@ -381,27 +382,32 @@ class BrowserPlatform extends PlatformPlugin
         return shelf.Response.ok(bootstrapContent,
             headers: {'Content-Type': 'application/dart'});
       });
+      for (var outputPath in outputPaths) {
+        _jsHandler.add(p.toUri(p.relative(outputPath, from: dir)).path,
+            (request) {
+          final contentType = switch (p.extension(outputPath)) {
+            '.js' => 'application/javascript',
+            '.map' => 'application/json',
+            _ => null,
+          };
+          return shelf.Response.ok(File(outputPath).readAsStringSync(),
+              headers: {
+                if (contentType != null) 'Content-Type': contentType,
+              });
+        });
 
-      var jsUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js';
-      _jsHandler.add(jsUrl, (request) {
-        return shelf.Response.ok(File(jsPath).readAsStringSync(),
-            headers: {'Content-Type': 'application/javascript'});
-      });
-
-      var mapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
-          '.browser_test.dart.js.map';
-      _jsHandler.add(mapUrl, (request) {
-        return shelf.Response.ok(File('$jsPath.map').readAsStringSync(),
-            headers: {'Content-Type': 'application/json'});
-      });
-
-      if (suiteConfig.jsTrace) return;
-      var mapPath = '$jsPath.map';
-      _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
+        // Set up the stack trace mapper for source maps, unless JS stack
+        // traces are enabled.
+        if (!suiteConfig.jsTrace && outputPath.endsWith('.js.map')) {
+          final relativePath = p.relative(outputPath, from: dir);
+          _mappers[relativePath.substring(
+                  0, relativePath.length - '.js.map'.length)] =
+              JSStackTraceMapper(File(outputPath).readAsStringSync(),
+                  mapUrl: p.toUri(outputPath),
+                  sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+                  packageMap: (await currentPackageConfig).toPackageMap());
+        }
+      }
     });
   }
 

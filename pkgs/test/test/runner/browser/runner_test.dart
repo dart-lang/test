@@ -591,6 +591,28 @@ void main() {
         await test.shouldExit(0);
       }, tags: 'chrome');
     });
+
+    test('with deferred libraries', () async {
+      await d.file('deferred.dart', '''
+int x = 1;
+''').create();
+      await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+import 'deferred.dart' deferred as d;
+
+void main() {
+  test("success", () async {
+    await d.loadLibrary();
+    expect(d.x, 1);
+  });
+}
+''').create();
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
+
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    }, tags: 'chrome');
   });
 
   group('runs failing tests', () {

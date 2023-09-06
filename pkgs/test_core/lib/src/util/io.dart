@@ -109,7 +109,7 @@ String createTempDir() =>
 ///
 /// Returns a future that completes to the value that the future returned from
 /// [fn] completes to.
-Future withTempDir(Future Function(String) fn) {
+Future<T> withTempDir<T>(Future<T> Function(String) fn) {
   return Future.sync(() {
     var tempDir = createTempDir();
     return Future.sync(() => fn(tempDir))
