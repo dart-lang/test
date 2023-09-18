@@ -921,4 +921,58 @@ void main() {
       await test.shouldExit(0);
     }, tags: 'chrome');
   });
+
+  group('deferred loading', () {
+    test('can run browser tests with deferred library imports', () async {
+      await d.file('deferred.dart', '''
+int x = 1;
+''').create();
+      await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+import 'deferred.dart' deferred as d;
+
+void main() {
+  test("success", () async {
+    await d.loadLibrary();
+    expect(d.x, 1);
+  });
+}
+''').create();
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
+
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    }, tags: 'chrome');
+
+    test('stack trace mapping works for deferred loaded libraries', () async {
+      await d.file('deferred.dart', '''
+int get x {
+  throw 'Oh no!';
+}
+''').create();
+      await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+import 'deferred.dart' deferred as d;
+
+void main() {
+  test("failure", () async {
+    await d.loadLibrary();
+    expect(d.x, 1);
+  });
+}
+''').create();
+
+      var test = await runTest(['-p', 'chrome', 'test.dart']);
+      expect(
+          test.stdout,
+          containsInOrder([
+            'Oh no!',
+            'deferred.dart',
+            'test.dart',
+          ]));
+      await test.shouldExit(1);
+    }, tags: 'chrome');
+  });
 }
