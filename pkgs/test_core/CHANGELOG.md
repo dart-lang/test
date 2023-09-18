@@ -2,6 +2,9 @@
 
 * Pass --disable-program-split to dart2js to fix tests which use deferred
   loading.
+* Add a 'silent' reporter option. Keep it hidden in the CLI args help since it
+  is not useful in the general case, but can be useful for tests of the test
+  runner.
 
 ## 0.5.6
 
