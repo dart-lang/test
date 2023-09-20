@@ -42,7 +42,6 @@ tags:
   ie:
     add_tags: [dart2js]
     test_on: windows
-    skip: https://github.com/dart-lang/test/issues/1614
   edge:
     add_tags: [dart2js]
     test_on: windows
