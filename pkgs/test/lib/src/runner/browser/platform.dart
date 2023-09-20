@@ -274,7 +274,6 @@ class BrowserPlatform extends PlatformPlugin
 
     if (_closed) return null;
 
-    // TODO(nweiz): Don't start the browser until all the suites are compiled.
     var browserManager = await _browserManagerFor(browser);
     if (_closed || browserManager == null) return null;
 
