@@ -27,7 +27,7 @@ State? lastState;
 ///
 /// The most recent emitted state is stored in [_lastState].
 void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
-  var states = Queue.from(statesIter);
+  var states = Queue.of(statesIter);
   liveTest.onStateChange.listen(expectAsync1((state) {
     lastState = state;
     expect(state, equals(states.removeFirst()));
@@ -36,8 +36,9 @@ void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
 
 /// Asserts that errors will be emitted via [liveTest.onError] that match
 /// [validators], in order.
-void expectErrors(LiveTest liveTest, Iterable<Function> validatorsIter) {
-  var validators = Queue.from(validatorsIter);
+void expectErrors(
+    LiveTest liveTest, Iterable<void Function(Object)> validatorsIter) {
+  var validators = Queue.of(validatorsIter);
   liveTest.onError.listen(expectAsync1((error) {
     validators.removeFirst()(error.error);
   }, count: validators.length, max: validators.length));
