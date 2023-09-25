@@ -30,13 +30,14 @@ class Firefox extends Browser {
   @override
   final name = 'Firefox';
 
-  Firefox(url, {ExecutableSettings? settings})
+  Firefox(Uri url, {ExecutableSettings? settings})
       : super(() =>
             _startBrowser(url, settings ?? defaultSettings[Runtime.firefox]!));
 
   /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
-  static Future<Process> _startBrowser(url, ExecutableSettings settings) async {
+  static Future<Process> _startBrowser(
+      Uri url, ExecutableSettings settings) async {
     var dir = createTempDir();
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 

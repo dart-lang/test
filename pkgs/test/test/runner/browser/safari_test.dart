@@ -43,7 +43,7 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var safari = Safari('http://dart-lang.org',
+    var safari = Safari(Uri.https('dart.dev'),
         settings: ExecutableSettings(
             linuxExecutable: '_does_not_exist',
             macOSExecutable: '_does_not_exist',
