@@ -323,8 +323,24 @@ class Runner {
             var absoluteSuitePath = File(path).absolute.uri.toFilePath();
 
             bool matchLineAndCol(Frame frame) {
-              if (frame.uri.scheme != 'file' ||
-                  frame.uri.toFilePath() != absoluteSuitePath) {
+              if (frame.uri.scheme != 'file') {
+                // In this case, this is either a package: URI, or the kernel is
+                // compiled using --filesystem-scheme.
+
+                if (frame.uri.scheme == 'package') {
+                  // It is unlikely that the test case is specified in a
+                  // package: URI. Ignore this case.
+                  return false;
+                }
+
+                // Now we can assume that the kernel is compiled using
+                // --filesystem-scheme.
+                // In this case, because we don't know the --filesystem-root, as
+                // long as the file path matches we assume it is the same file.
+                if (!absoluteSuitePath.endsWith(frame.uri.path)) {
+                  return false;
+                }
+              } else if (frame.uri.toFilePath() != absoluteSuitePath) {
                 return false;
               }
               if (line != null && frame.line != line) {
