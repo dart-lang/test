@@ -5,6 +5,7 @@
 * Add a 'silent' reporter option. Keep it hidden in the CLI args help since it
   is not useful in the general case, but can be useful for tests of the test
   runner.
+* Update to `package:vm_service` `12.0.0`
 
 ## 0.5.6
 
