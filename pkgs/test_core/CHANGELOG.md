@@ -1,4 +1,4 @@
-## 0.5.7-wip
+## 0.5.7
 
 * Pass --disable-program-split to dart2js to fix tests which use deferred
   loading.
