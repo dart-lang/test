@@ -23,7 +23,6 @@ final ArgParser _parser = (() {
 
   var allRuntimes = Runtime.builtIn.toList()..remove(Runtime.vm);
   if (!Platform.isMacOS) allRuntimes.remove(Runtime.safari);
-  if (!Platform.isWindows) allRuntimes.remove(Runtime.internetExplorer);
 
   parser.addFlag('help',
       abbr: 'h', negatable: false, help: 'Show this usage information.');
