@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['ie'])
+library;
 
 import 'package:test/src/runner/browser/internet_explorer.dart';
 import 'package:test/src/runner/executable_settings.dart';
@@ -42,7 +43,7 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var ie = InternetExplorer('http://dart-lang.org',
+    var ie = InternetExplorer(Uri.https('dart.dev'),
         settings: ExecutableSettings(
             linuxExecutable: '_does_not_exist',
             macOSExecutable: '_does_not_exist',

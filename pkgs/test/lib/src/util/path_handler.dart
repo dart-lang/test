@@ -30,7 +30,7 @@ class PathHandler {
   void add(String path, shelf.Handler handler) {
     var node = _paths;
     for (var component in p.url.split(path)) {
-      node = node.children.putIfAbsent(component, () => _Node());
+      node = node.children.putIfAbsent(component, _Node.new);
     }
     node.handler = handler;
   }

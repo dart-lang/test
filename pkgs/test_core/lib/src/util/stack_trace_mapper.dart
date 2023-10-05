@@ -7,7 +7,7 @@ import 'package:source_maps/source_maps.dart';
 import 'package:test_api/backend.dart' show StackTraceMapper;
 
 /// A class for mapping JS stack traces to Dart stack traces using source maps.
-class JSStackTraceMapper extends StackTraceMapper {
+class JSStackTraceMapper implements StackTraceMapper {
   /// The parsed source map.
   ///
   /// This is initialized lazily in `mapStackTrace()`.

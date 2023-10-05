@@ -45,7 +45,8 @@ class RunnerTest extends Test {
       testChannel.stream.listen((message) {
         switch (message['type'] as String) {
           case 'error':
-            var asyncError = RemoteException.deserialize(message['error']);
+            var asyncError = RemoteException.deserialize(
+                message['error'] as Map<String, dynamic>);
             var stackTrace = asyncError.stackTrace;
             controller.addError(asyncError.error, stackTrace);
             break;

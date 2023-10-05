@@ -1,6 +1,19 @@
-## 0.6.1-wip
+## 0.6.2-wip
 
 * Consider empty `group` to be test failures.
+
+## 0.6.1
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some implementation classes `final`. These classes were never intended to
+  be extended or implemented. `Metadata`, `PlatformSelector`, `RemoteListener`,
+  `Runtime`, `StackTraceFormatter`, `SuitePlatform`, `RemoteException`,
+  `TestHandle`, `OutstandingWork`, `OutsideTestException`, `OnPlatform`,
+  `Retry`, `Skip`, `Tags`, `TestOn`, `Timeout`.
+* Mark an implementation class `interface`: `StackTraceMapper`.
+* Change the `Compiler` class into an `enum`.
+* Make `Fake` a `mixin class`.
+* Allow the latest analyzer (6.x.x).
 
 ## 0.6.0
 

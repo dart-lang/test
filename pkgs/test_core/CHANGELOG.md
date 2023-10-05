@@ -1,6 +1,34 @@
-## 0.5.4-wip
+## 0.5.8-wip
 
 * Consider empty `group` to be test failures.
+
+## 0.5.7
+
+* Pass --disable-program-split to dart2js to fix tests which use deferred
+  loading.
+* Add a 'silent' reporter option. Keep it hidden in the CLI args help since it
+  is not useful in the general case, but can be useful for tests of the test
+  runner.
+* Update to `package:vm_service` `12.0.0`
+
+## 0.5.6
+
+* Add support for discontinuing after the first failing test with `--fail-fast`.
+
+## 0.5.5
+
+* Change "compiling <path>" to "loading <path>" message in all cases. Surface
+  the "loading" messages in the situations where previously only "compiling"
+  message would be used.
+
+## 0.5.4
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Add `final` modifier on some implementation classes: `Configuration`,
+  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`.
+* Fix the `root_` fields in the JSON reporter when running a test on Windows
+  with an absolute path.
+* Allow the latest analyzer (6.x.x).
 
 ## 0.5.3
 

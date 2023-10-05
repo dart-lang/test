@@ -32,7 +32,7 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
       break;
 
     case 'error':
-      var error = RemoteException.deserialize(message['error']);
+      var error = RemoteException.deserialize(message['error'] as Map);
       sink.addError(error.error, error.stackTrace);
       break;
   }
@@ -89,7 +89,11 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
+StreamChannel spawnHybridUri(
+  Object uri, {
+  Object? message,
+  bool stayAlive = false,
+}) {
   if (uri is String) {
     // Ensure that it can be parsed as a uri.
     Uri.parse(uri);

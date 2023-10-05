@@ -173,9 +173,9 @@ class Declarer {
   void test(String name, dynamic Function() body,
       {String? testOn,
       Timeout? timeout,
-      skip,
+      Object? skip,
       Map<String, dynamic>? onPlatform,
-      tags,
+      Object? tags,
       int? retry,
       bool solo = false}) {
     _checkNotBuilt('test');
@@ -229,9 +229,9 @@ class Declarer {
   void group(String name, void Function() body,
       {String? testOn,
       Timeout? timeout,
-      skip,
+      Object? skip,
       Map<String, dynamic>? onPlatform,
-      tags,
+      Object? tags,
       int? retry,
       bool allowEmpty = false,
       bool solo = false}) {

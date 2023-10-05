@@ -134,18 +134,20 @@ final ArgParser _parser = (() {
           'Must be a 32bit unsigned integer or "random".\n'
           'If "random", pick a random seed to use.\n'
           'If not passed, do not randomize test case execution order.');
+  parser.addFlag('fail-fast',
+      help: 'Stop running tests after the first failure.\n');
 
-  var reporterDescriptions = <String, String>{};
-  for (var reporter in allReporters.keys) {
-    reporterDescriptions[reporter] = allReporters[reporter]!.description;
-  }
+  var reporterDescriptions = <String, String>{
+    for (final MapEntry(:key, :value) in allReporters.entries)
+      if (!value.hidden) key: value.description
+  };
 
   parser.addSeparator('Output:');
   parser.addOption('reporter',
       abbr: 'r',
       help: 'Set how to print test results.',
       defaultsTo: defaultReporter,
-      allowed: reporterDescriptions.keys.toList(),
+      allowed: allReporters.keys,
       allowedHelp: reporterDescriptions,
       valueHelp: 'option');
   parser.addOption('file-reporter',
@@ -297,9 +299,8 @@ class _Parser {
 
     var color = _ifParsed<bool>('color') ?? canUseSpecialChars;
 
-    var runtimes = _ifParsed<List<String>>('platform')
-        ?.map((runtime) => RuntimeSelection(runtime))
-        .toList();
+    var runtimes =
+        _ifParsed<List<String>>('platform')?.map(RuntimeSelection.new).toList();
     var compilerSelections = _ifParsed<List<String>>('compiler')
         ?.map(CompilerSelection.parse)
         .toList();
@@ -349,6 +350,7 @@ class _Parser {
         noRetry: _ifParsed('no-retry'),
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
         ignoreTimeouts: _ifParsed('ignore-timeouts'),
+        stopOnFirstFailure: _ifParsed('fail-fast'),
         // Config that isn't supported on the command line
         addTags: null,
         allowTestRandomization: null,

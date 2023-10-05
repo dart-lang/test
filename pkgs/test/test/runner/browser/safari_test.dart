@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['safari'])
+library;
 
 import 'package:test/src/runner/browser/safari.dart';
 import 'package:test/src/runner/executable_settings.dart';
@@ -42,7 +43,7 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var safari = Safari('http://dart-lang.org',
+    var safari = Safari(Uri.https('dart.dev'),
         settings: ExecutableSettings(
             linuxExecutable: '_does_not_exist',
             macOSExecutable: '_does_not_exist',
@@ -78,6 +79,20 @@ void main() {
 
     var test = await runTest(['-p', 'safari', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
+    await test.shouldExit(1);
+  });
+
+  test('can override safari location with SAFARI_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''').create();
+    var test = await runTest(['-p', 'safari', 'test.dart'],
+        environment: {'SAFARI_EXECUTABLE': '/some/bad/path'});
+    expect(test.stdout, emitsThrough(contains('Failed to run Safari:')));
     await test.shouldExit(1);
   });
 }

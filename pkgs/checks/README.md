@@ -1,8 +1,8 @@
 [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
 [![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
 
-`package:checks` ia a library for expressing test expectations and features a
-literate API.
+`package:checks` is a library for expressing test expectations and it features
+a literate API.
 
 ## package:checks preview
 
@@ -51,6 +51,26 @@ check(someList).deepEquals(expectedList);
 check(someString).contains('expected pattern');
 ```
 
+If a failure may not have enough context about the actual or expected values
+from the expectation calls alone, add a "Reason" in the failure message by
+passing a `because:` argument to `check()`.
+
+```dart
+check(
+  because: 'log lines must start with the severity',
+  logLines,
+).every((l) => l
+  ..anyOf([
+    (l) => l.startsWith('ERROR'),
+    (l) => l.startsWith('WARNING'),
+    (l) => l.startsWith('INFO'),
+  ]));
+```
+
+
+### Composing expectations
+
+
 Multiple expectations can be checked against the same value using cascade
 syntax. When multiple expectations are checked against a single value, a failure
 will included descriptions of the expectations that already passed.
@@ -62,16 +82,28 @@ check(someString)
   ..contains('lmno');
 ```
 
+Some nested checks may be not be possible to write with cascade syntax.
+There is a `which` utility for this use case which takes a `Condition`.
+
+```dart
+check(someString)
+  ..startsWith('a')
+  // A cascade would not be possible on `length`
+  ..length.which((l) => l
+    ..isGreatherThan(10)
+    ..isLessThan(100));
+```
+
+
 Some expectations return a `Subject` for another value derived from the original
-value - for instance reading a field or awaiting the result of a Future.
+value, such as the `length` extension.
 
 ```dart
 check(someString).length.equals(expectedLength);
-await check(someFuture).completes(it()..equals(expectedCompletion));
 ```
 
-Fields can be extracted from objects for checking further properties with the
-`has` utility.
+Fields or derived values can be extracted from objects for checking further
+properties with the `has` utility.
 
 ```dart
 check(someValue)
@@ -79,46 +111,18 @@ check(someValue)
   .equals(expectedPropertyValue);
 ```
 
+### Passing a set of expectations as an argument
+
 Some expectations take arguments which are themselves expectations to apply to
-other values. These expectations take `Condition` arguments, which check
-expectations when they are applied to a `Subject`. The `ConditionSubject`
-utility acts as both a condition and a subject. Any expectations checked on the
-value as a subject will be recorded and replayed when it is applied as a
-condition. The `it()` utility returns a `ConditionSubject`.
+other values. These expectations take `Condition` arguments which have the
+signature void Function(Subject)`. The conditions check expectations when they
+are called with a `Subject` argument.
 
 ```dart
-check(someList).any(it()..isGreaterThan(0));
+check(someList).any((e) => e.isGreaterThan(0));
 ```
 
-Some complicated checks may be not be possible to write with cascade syntax.
-There is a `which` utility for this use case which takes a `Condition`.
-
-```dart
-check(someString)
-  ..startsWith('a')
-  // A cascade would not be possible on `length`
-  ..length.which(it()
-    ..isGreatherThan(10)
-    ..isLessThan(100));
-```
-
-If a failure may not be have enough context about the actual or expected values
-when an expectation fails, add a "Reason" in the failure message by passing a
-`because:` argument to `check()`.
-
-```dart
-check(
-  because: 'log lines must start with the severity',
-  logLines,
-).every(it()
-  ..anyOf([
-    it()..startsWith('ERROR'),
-    it()..startsWith('WARNING'),
-    it()..startsWith('INFO'),
-  ]));
-```
-
-## Asynchronous expectations
+### Checking asynchronous expectations
 
 Expectation extension methods checking asynchronous behavior return a `Future`.
 The future should typically be awaited within the test body, however
@@ -128,8 +132,12 @@ Expectations with no concrete end conditions, such as an expectation that a
 future never completes, cannot be awaited and may cause a failure after the test
 has already appeared to complete.
 
+Asynchronous expectations do not return a `Subject`. When an expectation
+extracts a derived value further expectations can be checked by passing a
+`Condition`.
+
 ```dart
-await check(someFuture).completes(it()..isGreaterThan(0));
+await check(someFuture).completes((r) => r.isGreaterThan(0));
 ```
 
 Subjects for `Stream` instances must first be wrapped into a `StreamQueue` to
@@ -141,28 +149,28 @@ wrapped with a `StreamQueue`.
 
 ```dart
 await check(someStream).withQueue.inOrder([
-  it()..emits(it()..equals(1)),
-  it()..emits(it()..equals(2)),
-  it()..emits(it()..equals(3)),
-  it()..isDone(),
+  (s) => s.emits((e) => e.equals(1)),
+  (s) => s.emits((e) => e.equals(2)),
+  (s) => s.emits((e) => e.equals(3)),
+  (s) => s.isDone(),
 ]);
 
 var someQueue = StreamQueue(someOtherStream);
-await check(someQueue).emits(it()..equals(1));
+await check(someQueue).emits((e) => e.equals(1));
 // do something
-await check(someQueue).emits(it()..equals(2));
+await check(someQueue).emits((e) => e.equals(2));
 // do something
 ```
 
 
 ## Writing custom expectations
 
-Expectations are written as extension on `Subject` with specific generics. The
+Expectations are written as extensions on `Subject` with specific generics. The
 library `package:checks/context.dart` gives access to a `context` getter on
 `Subject` which offers capabilities for defining expectations on the subject's
 value.
 
-The `Context` allows checking a expectation with `expect`, `expectAsync` and
+The `Context` allows checking an expectation with `expect`, `expectAsync` and
 `expectUnawaited`, or extracting a derived value for performing other checks
 with `nest` and `nestAsync`. Failures are reported by returning a `Rejection`,
 or an `Extracted.rejection`, extensions should avoid throwing exceptions.
@@ -170,9 +178,10 @@ or an `Extracted.rejection`, extensions should avoid throwing exceptions.
 Descriptions of the clause checked by an expectations are passed through a
 separate callback from the predicate which checks the value. Nesting calls are
 made with a label directly. When there are no failures the clause callbacks are
-not called. When a `Condition` is described, the clause callbacks are called,
-but the predicate callbacks are not called. Conditions can be checked against
-values without throwing an exception using `softCheck` or `softCheckAsync`.
+not called. When a condition callback is described, the clause callbacks are
+called, but the predicate callbacks are not called. Conditions can be checked
+against values without throwing an exception using `softCheck` or
+`softCheckAsync`.
 
 ```dart
 extension CustomChecks on Subject<CustomType> {
@@ -193,5 +202,19 @@ extension CustomChecks on Subject<CustomType> {
 
   // for field reads that will not get rejected, use `has`
   Subject<Bar> get someField => has((a) => a.someField, 'someField');
+}
+```
+
+Extensions may also compose existing expectations under a single name. When
+such expectations fail, the test output will refer to the individual
+expectations that were called.
+
+```dart
+extension ComposedChecks on Subject<Iterable> {
+  void hasLengthInRange(int min, int max) {
+    length
+      ..isGreaterThan(min)
+      ..isLessThan(max);
+  }
 }
 ```

@@ -12,6 +12,7 @@ import 'package:test_api/backend.dart' show Compiler, Runtime, StackTraceMapper;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
@@ -142,7 +143,7 @@ class BrowserManager {
       if (attempt >= _maxRetries) {
         throw ApplicationException(
             'Timed out waiting for ${runtime.name} to connect.\n'
-            'Browser output: ${utf8.decode(browser.output)}');
+            'Browser output: ${browser.output.join('\n')}');
       }
       return _start(runtime, url, future, settings, configuration, ++attempt);
     });
@@ -152,23 +153,17 @@ class BrowserManager {
   ///
   /// If [debug] is true, starts the browser in debug mode.
   static Browser _newBrowser(Uri url, Runtime browser,
-      ExecutableSettings settings, Configuration configuration) {
-    switch (browser.root) {
-      case Runtime.chrome:
-      case Runtime.experimentalChromeWasm:
-        return Chrome(url, configuration, settings: settings);
-      case Runtime.firefox:
-        return Firefox(url, settings: settings);
-      case Runtime.safari:
-        return Safari(url, settings: settings);
-      case Runtime.internetExplorer:
-        return InternetExplorer(url, settings: settings);
-      case Runtime.edge:
-        return MicrosoftEdge(url, configuration, settings: settings);
-      default:
-        throw ArgumentError('$browser is not a browser.');
-    }
-  }
+          ExecutableSettings settings, Configuration configuration) =>
+      switch (browser.root) {
+        Runtime.chrome ||
+        Runtime.experimentalChromeWasm =>
+          Chrome(url, configuration, settings: settings),
+        Runtime.firefox => Firefox(url, settings: settings),
+        Runtime.safari => Safari(url, settings: settings),
+        Runtime.internetExplorer => InternetExplorer(url, settings: settings),
+        Runtime.edge => MicrosoftEdge(url, configuration, settings: settings),
+        _ => throw ArgumentError('$browser is not a browser.'),
+      };
 
   /// Creates a new BrowserManager that communicates with [browser] over
   /// [webSocket].
@@ -207,10 +202,9 @@ class BrowserManager {
   }
 
   /// Loads [_BrowserEnvironment].
-  Future<_BrowserEnvironment> _loadBrowserEnvironment() async {
-    return _BrowserEnvironment(this, await _browser.observatoryUrl,
-        await _browser.remoteDebuggerUrl, _onRestartController.stream);
-  }
+  Future<_BrowserEnvironment> _loadBrowserEnvironment() async =>
+      _BrowserEnvironment(
+          this, await _browser.remoteDebuggerUrl, _onRestartController.stream);
 
   /// Tells the browser the load a test suite from the URL [url].
   ///
@@ -222,7 +216,7 @@ class BrowserManager {
   /// from this test suite.
   Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
       Map<String, Object?> message, Compiler compiler,
-      {StackTraceMapper? mapper}) async {
+      {StackTraceMapper? mapper, Duration? timeout}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
       'metadata': suiteConfig.metadata.serialize(),
@@ -248,7 +242,7 @@ class BrowserManager {
       sink.close();
     }));
 
-    return await _pool.withResource<RunnerSuite>(() async {
+    var suite = _pool.withResource<RunnerSuite>(() async {
       _channel.sink.add({
         'command': 'loadSuite',
         'url': url.toString(),
@@ -281,6 +275,15 @@ class BrowserManager {
         rethrow;
       }
     });
+    if (timeout != null) {
+      suite = suite.timeout(timeout, onTimeout: () {
+        throw LoadException(
+            path,
+            'Timed out waiting for browser to load test suite. '
+            'Browser output: ${_browser.output.join('\n')}');
+      });
+    }
+    return suite;
   }
 
   /// An implementation of [Environment.displayPause].
@@ -345,7 +348,7 @@ class _BrowserEnvironment implements Environment {
   final supportsDebugging = true;
 
   @override
-  final Uri? observatoryUrl;
+  Null get observatoryUrl => null;
 
   @override
   final Uri? remoteDebuggerUrl;
@@ -353,8 +356,7 @@ class _BrowserEnvironment implements Environment {
   @override
   final Stream<void> onRestart;
 
-  _BrowserEnvironment(this._manager, this.observatoryUrl,
-      this.remoteDebuggerUrl, this.onRestart);
+  _BrowserEnvironment(this._manager, this.remoteDebuggerUrl, this.onRestart);
 
   @override
   CancelableOperation<void> displayPause() => _manager._displayPause();
