@@ -27,11 +27,8 @@ dependencies:
   stream_channel: ^2.1.0
   # Use an exact version until the test_api package is stable.
   test_api: 0.6.1
-<<<<<<< HEAD
-=======
   vm_service: ">=6.0.0 <13.0.0"
   yaml: ^3.0.0
->>>>>>> master
 
 dev_dependencies:
   dart_flutter_team_lints: ^1.0.0
