@@ -1,3 +1,7 @@
+## 0.5.8-wip
+
+* Use the latest `test_api` version `0.7`
+
 ## 0.5.7
 
 * Pass --disable-program-split to dart2js to fix tests which use deferred

@@ -23,7 +23,6 @@ import '../executable_settings.dart';
 import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
-import 'internet_explorer.dart';
 import 'microsoft_edge.dart';
 import 'safari.dart';
 
@@ -160,7 +159,6 @@ class BrowserManager {
           Chrome(url, configuration, settings: settings),
         Runtime.firefox => Firefox(url, settings: settings),
         Runtime.safari => Safari(url, settings: settings),
-        Runtime.internetExplorer => InternetExplorer(url, settings: settings),
         Runtime.edge => MicrosoftEdge(url, configuration, settings: settings),
         _ => throw ArgumentError('$browser is not a browser.'),
       };

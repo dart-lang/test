@@ -29,11 +29,6 @@ final class Runtime {
       'Safari', 'safari', Compiler.dart2js, [Compiler.dart2js],
       isBrowser: true, isJS: true);
 
-  /// Microsoft Internet Explorer.
-  static const Runtime internetExplorer = Runtime(
-      'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
-      isBrowser: true, isJS: true);
-
   /// Microsoft Edge (based on Chromium).
   static const Runtime edge = Runtime(
       'Microsoft Edge', 'edge', Compiler.dart2js, [Compiler.dart2js],
@@ -60,7 +55,6 @@ final class Runtime {
     Runtime.chrome,
     Runtime.firefox,
     Runtime.safari,
-    Runtime.internetExplorer,
     Runtime.edge,
     Runtime.nodeJS,
     Runtime.experimentalChromeWasm,

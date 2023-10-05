@@ -346,7 +346,7 @@ only supports boolean operations. The following identifiers are defined:
 
 * `safari`: Whether the test is running on Apple Safari.
 
-* `ie`: Whether the test is running on Microsoft Internet Explorer.
+* `edge`: Whether the test is running on Microsoft Edge browser.
 
 * `node`: Whether the test is running on Node.js.
 

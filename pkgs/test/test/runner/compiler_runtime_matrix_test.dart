@@ -22,8 +22,7 @@ void main() {
   for (var runtime in Runtime.builtIn) {
     for (var compiler in runtime.supportedCompilers) {
       // Ignore the platforms we can't run on this OS.
-      if (runtime == Runtime.internetExplorer && !Platform.isWindows ||
-          runtime == Runtime.safari && !Platform.isMacOS) {
+      if (runtime == Runtime.safari && !Platform.isMacOS) {
         continue;
       }
       group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
@@ -112,8 +111,7 @@ void main() {
       },
           skip: compiler == Compiler.dart2wasm
               ? 'Wasm tests are experimental and require special setup'
-              : [Runtime.firefox, Runtime.nodeJS, Runtime.internetExplorer]
-                          .contains(runtime) &&
+              : [Runtime.firefox, Runtime.nodeJS].contains(runtime) &&
                       Platform.isWindows
                   ? 'https://github.com/dart-lang/test/issues/1942'
                   : null);

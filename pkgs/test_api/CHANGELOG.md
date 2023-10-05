@@ -1,4 +1,6 @@
-## 0.6.2-wip
+## 0.7.0-wip
+
+* Remove `Runtime.internetExplorer`.
 
 ## 0.6.1
 

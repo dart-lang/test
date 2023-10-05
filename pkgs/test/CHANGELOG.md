@@ -1,3 +1,7 @@
+## 1.25.0-wip
+
+* Fully remove support for Internet Explorer.
+
 ## 1.24.7
 
 * Simplify the initialization of the per-suite message channel within browser
