@@ -1,3 +1,5 @@
+## 1.24.8-wip
+
 ## 1.24.7
 
 * Simplify the initialization of the per-suite message channel within browser
