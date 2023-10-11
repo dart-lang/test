@@ -1,4 +1,4 @@
-## 1.24.8-wip
+## 1.25.0-wip
 
 * Consider `group` with no test cases, but with another callback such as
   `setUp`, to be test failures.
