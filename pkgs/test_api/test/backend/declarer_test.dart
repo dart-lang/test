@@ -410,9 +410,12 @@ void main() {
       });
     });
 
-    test('disallows empty groups by default', () async {
+    test('disallows empty groups if there is another lifecycle callback',
+        () async {
       var entries = declare(() {
-        group('group', () {});
+        group('group', () {
+          setUp(() {});
+        });
       });
 
       expect(entries, hasLength(1));
@@ -420,9 +423,11 @@ void main() {
       expect(testGroup.entries, hasLength(1));
       await _runTest(testGroup.entries.single as Test, shouldFail: true);
     });
-    test('allows empty groups when requested', () async {
+    test('allows fully empty groups when requested', () async {
       var entries = declare(() {
-        group('group', () {}, allowEmpty: true);
+        group('group', () {
+          // Might be empty with a TODO or while editing
+        });
       });
 
       expect(entries, hasLength(1));
