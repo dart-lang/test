@@ -48,7 +48,7 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [inGoogle] determined automatically.
 ///
 /// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
     SuitePlatform(runtime,
         compiler: compiler,
         os: runtime.isBrowser ? OperatingSystem.none : currentOS,
