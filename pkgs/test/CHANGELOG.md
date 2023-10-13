@@ -1,4 +1,6 @@
-## 1.24.8-wip
+## 1.24.8
+
+* Support version `0.5.8` of `package:test_core`.
 
 ## 1.24.7
 
