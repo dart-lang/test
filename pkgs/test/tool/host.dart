@@ -9,7 +9,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:js/js.dart';
-import 'package:js/js_util.dart' as js_util;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/src/runner/browser/dom.dart' as dom;
