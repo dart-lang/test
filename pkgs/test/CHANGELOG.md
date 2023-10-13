@@ -1,7 +1,11 @@
-## 1.24.7-wip
+## 1.24.8-wip
+
+## 1.24.7
 
 * Simplify the initialization of the per-suite message channel within browser
   tests. See https://github.com/dart-lang/test/issues/2065
+* Add a timeout to browser test suite loads.
+* Fix running of browser tests that use deferred loaded libraries.
 
 ## 1.24.6
 
@@ -11,9 +15,9 @@
 
 ## 1.24.5
 
-* Change "compiling <path>" to "loading <path>" message in all cases. Surface
-  the "loading" messages in the situations where previously only "compiling"
-  message would be used.
+* Change `compiling <path>` to `loading <path>` message in all cases. Surface
+  the "loading" messages in the situations where previously only the
+  "compiling" message would be used.
 * Support browser tests where the frame creates the message channel.
 
 ## 1.24.4
@@ -38,7 +42,7 @@
 * Copy an existing nonce from a script on the test HTML page to the script
   created by the test runner host javascript. This only impacts environments
   testing with custom HTML that includes a nonce.
-* Support the Microsoft Edge browser (use the `edge` platform in your the test
+* Support the Microsoft Edge browser (use the `edge` platform in your test
   configuration file or `-p edge` on the command line).
 
 ## 1.24.1

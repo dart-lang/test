@@ -53,6 +53,7 @@ class Dart2JsCompilerPool extends CompilerPool {
         wrapperPath,
         '--out=$path',
         '--packages=${await packageConfigUri}',
+        '--disable-program-split',
         ..._extraArgs,
         ...suiteConfig.dart2jsArgs
       ];

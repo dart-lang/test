@@ -137,17 +137,17 @@ final ArgParser _parser = (() {
   parser.addFlag('fail-fast',
       help: 'Stop running tests after the first failure.\n');
 
-  var reporterDescriptions = <String, String>{};
-  for (var reporter in allReporters.keys) {
-    reporterDescriptions[reporter] = allReporters[reporter]!.description;
-  }
+  var reporterDescriptions = <String, String>{
+    for (final MapEntry(:key, :value) in allReporters.entries)
+      if (!value.hidden) key: value.description
+  };
 
   parser.addSeparator('Output:');
   parser.addOption('reporter',
       abbr: 'r',
       help: 'Set how to print test results.',
       defaultsTo: defaultReporter,
-      allowed: reporterDescriptions.keys.toList(),
+      allowed: allReporters.keys,
       allowedHelp: reporterDescriptions,
       valueHelp: 'option');
   parser.addOption('file-reporter',

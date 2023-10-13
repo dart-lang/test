@@ -45,7 +45,7 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var chrome = Chrome(Uri.parse('http://dart-lang.org'), configuration(),
+    var chrome = Chrome(Uri.https('dart.dev'), configuration(),
         settings: ExecutableSettings(
             linuxExecutable: '_does_not_exist',
             macOSExecutable: '_does_not_exist',

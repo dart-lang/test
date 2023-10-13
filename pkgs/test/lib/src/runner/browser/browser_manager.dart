@@ -12,6 +12,7 @@ import 'package:test_api/backend.dart' show Compiler, Runtime, StackTraceMapper;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
@@ -142,7 +143,7 @@ class BrowserManager {
       if (attempt >= _maxRetries) {
         throw ApplicationException(
             'Timed out waiting for ${runtime.name} to connect.\n'
-            'Browser output: ${utf8.decode(browser.output)}');
+            'Browser output: ${browser.output.join('\n')}');
       }
       return _start(runtime, url, future, settings, configuration, ++attempt);
     });
@@ -215,7 +216,7 @@ class BrowserManager {
   /// from this test suite.
   Future<RunnerSuite> load(String path, Uri url, SuiteConfiguration suiteConfig,
       Map<String, Object?> message, Compiler compiler,
-      {StackTraceMapper? mapper}) async {
+      {StackTraceMapper? mapper, Duration? timeout}) async {
     url = url.replace(
         fragment: Uri.encodeFull(jsonEncode({
       'metadata': suiteConfig.metadata.serialize(),
@@ -241,7 +242,7 @@ class BrowserManager {
       sink.close();
     }));
 
-    return await _pool.withResource<RunnerSuite>(() async {
+    var suite = _pool.withResource<RunnerSuite>(() async {
       _channel.sink.add({
         'command': 'loadSuite',
         'url': url.toString(),
@@ -274,6 +275,15 @@ class BrowserManager {
         rethrow;
       }
     });
+    if (timeout != null) {
+      suite = suite.timeout(timeout, onTimeout: () {
+        throw LoadException(
+            path,
+            'Timed out waiting for browser to load test suite. '
+            'Browser output: ${_browser.output.join('\n')}');
+      });
+    }
+    return suite;
   }
 
   /// An implementation of [Environment.displayPause].

@@ -22,7 +22,8 @@ typedef ReporterFactory = Reporter Function(Configuration, Engine, StringSink);
 class ReporterDetails {
   final String description;
   final ReporterFactory factory;
-  ReporterDetails(this.description, this.factory);
+  final bool hidden;
+  ReporterDetails(this.description, this.factory, {this.hidden = false});
 }
 
 /// All reporters and their corresponding details.
@@ -58,6 +59,10 @@ final _allReporters = <String, ReporterDetails>{
       'https://dart.dev/go/test-docs/json_reporter.md).',
       (config, engine, sink) =>
           JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
+  'silent': ReporterDetails(
+      hidden: true,
+      'A reporter with no output.',
+      (config, engine, sink) => SilentReporter()),
 };
 
 final defaultReporter = inTestTests

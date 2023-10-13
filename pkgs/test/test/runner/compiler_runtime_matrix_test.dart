@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+@Timeout.factor(2)
 library;
 
 import 'dart:io';
@@ -101,7 +102,7 @@ void main() {
         if (runtime.isDartVM) {
           test('forwards stdout/stderr', () async {
             await d.file('test.dart', _testWithStdOutAndErr).create();
-            var test = await runTest(testArgs);
+            var test = await runTest(testArgs, reporter: 'silent');
 
             expect(test.stdout, emitsThrough('hello'));
             expect(test.stderr, emits('world'));
