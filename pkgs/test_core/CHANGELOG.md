@@ -1,5 +1,6 @@
 ## 0.5.8
 
+* Move scaffolding definitions to a non-deprecated library.
 * Allow omitting the `Compiler` argument to `currentPlatform`.
 
 ## 0.5.7

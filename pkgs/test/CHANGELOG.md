@@ -1,6 +1,6 @@
 ## 1.24.8
 
-* Support version `0.5.8` of `package:test_core`.
+* Remove spurious deprecation during autocomplete for `setUp` and `tearDown`.
 
 ## 1.24.7
 
