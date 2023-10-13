@@ -1,3 +1,7 @@
+## 0.5.8
+
+* Move scaffolding definitions to a non-deprecated library.
+
 ## 0.5.7
 
 * Pass --disable-program-split to dart2js to fix tests which use deferred

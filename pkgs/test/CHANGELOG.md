@@ -1,4 +1,6 @@
-## 1.24.8-wip
+## 1.24.8
+
+* Remove spurious deprecation diagnostics for `group` and `test`.
 
 ## 1.24.7
 
