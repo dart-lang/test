@@ -219,9 +219,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     if (message.origin != dom.window.location.origin) return;
     // Disambiguate between frames for different test suites.
     // Depending on the source type, the `location.href` may be missing.
-    var location = js_util.getProperty(message.source, 'location') as Object?;
-    if (location == null) return;
-    if (js_util.getProperty(location, 'href') != iframe.src) return;
+    if (message.source.location?.href != iframe.src) return;
 
     message.stopPropagation();
     windowSubscription.cancel();
