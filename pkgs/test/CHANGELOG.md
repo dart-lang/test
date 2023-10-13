@@ -1,6 +1,6 @@
 ## 1.24.8
 
-* Remove spurious deprecation diagnostics for `group` and `test`.
+* Remove spurious deprecation during autocomplete for `setUp` and `tearDown`.
 
 ## 1.24.7
 
