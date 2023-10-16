@@ -1,5 +1,8 @@
 ## 0.6.2-wip
 
+* Consider `group` with no test cases, but with another callback such as
+  `setUp`, to be test failures.
+
 ## 0.6.1
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.

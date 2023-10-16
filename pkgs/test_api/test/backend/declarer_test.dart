@@ -410,6 +410,31 @@ void main() {
       });
     });
 
+    test('disallows empty groups if there is another lifecycle callback',
+        () async {
+      var entries = declare(() {
+        group('group', () {
+          setUp(() {});
+        });
+      });
+
+      expect(entries, hasLength(1));
+      var testGroup = entries.single as Group;
+      expect(testGroup.entries, hasLength(1));
+      await _runTest(testGroup.entries.single as Test, shouldFail: true);
+    });
+    test('allows fully empty groups', () async {
+      var entries = declare(() {
+        group('group', () {
+          // Might be empty with a TODO or while editing
+        });
+      });
+
+      expect(entries, hasLength(1));
+      var testGroup = entries.single as Group;
+      expect(testGroup.entries, isEmpty);
+    });
+
     group('.setUp()', () {
       test('is scoped to the group', () async {
         var setUpRun = false;
