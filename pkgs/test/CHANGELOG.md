@@ -3,6 +3,10 @@
 * Consider `group` with no test cases, but with another callback such as
   `setUp`, to be test failures.
 
+## 1.24.8
+
+* Remove spurious deprecation during autocomplete for `setUp` and `tearDown`.
+
 ## 1.24.7
 
 * Simplify the initialization of the per-suite message channel within browser

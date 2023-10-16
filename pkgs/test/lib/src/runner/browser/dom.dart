@@ -161,6 +161,21 @@ extension MessageEventExtension on MessageEvent {
 @staticInterop
 class MessageEventSource {}
 
+extension MessageEventSourceExtension on MessageEventSource {
+  @pragma('dart2js:as:trust')
+  MessageEventSourceLocation? get location =>
+      js_util.getProperty<dynamic>(this, 'location')
+          as MessageEventSourceLocation;
+}
+
+@JS()
+@staticInterop
+class MessageEventSourceLocation {}
+
+extension MessageEventSourceLocationExtension on MessageEventSourceLocation {
+  external String? get href;
+}
+
 @JS()
 @staticInterop
 class Location {}

@@ -48,7 +48,8 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [inGoogle] determined automatically.
 ///
 /// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+// TODO: https://github.com/dart-lang/test/issues/2119 - require compiler
+SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
     SuitePlatform(runtime,
         compiler: compiler,
         os: runtime.isBrowser ? OperatingSystem.none : currentOS,

@@ -1,7 +1,12 @@
-## 0.5.8-wip
+## 0.5.9-wip
 
 * Consider `group` with no test cases, but with another callback such as
   `setUp`, to be test failures.
+
+## 0.5.8
+
+* Move scaffolding definitions to a non-deprecated library.
+* Allow omitting the `Compiler` argument to `currentPlatform`.
 
 ## 0.5.7
 
