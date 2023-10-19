@@ -40,17 +40,19 @@ void main() {
       test('successfully parses all supported units', () {
         expect(Timeout.parse('2d'), equals(const Timeout(Duration(days: 2))));
         expect(Timeout.parse('2h'), equals(const Timeout(Duration(hours: 2))));
-        expect(Timeout.parse('2m'), equals(const Timeout(Duration(minutes: 2))));
-        expect(Timeout.parse('2s'), equals(const Timeout(Duration(seconds: 2))));
         expect(
-            Timeout.parse('2ms'), equals(const Timeout(Duration(milliseconds: 2))));
+            Timeout.parse('2m'), equals(const Timeout(Duration(minutes: 2))));
         expect(
-            Timeout.parse('2us'), equals(const Timeout(Duration(microseconds: 2))));
+            Timeout.parse('2s'), equals(const Timeout(Duration(seconds: 2))));
+        expect(Timeout.parse('2ms'),
+            equals(const Timeout(Duration(milliseconds: 2))));
+        expect(Timeout.parse('2us'),
+            equals(const Timeout(Duration(microseconds: 2))));
       });
 
       test('supports non-integer units', () {
-        expect(
-            Timeout.parse('2.73d'), equals(Timeout(const Duration(days: 1) * 2.73)));
+        expect(Timeout.parse('2.73d'),
+            equals(Timeout(const Duration(days: 1) * 2.73)));
       });
 
       test('supports multiple units', () {

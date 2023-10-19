@@ -84,6 +84,5 @@ final class RemoteException implements Exception {
 /// It's important to preserve [TestFailure]-ness, because tests have different
 /// results depending on whether an exception was a failure or an error.
 final class _RemoteTestFailure extends RemoteException implements TestFailure {
-  _RemoteTestFailure(super.message, super.type, super.toString)
-      : super._();
+  _RemoteTestFailure(super.message, super.type, super.toString) : super._();
 }

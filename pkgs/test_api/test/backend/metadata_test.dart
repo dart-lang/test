@@ -242,7 +242,8 @@ void main() {
             PlatformSelector.parse('mac-os'): Metadata(skip: false)
           },
           forTag: {
-            BooleanSelector.parse('slow'): Metadata(timeout: const Timeout.factor(4))
+            BooleanSelector.parse('slow'):
+                Metadata(timeout: const Timeout.factor(4))
           });
       expect(metadata.serialize(), equals(metadata.change().serialize()));
     });

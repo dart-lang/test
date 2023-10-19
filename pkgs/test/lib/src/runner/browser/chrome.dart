@@ -97,8 +97,8 @@ class Chrome extends Browser {
     return coverage;
   }
 
-  Chrome._(super.startBrowser, this.remoteDebuggerUrl,
-      this._tabConnection, this._idToUrl);
+  Chrome._(super.startBrowser, this.remoteDebuggerUrl, this._tabConnection,
+      this._idToUrl);
 
   Future<Uri?> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
