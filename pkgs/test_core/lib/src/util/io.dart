@@ -66,8 +66,10 @@ final lineSplitter = StreamTransformer<List<int>, String>(
 ///
 /// Also returns an empty stream for Fuchsia since Fuchsia components can't
 /// access stdin.
-StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
-    Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
+StreamQueue<String> get stdinLines =>
+    _stdinLines ??= StreamQueue(Platform.isFuchsia
+        ? const Stream<String>.empty()
+        : lineSplitter.bind(stdin));
 
 StreamQueue<String>? _stdinLines;
 
@@ -239,7 +241,8 @@ extension RetryDelete on FileSystemEntity {
       } on FileSystemException {
         if (attempt == 2) rethrow;
         attempt++;
-        await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
+        await Future<void>.delayed(
+            Duration(milliseconds: pow(10, attempt).toInt()));
       }
     }
   }

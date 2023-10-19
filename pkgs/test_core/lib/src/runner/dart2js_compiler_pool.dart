@@ -100,7 +100,7 @@ class Dart2JsCompilerPool extends CompilerPool {
     var map = jsonDecode(File(mapPath).readAsStringSync());
     var root = map['sourceRoot'] as String;
 
-    map['sources'] = map['sources'].map((source) {
+    map['sources'] = map['sources'].map((Object? source) {
       var url = Uri.parse('$root$source');
       if (url.scheme != '' && url.scheme != 'file') return source;
       if (url.path.endsWith('/runInBrowser.dart')) return '';

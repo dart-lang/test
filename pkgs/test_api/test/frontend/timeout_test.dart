@@ -22,9 +22,9 @@ void main() {
 
     group('for a relative timeout', () {
       test('successfully parses', () {
-        expect(Timeout.parse('1x'), equals(Timeout.factor(1)));
-        expect(Timeout.parse('2.5x'), equals(Timeout.factor(2.5)));
-        expect(Timeout.parse('1.2e3x'), equals(Timeout.factor(1.2e3)));
+        expect(Timeout.parse('1x'), equals(const Timeout.factor(1)));
+        expect(Timeout.parse('2.5x'), equals(const Timeout.factor(2.5)));
+        expect(Timeout.parse('1.2e3x'), equals(const Timeout.factor(1.2e3)));
       });
 
       test('rejects invalid input', () {
@@ -38,25 +38,25 @@ void main() {
 
     group('for an absolute timeout', () {
       test('successfully parses all supported units', () {
-        expect(Timeout.parse('2d'), equals(Timeout(Duration(days: 2))));
-        expect(Timeout.parse('2h'), equals(Timeout(Duration(hours: 2))));
-        expect(Timeout.parse('2m'), equals(Timeout(Duration(minutes: 2))));
-        expect(Timeout.parse('2s'), equals(Timeout(Duration(seconds: 2))));
+        expect(Timeout.parse('2d'), equals(const Timeout(Duration(days: 2))));
+        expect(Timeout.parse('2h'), equals(const Timeout(Duration(hours: 2))));
+        expect(Timeout.parse('2m'), equals(const Timeout(Duration(minutes: 2))));
+        expect(Timeout.parse('2s'), equals(const Timeout(Duration(seconds: 2))));
         expect(
-            Timeout.parse('2ms'), equals(Timeout(Duration(milliseconds: 2))));
+            Timeout.parse('2ms'), equals(const Timeout(Duration(milliseconds: 2))));
         expect(
-            Timeout.parse('2us'), equals(Timeout(Duration(microseconds: 2))));
+            Timeout.parse('2us'), equals(const Timeout(Duration(microseconds: 2))));
       });
 
       test('supports non-integer units', () {
         expect(
-            Timeout.parse('2.73d'), equals(Timeout(Duration(days: 1) * 2.73)));
+            Timeout.parse('2.73d'), equals(Timeout(const Duration(days: 1) * 2.73)));
       });
 
       test('supports multiple units', () {
         expect(
             Timeout.parse('1d 2h3m  4s5ms\t6us'),
-            equals(Timeout(Duration(
+            equals(const Timeout(Duration(
                 days: 1,
                 hours: 2,
                 minutes: 3,

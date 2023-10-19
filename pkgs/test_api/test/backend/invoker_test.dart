@@ -42,7 +42,7 @@ void main() {
     test('returns the current invoker in a test body after the test completes',
         () async {
       Status? status;
-      var completer = Completer();
+      var completer = Completer<Invoker>();
       var liveTest = _localTest(() {
         // Use the event loop to wait longer than a microtask for the test to
         // complete.
@@ -432,7 +432,8 @@ void main() {
         Invoker.current!.addOutstandingCallback();
       },
               metadata: Metadata(
-                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
+                  chainStackTraces: true,
+                  timeout: const Timeout(Duration.zero)))
           .load(suite);
 
       expectStates(liveTest, [
@@ -443,7 +444,7 @@ void main() {
       expectErrors(liveTest, [
         (error) {
           expect(lastState!.status, equals(Status.complete));
-          expect(error, TypeMatcher<TimeoutException>());
+          expect(error, const TypeMatcher<TimeoutException>());
         }
       ]);
 
@@ -453,10 +454,11 @@ void main() {
     test('can be ignored', () {
       suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: true);
       var liveTest = _localTest(() async {
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future<void>.delayed(const Duration(milliseconds: 10));
       },
               metadata: Metadata(
-                  chainStackTraces: true, timeout: Timeout(Duration.zero)))
+                  chainStackTraces: true,
+                  timeout: const Timeout(Duration.zero)))
           .load(suite);
 
       expectStates(liveTest, [

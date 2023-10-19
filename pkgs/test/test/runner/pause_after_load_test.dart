@@ -56,7 +56,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -76,7 +76,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -122,7 +122,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -144,7 +144,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -165,7 +165,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -232,7 +232,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -272,7 +272,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();

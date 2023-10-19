@@ -87,7 +87,7 @@ class NodePlatform extends PlatformPlugin
     }
     var pair = await _loadChannel(path, platform, suiteConfig);
     var controller = deserializeSuite(
-        path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
+        path, platform, suiteConfig, const PluginEnvironment(), pair.first, message);
 
     controller.channel('test.node.mapper').sink.add(pair.last?.serialize());
 
