@@ -86,8 +86,8 @@ class NodePlatform extends PlatformPlugin
           'Unsupported compiler for the Node platform ${platform.compiler}.');
     }
     var pair = await _loadChannel(path, platform, suiteConfig);
-    var controller = deserializeSuite(
-        path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
+    var controller = deserializeSuite(path, platform, suiteConfig,
+        const PluginEnvironment(), pair.first, message);
 
     controller.channel('test.node.mapper').sink.add(pair.last?.serialize());
 

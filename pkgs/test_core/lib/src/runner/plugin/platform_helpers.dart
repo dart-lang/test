@@ -131,7 +131,7 @@ class _Deserializer {
 
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
-    var metadata = Metadata.deserialize(group['metadata']);
+    var metadata = Metadata.deserialize(group['metadata'] as Map);
     return Group(
         group['name'] as String,
         (group['entries'] as List).map((entry) {
@@ -153,7 +153,7 @@ class _Deserializer {
   Test? _deserializeTest(Map? test) {
     if (test == null) return null;
 
-    var metadata = Metadata.deserialize(test['metadata']);
+    var metadata = Metadata.deserialize(test['metadata'] as Map);
     var trace =
         test['trace'] == null ? null : Trace.parse(test['trace'] as String);
     var testChannel = _channel.virtualChannel((test['channel'] as num).toInt());

@@ -3,4 +3,4 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:test/test.dart';
 
-void myTest(String name, Function() testFn) => test(name, testFn);
+void myTest(String name, void Function() testFn) => test(name, testFn);

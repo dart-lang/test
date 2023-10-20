@@ -114,7 +114,7 @@ extension EventTargetExtension on EventTarget {
   void addEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'addEventListener',
+      js_util.callMethod<void>(this, 'addEventListener',
           <Object>[type, listener, if (useCapture != null) useCapture]);
     }
   }
@@ -122,7 +122,7 @@ extension EventTargetExtension on EventTarget {
   void removeEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'removeEventListener',
+      js_util.callMethod<void>(this, 'removeEventListener',
           <Object>[type, listener, if (useCapture != null) useCapture]);
     }
   }
