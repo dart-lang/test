@@ -70,7 +70,7 @@ void main() {
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await Future.delayed(Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
 
       await signalAndQuit(test);
     });
@@ -179,7 +179,7 @@ void main() {
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await Future.delayed(Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       await signalAndQuit(test);
     });
 

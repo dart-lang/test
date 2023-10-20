@@ -14,7 +14,6 @@ import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart';
-import 'package:test_core/src/runner/vm/test_compiler.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
 import 'package:vm_service/vm_service_io.dart';
 
@@ -30,6 +29,7 @@ import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
 import 'environment.dart';
+import 'test_compiler.dart';
 
 var _shouldPauseAfterTests = false;
 
@@ -136,7 +136,7 @@ class VMPlatform extends PlatformPlugin {
       environment = VMEnvironment(url, isolateRef, client);
     }
 
-    environment ??= PluginEnvironment();
+    environment ??= const PluginEnvironment();
 
     var controller = deserializeSuite(
         path, platform, suiteConfig, environment, channel.cast(), message,

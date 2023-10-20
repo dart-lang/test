@@ -151,7 +151,7 @@ class BrowserPlatform extends PlatformPlugin
           .add(_wrapperHandler);
     }
 
-    var pipeline = shelf.Pipeline()
+    var pipeline = const shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
@@ -305,7 +305,7 @@ class BrowserPlatform extends PlatformPlugin
   Future<void> _pubServeSuite(String path, Uri dartUrl, Runtime browser,
       SuiteConfiguration suiteConfig) {
     return _pubServePool.withResource(() async {
-      var timer = Timer(Duration(seconds: 1), () {
+      var timer = Timer(const Duration(seconds: 1), () {
         print('"pub serve" is compiling $path...');
       });
 
@@ -317,7 +317,7 @@ class BrowserPlatform extends PlatformPlugin
 
         if (response.statusCode != 200) {
           // Drain response to avoid VM hang.
-          response.drain();
+          response.drain<void>();
 
           throw LoadException(
               path,
@@ -328,7 +328,7 @@ class BrowserPlatform extends PlatformPlugin
 
         if (suiteConfig.jsTrace) {
           // Drain response to avoid VM hang.
-          response.drain();
+          response.drain<void>();
           return;
         }
         _mappers[path] = JSStackTraceMapper(await utf8.decodeStream(response),

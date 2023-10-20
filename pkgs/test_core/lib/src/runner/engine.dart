@@ -100,7 +100,7 @@ class Engine {
   }
 
   /// A group of futures for each test suite.
-  final _group = FutureGroup();
+  final _group = FutureGroup<void>();
 
   /// All of the engine's stream subscriptions.
   final _subscriptions = <StreamSubscription>{};

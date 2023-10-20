@@ -140,7 +140,7 @@ class BrowserWasmPlatform extends PlatformPlugin
         .add(createStaticHandler(_root))
         .add(_wrapperHandler);
 
-    var pipeline = shelf.Pipeline()
+    var pipeline = const shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 

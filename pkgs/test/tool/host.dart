@@ -137,7 +137,7 @@ void main() {
 
     // Send periodic pings to the test runner so it can know when the browser is
     // paused for debugging.
-    Timer.periodic(Duration(seconds: 1),
+    Timer.periodic(const Duration(seconds: 1),
         (_) => serverChannel.sink.add({'command': 'ping'}));
 
     var play = dom.document.querySelector('#play');
@@ -167,7 +167,7 @@ MultiChannel<dynamic> _connectToServer() {
   var webSocket =
       dom.createWebSocket(_currentUrl.queryParameters['managerUrl']!);
 
-  var controller = StreamChannelController(sync: true);
+  var controller = StreamChannelController<Object?>(sync: true);
   webSocket.addEventListener('message', allowInterop((message) {
     controller.local.sink
         .add(jsonDecode((message as dom.MessageEvent).data as String));
@@ -205,7 +205,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
   dom.window.console.log('Starting suite $suiteUrl');
   var iframe = dom.createHTMLIFrameElement();
   _iframes[id] = iframe;
-  var controller = StreamChannelController(sync: true);
+  var controller = StreamChannelController<Object?>(sync: true);
 
   late dom.Subscription windowSubscription;
   windowSubscription =
