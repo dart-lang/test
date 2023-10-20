@@ -76,7 +76,7 @@ final class RemoteListener {
           return;
         }
 
-        if (main is! Function()) {
+        if (main is! FutureOr<void> Function()) {
           _sendLoadException(
               channel, 'Top-level main() function takes arguments.');
           return;
@@ -98,7 +98,7 @@ final class RemoteListener {
         });
 
         if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
-        var metadata = Metadata.deserialize(message['metadata']);
+        var metadata = Metadata.deserialize(message['metadata'] as Map);
         verboseChain = metadata.verboseTrace;
         var declarer = Declarer(
           metadata: metadata,

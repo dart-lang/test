@@ -228,7 +228,7 @@ void main() {
         });
 
         test('description', () {
-          Future.error('oh no');
+          Future<Never>.error('oh no');
           return pumpEventQueue().then((_) {
             hasTestFinished = true;
           });
@@ -336,7 +336,7 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.name, equals('group'));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, TypeMatcher<Test>());
+      expect(testGroup.entries.single, const TypeMatcher<Test>());
       expect(testGroup.entries.single.name, 'group description');
     });
 
@@ -351,57 +351,57 @@ void main() {
       var testGroup = entries.single as Group;
       expect(testGroup.name, equals('Object'));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, TypeMatcher<Test>());
+      expect(testGroup.entries.single, const TypeMatcher<Test>());
       expect(testGroup.entries.single.name, 'Object description');
     });
 
     test("a test's timeout factor is applied to the group's", () {
       var entries = declare(() {
         group('group', () {
-          test('test', () {}, timeout: Timeout.factor(3));
-        }, timeout: Timeout.factor(2));
+          test('test', () {}, timeout: const Timeout.factor(3));
+        }, timeout: const Timeout.factor(2));
       });
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
       expect(testGroup.metadata.timeout.scaleFactor, equals(2));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, TypeMatcher<Test>());
+      expect(testGroup.entries.single, const TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.scaleFactor, equals(6));
     });
 
     test("a test's timeout factor is applied to the group's duration", () {
       var entries = declare(() {
         group('group', () {
-          test('test', () {}, timeout: Timeout.factor(2));
-        }, timeout: Timeout(Duration(seconds: 10)));
+          test('test', () {}, timeout: const Timeout.factor(2));
+        }, timeout: const Timeout(Duration(seconds: 10)));
       });
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
-      expect(
-          testGroup.metadata.timeout.duration, equals(Duration(seconds: 10)));
+      expect(testGroup.metadata.timeout.duration,
+          equals(const Duration(seconds: 10)));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, TypeMatcher<Test>());
+      expect(testGroup.entries.single, const TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.duration,
-          equals(Duration(seconds: 20)));
+          equals(const Duration(seconds: 20)));
     });
 
     test("a test's timeout duration is applied over the group's", () {
       var entries = declare(() {
         group('group', () {
-          test('test', () {}, timeout: Timeout(Duration(seconds: 15)));
-        }, timeout: Timeout(Duration(seconds: 10)));
+          test('test', () {}, timeout: const Timeout(Duration(seconds: 15)));
+        }, timeout: const Timeout(Duration(seconds: 10)));
       });
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
-      expect(
-          testGroup.metadata.timeout.duration, equals(Duration(seconds: 10)));
+      expect(testGroup.metadata.timeout.duration,
+          equals(const Duration(seconds: 10)));
       expect(testGroup.entries, hasLength(1));
-      expect(testGroup.entries.single, TypeMatcher<Test>());
+      expect(testGroup.entries.single, const TypeMatcher<Test>());
       expect(testGroup.entries.single.metadata.timeout.duration,
-          equals(Duration(seconds: 15)));
+          equals(const Duration(seconds: 15)));
     });
 
     test('disallows asynchronous groups', () async {

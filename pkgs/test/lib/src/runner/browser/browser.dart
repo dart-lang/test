@@ -87,7 +87,7 @@ abstract class Browser {
       // resolve the ambiguity is to wait a brief amount of time and see if this
       // browser is actually closed.
       if (!_closed && exitCode < 0) {
-        await Future.delayed(Duration(milliseconds: 200));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
       }
 
       if (!_closed && exitCode != 0) {

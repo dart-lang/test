@@ -36,7 +36,7 @@ webSocket.addEventListener("open", function() {
   },
       // It's not clear why, but this test in particular seems to time out
       // when run in parallel with many other tests.
-      timeout: Timeout.factor(2));
+      timeout: const Timeout.factor(2));
 
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();

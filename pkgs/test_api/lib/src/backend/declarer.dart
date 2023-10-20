@@ -60,7 +60,7 @@ class Declarer {
   final _setUpAlls = <dynamic Function()>[];
 
   /// The default timeout for synthetic tests.
-  final _timeout = Timeout(Duration(minutes: 12));
+  final _timeout = const Timeout(Duration(minutes: 12));
 
   /// The trace for the first call to [setUpAll].
   ///
@@ -70,7 +70,7 @@ class Declarer {
   Trace? _setUpAllTrace;
 
   /// The tear-down functions to run once for this group.
-  final _tearDownAlls = <Function()>[];
+  final _tearDownAlls = <void Function()>[];
 
   /// The trace for the first call to [tearDownAll].
   ///

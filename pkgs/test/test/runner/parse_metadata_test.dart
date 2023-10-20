@@ -81,7 +81,7 @@ library foo;
 ''', {});
       expect(
           metadata.timeout.duration,
-          equals(Duration(
+          equals(const Duration(
               hours: 1,
               minutes: 2,
               seconds: 3,
@@ -102,7 +102,7 @@ library foo;
 ''', {});
       expect(
           metadata.timeout.duration,
-          equals(Duration(
+          equals(const Duration(
               hours: 1,
               minutes: 2,
               seconds: 3,
@@ -122,7 +122,7 @@ import 'dart:core' as core;
 ''', {});
       expect(
           metadata.timeout.duration,
-          equals(Duration(
+          equals(const Duration(
               hours: 1,
               minutes: 2,
               seconds: 3,

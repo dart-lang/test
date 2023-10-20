@@ -70,7 +70,7 @@ class _Debugger {
 
   /// A completer that's used to manually unpause the test if the debugger is
   /// closed.
-  final _pauseCompleter = CancelableCompleter();
+  final _pauseCompleter = CancelableCompleter<void>();
 
   /// The subscription to [_suite.onDebugging].
   StreamSubscription<bool>? _onDebuggingSubscription;
