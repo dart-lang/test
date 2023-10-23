@@ -96,14 +96,14 @@ class Dart2JsCompilerPool extends CompilerPool {
   /// Fix up the source map at [mapPath] so that it points to absolute file:
   /// URIs that are resolvable by the browser.
   void _fixSourceMap(String mapPath) {
-    var map = jsonDecode(File(mapPath).readAsStringSync());
+    var map = jsonDecode(File(mapPath).readAsStringSync()) as Map;
     var root = map['sourceRoot'] as String;
 
     final mapUri = p.toUri(mapPath);
     map.update(
       'sources',
-      () => [
-        for (Object? source in map['sources'] as List)
+      (sources) => [
+        for (var source in sources as List<Object?>)
           switch (Uri.parse('$root$source')) {
             Uri(hasScheme: true) && final uri => uri.toString(),
             Uri(:final path) when path.endsWith('/runInBrowser.dart') => '',
