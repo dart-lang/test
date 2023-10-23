@@ -17,7 +17,7 @@ import 'util/pretty_print.dart';
 /// This can safely be passed in place of any callback that takes ten or fewer
 /// positional parameters. For example:
 ///
-/// ```
+/// ```dart
 /// // Asserts that the stream never emits an event.
 /// stream.listen(neverCalled);
 /// ```
