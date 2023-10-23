@@ -107,7 +107,7 @@ class Dart2JsCompilerPool extends CompilerPool {
           switch (Uri.parse('$root$source')) {
             Uri(hasScheme: true) && final uri => uri.toString(),
             Uri(:final path) when path.endsWith('/runInBrowser.dart') => '',
-            final uri => mapUri.resolveUri(uri),
+            final uri => mapUri.resolveUri(uri).toString(),
           }
       ],
     );
