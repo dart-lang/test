@@ -93,19 +93,24 @@ class Dart2JsCompilerPool extends CompilerPool {
     });
   }
 
-  // TODO(nweiz): Remove this when sdk#17544 is fixed.
   /// Fix up the source map at [mapPath] so that it points to absolute file:
   /// URIs that are resolvable by the browser.
   void _fixSourceMap(String mapPath) {
-    var map = jsonDecode(File(mapPath).readAsStringSync());
+    var map = jsonDecode(File(mapPath).readAsStringSync()) as Map;
     var root = map['sourceRoot'] as String;
 
-    map['sources'] = map['sources'].map((Object? source) {
-      var url = Uri.parse('$root$source');
-      if (url.scheme != '' && url.scheme != 'file') return source;
-      if (url.path.endsWith('/runInBrowser.dart')) return '';
-      return p.toUri(mapPath).resolveUri(url).toString();
-    }).toList();
+    final mapUri = p.toUri(mapPath);
+    map.cast<String, List<Object?>>().update(
+          'sources',
+          (sources) => [
+            for (var source in sources)
+              switch (Uri.parse('$root$source')) {
+                Uri(hasScheme: true) && final uri => uri.toString(),
+                Uri(:final path) when path.endsWith('/runInBrowser.dart') => '',
+                final uri => mapUri.resolveUri(uri).toString(),
+              }
+          ],
+        );
 
     File(mapPath).writeAsStringSync(jsonEncode(map));
   }
