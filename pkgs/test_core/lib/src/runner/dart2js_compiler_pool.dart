@@ -100,12 +100,17 @@ class Dart2JsCompilerPool extends CompilerPool {
     var root = map['sourceRoot'] as String;
 
     final mapUri = p.toUri(mapPath);
-    map['sources'] = (map['sources'] as List).map((Object? source) {
-      var url = Uri.parse('$root$source');
-      if (url.hasScheme) return url.toString();
-      if (url.path.endsWith('/runInBrowser.dart')) return '';
-      return mapUri.resolveUri(url).toString();
-    }).toList();
+    map.update(
+      'sources',
+      () => [
+        for (Object? source in map['sources'] as List)
+          switch (Uri.parse('$root$source')) {
+            Uri(hasScheme: true) && final uri => uri.toString(),
+            Uri(:final path) when path.endsWith('/runInBrowser.dart') => '',
+            final uri => mapUri.resolveUri(uri),
+          }
+      ],
+    );
 
     File(mapPath).writeAsStringSync(jsonEncode(map));
   }
