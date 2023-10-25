@@ -1,4 +1,6 @@
-## 1.24.9-wip
+## 1.24.9
+
+* Update the vm_service constraint to allow version `13.x`.
 
 ## 1.24.8
 
