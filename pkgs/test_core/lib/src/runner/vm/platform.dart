@@ -263,8 +263,9 @@ stderr: ${processResult.stderr}''');
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
       String precompiledPath, Compiler compiler) async {
-    testPath =
-        _absolute('${p.join(precompiledPath, testPath)}.vm_test.dart').path;
+    testPath = _absolute('${p.join(precompiledPath, testPath)}.vm_test.dart')
+        .path
+        .stripDriveLetterLeadingSlash;
     switch (compiler) {
       case Compiler.kernel:
         var dillTestpath =

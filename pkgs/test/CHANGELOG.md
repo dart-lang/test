@@ -1,3 +1,7 @@
+## 1.24.10-wip
+
+* Handle paths with leading `/` when spawning test isolates.
+
 ## 1.24.9
 
 * Update the vm_service constraint to allow version `13.x`.

@@ -1,5 +1,5 @@
 name: test
-version: 1.24.9
+version: 1.24.10-wip
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test
@@ -35,7 +35,7 @@ dependencies:
 
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.6.1
-  test_core: 0.5.9
+  test_core: 0.5.10
 
   typed_data: ^1.3.0
   web_socket_channel: ^2.0.0
