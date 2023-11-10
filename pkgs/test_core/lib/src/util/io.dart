@@ -247,3 +247,19 @@ extension RetryDelete on FileSystemEntity {
     }
   }
 }
+
+extension WindowsFilePaths on String {
+  /// Strip out the leading slash before the drive letter on windows.
+  ///
+  /// In some windows environments full paths get passed with `/` before the
+  /// drive letter. Normalize paths to exclude this slash when it exists.
+  String get stripDriveLetterLeadingSlash {
+    if (Platform.isWindows &&
+        startsWith('/') &&
+        length >= 3 &&
+        this[2] == ':') {
+      return substring(1);
+    }
+    return this;
+  }
+}
