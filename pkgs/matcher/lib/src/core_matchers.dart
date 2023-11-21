@@ -290,20 +290,29 @@ class _In<T> extends FeatureMatcher<T> {
       description.add('is in ').addDescriptionOf(_source);
 }
 
-/// Returns a matcher that uses an arbitrary function that returns
-/// true or false for the actual value.
+/// Returns a matcher that uses an arbitrary function that returns whether the
+/// value is considered a match.
 ///
 /// For example:
 ///
-///     expect(v, predicate((x) => ((x % 2) == 0), "is even"))
+///     expect(actual, predicate<num>((v) => (v % 2) == 0, 'is even'));
+///
+/// Use this method when a value is checked for one conceptual property
+/// described by [description].
+///
+/// If the value can be rejected for more than one reason prefer using [isA] and
+/// the [TypeMatcher.having] API to build up a matcher with output that can
+/// distinquish between them.
+///
+/// Using an explicit generict argument allows a passed function literal to have
+/// an inferred argument type of [T], and values of the wrong type will be
+/// rejected with an informative message.
 Matcher predicate<T>(bool Function(T) f,
         [String description = 'satisfies function']) =>
     _Predicate(f, description);
 
-typedef _PredicateFunction<T> = bool Function(T value);
-
 class _Predicate<T> extends FeatureMatcher<T> {
-  final _PredicateFunction<T> _matcher;
+  final bool Function(T) _matcher;
   final String _description;
 
   _Predicate(this._matcher, this._description);
