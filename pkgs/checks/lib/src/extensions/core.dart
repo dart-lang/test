@@ -4,8 +4,9 @@
 
 import 'dart:convert';
 
-import 'package:checks/context.dart';
 import 'package:meta/meta.dart' as meta;
+
+import '../../context.dart';
 
 extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.

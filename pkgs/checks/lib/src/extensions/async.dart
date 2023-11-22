@@ -6,7 +6,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
-import 'package:checks/context.dart';
+
+import '../../context.dart';
 
 extension FutureChecks<T> on Subject<Future<T>> {
   /// Expects that the `Future` completes to a value without throwing.
@@ -46,7 +47,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
       unawaited(actual.then((r) {
         reject(Rejection(
             actual: prefixFirst('a future that completed to ', literal(r))));
-      }, onError: (e, st) {
+      }, onError: (Object e, StackTrace st) {
         reject(Rejection(actual: [
           'a future that completed as an error:'
         ], which: [

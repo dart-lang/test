@@ -16,7 +16,7 @@ Which: is not greater than <2>''');
 
     test('includes matching portions of actual', () {
       check(() {
-        check([]).length.equals(1);
+        check(<Object>[]).length.equals(1);
       }).throwsFailure().equals('''
 Expected: a List<dynamic> that:
   has length that:

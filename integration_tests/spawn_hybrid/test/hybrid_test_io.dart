@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -29,7 +31,7 @@ void main() {
     // isolate closes).
     var port = await channel.stream.first as int;
     var socket = await Socket.connect('localhost', port);
-    expect(socket.listen(null).asFuture(), completes);
+    expect(socket.listen(null).asFuture<void>(), completes);
 
     await channel.sink.close();
   });
