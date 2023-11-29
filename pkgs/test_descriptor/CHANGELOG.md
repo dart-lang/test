@@ -1,4 +1,6 @@
-## 2.0.2-dev
+## 2.0.2-wip
+
+* Require Dart 3.1 or later.
 
 ## 2.0.1
 

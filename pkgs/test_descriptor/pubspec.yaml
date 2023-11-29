@@ -1,10 +1,10 @@
 name: test_descriptor
-version: 2.0.2-dev
+version: 2.0.2-wip
 description: An API for defining and verifying files and directory structures.
 repository: https://github.com/dart-lang/test_descriptor
 
 environment:
-  sdk: '>=2.17.0 <3.0.0'
+  sdk: ^3.1.0
 
 dependencies:
   async: ^2.5.0
@@ -14,4 +14,4 @@ dependencies:
   test: ^1.16.0
 
 dev_dependencies:
-  lints: ^2.0.0
+  dart_flutter_team_lints: ^2.0.0
