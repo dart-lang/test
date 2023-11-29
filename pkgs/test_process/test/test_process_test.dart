@@ -6,11 +6,10 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
-
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
-final throwsTestFailure = throwsA(TypeMatcher<TestFailure>());
+final throwsTestFailure = throwsA(isA<TestFailure>());
 
 void main() {
   group('shouldExit()', () {

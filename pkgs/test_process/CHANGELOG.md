@@ -1,3 +1,7 @@
+## 2.1.1-wip
+
+* Require Dart 3.1.
+
 ## 2.1.0
 
 - Remove the expectation that the process exits during the normal test body.
