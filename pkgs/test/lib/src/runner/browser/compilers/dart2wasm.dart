@@ -27,6 +27,7 @@ import '../../../util/path_handler.dart';
 import '../browser_manager.dart';
 import 'compiler_support.dart';
 
+/// Support for Dart2Wasm compiled tests.
 class Dart2WasmSupport implements CompilerSupport {
   /// Whether [close] has been called.
   bool _closed = false;

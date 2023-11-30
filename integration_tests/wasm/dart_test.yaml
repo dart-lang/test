@@ -1,1 +1,2 @@
-platforms: [experimental-chrome-wasm]
+platforms: [chrome]
+compilers: [dart2wasm]

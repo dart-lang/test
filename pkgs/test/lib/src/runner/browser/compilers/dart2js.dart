@@ -29,6 +29,7 @@ import '../../../util/package_map.dart';
 import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
+/// Support for Dart2Js compiled tests.
 class Dart2JsSupport implements CompilerSupport {
   /// Whether [close] has been called.
   bool _closed = false;
@@ -113,7 +114,6 @@ class Dart2JsSupport implements CompilerSupport {
   /// A handler that serves wrapper files used to bootstrap tests.
   shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(request.url);
-    print(request.url);
 
     if (path.endsWith('.html')) {
       var test = p.setExtension(path, '.dart');

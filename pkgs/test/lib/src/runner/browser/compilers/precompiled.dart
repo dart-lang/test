@@ -24,7 +24,7 @@ import '../../../util/package_map.dart';
 import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
-/// The shared interface for all compiler support libraries.
+/// Support for precompiled test files.
 class PrecompiledSupport extends CompilerSupport {
   /// Whether [close] has been called.
   bool _closed = false;
@@ -35,7 +35,7 @@ class PrecompiledSupport extends CompilerSupport {
   /// A [PathHandler] used to serve test specific artifacts.
   final _pathHandler = PathHandler();
 
-  /// The root directory served statically by this server.
+  /// The root directory served statically by the server.
   final String _root;
 
   /// Each compiler serves its tests under a different randomly-generated
