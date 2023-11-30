@@ -298,6 +298,15 @@ class _Parser {
       compilerSelections.add(CompilerSelection.parse('vm:source'));
     }
 
+    final precompiled = _ifParsed<String>('precompiled');
+    if (precompiled != null) {
+      if (compilerSelections != null) {
+        throw ArgumentError.value(compilerSelections, 'compiler',
+            'The --compiler flag is not compatible with the --precompiled flag');
+      }
+      compilerSelections = [CompilerSelection.parse('all:precompiled')];
+    }
+
     final paths = _options.rest.isEmpty ? null : _options.rest;
 
     Map<String, Set<TestSelection>>? selections;
@@ -319,7 +328,7 @@ class _Parser {
         color: color,
         configurationPath: _ifParsed('configuration'),
         dart2jsArgs: _ifParsed('dart2js-args'),
-        precompiledPath: _ifParsed('precompiled'),
+        precompiledPath: precompiled,
         reporter: reporter,
         fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),

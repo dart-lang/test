@@ -11,48 +11,38 @@ final class Runtime {
 
   /// The command-line Dart VM.
   static const Runtime vm = Runtime('VM', 'vm', Compiler.kernel,
-      [Compiler.kernel, Compiler.source, Compiler.exe],
+      [Compiler.kernel, Compiler.source, Compiler.exe, Compiler.precompiled],
       isDartVM: true);
 
   /// Google Chrome.
-  static const Runtime chrome = Runtime(
-      'Chrome', 'chrome', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime chrome = Runtime('Chrome', 'chrome', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.dart2wasm, Compiler.precompiled],
       isBrowser: true, isJS: true, isBlink: true);
 
   /// Mozilla Firefox.
-  static const Runtime firefox = Runtime(
-      'Firefox', 'firefox', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime firefox = Runtime('Firefox', 'firefox', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.precompiled],
       isBrowser: true, isJS: true);
 
   /// Apple Safari.
-  static const Runtime safari = Runtime(
-      'Safari', 'safari', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime safari = Runtime('Safari', 'safari', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.precompiled],
       isBrowser: true, isJS: true);
 
   /// Microsoft Internet Explorer.
-  static const Runtime internetExplorer = Runtime(
-      'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime internetExplorer = Runtime('Internet Explorer', 'ie',
+      Compiler.dart2js, [Compiler.dart2js, Compiler.precompiled],
       isBrowser: true, isJS: true);
 
   /// Microsoft Edge (based on Chromium).
-  static const Runtime edge = Runtime(
-      'Microsoft Edge', 'edge', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime edge = Runtime('Microsoft Edge', 'edge',
+      Compiler.dart2js, [Compiler.dart2js, Compiler.precompiled],
       isBrowser: true, isJS: true, isBlink: true);
 
   /// The command-line Node.js VM.
-  static const Runtime nodeJS = Runtime(
-      'Node.js', 'node', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime nodeJS = Runtime('Node.js', 'node', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.precompiled],
       isJS: true);
-
-  /// Google Chrome.
-  static const Runtime experimentalChromeWasm = Runtime(
-      'ExperimentalChromeWasm',
-      'experimental-chrome-wasm',
-      Compiler.dart2wasm,
-      [Compiler.dart2wasm],
-      isBrowser: true,
-      isBlink: true,
-      isWasm: true);
 
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [
@@ -63,7 +53,6 @@ final class Runtime {
     Runtime.internetExplorer,
     Runtime.edge,
     Runtime.nodeJS,
-    Runtime.experimentalChromeWasm,
   ];
 
   /// The human-friendly name of the platform.

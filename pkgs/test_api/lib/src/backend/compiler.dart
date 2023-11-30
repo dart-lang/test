@@ -18,7 +18,9 @@ enum Compiler {
   kernel('Kernel', 'kernel'),
 
   /// Runs tests directly from source, with no precompilation.
-  source('Source', 'source');
+  source('Source', 'source'),
+
+  precompiled('Precompiled', 'precompiled');
 
   /// The compilers that are supported by the test runner by default.
   static const List<Compiler> builtIn = [
@@ -27,6 +29,7 @@ enum Compiler {
     Compiler.exe,
     Compiler.kernel,
     Compiler.source,
+    Compiler.precompiled,
   ];
 
   /// The human-friendly name of the compiler.

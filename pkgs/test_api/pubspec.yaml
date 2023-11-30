@@ -27,3 +27,9 @@ dev_dependencies:
   path: ^1.8.0
   test: any
   test_core: any
+
+dependency_overrides:
+  test:
+    path: ../test
+  test_core:
+    path: ../test_core
