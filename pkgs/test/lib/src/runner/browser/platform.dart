@@ -69,7 +69,8 @@ class BrowserPlatform extends PlatformPlugin
                     root: _root,
                     faviconPath: _faviconPath),
                 Compiler.precompiled => PrecompiledSupport.start(
-                    root: _root, faviconPath: _faviconPath),
+                    root: _config.suiteDefaults.precompiledPath!,
+                    faviconPath: _faviconPath),
                 Compiler.dart2wasm => Dart2WasmSupport.start(
                     config: _config,
                     defaultTemplatePath: _defaultTemplatePath,

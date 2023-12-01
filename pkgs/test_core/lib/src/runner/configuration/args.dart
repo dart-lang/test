@@ -304,7 +304,7 @@ class _Parser {
         throw ArgumentError.value(compilerSelections, 'compiler',
             'The --compiler flag is not compatible with the --precompiled flag');
       }
-      compilerSelections = [CompilerSelection.parse('all:precompiled')];
+      compilerSelections = [CompilerSelection.parse('precompiled')];
     }
 
     final paths = _options.rest.isEmpty ? null : _options.rest;
