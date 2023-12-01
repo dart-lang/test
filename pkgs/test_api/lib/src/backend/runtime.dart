@@ -169,6 +169,10 @@ final class Runtime {
       'isBrowser': isBrowser,
       'isBlink': isBlink,
       'isHeadless': isHeadless,
+      // TODO(https://github.com/dart-lang/test/issues/2146): Remove this.
+      'isJS': isBrowser || this == Runtime.nodeJS,
+      // TODO(https://github.com/dart-lang/test/issues/2146): Remove this.
+      'isWasm': false,
     };
   }
 
