@@ -17,6 +17,12 @@ import '../runtime_selection.dart';
 import 'reporters.dart';
 import 'values.dart';
 
+/// The compilers we allow users to pass, precompiled is internal only (enabled
+/// by passing `--precompiled`).
+Iterable<String> get _allowedCompilers => Compiler.builtIn
+    .where((c) => c != Compiler.precompiled)
+    .map((c) => c.identifier);
+
 /// The parser used to parse the command-line arguments.
 final ArgParser _parser = (() {
   var parser = ArgParser(allowTrailingOptions: true);
@@ -76,7 +82,7 @@ final ArgParser _parser = (() {
   parser.addMultiOption('compiler',
       abbr: 'c',
       help: 'The compiler(s) to use to run tests, supported compilers are '
-          '[${Compiler.builtIn.map((c) => c.identifier).join(', ')}].\n'
+          '[${_allowedCompilers.join(', ')}].\n'
           'Each platform has a default compiler but may support other '
           'compilers.\n'
           'You can target a compiler to a specific platform using arguments '
@@ -422,7 +428,9 @@ extension _RuntimeDescription on Runtime {
     var message = StringBuffer('[$identifier]: ');
     message.write('${defaultCompiler.identifier} (default)');
     for (var compiler in supportedCompilers) {
-      if (compiler == defaultCompiler) continue;
+      if (compiler == defaultCompiler || compiler == Compiler.precompiled) {
+        continue;
+      }
       message.write(', ${compiler.identifier}');
     }
     return message.toString();
