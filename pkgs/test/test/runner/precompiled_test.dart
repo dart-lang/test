@@ -65,10 +65,8 @@ void main() {
         () async {
       var test = await runTest(
           ['-p', 'chrome', '--precompiled=precompiled/', 'test.dart']);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ['+0: [Chrome, Precompiled] success', '+1: All tests passed!']));
+      expect(test.stdout,
+          containsInOrder(['+0: success', '+1: All tests passed!']));
       await test.shouldExit(0);
     });
 
@@ -135,10 +133,8 @@ void main() {
         d.sandbox,
         p.join('test', 'test.dart')
       ]);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ['+0: [Node.js, Precompiled] success', '+1: All tests passed!']));
+      expect(test.stdout,
+          containsInOrder(['+0: success', '+1: All tests passed!']));
       await test.shouldExit(0);
     });
 
@@ -188,10 +184,8 @@ void main() {
     test('run in the precompiled directory', () async {
       var test = await runTest(
           ['-p', 'vm', '--precompiled=${d.sandbox}', 'test/test.dart']);
-      expect(
-          test.stdout,
-          containsInOrder(
-              ['+0: [VM, Precompiled] true is true', '+1: All tests passed!']));
+      expect(test.stdout,
+          containsInOrder(['+0: true is true', '+1: All tests passed!']));
       await test.shouldExit(0);
     });
 
@@ -215,10 +209,8 @@ void main() {
       // Actually invoke the test with the dill file.
       var testProcess = await runTest(
           ['-p', 'vm', '--precompiled=${d.sandbox}', 'test/test.dart']);
-      expect(
-          testProcess.stdout,
-          containsInOrder(
-              ['+0: [VM, Precompiled] true is true', '+1: All tests passed!']));
+      expect(testProcess.stdout,
+          containsInOrder(['+0: true is true', '+1: All tests passed!']));
       await testProcess.shouldExit(0);
     });
 
