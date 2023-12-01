@@ -267,7 +267,7 @@ stderr: ${processResult.stderr}''');
         .path
         .stripDriveLetterLeadingSlash;
     switch (compiler) {
-      case Compiler.kernel || Compiler.precompiled:
+      case Compiler.kernel:
         var dillTestpath =
             '${testPath.substring(0, testPath.length - '.dart'.length)}'
             '.vm.app.dill';

@@ -18,9 +18,7 @@ enum Compiler {
   kernel('Kernel', 'kernel'),
 
   /// Runs tests directly from source, with no precompilation.
-  source('Source', 'source'),
-
-  precompiled('Precompiled', 'precompiled');
+  source('Source', 'source');
 
   /// The compilers that are supported by the test runner by default.
   static const List<Compiler> builtIn = [
@@ -29,7 +27,6 @@ enum Compiler {
     Compiler.exe,
     Compiler.kernel,
     Compiler.source,
-    Compiler.precompiled,
   ];
 
   /// The human-friendly name of the compiler.
@@ -53,4 +50,10 @@ enum Compiler {
 
   @override
   String toString() => name;
+}
+
+extension CompileTarget on Compiler {
+  bool get isJS => this == Compiler.dart2js;
+
+  bool get isWasm => this == Compiler.dart2wasm;
 }

@@ -23,8 +23,7 @@ void main() {
     for (var compiler in runtime.supportedCompilers) {
       // Ignore the platforms we can't run on this OS.
       if ((runtime == Runtime.internetExplorer && !Platform.isWindows) ||
-          (runtime == Runtime.safari && !Platform.isMacOS) ||
-          compiler == Compiler.precompiled) {
+          (runtime == Runtime.safari && !Platform.isMacOS)) {
         continue;
       }
       group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',

@@ -60,25 +60,27 @@ class BrowserPlatform extends PlatformPlugin
   /// on data being served through this server, as well as distinguish tests
   /// from different compilers from each other.
   Future<CompilerSupport> compilerSupport(Compiler compiler) =>
-      _compilerSupport.putIfAbsent(
-          compiler,
-          () => switch (compiler) {
-                Compiler.dart2js => Dart2JsSupport.start(
-                    config: _config,
-                    defaultTemplatePath: _defaultTemplatePath,
-                    root: _root,
-                    faviconPath: _faviconPath),
-                Compiler.precompiled => PrecompiledSupport.start(
-                    root: _config.suiteDefaults.precompiledPath!,
-                    faviconPath: _faviconPath),
-                Compiler.dart2wasm => Dart2WasmSupport.start(
-                    config: _config,
-                    defaultTemplatePath: _defaultTemplatePath,
-                    jsRuntimeWrapper: _jsRuntimeWrapper,
-                    root: _root,
-                    faviconPath: _faviconPath),
-                _ => throw StateError('Unexpected compiler $compiler'),
-              });
+      _compilerSupport.putIfAbsent(compiler, () {
+        if (_config.suiteDefaults.precompiledPath != null) {
+          return PrecompiledSupport.start(
+              root: _config.suiteDefaults.precompiledPath!,
+              faviconPath: _faviconPath);
+        }
+        return switch (compiler) {
+          Compiler.dart2js => Dart2JsSupport.start(
+              config: _config,
+              defaultTemplatePath: _defaultTemplatePath,
+              root: _root,
+              faviconPath: _faviconPath),
+          Compiler.dart2wasm => Dart2WasmSupport.start(
+              config: _config,
+              defaultTemplatePath: _defaultTemplatePath,
+              jsRuntimeWrapper: _jsRuntimeWrapper,
+              root: _root,
+              faviconPath: _faviconPath),
+          _ => throw StateError('Unexpected compiler $compiler'),
+        };
+      });
 
   /// The root directory served statically by this server.
   final String _root;

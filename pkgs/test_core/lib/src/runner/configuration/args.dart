@@ -17,12 +17,6 @@ import '../runtime_selection.dart';
 import 'reporters.dart';
 import 'values.dart';
 
-/// The compilers we allow users to pass, precompiled is internal only (enabled
-/// by passing `--precompiled`).
-Iterable<String> get _allowedCompilers => Compiler.builtIn
-    .where((c) => c != Compiler.precompiled)
-    .map((c) => c.identifier);
-
 /// The parser used to parse the command-line arguments.
 final ArgParser _parser = (() {
   var parser = ArgParser(allowTrailingOptions: true);
@@ -82,7 +76,7 @@ final ArgParser _parser = (() {
   parser.addMultiOption('compiler',
       abbr: 'c',
       help: 'The compiler(s) to use to run tests, supported compilers are '
-          '[${_allowedCompilers.join(', ')}].\n'
+          '[${Compiler.builtIn.map((c) => c.identifier).join(', ')}].\n'
           'Each platform has a default compiler but may support other '
           'compilers.\n'
           'You can target a compiler to a specific platform using arguments '
@@ -304,15 +298,6 @@ class _Parser {
       compilerSelections.add(CompilerSelection.parse('vm:source'));
     }
 
-    final precompiled = _ifParsed<String>('precompiled');
-    if (precompiled != null) {
-      if (compilerSelections != null) {
-        throw ArgumentError.value(compilerSelections, 'compiler',
-            'The --compiler flag is not compatible with the --precompiled flag');
-      }
-      compilerSelections = [CompilerSelection.parse('precompiled')];
-    }
-
     final paths = _options.rest.isEmpty ? null : _options.rest;
 
     Map<String, Set<TestSelection>>? selections;
@@ -334,7 +319,7 @@ class _Parser {
         color: color,
         configurationPath: _ifParsed('configuration'),
         dart2jsArgs: _ifParsed('dart2js-args'),
-        precompiledPath: precompiled,
+        precompiledPath: _ifParsed<String>('precompiled'),
         reporter: reporter,
         fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),
@@ -428,7 +413,7 @@ extension _RuntimeDescription on Runtime {
     var message = StringBuffer('[$identifier]: ');
     message.write('${defaultCompiler.identifier} (default)');
     for (var compiler in supportedCompilers) {
-      if (compiler == defaultCompiler || compiler == Compiler.precompiled) {
+      if (compiler == defaultCompiler) {
         continue;
       }
       message.write(', ${compiler.identifier}');

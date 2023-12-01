@@ -81,8 +81,7 @@ class NodePlatform extends PlatformPlugin
   @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
-    if (platform.compiler != Compiler.dart2js &&
-        platform.compiler != Compiler.precompiled) {
+    if (platform.compiler != Compiler.dart2js) {
       throw StateError(
           'Unsupported compiler for the Node platform ${platform.compiler}.');
     }
