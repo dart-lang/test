@@ -95,8 +95,9 @@ final ArgParser _parser = (() {
   parser.addOption('shard-index',
       help: 'The index of this test runner invocation (of --total-shards).');
   parser.addOption('pub-serve',
-      help: 'The port of a pub serve instance serving "test/".',
-      valueHelp: 'port');
+      help: '[Removed] The port of a pub serve instance serving "test/".',
+      valueHelp: 'port',
+      hide: true);
   parser.addOption('timeout',
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
@@ -308,6 +309,12 @@ class _Parser {
       }
     }
 
+    if (_options.wasParsed('pub-serve')) {
+      throw ArgumentError(
+          'The --pub-serve is no longer supported, if you require it please '
+          'open an issue at https://github.com/dart-lang/test/issues/new.');
+    }
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -323,7 +330,6 @@ class _Parser {
         reporter: reporter,
         fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),
-        pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
         totalShards: totalShards,

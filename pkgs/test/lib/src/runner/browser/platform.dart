@@ -171,16 +171,11 @@ class BrowserPlatform extends PlatformPlugin
       _checkHtmlCorrectness(htmlTemplatePath, path);
     }
 
-    Uri suiteUrl;
-    if (_config.pubServeUrl != null) {
-      throw UnsupportedError('The --pub-serve flag is no longer supported');
-    } else {
-      await support.compileSuite(path, suiteConfig, platform);
+    if (_closed) return null;
+    await support.compileSuite(path, suiteConfig, platform);
 
-      if (_closed) return null;
-      suiteUrl = support.serverUrl.resolveUri(
-          p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'));
-    }
+    var suiteUrl = support.serverUrl.resolveUri(
+        p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'));
 
     if (_closed) return null;
 

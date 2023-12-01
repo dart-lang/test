@@ -173,14 +173,6 @@ class Loader {
       return;
     }
 
-    if (_config.pubServeUrl != null && !p.isWithin('test', path)) {
-      yield LoadSuite.forLoadException(
-          LoadException(
-              path, 'When using "pub serve", all test files must be in test/.'),
-          suiteConfig);
-      return;
-    }
-
     for (var runtimeName in suiteConfig.runtimes) {
       var runtime = findRuntime(runtimeName);
       if (runtime == null) {
