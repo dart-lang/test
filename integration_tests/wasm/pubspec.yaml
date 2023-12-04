@@ -3,6 +3,7 @@ publish_to: none
 environment:
   sdk: ^3.0.0
 dev_dependencies:
+  dart_flutter_team_lints: ^2.1.1
   test: any
 dependency_overrides:
   test:
