@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.5.7
+# Created with package:mono_repo v6.6.0
 name: Dart CI
 on:
   push:
@@ -36,7 +36,7 @@ jobs:
         name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.5.7
+        run: dart pub global activate mono_repo 6.6.0
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
@@ -79,16 +79,16 @@ jobs:
         if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_core
   job_003:
-    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/spawn_hybrid, pkgs/checks, pkgs/test, pkgs/test_api, pkgs/test_core; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
+    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/regression, integration_tests/spawn_hybrid, pkgs/checks, pkgs/test, pkgs/test_api, pkgs/test_core; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -99,6 +99,19 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - id: integration_tests_regression_pub_upgrade
+        name: integration_tests/regression; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/regression
+      - name: "integration_tests/regression; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
+        if: "always() && steps.integration_tests_regression_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/regression
+      - name: "integration_tests/regression; dart analyze --fatal-infos"
+        run: dart analyze --fatal-infos
+        if: "always() && steps.integration_tests_regression_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/regression
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -206,7 +219,7 @@ jobs:
         uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.0.0;packages:integration_tests/spawn_hybrid;commands:test_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.0.0;packages:integration_tests/spawn_hybrid;commands:test_1"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:3.0.0;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:3.0.0
@@ -479,16 +492,16 @@ jobs:
       - job_003
       - job_004
   job_013:
-    name: "unit_test; linux; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
+    name: "unit_test; linux; Dart dev; PKG: integration_tests/regression; `dart test`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression;commands:command_01"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -499,15 +512,15 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
-      - id: integration_tests_spawn_hybrid_pub_upgrade
-        name: integration_tests/spawn_hybrid; dart pub upgrade
+      - id: integration_tests_regression_pub_upgrade
+        name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: integration_tests/spawn_hybrid
-      - name: "integration_tests/spawn_hybrid; dart test -p chrome,vm,node"
-        run: "dart test -p chrome,vm,node"
-        if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/spawn_hybrid
+        working-directory: integration_tests/regression
+      - name: integration_tests/regression; dart test
+        run: dart test
+        if: "always() && steps.integration_tests_regression_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/regression
     needs:
       - job_001
       - job_002
@@ -549,6 +562,41 @@ jobs:
       - job_003
       - job_004
   job_015:
+    name: "unit_test; linux; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test_1"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@b64355ae6ca0b5d484f0106a033dd1388965d06d
+        with:
+          sdk: dev
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      - id: integration_tests_spawn_hybrid_pub_upgrade
+        name: integration_tests/spawn_hybrid; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/spawn_hybrid
+      - name: "integration_tests/spawn_hybrid; dart test -p chrome,vm,node"
+        run: "dart test -p chrome,vm,node"
+        if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/spawn_hybrid
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_016:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
@@ -583,7 +631,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_016:
+  job_017:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
@@ -618,7 +666,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_017:
+  job_018:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
@@ -653,7 +701,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_018:
+  job_019:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
@@ -688,7 +736,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_019:
+  job_020:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
@@ -723,7 +771,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_020:
+  job_021:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
@@ -758,7 +806,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_021:
+  job_022:
     name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s`"
     runs-on: ubuntu-latest
     steps:
@@ -766,7 +814,7 @@ jobs:
         uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm;commands:command_00-test_1"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm;commands:command_00-test_2"
           restore-keys: |
             os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:main
@@ -797,7 +845,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_022:
+  job_023:
     name: "unit_test; windows; Dart 3.0.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -822,7 +870,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_023:
+  job_024:
     name: "unit_test; windows; Dart 3.0.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: windows-latest
     steps:
@@ -847,7 +895,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_024:
+  job_025:
     name: "unit_test; windows; Dart 3.0.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: windows-latest
     steps:
@@ -872,7 +920,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_025:
+  job_026:
     name: "unit_test; windows; Dart 3.0.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: windows-latest
     steps:
@@ -897,7 +945,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_026:
+  job_027:
     name: "unit_test; windows; Dart 3.0.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: windows-latest
     steps:
@@ -922,7 +970,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_027:
+  job_028:
     name: "unit_test; windows; Dart 3.0.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: windows-latest
     steps:
@@ -947,7 +995,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_028:
+  job_029:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -972,7 +1020,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_029:
+  job_030:
     name: Notify failure
     runs-on: ubuntu-latest
     if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
@@ -1012,3 +1060,4 @@ jobs:
       - job_026
       - job_027
       - job_028
+      - job_029
