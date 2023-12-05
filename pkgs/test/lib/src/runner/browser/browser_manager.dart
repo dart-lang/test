@@ -155,9 +155,7 @@ class BrowserManager {
   static Browser _newBrowser(Uri url, Runtime browser,
           ExecutableSettings settings, Configuration configuration) =>
       switch (browser.root) {
-        Runtime.chrome ||
-        Runtime.experimentalChromeWasm =>
-          Chrome(url, configuration, settings: settings),
+        Runtime.chrome => Chrome(url, configuration, settings: settings),
         Runtime.firefox => Firefox(url, settings: settings),
         Runtime.safari => Safari(url, settings: settings),
         Runtime.internetExplorer => InternetExplorer(url, settings: settings),

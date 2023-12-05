@@ -16,7 +16,6 @@ import 'package:test_api/backend.dart'
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
@@ -46,9 +45,6 @@ class NodePlatform extends PlatformPlugin
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();
 
-  /// The HTTP client to use when fetching JS files for `pub serve`.
-  final HttpClient? _http;
-
   /// Executable settings for [Runtime.nodeJS] and runtimes that extend
   /// it.
   final _settings = {
@@ -58,9 +54,7 @@ class NodePlatform extends PlatformPlugin
         windowsExecutable: 'node.exe')
   };
 
-  NodePlatform()
-      : _config = Configuration.current,
-        _http = Configuration.current.pubServeUrl == null ? null : HttpClient();
+  NodePlatform() : _config = Configuration.current;
 
   @override
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
@@ -142,8 +136,6 @@ class NodePlatform extends PlatformPlugin
     if (_config.suiteDefaults.precompiledPath != null) {
       return _spawnPrecompiledProcess(path, runtime, suiteConfig, socketPort,
           _config.suiteDefaults.precompiledPath!);
-    } else if (_config.pubServeUrl != null) {
-      return _spawnPubServeProcess(path, runtime, suiteConfig, socketPort);
     } else {
       return _spawnNormalProcess(path, runtime, suiteConfig, socketPort);
     }
@@ -206,34 +198,6 @@ class NodePlatform extends PlatformPlugin
     return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
   }
 
-  /// Requests the compiled js for [testPath] from the pub serve url, prepends
-  /// the node preamble, and then spawns a Node.js process that loads that Dart
-  /// test suite.
-  Future<Pair<Process, StackTraceMapper?>> _spawnPubServeProcess(
-      String testPath,
-      Runtime runtime,
-      SuiteConfiguration suiteConfig,
-      int socketPort) async {
-    var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
-    var url = _config.pubServeUrl!.resolveUri(
-        p.toUri('${p.relative(testPath, from: 'test')}.node_test.dart.js'));
-
-    var js = await _get(url, testPath);
-    await File(jsPath).writeAsString(preamble.getPreamble(minified: true) + js);
-
-    StackTraceMapper? mapper;
-    if (!suiteConfig.jsTrace) {
-      var mapUrl = url.replace(path: '${url.path}.map');
-      mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
-          mapUrl: mapUrl,
-          sdkRoot: p.toUri('packages/\$sdk'),
-          packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
-    }
-
-    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
-  }
-
   /// Starts the Node.js process for [runtime] with [jsPath].
   Future<Process> _startProcess(
       Runtime runtime, String jsPath, int socketPort) async {
@@ -258,49 +222,10 @@ class NodePlatform extends PlatformPlugin
     }
   }
 
-  /// Runs an HTTP GET on [url].
-  ///
-  /// If this fails, throws a [LoadException] for [suitePath].
-  Future<String> _get(Uri url, String suitePath) async {
-    try {
-      var response = await (await _http!.getUrl(url)).close();
-
-      if (response.statusCode != 200) {
-        // We don't care about the response body, but we have to drain it or
-        // else the process can't exit.
-        response.listen(null);
-
-        throw LoadException(
-            suitePath,
-            'Error getting $url: ${response.statusCode} '
-            '${response.reasonPhrase}\n'
-            'Make sure "pub serve" is serving the test/ directory.');
-      }
-
-      return await utf8.decodeStream(response);
-    } on IOException catch (error) {
-      var message = getErrorMessage(error);
-      if (error is SocketException) {
-        message = '${error.osError?.message} '
-            '(errno ${error.osError?.errorCode})';
-      }
-
-      throw LoadException(
-          suitePath,
-          'Error getting $url: $message\n'
-          'Make sure "pub serve" is running.');
-    }
-  }
-
   @override
   Future<void> close() => _closeMemo.runOnce(() async {
         await _compilers.close();
-
-        if (_config.pubServeUrl == null) {
-          await Directory(_compiledDir).deleteWithRetry();
-        } else {
-          _http!.close();
-        }
+        await Directory(_compiledDir).deleteWithRetry();
       });
   final _closeMemo = AsyncMemoizer<void>();
 }

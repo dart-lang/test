@@ -47,7 +47,6 @@ tags:
   * [`concurrency`](#concurrency)
   * [`pause_after_load`](#pause_after_load)
   * [`run_skipped`](#run_skipped)
-  * [`pub_serve`](#pub_serve)
   * [`reporter`](#reporter)
   * [`file_reporters`](#file_reporters)
   * [`fold_stack_frames`](#fold_stack_frames)
@@ -475,17 +474,6 @@ presets:
     paths: ["test/", "extra_test/"]
 ```
 
-### `pub_serve`
-
-This field indicates that the test runner should run against a `pub serve`
-instance by default, and provides the port number for that instance. Note that
-if there is no `pub serve` instance running at that port, running the tests will
-fail by default.
-
-```yaml
-pub_serve: 8081
-```
-
 ### `reporter`
 
 This field indicates the default reporter to use. It may be set to "compact",
@@ -855,7 +843,6 @@ presets:
   browser:
     paths:
     - test/runner/browser
-    - test/runner/pub_serve_test.dart
 ```
 
 The `presets` field counts as [test configuration](#test-configuration). It can

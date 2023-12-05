@@ -1,6 +1,17 @@
-## 1.24.10-wip
+## 1.25.0-wip
 
 * Handle paths with leading `/` when spawning test isolates.
+* Add support for the `dart2wasm` compiler in chrome and firefox.
+* **BREAKING**: Remove the `experimental-chrome-wasm` platform, you can now use
+  `-p chrome -c dart2wasm` instead.
+  * Note that this has always been advertised as a change that would happen in a
+    future non-breaking release.
+* **BREAKING**:Dropped support for `--pub-serve` which has long not been tested
+  or supported.
+  * We do not anticipate much if any actual breakage or existing usage of this
+    feature, which is why we are making this change in a non-breaking release.
+  * If you do require this feature, file an issue and we can look at adding it
+    back.
 * Fix running of tests defined under `lib/` with relative imports to other
   libraries in the package.
 

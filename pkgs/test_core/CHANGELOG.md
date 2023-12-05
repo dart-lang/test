@@ -1,6 +1,11 @@
-## 0.5.10-wip
+## 0.6.0-wip
 
 * Handle paths with leading `/` when spawning test isolates.
+* Added `dart2wasm` as a supported compiler for the `chrome` runtime.
+* **BREAKING**: Removed the `experimentalChromeWasm` runtime.
+* **BREAKING**: Removed `Runtime.isJS` and `Runtime.isWasm`, as this is now
+  based on the compiler and not the runtime.
+* **BREAKING**: Removed `Configuration.pubServeUrl` and support for it.
 * Fix running of tests defined under `lib/` with relative imports to other
   libraries in the package.
 
