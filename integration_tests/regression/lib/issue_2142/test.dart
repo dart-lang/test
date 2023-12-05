@@ -1,5 +1,3 @@
-library;
-
 import 'package:test/test.dart';
 import 'import.dart';
 
