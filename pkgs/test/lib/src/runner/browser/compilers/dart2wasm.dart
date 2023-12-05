@@ -117,7 +117,6 @@ class Dart2WasmSupport implements CompilerSupport {
   /// A handler that serves wrapper files used to bootstrap tests.
   shelf.Response _wrapperHandler(shelf.Request request) {
     var path = p.fromUri(request.url);
-    print(request.url);
 
     if (path.endsWith('.html')) {
       var test = '${p.withoutExtension(path)}.dart';
