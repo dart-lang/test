@@ -1,6 +1,7 @@
 ## 1.25.0-wip
 
 * Handle paths with leading `/` when spawning test isolates.
+* Add support for the `dart2wasm` compiler in chrome and firefox.
 * **BREAKING**: Remove the `experimental-chrome-wasm` platform, you can now use
   `-p chrome -c dart2wasm` instead.
   * Note that this has always been advertised as a change that would happen in a

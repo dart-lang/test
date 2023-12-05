@@ -20,8 +20,8 @@ final class Runtime {
       isBrowser: true, isBlink: true);
 
   /// Mozilla Firefox.
-  static const Runtime firefox = Runtime(
-      'Firefox', 'firefox', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime firefox = Runtime('Firefox', 'firefox', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.dart2wasm],
       isBrowser: true);
 
   /// Apple Safari.
