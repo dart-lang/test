@@ -141,9 +141,9 @@ class Dart2JsSupport implements CompilerSupport {
       var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import "package:test/src/bootstrap/browser.dart";
+        import 'package:test/src/bootstrap/browser.dart';
 
-        import "${p.toUri(p.absolute(dartPath))}" as test;
+        import '${absoluteUri(dartPath)}' as test;
 
         void main() {
           internalBootstrapBrowserTest(() => test.main);
