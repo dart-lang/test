@@ -181,15 +181,15 @@ class VMPlatform extends PlatformPlugin {
 
   /// Compiles [path] to a native executable using `dart compile exe`.
   Future<String> _compileToNative(String path, Metadata suiteMetadata) async {
-    var bootstrapPath = _bootstrapNativeTestFile(
+    var bootstrapPath = await _bootstrapNativeTestFile(
         path,
         suiteMetadata.languageVersionComment ??
             await rootPackageLanguageVersionComment);
-    var output = File(p.setExtension(await bootstrapPath, '.exe'));
+    var output = File(p.setExtension(bootstrapPath, '.exe'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
       'compile',
       'exe',
-      await bootstrapPath,
+      bootstrapPath,
       '--output',
       output.path,
       '--packages',
