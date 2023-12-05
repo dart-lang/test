@@ -1,4 +1,3 @@
-@Skip('https://github.com/dart-lang/test/issues/2142')
 library;
 
 import 'package:test/test.dart';
