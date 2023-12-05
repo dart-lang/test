@@ -40,7 +40,6 @@ class VMPlatform extends PlatformPlugin {
   final _compiler = TestCompiler(
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
-  final _workingDirectory = Directory.current.uri;
   final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
 
   @override
