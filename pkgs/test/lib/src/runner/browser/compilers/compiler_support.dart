@@ -9,7 +9,7 @@ import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_impo
 import 'package:web_socket_channel/web_socket_channel.dart'; // ignore: implementation_imports
 
 /// The shared interface for all compiler support libraries.
-abstract class CompilerSupport {
+abstract interface class CompilerSupport {
   /// The URL at which this compiler serves its tests.
   ///
   /// Each compiler serves its tests under a different directory.

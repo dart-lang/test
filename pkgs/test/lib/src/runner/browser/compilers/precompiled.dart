@@ -25,7 +25,7 @@ import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
 /// Support for precompiled test files.
-class PrecompiledSupport extends CompilerSupport {
+class PrecompiledSupport implements CompilerSupport {
   /// Whether [close] has been called.
   bool _closed = false;
 
