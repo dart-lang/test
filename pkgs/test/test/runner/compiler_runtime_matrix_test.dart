@@ -108,7 +108,10 @@ void main() {
             expect(test.stdout, emitsThrough('hello'));
             expect(test.stderr, emits('world'));
             await test.shouldExit(0);
-          });
+          },
+              skip: Platform.isWindows
+                  ? 'https://github.com/dart-lang/test/issues/2150'
+                  : null);
         }
       },
           skip: compiler == Compiler.dart2wasm
