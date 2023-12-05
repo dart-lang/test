@@ -126,7 +126,7 @@ final _runtimes = '[vm (default), chrome, firefox'
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe',
   '[chrome]: dart2js (default), dart2wasm',
-  '[firefox]: dart2js (default)',
+  '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
   if (Platform.isWindows) '[ie]: dart2js (default)',
   '[edge]: dart2js (default)',
