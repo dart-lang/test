@@ -160,7 +160,7 @@ class Dart2WasmSupport implements CompilerSupport {
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'package:test/src/bootstrap/browser.dart';
 
-        import '${absoluteUri(dartPath)}' as test;
+        import '${await absoluteUri(dartPath)}' as test;
 
         void main() {
           internalBootstrapBrowserTest(() => test.main);
