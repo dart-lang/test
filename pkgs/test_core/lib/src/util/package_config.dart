@@ -21,12 +21,14 @@ final Future<Uri> packageConfigUri = () async {
   return uri;
 }();
 
+final _originalWorkingDirectory = Directory.current.uri;
+
 /// Returns an `package:` URI for [path] if it is in a package, otherwise
 /// returns an absolute file URI.
 Future<Uri> absoluteUri(String path) async {
   final uri = p.toUri(path);
   final absoluteUri =
-      uri.isAbsolute ? uri : Directory.current.uri.resolveUri(uri);
+      uri.isAbsolute ? uri : _originalWorkingDirectory.resolveUri(uri);
   final packageConfig = await currentPackageConfig;
   return packageConfig.toPackageUri(absoluteUri) ?? absoluteUri;
 }
