@@ -362,9 +362,9 @@ class BrowserPlatform extends PlatformPlugin
       var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import 'package:test/src/bootstrap/browser.dart';
+        import "package:test/src/bootstrap/browser.dart";
 
-        import '${await absoluteUri(dartPath)}' as test;
+        import "${p.toUri(p.absolute(dartPath))}" as test;
 
         void main() {
           internalBootstrapBrowserTest(() => test.main);

@@ -1,8 +1,6 @@
 ## 0.5.10-wip
 
 * Handle paths with leading `/` when spawning test isolates.
-* Fix running of tests defined under `lib/` with relative imports to other
-  libraries in the package.
 
 ## 0.5.9
 
