@@ -1,10 +1,11 @@
-name: wasm_tests
+name: regression_tests
 publish_to: none
 environment:
   sdk: ^3.0.0
+dependencies:
+  test: any
 dev_dependencies:
   dart_flutter_team_lints: ^2.1.1
-  test: any
 dependency_overrides:
   test:
     path: ../../pkgs/test
