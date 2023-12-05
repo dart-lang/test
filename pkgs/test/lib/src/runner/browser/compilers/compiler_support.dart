@@ -16,10 +16,16 @@ abstract class CompilerSupport {
   Uri get serverUrl;
 
   /// Compiles [dartPath] using [suiteConfig] for [platform].
+  ///
+  /// [dartPath] is the path to the original `.dart` test suite, relative to the
+  /// package root.
   Future<void> compileSuite(
       String dartPath, SuiteConfiguration suiteConfig, SuitePlatform platform);
 
   /// Retrieves a stack trace mapper for [dartPath] if available.
+  ///
+  /// [dartPath] is the path to the original `.dart` test suite, relative to the
+  /// package root.
   StackTraceMapper? stackTraceMapperForPath(String dartPath);
 
   /// Returns the eventual URI for the web socket, as well as the channel itself
