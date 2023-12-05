@@ -419,9 +419,7 @@ extension _RuntimeDescription on Runtime {
     var message = StringBuffer('[$identifier]: ');
     message.write('${defaultCompiler.identifier} (default)');
     for (var compiler in supportedCompilers) {
-      if (compiler == defaultCompiler) {
-        continue;
-      }
+      if (compiler == defaultCompiler) continue;
       message.write(', ${compiler.identifier}');
     }
     return message.toString();
