@@ -51,3 +51,9 @@ enum Compiler {
   @override
   String toString() => name;
 }
+
+extension CompileTarget on Compiler {
+  bool get isJS => this == Compiler.dart2js;
+
+  bool get isWasm => this == Compiler.dart2wasm;
+}

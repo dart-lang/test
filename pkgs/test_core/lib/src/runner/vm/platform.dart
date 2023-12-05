@@ -223,9 +223,6 @@ stderr: ${processResult.stderr}''');
       if (precompiledPath != null) {
         return _spawnPrecompiledIsolate(
             path, message, precompiledPath, compiler);
-      } else if (_config.pubServeUrl != null) {
-        return _spawnPubServeIsolate(
-            path, message, _config.pubServeUrl!, compiler);
       }
       return switch (compiler) {
         Compiler.kernel => _spawnIsolateWithUri(
@@ -363,36 +360,6 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
       .queryParameters['isolateId'];
   return await collect(environment.observatoryUrl!, false, false, false, {},
       isolateIds: {isolateId!});
-}
-
-Future<Isolate> _spawnPubServeIsolate(String testPath, SendPort message,
-    Uri pubServeUrl, Compiler compiler) async {
-  if (compiler != Compiler.source) {
-    throw ArgumentError(
-        'The --pub-serve option requires the `--compiler none` option but the '
-        'compiler was $compiler');
-  }
-  var url = pubServeUrl.resolveUri(
-      p.toUri('${p.relative(testPath, from: 'test')}.vm_test.dart'));
-
-  try {
-    return await Isolate.spawnUri(url, [], message, checked: true);
-  } on IsolateSpawnException catch (error) {
-    if (error.message.contains('OS Error: Connection refused') ||
-        error.message.contains('The remote computer refused')) {
-      throw LoadException(
-          testPath,
-          'Error getting $url: Connection refused\n'
-          'Make sure "pub serve" is running.');
-    } else if (error.message.contains('404 Not Found')) {
-      throw LoadException(
-          testPath,
-          'Error getting $url: 404 Not Found\n'
-          'Make sure "pub serve" is serving the test/ directory.');
-    }
-
-    throw LoadException(testPath, error);
-  }
 }
 
 Uri _wsUriFor(Uri observatoryUrl) =>

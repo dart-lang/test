@@ -89,11 +89,11 @@ final class PlatformSelector {
               true,
             'dart-vm' => platform.runtime.isDartVM,
             'browser' => platform.runtime.isBrowser,
-            'js' => platform.runtime.isJS,
+            'js' => platform.compiler.isJS,
             'blink' => platform.runtime.isBlink,
             'posix' => platform.os.isPosix,
             'google' => platform.inGoogle,
-            'wasm' => platform.runtime.isWasm,
+            'wasm' => platform.compiler.isWasm,
             _ => false,
           });
 

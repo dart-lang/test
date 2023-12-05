@@ -26,7 +26,6 @@ void main() {
         expect(merged.configurationPath, equals('dart_test.yaml'));
         expect(merged.reporter, equals(defaultReporter));
         expect(merged.fileReporters, isEmpty);
-        expect(merged.pubServeUrl, isNull);
         expect(merged.shardIndex, isNull);
         expect(merged.totalShards, isNull);
         expect(merged.testRandomizeOrderingSeed, isNull);
@@ -43,7 +42,6 @@ void main() {
             configurationPath: 'special_test.yaml',
             reporter: 'json',
             fileReporters: {'json': 'out.json'},
-            pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
@@ -59,7 +57,6 @@ void main() {
         expect(merged.configurationPath, equals('special_test.yaml'));
         expect(merged.reporter, equals('json'));
         expect(merged.fileReporters, equals({'json': 'out.json'}));
-        expect(merged.pubServeUrl!.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
@@ -76,7 +73,6 @@ void main() {
             configurationPath: 'special_test.yaml',
             reporter: 'json',
             fileReporters: {'json': 'out.json'},
-            pubServePort: 1234,
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
@@ -92,7 +88,6 @@ void main() {
         expect(merged.configurationPath, equals('special_test.yaml'));
         expect(merged.reporter, equals('json'));
         expect(merged.fileReporters, equals({'json': 'out.json'}));
-        expect(merged.pubServeUrl!.port, equals(1234));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);
@@ -111,7 +106,6 @@ void main() {
             configurationPath: 'special_test.yaml',
             reporter: 'json',
             fileReporters: {'json': 'old.json'},
-            pubServePort: 1234,
             shardIndex: 2,
             totalShards: 4,
             testRandomizeOrderingSeed: 0,
@@ -127,7 +121,6 @@ void main() {
             configurationPath: 'test_special.yaml',
             reporter: 'compact',
             fileReporters: {'json': 'new.json'},
-            pubServePort: 5678,
             shardIndex: 3,
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
@@ -144,7 +137,6 @@ void main() {
         expect(merged.configurationPath, equals('test_special.yaml'));
         expect(merged.reporter, equals('compact'));
         expect(merged.fileReporters, equals({'json': 'new.json'}));
-        expect(merged.pubServeUrl!.port, equals(5678));
         expect(merged.shardIndex, equals(3));
         expect(merged.totalShards, equals(10));
         expect(merged.testRandomizeOrderingSeed, 123);

@@ -12,18 +12,17 @@ import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/hooks.dart' // ignore: implementation_imports
     show
         TestFailure;
+import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 
+import '../../platform.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
-import '../runner_suite.dart';
-import '../suite.dart';
 import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
@@ -142,8 +141,8 @@ class JsonReporter implements Reporter {
         'suiteID': suiteID,
         'groupIDs': groupIDs,
         'metadata': _serializeMetadata(suiteConfig, liveTest.test.metadata),
-        ..._frameInfo(suiteConfig, liveTest.test.trace,
-            liveTest.suite.platform.runtime, liveTest.suite.path!),
+        ..._frameInfo(suiteConfig, liveTest.test.trace, liveTest.suite.platform,
+            liveTest.suite.path!),
       }
     });
 
@@ -227,8 +226,7 @@ class JsonReporter implements Reporter {
           'name': group.name,
           'metadata': _serializeMetadata(suiteConfig, group.metadata),
           'testCount': group.testCount,
-          ..._frameInfo(
-              suiteConfig, group.trace, suite.platform.runtime, suite.path!)
+          ..._frameInfo(suiteConfig, group.trace, suite.platform, suite.path!)
         }
       });
       parentID = id;
@@ -302,10 +300,10 @@ class JsonReporter implements Reporter {
   /// or if the [trace] is null or empty, then the line, column, and url will
   /// all be `null`.
   Map<String, dynamic> _frameInfo(SuiteConfiguration suiteConfig, Trace? trace,
-      Runtime runtime, String suitePath) {
+      SuitePlatform platform, String suitePath) {
     var absoluteSuitePath = p.canonicalize(p.absolute(suitePath));
     var frame = trace?.frames.first;
-    if (frame == null || (suiteConfig.jsTrace && runtime.isJS)) {
+    if (frame == null || (suiteConfig.jsTrace && platform.compiler.isJS)) {
       return {'line': null, 'column': null, 'url': null};
     }
 
