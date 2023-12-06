@@ -40,7 +40,6 @@ class VMPlatform extends PlatformPlugin {
   final _compiler = TestCompiler(
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
-  final _workingDirectory = Directory.current.uri;
   final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
 
   @override
@@ -121,7 +120,7 @@ class VMPlatform extends PlatformPlugin {
       // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
       var isolateID = Service.getIsolateID(isolate!)!;
 
-      var libraryPath = _absolute(path).toString();
+      var libraryPath = (await absoluteUri(path)).toString();
       var serverUri = info.serverUri!;
       client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
@@ -164,12 +163,6 @@ class VMPlatform extends PlatformPlugin {
         _tempDir.deleteWithRetry(),
       ]));
 
-  Uri _absolute(String path) {
-    final uri = p.toUri(path);
-    if (uri.isAbsolute) return uri;
-    return _workingDirectory.resolveUri(uri);
-  }
-
   /// Compiles [path] to a native executable and spawns it as a process.
   ///
   /// Sets up a communication channel as well by passing command line arguments
@@ -187,7 +180,7 @@ class VMPlatform extends PlatformPlugin {
 
   /// Compiles [path] to a native executable using `dart compile exe`.
   Future<String> _compileToNative(String path, Metadata suiteMetadata) async {
-    var bootstrapPath = _bootstrapNativeTestFile(
+    var bootstrapPath = await _bootstrapNativeTestFile(
         path,
         suiteMetadata.languageVersionComment ??
             await rootPackageLanguageVersionComment);
@@ -228,7 +221,7 @@ stderr: ${processResult.stderr}''');
         Compiler.kernel => _spawnIsolateWithUri(
             await _compileToKernel(path, suiteMetadata), message),
         Compiler.source => _spawnIsolateWithUri(
-            _bootstrapIsolateTestFile(
+            await _bootstrapIsolateTestFile(
                 path,
                 suiteMetadata.languageVersionComment ??
                     await rootPackageLanguageVersionComment),
@@ -244,12 +237,13 @@ stderr: ${processResult.stderr}''');
 
   /// Compiles [path] to kernel and returns the uri to the compiled dill.
   Future<Uri> _compileToKernel(String path, Metadata suiteMetadata) async {
-    final response = await _compiler.compile(_absolute(path), suiteMetadata);
+    final response =
+        await _compiler.compile(await absoluteUri(path), suiteMetadata);
     var compiledDill = response.kernelOutputUri?.toFilePath();
     if (compiledDill == null || response.errorCount > 0) {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
     }
-    return _absolute(compiledDill);
+    return absoluteUri(compiledDill);
   }
 
   /// Runs [uri] in an isolate, passing [message].
@@ -260,9 +254,10 @@ stderr: ${processResult.stderr}''');
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
       String precompiledPath, Compiler compiler) async {
-    testPath = _absolute('${p.join(precompiledPath, testPath)}.vm_test.dart')
-        .path
-        .stripDriveLetterLeadingSlash;
+    testPath =
+        (await absoluteUri('${p.join(precompiledPath, testPath)}.vm_test.dart'))
+            .path
+            .stripDriveLetterLeadingSlash;
     switch (compiler) {
       case Compiler.kernel:
         var dillTestpath =
@@ -297,15 +292,15 @@ stderr: ${processResult.stderr}''');
   /// file.
   ///
   /// Returns the [Uri] to the created file.
-  Uri _bootstrapIsolateTestFile(
-      String testPath, String languageVersionComment) {
+  Future<Uri> _bootstrapIsolateTestFile(
+      String testPath, String languageVersionComment) async {
     var file = File(p.join(
         _tempDir.path, p.setExtension(testPath, '.bootstrap.isolate.dart')));
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
         ..writeAsStringSync(_bootstrapIsolateTestContents(
-            _absolute(testPath), languageVersionComment));
+            await absoluteUri(testPath), languageVersionComment));
     }
     return file.uri;
   }
@@ -314,15 +309,15 @@ stderr: ${processResult.stderr}''');
   /// contents to a temporary file.
   ///
   /// Returns the path to the created file.
-  String _bootstrapNativeTestFile(
-      String testPath, String languageVersionComment) {
+  Future<String> _bootstrapNativeTestFile(
+      String testPath, String languageVersionComment) async {
     var file = File(p.join(
         _tempDir.path, p.setExtension(testPath, '.bootstrap.native.dart')));
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
         ..writeAsStringSync(_bootstrapNativeTestContents(
-            _absolute(testPath), languageVersionComment));
+            await absoluteUri(testPath), languageVersionComment));
     }
     return file.path;
   }

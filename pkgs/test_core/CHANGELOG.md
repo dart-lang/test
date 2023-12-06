@@ -6,6 +6,8 @@
 * **BREAKING**: Removed `Runtime.isJS` and `Runtime.isWasm`, as this is now
   based on the compiler and not the runtime.
 * **BREAKING**: Removed `Configuration.pubServeUrl` and support for it.
+* Fix running of tests defined under `lib/` with relative imports to other
+  libraries in the package.
 
 ## 0.5.9
 

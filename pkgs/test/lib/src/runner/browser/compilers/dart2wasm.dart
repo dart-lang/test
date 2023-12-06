@@ -19,6 +19,7 @@ import 'package:test_core/src/runner/package_version.dart'; // ignore: implement
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/wasm_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../util/math.dart';
@@ -156,9 +157,9 @@ class Dart2WasmSupport implements CompilerSupport {
 
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import "package:test/src/bootstrap/browser.dart";
+        import 'package:test/src/bootstrap/browser.dart';
 
-        import "${p.toUri(p.absolute(dartPath))}" as test;
+        import '${await absoluteUri(dartPath)}' as test;
 
         void main() {
           internalBootstrapBrowserTest(() => test.main);
