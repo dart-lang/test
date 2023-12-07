@@ -254,24 +254,26 @@ stderr: ${processResult.stderr}''');
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
       String precompiledPath, Compiler compiler) async {
-    testPath =
-        (await absoluteUri('${p.join(precompiledPath, testPath)}.vm_test.dart'))
-            .path
-            .stripDriveLetterLeadingSlash;
+    var testUri =
+        await absoluteUri('${p.join(precompiledPath, testPath)}.vm_test.dart');
+    testUri = testUri.replace(path: testUri.path.stripDriveLetterLeadingSlash);
+
     switch (compiler) {
       case Compiler.kernel:
-        var dillTestpath =
-            '${testPath.substring(0, testPath.length - '.dart'.length)}'
-            '.vm.app.dill';
-        if (await File(dillTestpath).exists()) {
-          testPath = dillTestpath;
+        // Load `.dill` files from their absolute file path.
+        var dillUri = (await Isolate.resolvePackageUri(testUri.replace(
+            path:
+                '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
+                '.vm.app.dill')))!;
+        if (await File.fromUri(dillUri).exists()) {
+          testUri = dillUri;
         }
         // TODO: Compile to kernel manually here? Otherwise we aren't compiling
         // with kernel when we technically should be, based on the compiler
         // setting.
         break;
       case Compiler.source:
-        // Just leave test path as is.
+        // Just leave test uri as is.
         break;
       default:
         throw StateError('Unsupported compiler for the VM platform $compiler.');
@@ -284,7 +286,7 @@ stderr: ${processResult.stderr}''');
         packageConfig = null;
       }
     }
-    return await Isolate.spawnUri(p.toUri(testPath), [], message,
+    return await Isolate.spawnUri(testUri, [], message,
         packageConfig: packageConfig?.uri, checked: true);
   }
 
