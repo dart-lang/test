@@ -8,6 +8,8 @@
 * **BREAKING**: Removed `Configuration.pubServeUrl` and support for it.
 * Fix running of tests defined under `lib/` with relative imports to other
   libraries in the package.
+* Update the `package:frontend_server_client` constraint to allow version
+  `4.0.0`.
 
 ## 0.5.9
 
