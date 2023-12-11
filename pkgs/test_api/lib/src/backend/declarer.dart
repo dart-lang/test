@@ -309,6 +309,13 @@ class Declarer {
   void addTearDownAll(dynamic Function() callback) =>
       _tearDownAlls.add(callback);
 
+  /// Registers a function to be called after all tests in the test library are completed.
+  void addTearDownLibrary(dynamic Function() callback) {
+    var declarer = this;
+    while (declarer._parent != null) declarer = declarer._parent;
+    declarer.addTearDownAll(callback);
+  }
+
   /// Finalizes and returns the group being declared.
   ///
   /// **Note**: The tests in this group must be run in a [Invoker.guard]
