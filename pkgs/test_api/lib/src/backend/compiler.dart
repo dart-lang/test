@@ -8,7 +8,7 @@ enum Compiler {
   dart2js('Dart2Js', 'dart2js'),
 
   /// Experimental Dart to Wasm compiler.
-  dart2wasm('Dart2WASM', 'dart2wasm'),
+  dart2wasm('Dart2Wasm', 'dart2wasm'),
 
   /// Compiles dart code to a native executable.
   exe('Exe', 'exe'),
