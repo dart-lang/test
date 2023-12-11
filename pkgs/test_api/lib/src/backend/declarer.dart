@@ -312,7 +312,7 @@ class Declarer {
   /// Registers a function to be called after all tests in the test library are completed.
   void addTearDownLibrary(dynamic Function() callback) {
     var declarer = this;
-    while (declarer._parent != null) declarer = declarer._parent;
+    while (declarer._parent != null) declarer = declarer._parent!;
     declarer.addTearDownAll(callback);
   }
 
