@@ -1,4 +1,4 @@
-## 0.7.0-wip
+## 0.7.0
 
 * Added `dart2wasm` as a supported compiler for the `chrome` runtime.
 * **BREAKING**: Removed the `experimentalChromeWasm` runtime.

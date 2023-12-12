@@ -1,4 +1,4 @@
-## 1.25.0-wip
+## 1.25.0
 
 * Handle paths with leading `/` when spawning test isolates.
 * Add support for the `dart2wasm` compiler in chrome and firefox.

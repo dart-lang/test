@@ -1,4 +1,4 @@
-## 0.6.0-wip
+## 0.6.0
 
 * Handle paths with leading `/` when spawning test isolates.
 * Added `dart2wasm` as a supported compiler for the `chrome` runtime.
