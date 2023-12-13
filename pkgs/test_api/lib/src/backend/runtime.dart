@@ -30,6 +30,7 @@ final class Runtime {
       isBrowser: true);
 
   /// Microsoft Internet Explorer.
+  @Deprecated('Internet Explorer is no longer supported')
   static const Runtime internetExplorer = Runtime(
       'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
       isBrowser: true);
@@ -49,7 +50,6 @@ final class Runtime {
     Runtime.chrome,
     Runtime.firefox,
     Runtime.safari,
-    Runtime.internetExplorer,
     Runtime.edge,
     Runtime.nodeJS,
   ];

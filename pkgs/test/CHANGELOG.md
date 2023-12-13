@@ -12,6 +12,7 @@
     feature, which is why we are making this change in a non-breaking release.
   * If you do require this feature, file an issue and we can look at adding it
     back.
+* **BREAKING**: Fully remove support for Internet Explorer.
 * Fix running of tests defined under `lib/` with relative imports to other
   libraries in the package.
 
