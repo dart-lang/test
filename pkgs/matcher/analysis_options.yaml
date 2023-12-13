@@ -4,8 +4,6 @@ linter:
   rules:
     - always_declare_return_types
     - avoid_private_typedef_functions
-    - avoid_returning_null
-    - avoid_returning_null_for_future
     - avoid_unused_constructor_parameters
     - cancel_subscriptions
     - comment_references
