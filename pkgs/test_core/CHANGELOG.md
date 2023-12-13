@@ -1,3 +1,7 @@
+## 0.6.1-wip
+
+- Handle missing package configs.
+
 ## 0.6.0
 
 * Handle paths with leading `/` when spawning test isolates.
