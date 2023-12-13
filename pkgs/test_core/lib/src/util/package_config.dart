@@ -32,7 +32,7 @@ Future<Uri> absoluteUri(String path) async {
   try {
     final packageConfig = await currentPackageConfig;
     return packageConfig.toPackageUri(absoluteUri) ?? absoluteUri;
-  } on StateError catch (_) {
+  } on StateError {
     // Workaround for a missing package config.
     return absoluteUri;
   }
