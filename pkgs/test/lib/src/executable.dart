@@ -17,7 +17,6 @@ Future<void> main(List<String> args) async {
     Runtime.edge,
     Runtime.firefox,
     Runtime.safari,
-    Runtime.internetExplorer
   ], BrowserPlatform.start);
 
   await executable.main(args);

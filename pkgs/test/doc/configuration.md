@@ -185,8 +185,8 @@ tested on supported platforms.
 
 ```yaml
 tags:
-  # Internet Explorer doesn't support promises yet.
-  promises: {test_on: "browser && !ie"}
+  # Test on browsers other than firefox
+  some_feature: {test_on: "browser && !firefox"}
 ```
 
 The field can also be used at the top level of the configuration file to
@@ -351,11 +351,10 @@ to quickly select a given set of tests.
 
 ```yaml
 presets:
-  # Pass "-P ie" to run only Internet Explorer tests.
-  ie:
+  # Pass "-P feature" to run only tests with "feature name" in the name.
+  feature:
     plain_names:
-    - "IE"
-    - "Internet Explorer"
+    - "feature name"
 ```
 
 This field is not supported in the
@@ -611,7 +610,7 @@ tags:
   chrome: {add_tags: [browser]}
   firefox: {add_tags: [browser]}
   safari: {add_tags: [browser]}
-  ie: {add_tags: [browser]}
+  edge: {add_tags: [browser]}
 ```
 
 This field is not supported in the

@@ -27,8 +27,6 @@ final defaultSettings = UnmodifiableMapView({
       macOSExecutable: '/Applications/Firefox.app/Contents/MacOS/firefox-bin',
       windowsExecutable: r'Mozilla Firefox\firefox.exe',
       environmentOverride: 'FIREFOX_EXECUTABLE'),
-  Runtime.internetExplorer:
-      ExecutableSettings(windowsExecutable: r'Internet Explorer\iexplore.exe'),
   Runtime.safari: ExecutableSettings(
       macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari',
       environmentOverride: 'SAFARI_EXECUTABLE'),
