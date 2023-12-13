@@ -60,7 +60,7 @@ void main() {
   });
 
   test('returns fail if any test does not complete', () async {
-    var completer = Completer();
+    var completer = Completer<void>();
     var engine = declareEngine(() {
       test('completes', () {});
       test('does not complete', () async {
@@ -161,7 +161,7 @@ void main() {
     var engine = declareEngine(() {
       // This ensures that the first test doesn't actually finish until the
       // second test runs.
-      var firstTestCompleter = Completer();
+      var firstTestCompleter = Completer<void>();
 
       group('group', () {
         tearDown(tearDownBody);
@@ -169,7 +169,7 @@ void main() {
         test('first test', () async {
           await firstTestCompleter.future;
           firstTestFinished = true;
-        }, timeout: Timeout(Duration.zero));
+        }, timeout: const Timeout(Duration.zero));
       });
 
       test('second test', () {
@@ -311,7 +311,7 @@ void main() {
           }
           // Simulate the test/loading taking some amount of time so that
           // we actually reach max concurrency.
-          await Future.delayed(Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 100));
           if (!isLoadSuite) {
             testsRunning--;
             testsLoaded--;

@@ -19,7 +19,7 @@ void main() {
       check(_testIterable).first.equals(0);
     });
     test('rejects empty iterable', () {
-      check([])
+      check(<Object>[])
           .isRejectedBy((it) => it.first.equals(0), which: ['has no elements']);
     });
   });
@@ -29,7 +29,7 @@ void main() {
       check(_testIterable).last.equals(1);
     });
     test('rejects empty iterable', () {
-      check([])
+      check(<Object>[])
           .isRejectedBy((it) => it.last.equals(0), which: ['has no elements']);
     });
   });
@@ -39,7 +39,7 @@ void main() {
       check([42]).single.equals(42);
     });
     test('rejects empty iterable', () {
-      check([]).isRejectedBy((it) => it.single.equals(0),
+      check(<Object>[]).isRejectedBy((it) => it.single.equals(0),
           which: ['has no elements']);
     });
     test('rejects iterable with too many elements', () {
@@ -49,14 +49,14 @@ void main() {
   });
 
   test('isEmpty', () {
-    check([]).isEmpty();
+    check(<Object>[]).isEmpty();
     check(_testIterable)
         .isRejectedBy((it) => it.isEmpty(), which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
     check(_testIterable).isNotEmpty();
-    check(Iterable<int>.empty())
+    check(const Iterable<int>.empty())
         .isRejectedBy((it) => it.isNotEmpty(), which: ['is empty']);
   });
 

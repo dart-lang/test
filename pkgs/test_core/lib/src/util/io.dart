@@ -48,7 +48,8 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [inGoogle] determined automatically.
 ///
 /// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+// TODO: https://github.com/dart-lang/test/issues/2119 - require compiler
+SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
     SuitePlatform(runtime,
         compiler: compiler,
         os: runtime.isBrowser ? OperatingSystem.none : currentOS,
@@ -65,8 +66,10 @@ final lineSplitter = StreamTransformer<List<int>, String>(
 ///
 /// Also returns an empty stream for Fuchsia since Fuchsia components can't
 /// access stdin.
-StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
-    Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
+StreamQueue<String> get stdinLines =>
+    _stdinLines ??= StreamQueue(Platform.isFuchsia
+        ? const Stream<String>.empty()
+        : lineSplitter.bind(stdin));
 
 StreamQueue<String>? _stdinLines;
 
@@ -238,8 +241,25 @@ extension RetryDelete on FileSystemEntity {
       } on FileSystemException {
         if (attempt == 2) rethrow;
         attempt++;
-        await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
+        await Future<void>.delayed(
+            Duration(milliseconds: pow(10, attempt).toInt()));
       }
     }
+  }
+}
+
+extension WindowsFilePaths on String {
+  /// Strip out the leading slash before the drive letter on windows.
+  ///
+  /// In some windows environments full paths get passed with `/` before the
+  /// drive letter. Normalize paths to exclude this slash when it exists.
+  String get stripDriveLetterLeadingSlash {
+    if (Platform.isWindows &&
+        startsWith('/') &&
+        length >= 3 &&
+        this[2] == ':') {
+      return substring(1);
+    }
+    return this;
   }
 }

@@ -94,8 +94,9 @@ final ArgParser _parser = (() {
   parser.addOption('shard-index',
       help: 'The index of this test runner invocation (of --total-shards).');
   parser.addOption('pub-serve',
-      help: 'The port of a pub serve instance serving "test/".',
-      valueHelp: 'port');
+      help: '[Removed] The port of a pub serve instance serving "test/".',
+      valueHelp: 'port',
+      hide: true);
   parser.addOption('timeout',
       help: 'The default test timeout. For example: 15s, 2x, none',
       defaultsTo: '30s');
@@ -198,25 +199,14 @@ void _parseTestSelection(
     }
   }
   final uri = Uri.parse(option);
-  // Decode the path segment. Specifically, on github actions back slashes on
-  // windows end up being encoded into the URI instead of converted into forward
-  // slashes.
-  var path = Uri.decodeComponent(uri.path);
-  // Strip out the leading slash before the drive letter on windows.
-  if (Platform.isWindows &&
-      path.startsWith('/') &&
-      path.length >= 3 &&
-      path[2] == ':') {
-    path = path.substring(1);
-  }
-
+  final path = Uri.decodeComponent(uri.path).stripDriveLetterLeadingSlash;
   final names = uri.queryParametersAll['name'];
   final fullName = uri.queryParameters['full-name'];
   final line = uri.queryParameters['line'];
   final col = uri.queryParameters['col'];
 
   if (names != null && names.isNotEmpty && fullName != null) {
-    throw FormatException(
+    throw const FormatException(
       'Cannot specify both "name=<...>" and "full-name=<...>".',
     );
   }
@@ -269,13 +259,13 @@ class _Parser {
     var shardIndex = _parseOption('shard-index', int.parse);
     var totalShards = _parseOption('total-shards', int.parse);
     if ((shardIndex == null) != (totalShards == null)) {
-      throw FormatException(
+      throw const FormatException(
           '--shard-index and --total-shards may only be passed together.');
     } else if (shardIndex != null) {
       if (shardIndex < 0) {
-        throw FormatException('--shard-index may not be negative.');
+        throw const FormatException('--shard-index may not be negative.');
       } else if (shardIndex >= totalShards!) {
-        throw FormatException(
+        throw const FormatException(
             '--shard-index must be less than --total-shards.');
       }
     }
@@ -303,7 +293,7 @@ class _Parser {
     var compilerSelections = _ifParsed<List<String>>('compiler')
         ?.map(CompilerSelection.parse)
         .toList();
-    if (_ifParsed('use-data-isolate-strategy') == true) {
+    if (_ifParsed<bool>('use-data-isolate-strategy') == true) {
       compilerSelections ??= [];
       compilerSelections.add(CompilerSelection.parse('vm:source'));
     }
@@ -318,6 +308,12 @@ class _Parser {
       }
     }
 
+    if (_options.wasParsed('pub-serve')) {
+      throw ArgumentError(
+          'The --pub-serve is no longer supported, if you require it please '
+          'open an issue at https://github.com/dart-lang/test/issues/new.');
+    }
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -329,11 +325,10 @@ class _Parser {
         color: color,
         configurationPath: _ifParsed('configuration'),
         dart2jsArgs: _ifParsed('dart2js-args'),
-        precompiledPath: _ifParsed('precompiled'),
+        precompiledPath: _ifParsed<String>('precompiled'),
         reporter: reporter,
         fileReporters: _parseFileReporterOption(),
         coverage: _ifParsed('coverage'),
-        pubServePort: _parseOption('pub-serve', int.parse),
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
         totalShards: totalShards,
@@ -392,7 +387,7 @@ class _Parser {
   Map<String, String>? _parseFileReporterOption() =>
       _parseOption('file-reporter', (value) {
         if (!value.contains(':')) {
-          throw FormatException(
+          throw const FormatException(
               'option must be in the form <reporter>:<filepath>, e.g. '
               '"json:reports/tests.json"');
         }

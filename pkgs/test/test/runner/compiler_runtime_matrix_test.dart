@@ -22,7 +22,8 @@ void main() {
   for (var runtime in Runtime.builtIn) {
     for (var compiler in runtime.supportedCompilers) {
       // Ignore the platforms we can't run on this OS.
-      if (runtime == Runtime.safari && !Platform.isMacOS) {
+      if ((runtime == Runtime.edge && !Platform.isWindows) ||
+          (runtime == Runtime.safari && !Platform.isMacOS)) {
         continue;
       }
       group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
@@ -106,7 +107,10 @@ void main() {
             expect(test.stdout, emitsThrough('hello'));
             expect(test.stderr, emits('world'));
             await test.shouldExit(0);
-          });
+          },
+              skip: Platform.isWindows && compiler == Compiler.exe
+                  ? 'https://github.com/dart-lang/test/issues/2150'
+                  : null);
         }
       },
           skip: compiler == Compiler.dart2wasm

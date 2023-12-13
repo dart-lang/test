@@ -33,7 +33,7 @@ final _transformer = StreamSinkTransformer<dynamic, dynamic>.fromHandlers(
 /// The [data] argument contains two values: a [SendPort] that communicates with
 /// the main isolate, and a message to pass to `hybridMain()`.
 void listen(Function Function() getMain, List data) {
-  var channel = IsolateChannel.connectSend(data.first as SendPort);
+  var channel = IsolateChannel<Object?>.connectSend(data.first as SendPort);
   var message = data.last;
 
   Chain.capture(() {
@@ -52,10 +52,10 @@ void listen(Function Function() getMain, List data) {
       if (main is! Function) {
         _sendError(channel, 'Top-level hybridMain is not a function.');
         return;
-      } else if (main is! Function(StreamChannel) &&
-          main is! Function(StreamChannel, Never)) {
-        if (main is Function(StreamChannel<Never>) ||
-            main is Function(StreamChannel<Never>, Never)) {
+      } else if (main is! void Function(StreamChannel) &&
+          main is! void Function(StreamChannel, Never)) {
+        if (main is void Function(StreamChannel<Never>) ||
+            main is void Function(StreamChannel<Never>, Never)) {
           _sendError(
               channel,
               'The first parameter to the top-level hybridMain() must be a '
@@ -72,7 +72,7 @@ void listen(Function Function() getMain, List data) {
       // errors and distinguish user data events from control events sent by the
       // listener.
       var transformedChannel = channel.transformSink(_transformer);
-      if (main is Function(StreamChannel)) {
+      if (main is void Function(StreamChannel)) {
         main(transformedChannel);
       } else {
         main(transformedChannel, message);
@@ -88,7 +88,7 @@ void listen(Function Function() getMain, List data) {
 }
 
 /// Sends a message over [channel] indicating an error from user code.
-void _sendError(StreamChannel channel, error, [StackTrace? stackTrace]) {
+void _sendError(StreamChannel channel, Object error, [StackTrace? stackTrace]) {
   channel.sink.add({
     'type': 'error',
     'error': RemoteException.serialize(error, stackTrace ?? Chain.current())

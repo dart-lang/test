@@ -205,14 +205,6 @@ void main() {
     });
   });
 
-  test('rejects an invalid pub serve port', () async {
-    await d.file('dart_test.yaml', jsonEncode({'pub_serve': 'foo'})).create();
-
-    var test = await runTest(['test.dart']);
-    expect(test.stderr, containsInOrder(['pub_serve must be an int', '^^^^^']));
-    await test.shouldExit(exit_codes.data);
-  });
-
   test('rejects an invalid concurrency', () async {
     await d.file('dart_test.yaml', jsonEncode({'concurrency': 'foo'})).create();
 

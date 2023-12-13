@@ -148,7 +148,7 @@ void main() {
     });
 
     test('reports recursive lists', () {
-      var l = [];
+      var l = <Object>[];
       l.add(l);
       check(deepCollectionEquals(l, l))
           .isNotNull()

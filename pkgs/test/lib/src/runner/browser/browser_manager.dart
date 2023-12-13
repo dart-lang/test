@@ -137,7 +137,7 @@ class BrowserManager {
       completer.completeError(error, stackTrace);
     });
 
-    return completer.future.timeout(Duration(seconds: 30), onTimeout: () {
+    return completer.future.timeout(const Duration(seconds: 30), onTimeout: () {
       browser.close();
       if (attempt >= _maxRetries) {
         throw ApplicationException(
@@ -154,9 +154,7 @@ class BrowserManager {
   static Browser _newBrowser(Uri url, Runtime browser,
           ExecutableSettings settings, Configuration configuration) =>
       switch (browser.root) {
-        Runtime.chrome ||
-        Runtime.experimentalChromeWasm =>
-          Chrome(url, configuration, settings: settings),
+        Runtime.chrome => Chrome(url, configuration, settings: settings),
         Runtime.firefox => Firefox(url, settings: settings),
         Runtime.safari => Safari(url, settings: settings),
         Runtime.edge => MicrosoftEdge(url, configuration, settings: settings),
@@ -172,7 +170,7 @@ class BrowserManager {
     //
     // Start this canceled because we don't want it to start ticking until we
     // get some response from the iframe.
-    _timer = RestartableTimer(Duration(seconds: 3), () {
+    _timer = RestartableTimer(const Duration(seconds: 3), () {
       for (var controller in _controllers) {
         controller.setDebugging(true);
       }
@@ -333,7 +331,7 @@ class BrowserManager {
         _controllers.clear();
         return _browser.close();
       });
-  final _closeMemoizer = AsyncMemoizer();
+  final _closeMemoizer = AsyncMemoizer<void>();
 }
 
 /// An implementation of [Environment] for the browser.

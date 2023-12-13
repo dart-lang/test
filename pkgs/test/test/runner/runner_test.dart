@@ -83,7 +83,6 @@ $_runtimeCompilers
                                       (defaults to "$_defaultConcurrency")
     --total-shards                    The total number of invocations of the test runner being run.
     --shard-index                     The index of this test runner invocation (of --total-shards).
-    --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
     --ignore-timeouts                 Ignore all timeouts (useful if debugging)
@@ -122,17 +121,15 @@ Output:
 
 final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
-    ', edge, node, '
-    'experimental-chrome-wasm]';
+    ', edge, node]';
 
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe',
-  '[chrome]: dart2js (default)',
-  '[firefox]: dart2js (default)',
+  '[chrome]: dart2js (default), dart2wasm',
+  '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
   '[edge]: dart2js (default)',
   '[node]: dart2js (default)',
-  '[experimental-chrome-wasm]: dart2wasm (default)',
 ].map((str) => '                                      $str').join('\n');
 
 void main() {

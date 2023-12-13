@@ -330,7 +330,6 @@ class _ConfigurationLoader {
   /// if there are any local test-level configuration fields.
   Configuration _loadLocalRunnerConfig() {
     if (!_runnerConfig || _global) {
-      _disallow('pub_serve');
       _disallow('names');
       _disallow('plain_names');
       _disallow('paths');
@@ -340,8 +339,6 @@ class _ConfigurationLoader {
       _disallow('define_platforms');
       return Configuration.empty;
     }
-
-    var pubServePort = _getInt('pub_serve');
 
     var patterns = _getList('names', (nameNode) {
       _validate(nameNode, 'Names must be strings.', (value) => value is String);
@@ -368,7 +365,6 @@ class _ConfigurationLoader {
     var defineRuntimes = _loadDefineRuntimes();
 
     return Configuration.localRunner(
-        pubServePort: pubServePort,
         globalPatterns: patterns,
         testSelections: {
           for (var path in paths) path: const {TestSelection()}

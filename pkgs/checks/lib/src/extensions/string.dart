@@ -4,7 +4,7 @@
 
 import 'dart:math' as math;
 
-import 'package:checks/context.dart';
+import '../../context.dart';
 
 import 'core.dart';
 

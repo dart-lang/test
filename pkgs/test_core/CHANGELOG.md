@@ -1,6 +1,24 @@
-## 0.5.8-wip
+## 0.6.0-wip
 
-* Use the latest `test_api` version `0.7`
+* Handle paths with leading `/` when spawning test isolates.
+* Added `dart2wasm` as a supported compiler for the `chrome` runtime.
+* **BREAKING**: Removed the `experimentalChromeWasm` runtime.
+* **BREAKING**: Removed `Runtime.isJS` and `Runtime.isWasm`, as this is now
+  based on the compiler and not the runtime.
+* **BREAKING**: Removed `Configuration.pubServeUrl` and support for it.
+* Fix running of tests defined under `lib/` with relative imports to other
+  libraries in the package.
+* Update the `package:frontend_server_client` constraint to allow version
+  `4.0.0`.
+
+## 0.5.9
+
+* Update the vm_service constraint to allow version `13.x`.
+
+## 0.5.8
+
+* Move scaffolding definitions to a non-deprecated library.
+* Allow omitting the `Compiler` argument to `currentPlatform`.
 
 ## 0.5.7
 
