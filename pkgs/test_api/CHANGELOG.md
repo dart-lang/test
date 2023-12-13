@@ -1,4 +1,4 @@
-## 0.7.0-wip
+## 0.7.0
 
 * Deprecate `Runtime.internetExplorer`.
 * Added `dart2wasm` as a supported compiler for the `chrome` runtime.
