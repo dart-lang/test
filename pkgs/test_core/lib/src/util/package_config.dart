@@ -29,6 +29,11 @@ Future<Uri> absoluteUri(String path) async {
   final uri = p.toUri(path);
   final absoluteUri =
       uri.isAbsolute ? uri : _originalWorkingDirectory.resolveUri(uri);
-  final packageConfig = await currentPackageConfig;
-  return packageConfig.toPackageUri(absoluteUri) ?? absoluteUri;
+  try {
+    final packageConfig = await currentPackageConfig;
+    return packageConfig.toPackageUri(absoluteUri) ?? absoluteUri;
+  } on StateError catch (_) {
+    // Workaround for a missing package config.
+    return absoluteUri;
+  }
 }
