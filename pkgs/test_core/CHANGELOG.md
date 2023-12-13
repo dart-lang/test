@@ -10,6 +10,7 @@
   libraries in the package.
 * Update the `package:frontend_server_client` constraint to allow version
   `4.0.0`.
+* Update the `package:vm_service` constraint to allow version `14.x`.
 
 ## 0.5.9
 
