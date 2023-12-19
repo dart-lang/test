@@ -246,6 +246,7 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
 
   iframe.src = url;
   dom.document.body!.appendChild(iframe);
+  dom.window.console.log('Appended iframe with src $url');
 
   return controller.foreign;
 }
