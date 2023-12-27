@@ -22,8 +22,7 @@ typedef ReporterFactory = Reporter Function(Configuration, Engine, StringSink);
 class ReporterDetails {
   final String description;
   final ReporterFactory factory;
-  final bool hidden;
-  ReporterDetails(this.description, this.factory, {this.hidden = false});
+  ReporterDetails(this.description, this.factory);
 }
 
 /// All reporters and their corresponding details.
@@ -48,7 +47,8 @@ final _allReporters = <String, ReporterDetails>{
           printPlatform: config.suiteDefaults.runtimes.length > 1 ||
               config.suiteDefaults.compilerSelections != null)),
   'github': ReporterDetails(
-      'A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).',
+      'A custom reporter for GitHub Actions '
+      '(the default reporter when running on GitHub Actions).',
       (config, engine, sink) => GithubReporter.watch(engine, sink,
           printPath: config.testSelections.length > 1 ||
               Directory(config.testSelections.keys.single).existsSync(),
@@ -60,8 +60,8 @@ final _allReporters = <String, ReporterDetails>{
       (config, engine, sink) =>
           JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
   'silent': ReporterDetails(
-      hidden: true,
-      'A reporter with no output.',
+      'A reporter with no output. '
+      'May be useful when only the exit code is meaningful.',
       (config, engine, sink) => SilentReporter()),
 };
 

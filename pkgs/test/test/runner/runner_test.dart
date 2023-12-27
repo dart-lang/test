@@ -110,6 +110,7 @@ Output:
           [expanded] (default)        A separate line for each update.
           [github]                    A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
+          [silent]                    A reporter with no output. May be useful when only the exit code is meaningful.
 
     --file-reporter                   Enable an additional reporter writing test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"

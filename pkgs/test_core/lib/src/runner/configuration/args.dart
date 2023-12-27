@@ -139,7 +139,7 @@ final ArgParser _parser = (() {
 
   var reporterDescriptions = <String, String>{
     for (final MapEntry(:key, :value) in allReporters.entries)
-      if (!value.hidden) key: value.description
+      key: value.description
   };
 
   parser.addSeparator('Output:');

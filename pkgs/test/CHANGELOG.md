@@ -1,5 +1,7 @@
 ## 1.25.1-wip
 
+* Document the silent reporter in CLI help output.
+
 ## 1.25.0
 
 * Handle paths with leading `/` when spawning test isolates.
