@@ -13,6 +13,7 @@ import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:test_api/backend.dart' show StackTraceMapper, SuitePlatform;
+import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
@@ -25,15 +26,12 @@ import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
 /// Support for precompiled test files.
-class PrecompiledSupport implements CompilerSupport {
+class PrecompiledSupport extends CompilerSupport {
   /// Whether [close] has been called.
   bool _closed = false;
 
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = <String, StackTraceMapper>{};
-
-  /// A [PathHandler] used to serve test specific artifacts.
-  final _pathHandler = PathHandler();
 
   /// The root directory served statically by the server.
   final String _root;
@@ -60,12 +58,16 @@ class PrecompiledSupport implements CompilerSupport {
   @override
   Uri get serverUrl => _server.url.resolve('$_secret/');
 
-  PrecompiledSupport._(this._server, this._root, String faviconPath) {
+  PrecompiledSupport._(super.config, super.defaultTemplatePath, this._server,
+      this._root, String faviconPath) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
+        .add(createStaticHandler(_root, serveFilesOutsidePath: true))
+        // TODO: This packages dir handler should not be necessary?
         .add(packagesDirHandler())
-        .add(_pathHandler.handler)
-        .add(createStaticHandler(_root));
+        // Even for precompiled tests, we will auto-create a bootstrap html file
+        // if none was present.
+        .add(htmlWrapperHandler);
 
     var pipeline = const shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
@@ -78,11 +80,14 @@ class PrecompiledSupport implements CompilerSupport {
   }
 
   static Future<PrecompiledSupport> start({
+    required Configuration config,
+    required String defaultTemplatePath,
     required String root,
     required String faviconPath,
   }) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return PrecompiledSupport._(server, root, faviconPath);
+    return PrecompiledSupport._(
+        config, defaultTemplatePath, server, root, faviconPath);
   }
 
   /// Compiles [dartPath] using [suiteConfig] for [platform].

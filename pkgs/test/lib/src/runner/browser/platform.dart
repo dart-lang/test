@@ -63,6 +63,8 @@ class BrowserPlatform extends PlatformPlugin
       _compilerSupport.putIfAbsent(compiler, () {
         if (_config.suiteDefaults.precompiledPath != null) {
           return PrecompiledSupport.start(
+              config: _config,
+              defaultTemplatePath: _defaultTemplatePath,
               root: _config.suiteDefaults.precompiledPath!,
               faviconPath: _faviconPath);
         }
