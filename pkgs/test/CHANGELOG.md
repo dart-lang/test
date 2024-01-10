@@ -1,5 +1,7 @@
 ## 1.25.1-wip
 
+* Support the latest version of `package:js`.
+
 ## 1.25.0
 
 * Handle paths with leading `/` when spawning test isolates.
