@@ -29,7 +29,7 @@ import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Js compiled tests.
-class Dart2JsSupport extends CompilerSupport {
+class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
   /// Whether [close] has been called.
   bool _closed = false;
 

@@ -49,6 +49,11 @@ abstract class CompilerSupport {
   Future<void> close();
 
   /// A handler that serves html wrapper files used to bootstrap tests.
+  shelf.Response htmlWrapperHandler(shelf.Request request);
+}
+
+mixin JsHtmlWrapper on CompilerSupport {
+  @override
   shelf.Response htmlWrapperHandler(shelf.Request request) {
     var path = p.fromUri(request.url);
 
@@ -62,6 +67,34 @@ abstract class CompilerSupport {
       var processedContents = contents
           // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', link)
+          .replaceAll('{{testName}}', testName);
+      return shelf.Response.ok(processedContents,
+          headers: {'Content-Type': 'text/html'});
+    }
+
+    return shelf.Response.notFound('Not found.');
+  }
+}
+
+mixin WasmHtmlWrapper on CompilerSupport {
+  @override
+  shelf.Response htmlWrapperHandler(shelf.Request request) {
+    var path = p.fromUri(request.url);
+
+    if (path.endsWith('.html')) {
+      var test = '${p.withoutExtension(path)}.dart';
+      var scriptBase = htmlEscape.convert(p.basename(test));
+      var link = '<link rel="x-dart-test" href="$scriptBase">';
+      var testName = htmlEscape.convert(test);
+      var template = config.customHtmlTemplatePath ?? defaultTemplatePath;
+      var contents = File(template).readAsStringSync();
+      var jsRuntime = p.basename('$test.browser_test.dart.mjs');
+      var wasmData = '<data id="WasmBootstrapInfo" '
+          'data-wasmurl="${p.basename('$test.browser_test.dart.wasm')}" '
+          'data-jsruntimeurl="$jsRuntime"></data>';
+      var processedContents = contents
+          // Checked during loading phase that there is only one {{testScript}} placeholder.
+          .replaceFirst('{{testScript}}', '$link\n$wasmData')
           .replaceAll('{{testName}}', testName);
       return shelf.Response.ok(processedContents,
           headers: {'Content-Type': 'text/html'});

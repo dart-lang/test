@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:http_multi_server/http_multi_server.dart';
@@ -29,7 +28,7 @@ import '../browser_manager.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Wasm compiled tests.
-class Dart2WasmSupport extends CompilerSupport {
+class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
   /// Whether [close] has been called.
   bool _closed = false;
 
@@ -106,35 +105,6 @@ class Dart2WasmSupport extends CompilerSupport {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     return Dart2WasmSupport._(config, defaultTemplatePath, jsRuntimeWrapper,
         server, root, faviconPath);
-  }
-
-  /// A handler that serves wrapper html files used to bootstrap tests.
-  ///
-  /// This is slightly different from normal tests.
-  @override
-  shelf.Response htmlWrapperHandler(shelf.Request request) {
-    var path = p.fromUri(request.url);
-
-    if (path.endsWith('.html')) {
-      var test = '${p.withoutExtension(path)}.dart';
-      var scriptBase = htmlEscape.convert(p.basename(test));
-      var link = '<link rel="x-dart-test" href="$scriptBase">';
-      var testName = htmlEscape.convert(test);
-      var template = config.customHtmlTemplatePath ?? defaultTemplatePath;
-      var contents = File(template).readAsStringSync();
-      var jsRuntime = p.basename('$test.browser_test.dart.mjs');
-      var wasmData = '<data id="WasmBootstrapInfo" '
-          'data-wasmurl="${p.basename('$test.browser_test.dart.wasm')}" '
-          'data-jsruntimeurl="$jsRuntime"></data>';
-      var processedContents = contents
-          // Checked during loading phase that there is only one {{testScript}} placeholder.
-          .replaceFirst('{{testScript}}', '$link\n$wasmData')
-          .replaceAll('{{testName}}', testName);
-      return shelf.Response.ok(processedContents,
-          headers: {'Content-Type': 'text/html'});
-    }
-
-    return shelf.Response.notFound('Not found.');
   }
 
   @override

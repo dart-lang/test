@@ -12,7 +12,8 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:test_api/backend.dart' show StackTraceMapper, SuitePlatform;
+import 'package:test_api/backend.dart'
+    show Compiler, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
@@ -25,8 +26,11 @@ import '../../../util/package_map.dart';
 import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
+class JsPrecompiledSupport = PrecompiledSupport with JsHtmlWrapper;
+class WasmPrecompiledSupport = PrecompiledSupport with WasmHtmlWrapper;
+
 /// Support for precompiled test files.
-class PrecompiledSupport extends CompilerSupport {
+abstract class PrecompiledSupport extends CompilerSupport {
   /// Whether [close] has been called.
   bool _closed = false;
 
@@ -80,14 +84,25 @@ class PrecompiledSupport extends CompilerSupport {
   }
 
   static Future<PrecompiledSupport> start({
+    required Compiler compiler,
     required Configuration config,
     required String defaultTemplatePath,
     required String root,
     required String faviconPath,
   }) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return PrecompiledSupport._(
-        config, defaultTemplatePath, server, root, faviconPath);
+
+    return switch (compiler) {
+      Compiler.dart2js => JsPrecompiledSupport._(
+          config, defaultTemplatePath, server, root, faviconPath),
+      Compiler.dart2wasm => WasmPrecompiledSupport._(
+          config, defaultTemplatePath, server, root, faviconPath),
+      Compiler.exe ||
+      Compiler.kernel ||
+      Compiler.source =>
+        throw UnsupportedError(
+            'The browser platform does not support $compiler'),
+    };
   }
 
   /// Compiles [dartPath] using [suiteConfig] for [platform].
