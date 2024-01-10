@@ -1,6 +1,7 @@
 ## 1.25.1-wip
 
 * Support the latest version of `package:js`.
+* Document the silent reporter in CLI help output.
 
 ## 1.25.0
 

@@ -1,6 +1,7 @@
 ## 0.6.1-wip
 
-- Handle missing package configs.
+* Handle missing package configs.
+* Document the silent reporter in CLI help output.
 
 ## 0.6.0
 
