@@ -15,7 +15,7 @@ dependencies:
   coverage: ^1.0.1
   http_multi_server: ^3.0.0
   io: ^1.0.0
-  js: ^0.6.4
+  js: '>=0.6.4 <0.8.0'
 
   # Use a tight version constraint to ensure that a constraint on matcher
   # properly constrains all features it provides.

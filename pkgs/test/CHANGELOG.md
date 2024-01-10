@@ -3,6 +3,7 @@
 * Fix a bug where in precompiled mode, html files for tests were no longer
   created.
 
+* Support the latest version of `package:js`.
 * Document the silent reporter in CLI help output.
 
 ## 1.25.0
