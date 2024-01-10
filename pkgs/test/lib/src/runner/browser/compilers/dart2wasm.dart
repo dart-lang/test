@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:http_multi_server/http_multi_server.dart';
@@ -29,7 +28,7 @@ import '../browser_manager.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Wasm compiled tests.
-class Dart2WasmSupport implements CompilerSupport {
+class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
   /// Whether [close] has been called.
   bool _closed = false;
 
@@ -45,12 +44,6 @@ class Dart2WasmSupport implements CompilerSupport {
 
   /// The [WasmCompilerPool] managing active instances of `dart2wasm`.
   final _compilerPool = WasmCompilerPool();
-
-  /// The global test runner configuration.
-  final Configuration _config;
-
-  /// The default template path.
-  final String _defaultTemplatePath;
 
   /// The `package:test` side wrapper for the Dart2Wasm runtime.
   final String _jsRuntimeWrapper;
@@ -83,14 +76,14 @@ class Dart2WasmSupport implements CompilerSupport {
   @override
   Uri get serverUrl => _server.url.resolve('$_secret/');
 
-  Dart2WasmSupport._(this._config, this._defaultTemplatePath,
+  Dart2WasmSupport._(super.config, super.defaultTemplatePath,
       this._jsRuntimeWrapper, this._server, this._root, String faviconPath) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
         .add(packagesDirHandler())
         .add(_pathHandler.handler)
         .add(createStaticHandler(_root))
-        .add(_wrapperHandler);
+        .add(htmlWrapperHandler);
 
     var pipeline = const shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
@@ -112,32 +105,6 @@ class Dart2WasmSupport implements CompilerSupport {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     return Dart2WasmSupport._(config, defaultTemplatePath, jsRuntimeWrapper,
         server, root, faviconPath);
-  }
-
-  /// A handler that serves wrapper files used to bootstrap tests.
-  shelf.Response _wrapperHandler(shelf.Request request) {
-    var path = p.fromUri(request.url);
-
-    if (path.endsWith('.html')) {
-      var test = '${p.withoutExtension(path)}.dart';
-      var scriptBase = htmlEscape.convert(p.basename(test));
-      var link = '<link rel="x-dart-test" href="$scriptBase">';
-      var testName = htmlEscape.convert(test);
-      var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
-      var contents = File(template).readAsStringSync();
-      var jsRuntime = p.basename('$test.browser_test.dart.mjs');
-      var wasmData = '<data id="WasmBootstrapInfo" '
-          'data-wasmurl="${p.basename('$test.browser_test.dart.wasm')}" '
-          'data-jsruntimeurl="$jsRuntime"></data>';
-      var processedContents = contents
-          // Checked during loading phase that there is only one {{testScript}} placeholder.
-          .replaceFirst('{{testScript}}', '$link\n$wasmData')
-          .replaceAll('{{testName}}', testName);
-      return shelf.Response.ok(processedContents,
-          headers: {'Content-Type': 'text/html'});
-    }
-
-    return shelf.Response.notFound('Not found.');
   }
 
   @override

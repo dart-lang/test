@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:http_multi_server/http_multi_server.dart';
@@ -30,7 +29,7 @@ import '../../../util/path_handler.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Js compiled tests.
-class Dart2JsSupport implements CompilerSupport {
+class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
   /// Whether [close] has been called.
   bool _closed = false;
 
@@ -46,12 +45,6 @@ class Dart2JsSupport implements CompilerSupport {
 
   /// The [Dart2JsCompilerPool] managing active instances of `dart2js`.
   final _compilerPool = Dart2JsCompilerPool();
-
-  /// The global test runner configuration.
-  final Configuration _config;
-
-  /// The default template path.
-  final String _defaultTemplatePath;
 
   /// Mappers for Dartifying stack traces, indexed by test path.
   final _mappers = <String, StackTraceMapper>{};
@@ -81,14 +74,14 @@ class Dart2JsSupport implements CompilerSupport {
   @override
   Uri get serverUrl => _server.url.resolve('$_secret/');
 
-  Dart2JsSupport._(this._config, this._defaultTemplatePath, this._server,
+  Dart2JsSupport._(super.config, super.defaultTemplatePath, this._server,
       this._root, String faviconPath) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
         .add(packagesDirHandler())
         .add(_pathHandler.handler)
         .add(createStaticHandler(_root))
-        .add(_wrapperHandler);
+        .add(htmlWrapperHandler);
 
     var pipeline = const shelf.Pipeline()
         .addMiddleware(PathHandler.nestedIn(_secret))
@@ -109,28 +102,6 @@ class Dart2JsSupport implements CompilerSupport {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     return Dart2JsSupport._(
         config, defaultTemplatePath, server, root, faviconPath);
-  }
-
-  /// A handler that serves wrapper files used to bootstrap tests.
-  shelf.Response _wrapperHandler(shelf.Request request) {
-    var path = p.fromUri(request.url);
-
-    if (path.endsWith('.html')) {
-      var test = p.setExtension(path, '.dart');
-      var scriptBase = htmlEscape.convert(p.basename(test));
-      var link = '<link rel="x-dart-test" href="$scriptBase">';
-      var testName = htmlEscape.convert(test);
-      var template = _config.customHtmlTemplatePath ?? _defaultTemplatePath;
-      var contents = File(template).readAsStringSync();
-      var processedContents = contents
-          // Checked during loading phase that there is only one {{testScript}} placeholder.
-          .replaceFirst('{{testScript}}', link)
-          .replaceAll('{{testName}}', testName);
-      return shelf.Response.ok(processedContents,
-          headers: {'Content-Type': 'text/html'});
-    }
-
-    return shelf.Response.notFound('Not found.');
   }
 
   @override

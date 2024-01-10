@@ -1,4 +1,7 @@
-## 1.25.1-wip
+## 1.25.1
+
+* Fix a bug where in precompiled mode, html files for tests were no longer
+  created.
 
 * Document the silent reporter in CLI help output.
 
