@@ -90,7 +90,11 @@ Declarer get _declarer {
 ///
 /// If [skip] is a String or `true`, the test is skipped. If it's a String, it
 /// should explain why the test is skipped; this reason will be printed instead
-/// of running the test.
+/// of running the test. If a [test] is nested within a [group], the
+/// [skip] parameter within the [test] will take precedence over the
+/// [skip] parameter in the [group]. For instance, if a [group] is set to
+/// `skip: true`, but a [test] within it is configured as `skip: false`, the
+/// [test] will not be skipped.
 ///
 /// If [tags] is passed, it declares user-defined tags that are applied to the
 /// test. These tags can be used to select or skip the test on the command line,
