@@ -97,9 +97,8 @@ class Chrome extends Browser {
     return coverage;
   }
 
-  Chrome._(Future<Process> Function() startBrowser, this.remoteDebuggerUrl,
-      this._tabConnection, this._idToUrl)
-      : super(startBrowser);
+  Chrome._(super.startBrowser, this.remoteDebuggerUrl, this._tabConnection,
+      this._idToUrl);
 
   Future<Uri?> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
@@ -136,7 +135,7 @@ Future<WipConnection> _connect(
   // Wait for Chrome to be in a ready state.
   await process.stderr
       .transform(utf8.decoder)
-      .transform(LineSplitter())
+      .transform(const LineSplitter())
       .firstWhere((line) => line.startsWith('DevTools listening'));
 
   var chromeConnection = ChromeConnection('localhost', port);
@@ -147,7 +146,7 @@ Future<WipConnection> _connect(
     var tabs = await chromeConnection.getTabs();
     tab = tabs.firstWhereOrNull((tab) => tab.url == url.toString());
     if (tab == null) {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future<void>.delayed(const Duration(milliseconds: 100));
       if (attempt > 5) {
         throw StateError('Could not connect to test tab with url: $url');
       }

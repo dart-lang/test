@@ -35,7 +35,7 @@ class LocalTest extends Test {
   final bool isScaffoldAll;
 
   /// The test body.
-  final Function() _body;
+  final void Function() _body;
 
   /// Whether the test is run in its own error zone.
   final bool _guarded;
@@ -170,7 +170,7 @@ class Invoker {
   Timer? _timeoutTimer;
 
   /// The tear-down functions to run when this test finishes.
-  final _tearDowns = <Function()>[];
+  final _tearDowns = <void Function()>[];
 
   /// Messages to print if and when this test fails.
   final _printsOnFailure = <String>[];
@@ -229,7 +229,7 @@ class Invoker {
     heartbeat();
     return runZoned(() async {
       while (tearDowns.isNotEmpty) {
-        var completer = Completer();
+        var completer = Completer<void>();
 
         addOutstandingCallback();
         _waitForOutstandingCallbacks(() {

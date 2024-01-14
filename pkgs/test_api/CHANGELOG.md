@@ -1,4 +1,10 @@
-## 0.6.2-wip
+## 0.7.0
+
+* Deprecate `Runtime.internetExplorer`.
+* Added `dart2wasm` as a supported compiler for the `chrome` runtime.
+* **BREAKING**: Removed the `experimentalChromeWasm` runtime.
+* **BREAKING**: Removed `Runtime.isJS` and `Runtime.isWasm`, as this is now
+  based on the compiler and not the runtime.
 
 ## 0.6.1
 

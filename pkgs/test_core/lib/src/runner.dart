@@ -16,7 +16,6 @@ import 'package:test_api/src/backend/operating_system.dart'; // ignore: implemen
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/reporter/multiplex.dart';
 
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
@@ -29,6 +28,7 @@ import 'runner/no_tests_found_exception.dart';
 import 'runner/reporter.dart';
 import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
+import 'runner/reporter/multiplex.dart';
 import 'runner/runner_suite.dart';
 import 'util/io.dart';
 
@@ -66,7 +66,7 @@ class Runner {
   CancelableOperation? _debugOperation;
 
   /// The memoizer for ensuring [close] only runs once.
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
   bool get _closed => _closeMemo.hasRun;
 
   /// Sinks created for each file reporter (if there are any).
@@ -128,7 +128,9 @@ class Runner {
           var subscription =
               _suiteSubscription = suites.listen(_engine.suiteSink.add);
           var results = await Future.wait(<Future>[
-            subscription.asFuture().then((_) => _engine.suiteSink.close()),
+            subscription
+                .asFuture<void>()
+                .then((_) => _engine.suiteSink.close()),
             _engine.run()
           ], eagerError: true);
           success = results.last as bool?;
@@ -175,7 +177,7 @@ class Runner {
     if (unsupportedRuntimes.isEmpty) return;
 
     // Human-readable names for all unsupported runtimes.
-    var unsupportedNames = [];
+    var unsupportedNames = <String>[];
 
     // If the user tried to run on one or more unsupported browsers, figure out
     // whether we should warn about the individual browsers or whether all
@@ -223,7 +225,7 @@ class Runner {
         if (!_engine.isIdle) {
           // Wait a bit to print this message, since printing it eagerly looks weird
           // if the tests then finish immediately.
-          timer = Timer(Duration(seconds: 1), () {
+          timer = Timer(const Duration(seconds: 1), () {
             // Pause the reporter while we print to ensure that we don't interfere
             // with its output.
             _reporter.pause();
@@ -323,9 +325,23 @@ class Runner {
             var absoluteSuitePath = File(path).absolute.uri.toFilePath();
 
             bool matchLineAndCol(Frame frame) {
-              if (frame.uri.scheme != 'file' ||
-                  frame.uri.toFilePath() != absoluteSuitePath) {
-                return false;
+              switch (frame.uri.scheme) {
+                case 'file':
+                  if (frame.uri.toFilePath() != absoluteSuitePath) {
+                    return false;
+                  }
+                case 'package':
+                  // It is unlikely that the test case is specified in a
+                  // package: URI. Ignore this case.
+                  return false;
+                default:
+                  // Now we can assume that the kernel is compiled using
+                  // --filesystem-scheme.
+                  // In this case, because we don't know the --filesystem-root, as
+                  // long as the file path matches we assume it is the same file.
+                  if (!absoluteSuitePath.endsWith(frame.uri.path)) {
+                    return false;
+                  }
               }
               if (line != null && frame.line != line) {
                 return false;
@@ -451,7 +467,7 @@ class Runner {
     }).listen(null);
 
     var results = await Future.wait(<Future>[
-      subscription.asFuture().then((_) => _engine.suiteSink.close()),
+      subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
       _engine.run()
     ], eagerError: true);
     return results.last as bool;

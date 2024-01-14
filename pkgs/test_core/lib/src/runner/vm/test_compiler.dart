@@ -65,7 +65,7 @@ class TestCompiler {
 }
 
 class _TestCompilerForLanguageVersion {
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
   final _compilePool = Pool(1);
   final String _dillCachePath;
   FrontendServerClient? _frontendServerClient;

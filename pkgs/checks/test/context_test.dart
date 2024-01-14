@@ -88,7 +88,7 @@ void main() {
     test('nestAsync does not hold test open past exception', () async {
       late void Function() callback;
       final monitor = TestCaseMonitor.start(() {
-        check(null).context.nestAsync(() => [''], (actual) async {
+        check(null).context.nestAsync<Object?>(() => [''], (actual) async {
           final completer = Completer<void>();
           callback = completer.complete;
           await completer.future;

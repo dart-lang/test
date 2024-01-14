@@ -30,18 +30,8 @@ final String noSuchFileMessage = Platform.isWindows
     ? 'The system cannot find the file specified.'
     : 'No such file or directory';
 
-/// A regular expression that matches the output of "pub serve".
-final _servingRegExp =
-    RegExp(r'^Serving myapp [a-z]+ on http://localhost:(\d+)$');
-
 /// An operating system name that's different than the current operating system.
 final otherOS = Platform.isWindows ? 'mac-os' : 'windows';
-
-/// The port of a pub serve instance run via [runPubServe].
-///
-/// This is only set after [runPubServe] is called.
-int get pubServePort => _pubServePort!;
-int? _pubServePort;
 
 /// Expects that the entire stdout stream of [test] equals [expected].
 void expectStdoutEquals(TestProcess test, String expected) =>
@@ -165,26 +155,4 @@ Future<TestProcess> runPub(Iterable<String> args,
       workingDirectory: d.sandbox,
       environment: environment,
       description: 'pub ${args.first}');
-}
-
-/// Runs "pub serve".
-///
-/// This returns assigns [_pubServePort] to a future that will complete to the
-/// port of the "pub serve" instance.
-Future<TestProcess> runPubServe(
-    {Iterable<String>? args,
-    String? workingDirectory,
-    Map<String, String>? environment}) async {
-  var allArgs = ['serve', '--port', '0'];
-  if (args != null) allArgs.addAll(args);
-
-  var pub = await runPub(allArgs, environment: environment);
-
-  Match? match;
-  while (match == null) {
-    match = _servingRegExp.firstMatch(await pub.stdout.next);
-  }
-  _pubServePort = int.parse(match[1]!);
-
-  return pub;
 }

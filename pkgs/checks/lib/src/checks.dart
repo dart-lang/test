@@ -433,7 +433,7 @@ abstract final class Context<T> {
   ///   }
   /// }
   /// ```
-  Future<void> expectAsync<R>(Iterable<String> Function() clause,
+  Future<void> expectAsync(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate);
 
   /// Expect that [predicate] will not invoke the passed callback with a
@@ -710,7 +710,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   @override
-  Future<void> expectAsync<R>(Iterable<String> Function() clause,
+  Future<void> expectAsync(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate) async {
     if (!_allowAsync) {
       throw StateError(
@@ -841,7 +841,7 @@ final class _SkippedContext<T> implements Context<T> {
   }
 
   @override
-  Future<void> expectAsync<R>(Iterable<String> Function() clause,
+  Future<void> expectAsync(Iterable<String> Function() clause,
       FutureOr<Rejection?> Function(T) predicate) async {
     // no-op
   }

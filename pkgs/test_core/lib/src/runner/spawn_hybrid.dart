@@ -50,14 +50,14 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
           onExit: onExitPort.sendPort);
 
       // Ensure that we close [port] and [channel] when the isolate exits.
-      var disconnector = Disconnector();
+      var disconnector = Disconnector<void>();
       onExitPort.listen((_) {
         disconnector.disconnect();
         port.close();
         onExitPort.close();
       });
 
-      return IsolateChannel.connectReceive(port)
+      return IsolateChannel<Object?>.connectReceive(port)
           .transform(disconnector)
           .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
         // If the user closes the stream channel, kill the isolate.
@@ -76,7 +76,7 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
             'type': 'error',
             'error': RemoteException.serialize(error, stackTrace)
           })),
-          NullStreamSink());
+          NullStreamSink<void>());
     }
   }());
 }

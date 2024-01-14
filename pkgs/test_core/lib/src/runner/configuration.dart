@@ -82,10 +82,6 @@ class Configuration {
   bool get noRetry => _noRetry ?? false;
   final bool? _noRetry;
 
-  /// The URL for the `pub serve` instance from which to load tests, or `null`
-  /// if tests should be loaded from the filesystem.
-  final Uri? pubServeUrl;
-
   /// Whether to use command-line color escapes.
   bool get color => _color ?? canUseSpecialChars;
   final bool? _color;
@@ -261,7 +257,6 @@ class Configuration {
       required String? reporter,
       required Map<String, String>? fileReporters,
       required String? coverage,
-      required int? pubServePort,
       required int? concurrency,
       required int? shardIndex,
       required int? totalShards,
@@ -314,7 +309,6 @@ class Configuration {
         reporter: reporter,
         fileReporters: fileReporters,
         coverage: coverage,
-        pubServePort: pubServePort,
         concurrency: concurrency,
         shardIndex: shardIndex,
         totalShards: totalShards,
@@ -372,7 +366,6 @@ class Configuration {
           String? reporter,
           Map<String, String>? fileReporters,
           String? coverage,
-          int? pubServePort,
           int? concurrency,
           int? shardIndex,
           int? totalShards,
@@ -424,7 +417,6 @@ class Configuration {
           reporter: reporter,
           fileReporters: fileReporters,
           coverage: coverage,
-          pubServePort: pubServePort,
           concurrency: concurrency,
           shardIndex: shardIndex,
           totalShards: totalShards,
@@ -493,7 +485,6 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
-        pubServePort: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -559,7 +550,6 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
-        pubServePort: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -627,7 +617,6 @@ class Configuration {
         color: null,
         configurationPath: null,
         coverage: null,
-        pubServePort: null,
         shardIndex: null,
         totalShards: null,
         testSelections: null,
@@ -666,15 +655,13 @@ class Configuration {
   /// should only be configured per package and not at the global level (global
   /// config is user specific).
   factory Configuration.localRunner(
-          {required int? pubServePort,
-          required Iterable<Pattern>? globalPatterns,
+          {required Iterable<Pattern>? globalPatterns,
           required Map<String, Set<TestSelection>>? testSelections,
           required Glob? filename,
           required BooleanSelector? includeTags,
           required BooleanSelector? excludeTags,
           required Map<String, CustomRuntime>? defineRuntimes}) =>
       Configuration(
-          pubServePort: pubServePort,
           globalPatterns: globalPatterns,
           testSelections: testSelections,
           filename: filename,
@@ -753,7 +740,6 @@ class Configuration {
       required String? reporter,
       required Map<String, String>? fileReporters,
       required this.coverage,
-      required int? pubServePort,
       required int? concurrency,
       required this.shardIndex,
       required this.totalShards,
@@ -780,9 +766,6 @@ class Configuration {
         _configurationPath = configurationPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
-        pubServeUrl = pubServePort == null
-            ? null
-            : Uri.parse('http://localhost:$pubServePort'),
         _concurrency = concurrency,
         _testSelections = testSelections == null || testSelections.isEmpty
             ? null
@@ -840,7 +823,6 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
-        pubServePort: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -939,7 +921,6 @@ class Configuration {
         reporter: other._reporter ?? _reporter,
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other.coverage ?? coverage,
-        pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
@@ -988,7 +969,6 @@ class Configuration {
       String? reporter,
       Map<String, String>? fileReporters,
       String? coverage,
-      int? pubServePort,
       int? concurrency,
       int? shardIndex,
       int? totalShards,
@@ -1036,7 +1016,6 @@ class Configuration {
         reporter: reporter ?? _reporter,
         fileReporters: fileReporters ?? this.fileReporters,
         coverage: coverage ?? this.coverage,
-        pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,

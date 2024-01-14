@@ -114,7 +114,7 @@ extension EventTargetExtension on EventTarget {
   void addEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'addEventListener',
+      js_util.callMethod<void>(this, 'addEventListener',
           <Object>[type, listener, if (useCapture != null) useCapture]);
     }
   }
@@ -122,7 +122,7 @@ extension EventTargetExtension on EventTarget {
   void removeEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'removeEventListener',
+      js_util.callMethod<void>(this, 'removeEventListener',
           <Object>[type, listener, if (useCapture != null) useCapture]);
     }
   }
@@ -160,6 +160,21 @@ extension MessageEventExtension on MessageEvent {
 @JS()
 @staticInterop
 class MessageEventSource {}
+
+extension MessageEventSourceExtension on MessageEventSource {
+  @pragma('dart2js:as:trust')
+  MessageEventSourceLocation? get location =>
+      js_util.getProperty<dynamic>(this, 'location')
+          as MessageEventSourceLocation;
+}
+
+@JS()
+@staticInterop
+class MessageEventSourceLocation {}
+
+extension MessageEventSourceLocationExtension on MessageEventSourceLocation {
+  external String? get href;
+}
 
 @JS()
 @staticInterop

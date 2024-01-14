@@ -4,7 +4,7 @@
 
 import 'dart:collection';
 
-import 'package:checks/context.dart';
+import '../context.dart';
 
 /// Returns a descriptive `which` for a rejection if the elements of [actual]
 /// are unequal to the elements of [expected].

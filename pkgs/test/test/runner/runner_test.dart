@@ -83,7 +83,6 @@ $_runtimeCompilers
                                       (defaults to "$_defaultConcurrency")
     --total-shards                    The total number of invocations of the test runner being run.
     --shard-index                     The index of this test runner invocation (of --total-shards).
-    --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
     --ignore-timeouts                 Ignore all timeouts (useful if debugging)
@@ -111,6 +110,7 @@ Output:
           [expanded] (default)        A separate line for each update.
           [github]                    A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
+          [silent]                    A reporter with no output. May be useful when only the exit code is meaningful.
 
     --file-reporter                   Enable an additional reporter writing test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
@@ -122,18 +122,15 @@ Output:
 
 final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
-    '${Platform.isWindows ? ', ie' : ''}, edge, node, '
-    'experimental-chrome-wasm]';
+    ', edge, node]';
 
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe',
-  '[chrome]: dart2js (default)',
-  '[firefox]: dart2js (default)',
+  '[chrome]: dart2js (default), dart2wasm',
+  '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
-  if (Platform.isWindows) '[ie]: dart2js (default)',
   '[edge]: dart2js (default)',
   '[node]: dart2js (default)',
-  '[experimental-chrome-wasm]: dart2wasm (default)',
 ].map((str) => '                                      $str').join('\n');
 
 void main() {

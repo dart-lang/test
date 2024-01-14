@@ -33,7 +33,7 @@ webSocket.addEventListener("open", function() {
     addTearDown(() => edge.close());
 
     expect(await (await webSocket).stream.first, equals('loaded!'));
-  }, timeout: Timeout.factor(2));
+  }, timeout: const Timeout.factor(2));
 
   test('reports an error in onExit', () {
     var edge = MicrosoftEdge(Uri.parse('https://dart.dev'), configuration(),

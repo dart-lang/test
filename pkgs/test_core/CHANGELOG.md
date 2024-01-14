@@ -1,10 +1,39 @@
-## 0.5.7-wip
+## 0.6.1-wip
+
+* Handle missing package configs.
+* Document the silent reporter in CLI help output.
+
+## 0.6.0
+
+* Handle paths with leading `/` when spawning test isolates.
+* Added `dart2wasm` as a supported compiler for the `chrome` runtime.
+* **BREAKING**: Removed the `experimentalChromeWasm` runtime.
+* **BREAKING**: Removed `Runtime.isJS` and `Runtime.isWasm`, as this is now
+  based on the compiler and not the runtime.
+* **BREAKING**: Removed `Configuration.pubServeUrl` and support for it.
+* Fix running of tests defined under `lib/` with relative imports to other
+  libraries in the package.
+* Update the `package:frontend_server_client` constraint to allow version
+  `4.0.0`.
+* Update the `package:vm_service` constraint to allow version `14.x`.
+
+## 0.5.9
+
+* Update the vm_service constraint to allow version `13.x`.
+
+## 0.5.8
+
+* Move scaffolding definitions to a non-deprecated library.
+* Allow omitting the `Compiler` argument to `currentPlatform`.
+
+## 0.5.7
 
 * Pass --disable-program-split to dart2js to fix tests which use deferred
   loading.
 * Add a 'silent' reporter option. Keep it hidden in the CLI args help since it
   is not useful in the general case, but can be useful for tests of the test
   runner.
+* Update to `package:vm_service` `12.0.0`
 
 ## 0.5.6
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created with package:mono_repo v6.5.7
+# Created with package:mono_repo v6.6.0
 
 # Support built in commands on windows out of the box.
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
@@ -131,11 +131,11 @@ for PKG in ${PKGS}; do
         echo 'dart format --output=none --set-exit-if-changed .'
         dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
-      test_0)
+      test_1)
         echo 'dart test -p chrome,vm,node'
         dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
-      test_1)
+      test_2)
         echo 'dart test --timeout=60s'
         dart test --timeout=60s || EXIT_CODE=$?
         ;;

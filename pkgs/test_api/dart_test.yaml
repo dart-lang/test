@@ -35,10 +35,6 @@ tags:
     add_tags: [dart2js]
     test_on: mac-os
 
-  ie:
-    add_tags: [dart2js]
-    test_on: windows
-
   # Tests that run pub. These tests may need to be excluded when there are local
   # dependency_overrides.
   pub:

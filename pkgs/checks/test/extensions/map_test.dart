@@ -61,7 +61,8 @@ void main() {
   });
   test('isNotEmpty', () {
     check(_testMap).isNotEmpty();
-    check({}).isRejectedBy((it) => it.isNotEmpty(), which: ['is not empty']);
+    check(<Object, Object>{})
+        .isRejectedBy((it) => it.isNotEmpty(), which: ['is not empty']);
   });
   group('containsKey', () {
     test('succeeds for a key that exists', () {

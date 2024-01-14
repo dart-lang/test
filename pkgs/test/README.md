@@ -143,7 +143,9 @@ the directory for files that match the test name pattern `*_test.dart`. The
 pattern can be overridden in `dart_test.yaml`. When a path argument is a file
 instead of a directory it will be run as a test, regardless of the file name.
 Arguments which use shell globbing should avoid including non-test files in the
-path argument.
+path argument. Tests which are run by other test runners may use a different
+default path, such as `integration_test/`. Directories other than `test/` are
+ignored by `dart test` unless passed explicitly as a path to run.
 
 You can select specific tests cases to run by name using `dart test -n "test
 name"`. The string is interpreted as a regular expression, and only tests whose
@@ -346,7 +348,7 @@ only supports boolean operations. The following identifiers are defined:
 
 * `safari`: Whether the test is running on Apple Safari.
 
-* `ie`: Whether the test is running on Microsoft Internet Explorer.
+* `edge`: Whether the test is running on Microsoft Edge browser.
 
 * `node`: Whether the test is running on Node.js.
 
