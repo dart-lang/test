@@ -1,8 +1,13 @@
+## 1.25.2
+
+* Fix a bug running browser tests with paths containing windows directory
+  separator follow by a character which is an invalid Dart string escape
+  sequence.
+
 ## 1.25.1
 
 * Fix a bug where in precompiled mode, html files for tests were no longer
   created.
-
 * Support the latest version of `package:js`.
 * Document the silent reporter in CLI help output.
 
