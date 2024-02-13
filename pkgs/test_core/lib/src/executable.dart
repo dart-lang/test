@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:async/async.dart';
@@ -147,6 +149,7 @@ Future<void> _execute(List<String> args) async {
 
   try {
     runner = Runner(configuration);
+    _setupTestTargetLibraryExtension(configuration);
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
@@ -193,4 +196,17 @@ Usage: dart test [files or directories...]
 
 ${Configuration.usage}
 ''');
+}
+
+void _setupTestTargetLibraryExtension(Configuration configuration) {
+  // TODO(kenz): do we need to get a common prefix for all targets, or is
+  // using the first target sufficient? This is assuming all test targets in
+  // [configuration.testSelections] must be part of the same Dart package.
+  final testTarget = configuration.testSelections.keys.first;
+  final testTargetAbsolutePath = File(testTarget).absolute.path;
+  registerExtension('ext.test.testTargetLibrary', (method, parameters) async {
+    return ServiceExtensionResponse.result(
+      json.encode({'value': testTargetAbsolutePath}),
+    );
+  });
 }
