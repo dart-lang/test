@@ -204,9 +204,10 @@ void _setupTestTargetLibraryExtension(Configuration configuration) {
   // [configuration.testSelections] must be part of the same Dart package.
   final testTarget = configuration.testSelections.keys.first;
   final testTargetAbsolutePath = File(testTarget).absolute.path;
+  final packageRootFileUri = Uri.file(testTargetAbsolutePath).toString();
   registerExtension('ext.test.testTargetLibrary', (method, parameters) async {
     return ServiceExtensionResponse.result(
-      json.encode({'value': testTargetAbsolutePath}),
+      json.encode({'value': packageRootFileUri}),
     );
   });
 }
