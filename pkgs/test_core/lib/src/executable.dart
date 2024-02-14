@@ -150,6 +150,7 @@ Future<void> _execute(List<String> args) async {
   try {
     runner = Runner(configuration);
     _setupTestTargetLibraryExtension(configuration);
+    print('registering extension');
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
