@@ -8,7 +8,7 @@
 /// {@canonicalFor tags.Tags}
 /// {@canonicalFor test_on.TestOn}
 /// {@canonicalFor timeout.Timeout}
-library test_api.scaffolding;
+library;
 
 export 'src/backend/configuration/on_platform.dart' show OnPlatform;
 export 'src/backend/configuration/retry.dart' show Retry;

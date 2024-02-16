@@ -8,6 +8,6 @@
 
 @Deprecated('package:test_api is not intended for general use. '
     'Please use package:test.')
-library test_api.fake;
+library;
 
 export 'src/frontend/fake.dart';

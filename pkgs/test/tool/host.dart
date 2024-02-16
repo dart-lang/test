@@ -3,12 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @JS()
-library test.host;
+library;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:js_interop';
 
-import 'package:js/js.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test/src/runner/browser/dom.dart' as dom;
@@ -21,20 +21,19 @@ import 'package:test/src/runner/browser/dom.dart' as dom;
 @anonymous
 @staticInterop
 class _JSApi {
-  external factory _JSApi(
-      {void Function() resume, void Function() restartCurrent});
+  external factory _JSApi({JSFunction resume, JSFunction restartCurrent});
 }
 
 extension _JSApiExtension on _JSApi {
   /// Causes the test runner to resume running, as though the user had clicked
   /// the "play" button.
   // ignore: unused_element
-  external Function get resume;
+  external JSFunction get resume;
 
   /// Causes the test runner to restart the current test once it finishes
   /// running.
   // ignore: unused_element
-  external Function get restartCurrent;
+  external JSFunction get restartCurrent;
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
@@ -103,7 +102,7 @@ final _currentUrl = Uri.parse(dom.window.location.href);
 /// does mean that the server needs to be sure to nest its [MultiChannel]s at
 /// the same place the client does.
 void main() {
-  dom.window.console.log('Dart test runner browser host running');
+  dom.window.console.log('Dart test runner browser host running'.toJS);
   if (_currentUrl.queryParameters['debug'] == 'true') {
     dom.document.body!.classList.add('debug');
   }
@@ -131,7 +130,7 @@ void main() {
           _domSubscriptions.remove(id)?.cancel();
         default:
           dom.window.console
-              .warn('Unhandled message from test runner: $message');
+              .warn('Unhandled message from test runner: $message'.toJS);
       }
     });
 
@@ -141,21 +140,23 @@ void main() {
         (_) => serverChannel.sink.add({'command': 'ping'}));
 
     var play = dom.document.querySelector('#play');
-    play!.addEventListener('click', allowInterop((_) {
+    play!.addEventListener('click', (_) {
       if (!dom.document.body!.classList.contains('paused')) return;
       dom.document.body!.classList.remove('paused');
       serverChannel.sink.add({'command': 'resume'});
-    }));
+    });
 
-    _jsApi = _JSApi(resume: allowInterop(() {
-      if (!dom.document.body!.classList.contains('paused')) return;
-      dom.document.body!.classList.remove('paused');
-      serverChannel.sink.add({'command': 'resume'});
-    }), restartCurrent: allowInterop(() {
-      serverChannel.sink.add({'command': 'restart'});
-    }));
+    _jsApi = _JSApi(
+        resume: (() {
+          if (!dom.document.body!.classList.contains('paused')) return;
+          dom.document.body!.classList.remove('paused');
+          serverChannel.sink.add({'command': 'resume'});
+        }).toJS,
+        restartCurrent: (() {
+          serverChannel.sink.add({'command': 'restart'});
+        }).toJS);
   }, (error, stackTrace) {
-    dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}');
+    dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}'.toJS);
   });
 }
 
@@ -168,13 +169,13 @@ MultiChannel<dynamic> _connectToServer() {
       dom.createWebSocket(_currentUrl.queryParameters['managerUrl']!);
 
   var controller = StreamChannelController<Object?>(sync: true);
-  webSocket.addEventListener('message', allowInterop((message) {
+  webSocket.addEventListener('message', (message) {
     controller.local.sink
         .add(jsonDecode((message as dom.MessageEvent).data as String));
-  }));
+  });
 
   controller.local.stream
-      .listen((message) => webSocket.send(jsonEncode(message)));
+      .listen((message) => webSocket.send(jsonEncode(message).toJS));
 
   return MultiChannel(controller.foreign);
 }
@@ -202,14 +203,14 @@ MultiChannel<dynamic> _connectToServer() {
 /// message channel port is active.
 StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var suiteUrl = Uri.parse(url).removeFragment();
-  dom.window.console.log('Starting suite $suiteUrl');
+  dom.window.console.log('Starting suite $suiteUrl'.toJS);
   var iframe = dom.createHTMLIFrameElement();
   _iframes[id] = iframe;
   var controller = StreamChannelController<Object?>(sync: true);
 
   late dom.Subscription windowSubscription;
   windowSubscription =
-      dom.Subscription(dom.window, 'message', allowInterop((dom.Event event) {
+      dom.Subscription(dom.window, 'message', (dom.Event event) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's
@@ -225,14 +226,13 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
 
     switch (message.data) {
       case 'port':
-        dom.window.console.log('Connecting channel for suite $suiteUrl');
+        dom.window.console.log('Connecting channel for suite $suiteUrl'.toJS);
         // The frame is starting and sending a port to forward for the suite.
         final port = message.ports.first;
         assert(!_domSubscriptions.containsKey(id));
-        _domSubscriptions[id] =
-            dom.Subscription(port, 'message', allowInterop((event) {
+        _domSubscriptions[id] = dom.Subscription(port, 'message', (event) {
           controller.local.sink.add((event as dom.MessageEvent).data);
-        }));
+        });
         port.start();
 
         assert(!_subscriptions.containsKey(id));
@@ -242,11 +242,11 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
         // loading the test.
         controller.local.sink.add(data);
     }
-  }));
+  });
 
   iframe.src = url;
   dom.document.body!.appendChild(iframe);
-  dom.window.console.log('Appended iframe with src $url');
+  dom.window.console.log('Appended iframe with src $url'.toJS);
 
   return controller.foreign;
 }
