@@ -121,7 +121,7 @@ void main() {
 
       test('should call timers occurring at the same time in FIFO order', () {
         FakeAsync().run((async) {
-          final log = [];
+          final log = <String>[];
           Timer(elapseBy ~/ 2, () => log.add('1'));
           Timer(elapseBy ~/ 2, () => log.add('2'));
           async.elapse(elapseBy);
@@ -131,7 +131,7 @@ void main() {
 
       test('should maintain FIFO order even with periodic timers', () {
         FakeAsync().run((async) {
-          final log = [];
+          final log = <String>[];
           Timer.periodic(elapseBy ~/ 2, (_) => log.add('periodic 1'));
           Timer(elapseBy ~/ 2, () => log.add('delayed 1'));
           Timer(elapseBy, () => log.add('delayed 2'));
@@ -191,7 +191,7 @@ void main() {
 
       test('should add event before advancing time', () {
         FakeAsync().run((async) {
-          final controller = StreamController();
+          final controller = StreamController<void>();
           expect(controller.stream.first.then((_) {
             expect(async.elapsed, Duration.zero);
           }), completes);
@@ -259,7 +259,7 @@ void main() {
 
       test('should work with Future.timeout', () {
         FakeAsync().run((async) {
-          final completer = Completer();
+          final completer = Completer<void>();
           expect(completer.future.timeout(elapseBy ~/ 2),
               throwsA(const TypeMatcher<TimeoutException>()));
           async.elapse(elapseBy);
@@ -285,7 +285,7 @@ void main() {
           final timed = controller.stream.timeout(const Duration(minutes: 2));
 
           final events = <int>[];
-          final errors = [];
+          final errors = <Object>[];
           timed.listen(events.add, onError: errors.add);
 
           controller.add(0);
@@ -310,7 +310,7 @@ void main() {
 
     test('should flush microtasks scheduled by microtasks in order', () {
       FakeAsync().run((async) {
-        final log = [];
+        final log = <int>[];
         scheduleMicrotask(() {
           log.add(1);
           scheduleMicrotask(() => log.add(3));
@@ -324,7 +324,7 @@ void main() {
 
     test('should not run timers', () {
       FakeAsync().run((async) {
-        final log = [];
+        final log = <int>[];
         scheduleMicrotask(() => log.add(1));
         Timer.run(() => log.add(2));
         Timer.periodic(const Duration(seconds: 1), (_) => log.add(2));
@@ -338,7 +338,7 @@ void main() {
   group('flushTimers', () {
     test('should flush timers in FIFO order', () {
       FakeAsync().run((async) {
-        final log = [];
+        final log = <int>[];
         Timer.run(() {
           log.add(1);
           Timer(elapseBy, () => log.add(3));
@@ -355,7 +355,7 @@ void main() {
         'should run collateral periodic timers with non-periodic first if '
         'scheduled first', () {
       FakeAsync().run((async) {
-        final log = [];
+        final log = <String>[];
         Timer(const Duration(seconds: 2), () => log.add('delayed'));
         Timer.periodic(const Duration(seconds: 1), (_) => log.add('periodic'));
 
@@ -368,7 +368,7 @@ void main() {
         'should run collateral periodic timers with periodic first '
         'if scheduled first', () {
       FakeAsync().run((async) {
-        final log = [];
+        final log = <String>[];
         Timer.periodic(const Duration(seconds: 1), (_) => log.add('periodic'));
         Timer(const Duration(seconds: 2), () => log.add('delayed'));
 
@@ -574,7 +574,7 @@ void main() {
 
     test('should increment tick in a periodic timer', () {
       return FakeAsync().run((async) {
-        final ticks = [];
+        final ticks = <int>[];
         Timer.periodic(
             elapseBy,
             expectAsync1((timer) {

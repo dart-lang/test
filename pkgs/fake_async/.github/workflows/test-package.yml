@@ -47,7 +47,7 @@ jobs:
       matrix:
         # Add macos-latest and/or windows-latest if relevant for this package.
         os: [ubuntu-latest]
-        sdk: [3.0.0, dev]
+        sdk: [3.3, dev]
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
       - uses: dart-lang/setup-dart@fedb1266e91cf51be2fdb382869461a434b920a3
@@ -59,6 +59,9 @@ jobs:
       - name: Run VM tests
         run: dart test --platform vm
         if: always() && steps.install.outcome == 'success'
-      - name: Run Chrome tests
+      - name: Run Chrome tests - js
         run: dart test --platform chrome
         if: always() && steps.install.outcome == 'success'
+      - name: Run Chrome tests - wasm
+        run: dart test --platform chrome --compiler dart2wasm
+        if: always() && steps.install.outcome == 'success' && matrix.sdk == 'dev'
