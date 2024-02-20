@@ -2,9 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:js_interop';
 import 'dart:js_util' as js_util;
-
-import 'package:js/js.dart';
 
 @JS()
 @staticInterop
@@ -38,8 +37,8 @@ external Window get window;
 class Console {}
 
 extension ConsoleExtension on Console {
-  external void log(Object? object);
-  external void warn(Object? object);
+  external void log(JSString object);
+  external void warn(JSString object);
 }
 
 @JS()
@@ -238,7 +237,7 @@ HTMLIFrameElement createHTMLIFrameElement() =>
 class WebSocket extends EventTarget {}
 
 extension WebSocketExtension on WebSocket {
-  external void send(Object? data);
+  external void send(JSAny? data);
 }
 
 WebSocket createWebSocket(String url) =>

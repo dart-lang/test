@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:js_interop';
 import 'dart:js_util';
 
 import 'package:stream_channel/stream_channel.dart';
@@ -13,7 +14,7 @@ import 'dom.dart' as dom;
 ///
 /// Sends a [MessagePort] to the host page for the channel.
 StreamChannel<Object?> postMessageChannel() {
-  dom.window.console.log('Suite starting, sending channel to host');
+  dom.window.console.log('Suite starting, sending channel to host'.toJS);
   var controller = StreamChannelController<Object?>(sync: true);
   var channel = dom.createMessageChannel();
   dom.window.parent

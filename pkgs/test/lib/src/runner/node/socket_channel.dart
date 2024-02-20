@@ -3,12 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @JS()
-library node;
+library;
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:js_interop';
 
-import 'package:js/js.dart';
 import 'package:stream_channel/stream_channel.dart';
 
 @JS('require')
@@ -40,7 +40,7 @@ StreamChannel<Object?> socketChannel() {
     ..stream.listen((event) => socket.write('${jsonEncode(event)}\n'));
 
   var socketStream = StreamController<String>(sync: true);
-  socket.on('data', allowInterop(socketStream.add));
+  socket.on('data', socketStream.add);
 
   return StreamChannel.withCloseGuarantee(
       socketStream.stream.transform(const LineSplitter()).map(jsonDecode),
