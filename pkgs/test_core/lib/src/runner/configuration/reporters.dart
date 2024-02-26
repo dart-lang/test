@@ -11,6 +11,7 @@ import '../engine.dart';
 import '../reporter.dart';
 import '../reporter/compact.dart';
 import '../reporter/expanded.dart';
+import '../reporter/failures_only.dart';
 import '../reporter/github.dart';
 import '../reporter/json.dart';
 
@@ -41,6 +42,14 @@ final _allReporters = <String, ReporterDetails>{
   'compact': ReporterDetails(
       'A single line, updated continuously.',
       (config, engine, sink) => CompactReporter.watch(engine, sink,
+          color: config.color,
+          printPath: config.testSelections.length > 1 ||
+              Directory(config.testSelections.keys.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
+              config.suiteDefaults.compilerSelections != null)),
+  'failures-only': ReporterDetails(
+      'A separate line for failing tests with no output for passing tests',
+      (config, engine, sink) => FailuresOnlyReporter.watch(engine, sink,
           color: config.color,
           printPath: config.testSelections.length > 1 ||
               Directory(config.testSelections.keys.single).existsSync(),
