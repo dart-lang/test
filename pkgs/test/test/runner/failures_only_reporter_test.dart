@@ -240,10 +240,10 @@ $tests
 
   var stdoutLines = await test.stdoutStream().toList();
 
-  // Remove excess trailing whitespace and trim off timestamps.
+  // Remove excess trailing whitespace.
   var actual = stdoutLines.map((line) {
     if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
-    return line.trim().replaceFirst(RegExp('^[0-9]{2}:[0-9]{2} '), '');
+    return line.trim();
   }).join('\n');
 
   // Un-indent the expected string.

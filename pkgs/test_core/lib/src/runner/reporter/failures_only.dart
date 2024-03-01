@@ -52,9 +52,6 @@ class FailuresOnlyReporter implements Reporter {
   /// Whether the platform each test is running on should be printed.
   final bool _printPlatform;
 
-  /// A stopwatch that tracks the duration of the full run.
-  final _stopwatch = Stopwatch();
-
   /// The size of `_engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed = 0;
@@ -124,8 +121,6 @@ class FailuresOnlyReporter implements Reporter {
     if (_paused) return;
     _paused = true;
 
-    _stopwatch.stop();
-
     for (var subscription in _subscriptions) {
       subscription.pause();
     }
@@ -134,8 +129,6 @@ class FailuresOnlyReporter implements Reporter {
   @override
   void resume() {
     if (!_paused) return;
-
-    _stopwatch.start();
 
     for (var subscription in _subscriptions) {
       subscription.resume();
@@ -151,10 +144,6 @@ class FailuresOnlyReporter implements Reporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
-    if (liveTest.suite is! LoadSuite) {
-      if (!_stopwatch.isRunning) _stopwatch.start();
-    }
-
     _subscriptions.add(liveTest.onError
         .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
 
@@ -252,10 +241,8 @@ class FailuresOnlyReporter implements Reporter {
 
     if (suffix != null) message += suffix;
     color ??= '';
-    var duration = _stopwatch.elapsed;
     var buffer = StringBuffer();
 
-    buffer.write('${_timeString(duration)} ');
     buffer.write(_green);
     buffer.write('+');
     buffer.write(_engine.passed.length);
@@ -281,12 +268,6 @@ class FailuresOnlyReporter implements Reporter {
     buffer.write(_noColor);
 
     _sink.writeln(buffer.toString());
-  }
-
-  /// Returns a representation of [duration] as `MM:SS`.
-  String _timeString(Duration duration) {
-    return "${duration.inMinutes.toString().padLeft(2, '0')}:"
-        "${(duration.inSeconds % 60).toString().padLeft(2, '0')}";
   }
 
   /// Returns a description of [liveTest].
