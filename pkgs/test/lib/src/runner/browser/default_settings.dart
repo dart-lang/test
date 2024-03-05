@@ -9,25 +9,30 @@ import '../executable_settings.dart';
 
 /// Default settings for starting browser executables.
 final defaultSettings = UnmodifiableMapView({
-  Runtime.chrome: ExecutableSettings(
-      linuxExecutable: 'google-chrome',
-      macOSExecutable:
-          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      windowsExecutable: r'Google\Chrome\Application\chrome.exe',
-      environmentOverride: 'CHROME_EXECUTABLE'),
+  Runtime.chrome: ExecutableSettings(linuxExecutables: [
+    'google-chrome'
+  ], macOSExecutables: [
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+  ], windowsExecutables: [
+    r'Google\Chrome\Application\chrome.exe'
+  ], environmentOverride: 'CHROME_EXECUTABLE'),
   Runtime.edge: ExecutableSettings(
-    linuxExecutable: 'microsoft-edge-stable',
-    windowsExecutable: r'Microsoft\Edge\Application\msedge.exe',
-    macOSExecutable:
-        '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    linuxExecutables: ['microsoft-edge-stable'],
+    windowsExecutables: [r'Microsoft\Edge\Application\msedge.exe'],
+    macOSExecutables: [
+      '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge'
+    ],
     environmentOverride: 'MS_EDGE_EXECUTABLE',
   ),
-  Runtime.firefox: ExecutableSettings(
-      linuxExecutable: 'firefox',
-      macOSExecutable: '/Applications/Firefox.app/Contents/MacOS/firefox',
-      windowsExecutable: r'Mozilla Firefox\firefox.exe',
-      environmentOverride: 'FIREFOX_EXECUTABLE'),
+  Runtime.firefox: ExecutableSettings(linuxExecutables: [
+    'firefox'
+  ], macOSExecutables: [
+    '/Applications/Firefox.app/Contents/MacOS/firefox',
+    '/Applications/Firefox.app/Contents/MacOS/firefox-bin'
+  ], windowsExecutables: [
+    r'Mozilla Firefox\firefox.exe'
+  ], environmentOverride: 'FIREFOX_EXECUTABLE'),
   Runtime.safari: ExecutableSettings(
-      macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari',
+      macOSExecutables: ['/Applications/Safari.app/Contents/MacOS/Safari'],
       environmentOverride: 'SAFARI_EXECUTABLE'),
 });

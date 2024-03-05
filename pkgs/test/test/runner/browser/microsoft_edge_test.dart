@@ -38,9 +38,9 @@ webSocket.addEventListener("open", function() {
   test('reports an error in onExit', () {
     var edge = MicrosoftEdge(Uri.parse('https://dart.dev'), configuration(),
         settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+            linuxExecutables: ['_does_not_exist'],
+            macOSExecutables: ['_does_not_exist'],
+            windowsExecutables: ['_does_not_exist']));
     expect(
         edge.onExit,
         throwsA(isApplicationException(
