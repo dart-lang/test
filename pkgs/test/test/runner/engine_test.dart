@@ -257,6 +257,18 @@ void main() {
       expect(bodyRun, isTrue);
     });
 
+    test('runs tests in the group when they are skip: false', () async {
+      var bodyRun = false;
+      var engine = declareEngine(() {
+        group('group', () {
+          test('test', skip: false, () => bodyRun = true);
+        }, skip: false);
+      });
+
+      await engine.run();
+      expect(bodyRun, isTrue);
+    });
+
     test('exposes a LiveTest that emits the correct states', () {
       var entries = declare(() {
         group('group', () {

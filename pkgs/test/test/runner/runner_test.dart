@@ -519,7 +519,8 @@ $_usage''');
         import 'package:test/test.dart';
 
         void main() {
-          test("success", () {});
+          test('success', () {});
+          test('explicitly unskipped', skip: false, () {});
         }
       ''').create();
     });
@@ -532,7 +533,7 @@ $_usage''');
 
     test('runs all tests with --run-skipped', () async {
       var test = await runTest(['--run-skipped', 'test.dart']);
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
       await test.shouldExit(0);
     });
   });
