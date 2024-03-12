@@ -17,7 +17,6 @@
   * [Compiler Selectors](#compiler-selectors)
   * [Running Tests on Node.js](#running-tests-on-nodejs)
 * [Asynchronous Tests](#asynchronous-tests)
-  * [Stream Matchers](#stream-matchers)
 * [Running Tests With Custom HTML](#running-tests-with-custom-html)
   * [Providing a custom HTML template](#providing-a-custom-html-template)
 * [Configuring Tests](#configuring-tests)

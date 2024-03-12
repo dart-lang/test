@@ -1,4 +1,4 @@
-## 0.3.0-wip
+## 0.3.0
 
 -   **Breaking Changes**
     -   Remove the `Condition` class and the `it()` utility. Replace calls to

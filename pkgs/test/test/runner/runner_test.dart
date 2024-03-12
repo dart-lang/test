@@ -108,6 +108,7 @@ Output:
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
+          [failures-only]             A separate line for failing tests with no output for passing tests
           [github]                    A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
           [silent]                    A reporter with no output. May be useful when only the exit code is meaningful.

@@ -1,3 +1,7 @@
+## 1.25.3-wip
+
+* Remove outdated StreamMatcher link from README table of contents.
+
 ## 1.25.2
 
 * Fix a bug running browser tests with paths containing windows directory
