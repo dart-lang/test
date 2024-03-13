@@ -94,7 +94,7 @@ Declarer get _declarer {
 /// non-null `skip` parameter for the 1test1 will take precedence over the skip
 /// parameter in the 1group1. For instance, if a 1group1 is set to `skip: true`,
 /// but a 1test1 within it is configured as `skip: false`, the 1test1 will not
-/// be skipped. A suite level `Skip()` annotation cannot be overridden with
+/// be skipped. A suite level `@Skip()` annotation cannot be overridden with
 /// `skip` arguments to `test` or `group`.
 ///
 /// If [tags] is passed, it declares user-defined tags that are applied to the
