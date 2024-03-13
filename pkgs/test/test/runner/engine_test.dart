@@ -262,7 +262,7 @@ void main() {
       var engine = declareEngine(() {
         group('group', () {
           test('test', skip: false, () => bodyRun = true);
-        }, skip: false);
+        }, skip: true);
       });
 
       await engine.run();
