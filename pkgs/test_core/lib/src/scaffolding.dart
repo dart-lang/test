@@ -91,9 +91,9 @@ Declarer get _declarer {
 /// If [skip] is a String or `true`, the test is skipped. If it's a String, it
 /// should explain why the test is skipped; this reason will be printed instead
 /// of running the test. If a call to [test] is nested within a [group], a
-/// non-null `skip` parameter for the 1test1 will take precedence over the skip
-/// parameter in the 1group1. For instance, if a 1group1 is set to `skip: true`,
-/// but a 1test1 within it is configured as `skip: false`, the 1test1 will not
+/// non-null `skip` parameter for the `test` will take precedence over the skip
+/// parameter in the `group`. For instance, if a `group` is set to `skip: true`,
+/// but a `test` within it is configured as `skip: false`, the `test` will not
 /// be skipped. A suite level `@Skip()` annotation cannot be overridden with
 /// `skip` arguments to `test` or `group`.
 ///
