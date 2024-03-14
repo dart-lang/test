@@ -44,9 +44,9 @@ webSocket.addEventListener("open", function() {
   test('reports an error in onExit', () {
     var firefox = Firefox(Uri.https('dart.dev'),
         settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+            linuxExecutables: ['_does_not_exist'],
+            macOSExecutables: ['_does_not_exist'],
+            windowsExecutables: ['_does_not_exist']));
     expect(
         firefox.onExit,
         throwsA(isApplicationException(

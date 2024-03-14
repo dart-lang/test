@@ -49,9 +49,9 @@ class NodePlatform extends PlatformPlugin
   /// it.
   final _settings = {
     Runtime.nodeJS: ExecutableSettings(
-        linuxExecutable: 'node',
-        macOSExecutable: 'node',
-        windowsExecutable: 'node.exe')
+        linuxExecutables: ['node'],
+        macOSExecutables: ['node'],
+        windowsExecutables: ['node.exe'])
   };
 
   NodePlatform() : _config = Configuration.current;
