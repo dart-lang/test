@@ -80,7 +80,6 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
-      cleanupCallbacks.add(isolate.kill);
     }
     cleanupCallbacks.add(outerChannel.sink.close);
 
