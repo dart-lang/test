@@ -2,6 +2,7 @@
 
 * Handle missing package configs.
 * Document the silent reporter in CLI help output.
+* Support enabling experiments with the dart2wasm compiler.
 
 ## 0.6.0
 
