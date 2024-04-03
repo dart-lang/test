@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/package_config.dart';
 import 'compiler_pool.dart';
@@ -44,6 +45,8 @@ class WasmCompilerPool extends CompilerPool {
         '--dart-sdk=$sdkRoot',
         '--platform=$platformDill',
         '--packages=${(await packageConfigUri).path}',
+        for (var experiment in enabledExperiments)
+          '--enable-experiment=$experiment',
         wrapperPath,
         outWasmPath,
       ]);
