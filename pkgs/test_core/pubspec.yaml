@@ -26,7 +26,7 @@ dependencies:
   stack_trace: ^1.10.0
   stream_channel: ^2.1.0
   # Use an exact version until the test_api package is stable.
-  test_api: 0.7.0
+  test_api: 0.7.1
   vm_service: ">=6.0.0 <15.0.0"
   yaml: ^3.0.0
 
