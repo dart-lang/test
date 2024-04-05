@@ -1,6 +1,8 @@
 ## 1.25.3-wip
 
 * Remove outdated StreamMatcher link from README table of contents.
+* Update the `package:web_socket_channel` version constraint to allow `3.x`.
+* Update the `package:shelf_web_socket` version constraint to allow `2.x`.
 
 ## 1.25.2
 
