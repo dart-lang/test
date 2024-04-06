@@ -77,7 +77,8 @@ void test(Object? description, dynamic Function() body,
     Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @Deprecated('Debug only') bool solo = false}) {
+    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
@@ -155,7 +156,8 @@ void group(Object? description, dynamic Function() body,
     Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @Deprecated('Debug only') bool solo = false}) {
+    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
