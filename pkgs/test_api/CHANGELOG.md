@@ -1,4 +1,4 @@
-## 0.7.1-wip
+## 0.7.1
 
 - Added [`@doNotSubmit`](https://pub.dev/documentation/meta/latest/meta/doNotSubmit-constant.html) to `test(solo: ...)` and `group(solo: ...)`. In
   practice, this means that code that was relying on ignoring deprecation
