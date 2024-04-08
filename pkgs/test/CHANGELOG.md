@@ -1,6 +1,7 @@
 ## 1.25.3-wip
 
 * Remove outdated StreamMatcher link from README table of contents.
+* Add support for the new firefox binary location on macOS.
 
 ## 1.25.2
 
