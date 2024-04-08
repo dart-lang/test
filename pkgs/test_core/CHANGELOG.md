@@ -1,4 +1,4 @@
-## 0.6.1-wip
+## 0.6.1
 
 * Handle missing package configs.
 * Document the silent reporter in CLI help output.
