@@ -1,3 +1,7 @@
+## 1.25.4
+
+* Add `@doNotSubmit` to more declarations of the `solo` parameter.
+
 ## 1.25.3
 
 * Remove outdated StreamMatcher link from README table of contents.
