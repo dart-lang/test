@@ -4,7 +4,7 @@
 
 import 'dart:async';
 
-import 'package:meta/meta.dart' show isTest, isTestGroup;
+import 'package:meta/meta.dart' show doNotSubmit, isTest, isTestGroup;
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
@@ -141,7 +141,8 @@ void test(Object? description, dynamic Function() body,
     Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @Deprecated('Debug only') bool solo = false}) {
+    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
@@ -219,7 +220,8 @@ void group(Object? description, dynamic Function() body,
     Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @Deprecated('Debug only') bool solo = false}) {
+    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
       timeout: timeout,

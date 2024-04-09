@@ -1,3 +1,7 @@
+## 0.6.2
+
+* Add `@doNotSubmit` to more declarations of the `solo` parameter.
+
 ## 0.6.1
 
 * Handle missing package configs.
