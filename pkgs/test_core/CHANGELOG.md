@@ -1,4 +1,8 @@
-## 0.6.1-wip
+## 0.6.2
+
+* Add `@doNotSubmit` to more declarations of the `solo` parameter.
+
+## 0.6.1
 
 * Handle missing package configs.
 * Document the silent reporter in CLI help output.

@@ -1,8 +1,19 @@
+## 1.25.4
+
+* Add `@doNotSubmit` to more declarations of the `solo` parameter.
+* Update the `package:web_socket_channel` version constraint to allow `3.x`.
+* Update the `package:shelf_web_socket` version constraint to allow `2.x`.
+
 ## 1.25.3
 
 * Remove outdated StreamMatcher link from README table of contents.
-* Update the `package:web_socket_channel` version constraint to allow `3.x`.
-* Update the `package:shelf_web_socket` version constraint to allow `2.x`.
+* Remove outdated StreamMatcher link from README table of contents.
+* Document the silent reporter in CLI help output.
+* Support enabling experiments with the dart2wasm compiler.
+* Added [`@doNotSubmit`](https://pub.dev/documentation/meta/latest/meta/doNotSubmit-constant.html) to `test(solo: ...)` and `group(solo: ...)`. In
+  practice, this means that code that was relying on ignoring deprecation
+  warnings and using `solo` or `group` with a `skip` parameter will now fail if
+  `dart analyze --fatal-infos` (or similar) is enabled.
 
 ## 1.25.2
 
