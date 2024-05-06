@@ -37,7 +37,7 @@
 Tests are specified using the top-level [`test()`] function.
 Test asserts can be made using [`expect` from `package:matcher`][expect]
 
-[`test()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/test.html
+[`test()`]: https://pub.dev/documentation/test/latest/test/test.html
 
 [expect]: https://pub.dev/documentation/matcher/latest/expect/expect.html
 
@@ -60,7 +60,7 @@ void main() {
 Tests can be grouped together using the [`group()`] function. Each group's
 description is added to the beginning of its test's descriptions.
 
-[`group()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/group.html
+[`group()`]: https://pub.dev/documentation/test/latest/test/group.html
 
 ```dart
 import 'package:test/test.dart';
@@ -116,9 +116,9 @@ void main() {
 }
 ```
 
-[`setUp()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/setUp.html
+[`setUp()`]: https://pub.dev/documentation/test/latest/test/setUp.html
 
-[`tearDown()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/tearDown.html
+[`tearDown()`]: https://pub.dev/documentation/test/latest/test/tearDown.html
 
 ## Running Tests
 
@@ -317,7 +317,7 @@ void main() {
 }
 ```
 
-[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/TestOn-class.html
+[`@TestOn`]: https://pub.dev/documentation/test/latest/test/TestOn-class.html
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
@@ -776,9 +776,9 @@ The only difference is where the code from the isolate comes from:
 `spawnHybridUri()` takes a URL. They both return a [`StreamChannel`] that
 communicates with the hybrid isolate. For example:
 
-[`spawnHybridCode()`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/spawnHybridCode.html
+[`spawnHybridCode()`]: https://pub.dev/documentation/test/latest/test/spawnHybridCode.html
 
-[`spawnHybridUri()`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/spawnHybridUri.html
+[`spawnHybridUri()`]: https://pub.dev/documentation/test/latest/test/spawnHybridUri.html
 
 [dart:isolate]: https://api.dart.dev/stable/dart-isolate/dart-isolate-library.html
 

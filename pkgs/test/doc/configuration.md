@@ -149,7 +149,7 @@ This field controls whether or not tests are skipped. It's usually applied to
 `skip` parameter for [`test()`][test], it can either be a boolean indicating
 whether the tests are skipped or a string indicating the reason they're skipped.
 
-[test]: https://pub.dev/documentation/test_api/latest/test_api/test.html
+[test]: https://pub.dev/documentation/test/latest/test/test.html
 
 ```yaml
 tags:
