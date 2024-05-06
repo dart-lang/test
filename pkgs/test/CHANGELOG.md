@@ -1,3 +1,8 @@
+## 1.25.5
+
+* Update the `package:web_socket_channel` version constraint to allow `3.x`.
+* Update the `package:shelf_web_socket` version constraint to allow `2.x`.
+
 ## 1.25.4
 
 * Add `@doNotSubmit` to more declarations of the `solo` parameter.
