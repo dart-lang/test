@@ -1,3 +1,7 @@
+## 1.25.6-wip
+
+* Point API doc links to `package:test` canonical libraries.
+
 ## 1.25.5
 
 * Update the `package:web_socket_channel` version constraint to allow `3.x`.
