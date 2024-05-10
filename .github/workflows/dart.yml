@@ -34,7 +34,7 @@ jobs:
           sdk: stable
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - name: mono_repo self validate
         run: dart pub global activate mono_repo 6.6.0
       - name: mono_repo self validate
@@ -59,7 +59,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -98,7 +98,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_regression_pub_upgrade
         name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
@@ -197,7 +197,7 @@ jobs:
           sdk: main
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -231,7 +231,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -266,7 +266,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -301,7 +301,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -336,7 +336,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -371,7 +371,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -406,7 +406,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -441,7 +441,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -476,7 +476,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
         run: dart pub upgrade
@@ -511,7 +511,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_regression_pub_upgrade
         name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
@@ -546,7 +546,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -581,7 +581,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -616,7 +616,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -651,7 +651,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -686,7 +686,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -721,7 +721,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -756,7 +756,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -791,7 +791,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
         run: dart pub upgrade
@@ -826,7 +826,7 @@ jobs:
           sdk: main
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -855,7 +855,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -880,7 +880,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -905,7 +905,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -930,7 +930,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -955,7 +955,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -980,7 +980,7 @@ jobs:
           sdk: "3.0.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1005,7 +1005,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
