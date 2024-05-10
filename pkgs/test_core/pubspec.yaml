@@ -31,4 +31,4 @@ dependencies:
   yaml: ^3.0.0
 
 dev_dependencies:
-  dart_flutter_team_lints: ^2.1.1
+  dart_flutter_team_lints: ^3.0.0
