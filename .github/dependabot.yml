@@ -4,12 +4,16 @@
 version: 2
 
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "monthly"
+      interval: monthly
     labels:
-      - "autosubmit"
+      - autosubmit
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # Check daily for major version dependency updates for packages which depend
   # on package:analyzer.
