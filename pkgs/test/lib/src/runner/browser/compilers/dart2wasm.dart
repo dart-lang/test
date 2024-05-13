@@ -19,13 +19,13 @@ import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_impo
 import 'package:test_core/src/runner/wasm_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/prefix.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../util/math.dart';
 import '../../../util/one_off_handler.dart';
 import '../../../util/path_handler.dart';
 import '../browser_manager.dart';
+import 'boostrap_content.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Wasm compiled tests.
@@ -123,16 +123,11 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       var jsRuntimeUrl = '$baseUrl.mjs';
       var htmlUrl = '$baseUrl.html';
 
-      var bootstrapContent = '''
-        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import 'package:test/src/bootstrap/browser.dart';
-
-        import '${await absoluteUri(dartPath)}' as $testSuiteImportPrefix;
-
-        void main() {
-          internalBootstrapBrowserTest(() => test.main);
-        }
-      ''';
+      var bootstrapContent = generateDart2WasmBootstrapContent(
+        testUri: await absoluteUri(dartPath),
+        languageVersionComment: suiteConfig.metadata.languageVersionComment ??
+            await rootPackageLanguageVersionComment,
+      );
 
       await _compilerPool.compile(
           bootstrapContent, baseCompiledPath, suiteConfig);

@@ -19,7 +19,6 @@ import 'package:test_core/src/runner/package_version.dart'; // ignore: implement
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/prefix.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -27,6 +26,7 @@ import '../../../util/math.dart';
 import '../../../util/one_off_handler.dart';
 import '../../../util/package_map.dart';
 import '../../../util/path_handler.dart';
+import 'boostrap_content.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Js compiled tests.
@@ -111,18 +111,12 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
-      var bootstrapContent = '''
-        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import 'package:test/src/bootstrap/browser.dart';
-        import 'package:test/src/runner/browser/dom.dart' as dom;
-
-        import '${await absoluteUri(dartPath)}' as $testSuiteImportPrefix;
-
-        void main() {
-          dom.window.console.log(r'Startup for test path $dartPath');
-          internalBootstrapBrowserTest(() => test.main);
-        }
-      ''';
+      var bootstrapContent = generateDart2JsBootstrapContent(
+        testUri: await absoluteUri(dartPath),
+        testDartPath: dartPath,
+        languageVersionComment: suiteConfig.metadata.languageVersionComment ??
+            await rootPackageLanguageVersionComment,
+      );
 
       await _compilerPool.compile(bootstrapContent, jsPath, suiteConfig);
       if (_closed) return;
