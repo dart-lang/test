@@ -33,6 +33,7 @@ import 'package:yaml/yaml.dart';
 
 import '../../util/package_map.dart';
 import '../executable_settings.dart';
+import 'bootstrap_content.dart';
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
@@ -148,16 +149,12 @@ class NodePlatform extends PlatformPlugin
       Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
-    await _compilers.compile('''
-        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import "package:test/src/bootstrap/node.dart";
-
-        import "${p.toUri(p.absolute(testPath))}" as $testSuiteImportPrefix;
-
-        void main() {
-          internalBootstrapNodeTest(() => test.main);
-        }
-      ''', jsPath, suiteConfig);
+    final bootstrapContent = generateNodeBootstrapContent(
+      testUri: p.toUri(p.absolute(testPath)),
+      languageVersionComment: suiteConfig.metadata.languageVersionComment ??
+          await rootPackageLanguageVersionComment,
+    );
+    await _compilers.compile(bootstrapContent, jsPath, suiteConfig);
 
     // Add the Node.js preamble to ensure that the dart2js output is
     // compatible. Use the minified version so the source map remains valid.
