@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:frontend_server_client/frontend_server_client.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:pool/pool.dart';
 import 'package:test_api/backend.dart';
@@ -37,7 +38,7 @@ class TestCompiler {
   /// to ensure that all language modes are supported (such as sound and
   /// unsound null safety).
   final _compilerForLanguageVersion =
-      <String, _TestCompilerForLanguageVersion>{};
+      <String, TestCompilerForLanguageVersion>{};
 
   /// A prefix used for the dill files for each compiler that is created.
   final String _dillCachePrefix;
@@ -54,7 +55,7 @@ class TestCompiler {
         await rootPackageLanguageVersionComment;
     var compiler = _compilerForLanguageVersion.putIfAbsent(
         languageVersionComment,
-        () => _TestCompilerForLanguageVersion(
+        () => TestCompilerForLanguageVersion(
             _dillCachePrefix, languageVersionComment));
     return compiler.compile(mainDart);
   }
@@ -65,7 +66,8 @@ class TestCompiler {
       ]));
 }
 
-class _TestCompilerForLanguageVersion {
+@visibleForTesting
+class TestCompilerForLanguageVersion {
   final _closeMemo = AsyncMemoizer<void>();
   final _compilePool = Pool(1);
   final String _dillCachePath;
@@ -81,14 +83,15 @@ class _TestCompilerForLanguageVersion {
   // the `.dart_tool` dir at the end of compilation.
   File? _dillToCache;
 
-  _TestCompilerForLanguageVersion(
+  TestCompilerForLanguageVersion(
       String dillCachePrefix, this._languageVersionComment)
       : _dillCachePath = '$dillCachePrefix.'
             '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  String _generateEntrypoint(Uri testUri) {
+  @visibleForTesting
+  static String generateEntrypoint(Uri testUri, String languageVersionComment) {
     return '''
-    $_languageVersionComment
+    $languageVersionComment
     import "dart:isolate";
 
     import "package:test_core/src/bootstrap/vm.dart";
@@ -109,7 +112,7 @@ class _TestCompilerForLanguageVersion {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(_generateEntrypoint(mainUri));
+      ..writeAsStringSync(generateEntrypoint(mainUri, _languageVersionComment));
     final testCache = File(_dillCachePath);
 
     try {
