@@ -19,7 +19,7 @@ void main() {
     
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import 'file:///absolute/path/to/test/my_test.dart' as test;
+    import "file:///absolute/path/to/test/my_test.dart" as test;
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
@@ -35,7 +35,7 @@ void main() {
       expect(
         bootstrapContent,
         contains(
-          "import 'file:///absolute/path/to/test/my_test.dart' as test;",
+          'import "file:///absolute/path/to/test/my_test.dart" as test;',
         ),
         reason:
             'The test bootstrap content must contain an import of the test URI '
@@ -59,7 +59,7 @@ void main() {
     
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import 'file:///absolute/path/to/test/my_test.dart' as test;
+    import "file:///absolute/path/to/test/my_test.dart" as test;
     void main(List<String> args) {
       internalBootstrapNativeTest(() => test.main, args);
     }
@@ -75,7 +75,7 @@ void main() {
       expect(
         bootstrapContent,
         contains(
-          "import 'file:///absolute/path/to/test/my_test.dart' as test;",
+          'import "file:///absolute/path/to/test/my_test.dart" as test;',
         ),
         reason:
             'The test bootstrap content must contain an import of the test URI '
@@ -100,7 +100,7 @@ void main() {
 
     import "package:test_core/src/bootstrap/vm.dart";
 
-    import 'file:///absolute/path/to/test/my_test.dart' as test;
+    import "file:///absolute/path/to/test/my_test.dart" as test;
 
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
@@ -116,7 +116,7 @@ void main() {
       expect(
         bootstrapContent,
         contains(
-          "import 'file:///absolute/path/to/test/my_test.dart' as test;",
+          'import "file:///absolute/path/to/test/my_test.dart" as test;',
         ),
         reason:
             'The test bootstrap content must contain an import of the test URI '
