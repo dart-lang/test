@@ -93,7 +93,7 @@ class _TestCompilerForLanguageVersion {
 
     import "package:test_core/src/bootstrap/vm.dart";
 
-    import "$testUri" as $testLibraryImportPrefix;
+    import "$testUri" as $testSuiteImportPrefix;
 
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);

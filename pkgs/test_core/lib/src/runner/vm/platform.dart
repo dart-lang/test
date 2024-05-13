@@ -331,7 +331,7 @@ String _bootstrapIsolateTestContents(
     $languageVersionComment
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as $testLibraryImportPrefix;
+    import "$testUri" as $testSuiteImportPrefix;
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
@@ -345,7 +345,7 @@ String _bootstrapNativeTestContents(
     $languageVersionComment
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as $testLibraryImportPrefix;
+    import "$testUri" as $testSuiteImportPrefix;
     void main(List<String> args) {
       internalBootstrapNativeTest(() => test.main, args);
     }

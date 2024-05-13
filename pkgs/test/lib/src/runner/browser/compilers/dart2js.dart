@@ -116,7 +116,7 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
         import 'package:test/src/bootstrap/browser.dart';
         import 'package:test/src/runner/browser/dom.dart' as dom;
 
-        import '${await absoluteUri(dartPath)}' as $testLibraryImportPrefix;
+        import '${await absoluteUri(dartPath)}' as $testSuiteImportPrefix;
 
         void main() {
           dom.window.console.log(r'Startup for test path $dartPath');

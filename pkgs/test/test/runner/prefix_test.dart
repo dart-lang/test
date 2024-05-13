@@ -6,14 +6,13 @@ import 'package:test/test.dart';
 import 'package:test_core/src/util/prefix.dart';
 
 void main() {
-  test('testLibraryImportPrefix value is "test"', () {
+  test('testSuiteImportPrefix value is "test"', () {
     expect(
-      testLibraryImportPrefix,
+      testSuiteImportPrefix,
       'test',
-      reason:
-          'testLibraryImportPrefix must be equal to the String "test". Some '
-          'tools depend on logic that searches for a prefix named "test" to '
-          'find the Dart library being tested.',
+      reason: 'testSuiteImportPrefix must be equal to the String "test". Dart '
+          'DevTools depends on logic that searches for a prefix named "test" '
+          'to find the URI of the Dart library under test.',
     );
   });
 }

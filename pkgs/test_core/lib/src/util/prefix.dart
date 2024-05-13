@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// The prefix for the test library import in generated test runner file.
+/// The prefix for the test suite import in generated test runner files.
 ///
-/// DO NOT CHANGE THE VALUE OF THIS STRING. Some tools depend on logic that
-/// searches for a prefix named 'test' to find the Dart library being tested.
-const testLibraryImportPrefix = 'test';
+/// DO NOT CHANGE THE VALUE OF THIS STRING. Dart DevTools depends on logic that
+/// searches for a prefix named 'test' to find the URI of the Dart library under
+/// test.
+const testSuiteImportPrefix = 'test';

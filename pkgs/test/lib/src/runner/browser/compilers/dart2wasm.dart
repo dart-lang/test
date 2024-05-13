@@ -127,7 +127,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'package:test/src/bootstrap/browser.dart';
 
-        import '${await absoluteUri(dartPath)}' as $testLibraryImportPrefix;
+        import '${await absoluteUri(dartPath)}' as $testSuiteImportPrefix;
 
         void main() {
           internalBootstrapBrowserTest(() => test.main);

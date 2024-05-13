@@ -152,7 +152,7 @@ class NodePlatform extends PlatformPlugin
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/node.dart";
 
-        import "${p.toUri(p.absolute(testPath))}" as $testLibraryImportPrefix;
+        import "${p.toUri(p.absolute(testPath))}" as $testSuiteImportPrefix;
 
         void main() {
           internalBootstrapNodeTest(() => test.main);
