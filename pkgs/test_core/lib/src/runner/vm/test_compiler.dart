@@ -15,6 +15,7 @@ import 'package:test_api/backend.dart';
 import '../../util/dart.dart';
 import '../../util/io.dart';
 import '../../util/package_config.dart';
+import '../../util/prefix.dart';
 import '../package_version.dart';
 
 class CompilationResponse {
@@ -92,7 +93,7 @@ class _TestCompilerForLanguageVersion {
 
     import "package:test_core/src/bootstrap/vm.dart";
 
-    import "$testUri" as test;
+    import "$testUri" as $testLibraryImportPrefix;
 
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);

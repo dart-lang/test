@@ -19,6 +19,7 @@ import 'package:test_core/src/runner/package_version.dart'; // ignore: implement
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/prefix.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -115,7 +116,7 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
         import 'package:test/src/bootstrap/browser.dart';
         import 'package:test/src/runner/browser/dom.dart' as dom;
 
-        import '${await absoluteUri(dartPath)}' as test;
+        import '${await absoluteUri(dartPath)}' as $testLibraryImportPrefix;
 
         void main() {
           dom.window.console.log(r'Startup for test path $dartPath');

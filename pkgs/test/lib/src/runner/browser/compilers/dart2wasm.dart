@@ -19,6 +19,7 @@ import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_impo
 import 'package:test_core/src/runner/wasm_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/prefix.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../../util/math.dart';
@@ -126,7 +127,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'package:test/src/bootstrap/browser.dart';
 
-        import '${await absoluteUri(dartPath)}' as test;
+        import '${await absoluteUri(dartPath)}' as $testLibraryImportPrefix;
 
         void main() {
           internalBootstrapBrowserTest(() => test.main);

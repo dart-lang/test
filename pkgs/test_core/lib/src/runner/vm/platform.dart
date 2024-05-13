@@ -27,6 +27,7 @@ import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/io.dart';
 import '../../util/package_config.dart';
+import '../../util/prefix.dart';
 import '../package_version.dart';
 import 'environment.dart';
 import 'test_compiler.dart';
@@ -330,7 +331,7 @@ String _bootstrapIsolateTestContents(
     $languageVersionComment
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
+    import "$testUri" as $testLibraryImportPrefix;
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
@@ -344,7 +345,7 @@ String _bootstrapNativeTestContents(
     $languageVersionComment
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
+    import "$testUri" as $testLibraryImportPrefix;
     void main(List<String> args) {
       internalBootstrapNativeTest(() => test.main, args);
     }

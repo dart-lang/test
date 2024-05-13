@@ -27,6 +27,7 @@ import 'package:test_core/src/util/errors.dart'; // ignore: implementation_impor
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/pair.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/prefix.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
@@ -151,7 +152,7 @@ class NodePlatform extends PlatformPlugin
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/node.dart";
 
-        import "${p.toUri(p.absolute(testPath))}" as test;
+        import "${p.toUri(p.absolute(testPath))}" as $testLibraryImportPrefix;
 
         void main() {
           internalBootstrapNodeTest(() => test.main);
