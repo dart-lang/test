@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test_core/src/runner/vm/platform.dart'; // ignore: implementation_imports
 import 'package:test/test.dart';
+import 'package:test_core/src/runner/vm/platform.dart'; // ignore: implementation_imports
 
 void main() {
   group('VmPlatform.bootstrapIsolateTestContents', () {

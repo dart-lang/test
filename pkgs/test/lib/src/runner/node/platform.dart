@@ -27,7 +27,6 @@ import 'package:test_core/src/util/errors.dart'; // ignore: implementation_impor
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/pair.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/prefix.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
