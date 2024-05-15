@@ -791,10 +791,10 @@ class Configuration {
           }
           return config;
         }()) {
-    if (_filename != null && _filename!.context.style != p.style) {
+    if (_filename != null && _filename.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
-          '${_filename!.context.style}.');
+          '${_filename.context.style}.');
     }
 
     if ((shardIndex == null) != (totalShards == null)) {
@@ -897,15 +897,15 @@ class Configuration {
     var foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
     if (_foldTraceOnly != null) {
       if (other._foldTraceExcept != null) {
-        foldTraceOnly = _foldTraceOnly!.difference(other._foldTraceExcept!);
+        foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
       } else if (other._foldTraceOnly != null) {
-        foldTraceOnly = other._foldTraceOnly!.intersection(_foldTraceOnly!);
+        foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
       }
     } else if (_foldTraceExcept != null) {
       if (other._foldTraceOnly != null) {
-        foldTraceOnly = other._foldTraceOnly!.difference(_foldTraceExcept!);
+        foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
       } else if (other._foldTraceExcept != null) {
-        foldTraceExcept = other._foldTraceExcept!.union(_foldTraceExcept!);
+        foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
       }
     }
 

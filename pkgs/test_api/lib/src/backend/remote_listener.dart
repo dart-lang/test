@@ -261,7 +261,7 @@ final class RemoteListener {
     });
 
     liveTest.onMessage.listen((message) {
-      if (_printZone != null) _printZone!.print(message.text);
+      if (_printZone != null) _printZone.print(message.text);
       channel.sink.add({
         'type': 'message',
         'message-type': message.type.name,

@@ -1,11 +1,11 @@
 name: test_api
-version: 0.7.1
+version: 0.7.2-wip
 description: >-
   The user facing API for structuring Dart tests and checking expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
 
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.2.0
 
 dependencies:
   async: ^2.5.0
@@ -20,7 +20,7 @@ dependencies:
 
 dev_dependencies:
   analyzer: '>=2.1.0 <7.0.0'
-  dart_flutter_team_lints: ^2.0.0
+  dart_flutter_team_lints: ^3.0.0
   fake_async: ^1.2.0
   glob: ^2.0.0
   graphs: ^2.0.0

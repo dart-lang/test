@@ -1,3 +1,7 @@
+## 0.3.1-wip
+
+- Update min SDK constraint to 3.2.0.
+
 ## 0.3.0
 
 -   **Breaking Changes**
