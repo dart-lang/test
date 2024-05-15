@@ -1,3 +1,7 @@
+## 0.6.3-wip
+
+* Update min SDK constraint to 3.1.0.
+
 ## 0.6.2
 
 * Add `@doNotSubmit` to more declarations of the `solo` parameter.

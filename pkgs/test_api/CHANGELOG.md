@@ -1,3 +1,7 @@
+## 0.7.2-wip
+
+* Update min SDK constraint to 3.1.0.
+
 ## 0.7.1
 
 - Added [`@doNotSubmit`](https://pub.dev/documentation/meta/latest/meta/doNotSubmit-constant.html) to `test(solo: ...)` and `group(solo: ...)`. In
