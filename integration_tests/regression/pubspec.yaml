@@ -1,7 +1,7 @@
 name: regression_tests
 publish_to: none
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.1.0
 dependencies:
   test: any
 dev_dependencies:

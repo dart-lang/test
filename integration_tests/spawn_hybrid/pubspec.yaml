@@ -1,7 +1,7 @@
 name: spawn_hybrid
 publish_to: none
 environment:
-  sdk: ^3.0.0
+  sdk: ^3.1.0
 dependencies:
   async: ^2.9.0
   path: ^1.8.2
