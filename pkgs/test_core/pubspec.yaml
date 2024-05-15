@@ -4,7 +4,7 @@ description: A basic library for writing tests and running them on the VM.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_core
 
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.2.0
 
 dependencies:
   analyzer: '>=3.3.0 <7.0.0'
@@ -31,4 +31,4 @@ dependencies:
   yaml: ^3.0.0
 
 dev_dependencies:
-  dart_flutter_team_lints: ^3.1.0
+  dart_flutter_team_lints: ^3.0.0

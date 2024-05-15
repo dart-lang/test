@@ -1,11 +1,11 @@
 name: regression_tests
 publish_to: none
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.2.0
 dependencies:
   test: any
 dev_dependencies:
-  dart_flutter_team_lints: ^2.1.1
+  dart_flutter_team_lints: ^3.0.0
 dependency_overrides:
   test:
     path: ../../pkgs/test

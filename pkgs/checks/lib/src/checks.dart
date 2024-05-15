@@ -574,9 +574,9 @@ final class Extracted<T> {
   }
 
   Extracted<T> _fillActual(Object? actual) => _rejection == null ||
-          _rejection!.actual.isNotEmpty
+          _rejection.actual.isNotEmpty
       ? this
-      : Extracted.rejection(actual: literal(actual), which: _rejection!.which);
+      : Extracted.rejection(actual: literal(actual), which: _rejection.which);
 }
 
 abstract interface class _Optional<T> {
@@ -796,7 +796,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   _TestContext get _root {
     _TestContext<dynamic> current = this;
     while (current._parent != null) {
-      current = current._parent!;
+      current = current._parent;
     }
     return current;
   }

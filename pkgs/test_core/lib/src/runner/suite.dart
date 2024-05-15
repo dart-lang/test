@@ -110,7 +110,7 @@ final class SuiteConfiguration {
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
       ? const ['vm']
-      : List.unmodifiable(_runtimes!.map((runtime) => runtime.name));
+      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
   /// Configuration for particular tags.

@@ -1,13 +1,13 @@
 name: spawn_hybrid
 publish_to: none
 environment:
-  sdk: ^3.4.0
+  sdk: ^3.2.0
 dependencies:
   async: ^2.9.0
   path: ^1.8.2
   stream_channel: ^2.1.0
 dev_dependencies:
-  dart_flutter_team_lints: ^2.0.0
+  dart_flutter_team_lints: ^3.0.0
   other_package:
     path: other_package/
   test: any
