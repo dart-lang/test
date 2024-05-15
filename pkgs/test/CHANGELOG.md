@@ -1,7 +1,7 @@
 ## 1.25.6-wip
 
 * Point API doc links to `package:test` canonical libraries.
-* Update min SDK constraint to 3.1.0.
+* Update min SDK constraint to 3.4.0.
 
 ## 1.25.5
 

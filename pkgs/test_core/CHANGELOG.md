@@ -1,6 +1,6 @@
 ## 0.6.3-wip
 
-* Update min SDK constraint to 3.1.0.
+* Update min SDK constraint to 3.4.0.
 
 ## 0.6.2
 
