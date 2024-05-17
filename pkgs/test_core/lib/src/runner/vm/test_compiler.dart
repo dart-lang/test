@@ -171,15 +171,15 @@ class _TestCompilerForLanguageVersion {
     }
 
     var client = _frontendServerClient = await FrontendServerClient.start(
-        testUri.toString(), _outputDill.path, platformDill,
-        enabledExperiments: enabledExperiments,
-        sdkRoot: sdkRoot,
-        packagesJson: packageConfigUriAwaited.toFilePath(),
-        nativeAssets: nativeAssetsYaml?.toFilePath(),
-        printIncrementalDependencies: false,
-        dartDefines: {
-          'rootPackageConfig': packageConfigUriAwaited.toFilePath(),
-        });
+      testUri.toString(),
+      _outputDill.path,
+      platformDill,
+      enabledExperiments: enabledExperiments,
+      sdkRoot: sdkRoot,
+      packagesJson: packageConfigUriAwaited.toFilePath(),
+      nativeAssets: nativeAssetsYaml?.toFilePath(),
+      printIncrementalDependencies: false,
+    );
     return client.compile();
   }
 

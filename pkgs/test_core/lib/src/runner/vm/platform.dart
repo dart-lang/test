@@ -246,8 +246,13 @@ stderr: ${processResult.stderr}''');
 
   /// Runs [uri] in an isolate, passing [message].
   Future<Isolate> _spawnIsolateWithUri(Uri uri, SendPort message) async {
+    var awaitedPackageConfigUri = await packageConfigUri;
     return await Isolate.spawnUri(uri, [], message,
-        packageConfig: await packageConfigUri, checked: true);
+        packageConfig: awaitedPackageConfigUri,
+        checked: true,
+        environment: {
+          'ROOT_PACKAGE_CONFIG': awaitedPackageConfigUri.toFilePath(),
+        });
   }
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
