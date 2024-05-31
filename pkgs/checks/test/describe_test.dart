@@ -12,7 +12,7 @@ void main() {
       check(describe((_) {})).isEmpty();
     });
     test('includes condition clauses', () {
-      check(describe((it) => it.equals(1))).deepEquals(['  equals <1>']);
+      check(describe(equals(1))).deepEquals(['  equals <1>']);
     });
     test('includes nested clauses', () {
       check(describe<String>((it) => it.length.equals(1))).deepEquals([

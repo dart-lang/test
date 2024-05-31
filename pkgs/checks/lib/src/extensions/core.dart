@@ -103,6 +103,19 @@ extension CoreChecks<T> on Subject<T> {
   }
 }
 
+/// Returns a [Condition] checking that the actual value is equal to [expected]
+/// by operator `==`.
+///
+/// This is a shortcut for `(Subject<T> it) => it..equals(expected)`.
+Condition<T> equals<T>(T expected) => (Subject<T> subject) {
+      if (subject is Subject<String> && expected is String) {
+        // String specializes `equals` with a better failure
+        (subject as Subject<String>).equals(expected);
+      } else {
+        subject.equals(expected);
+      }
+    };
+
 extension BoolChecks on Subject<bool> {
   void isTrue() {
     context.expect(
