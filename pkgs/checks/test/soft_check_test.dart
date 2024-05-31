@@ -19,7 +19,7 @@ void main() {
   });
   group('softCheckAsync', () {
     test('returns the first failure', () async {
-      check(Future.value(0)).isRejectedByAsync(
+      await check(Future.value(0)).isRejectedByAsync(
           (it) => it
             ..completes((it) => it.isGreaterThan(1))
             ..completes((it) => it.isGreaterThan(2)),

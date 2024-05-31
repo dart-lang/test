@@ -111,7 +111,7 @@ class _Command {
   final String description;
 
   /// The callback to run when the command is invoked.
-  final Function body;
+  final dynamic Function() body;
 
   _Command(this.name, this.description, this.body);
 }

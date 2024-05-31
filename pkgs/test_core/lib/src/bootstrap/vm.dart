@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
@@ -41,9 +42,9 @@ void internalBootstrapNativeTest(
     ..pipe(serializeSuite(getMain));
   platformChannel.sink.add(testControlChannel.id);
 
-  platformChannel.stream.forEach((message) {
+  unawaited(platformChannel.stream.forEach((message) {
     assert(message == 'debug');
     debugger(message: 'Paused by test runner');
     platformChannel.sink.add('done');
-  });
+  }));
 }

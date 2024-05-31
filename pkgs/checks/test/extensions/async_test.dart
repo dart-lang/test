@@ -240,7 +240,7 @@ fake trace''');
             queue,
             (Subject<StreamQueue<int>> it) =>
                 it.emitsThrough((it) => it.equals(42)));
-        check(queue).emits((it) => it.equals(0));
+        await check(queue).emits((it) => it.equals(0));
       });
       test('consumes events', () async {
         final queue = _countingStream(3);

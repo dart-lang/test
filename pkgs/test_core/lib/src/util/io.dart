@@ -44,10 +44,11 @@ final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 /// The current operating system.
 final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 
-/// Returns a [SuitePlatform] with the given [runtime], and with [os] and
-/// [inGoogle] determined automatically.
+/// Returns a [SuitePlatform] with the given [runtime], and with
+/// [SuitePlatform.os] and [inGoogle] determined automatically.
 ///
-/// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
+/// If [runtime] is a browser, this will set [SuitePlatform.os] to
+/// [OperatingSystem.none].
 // TODO: https://github.com/dart-lang/test/issues/2119 - require compiler
 SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
     SuitePlatform(runtime,
@@ -223,7 +224,8 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     var response = await request.close();
     var jsonObject =
         await json.fuse(utf8).decoder.bind(response).single as List;
-    return base.resolve(jsonObject.first['devtoolsFrontendUrl'] as String);
+    return base
+        .resolve((jsonObject.first as Map)['devtoolsFrontendUrl'] as String);
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
