@@ -1,14 +1,8 @@
 name: wasm_tests
 publish_to: none
 environment:
-  sdk: ^3.2.0
+  sdk: ^3.5.0-0
+resolution: workspace
 dev_dependencies:
   dart_flutter_team_lints: ^3.0.0
   test: any
-dependency_overrides:
-  test:
-    path: ../../pkgs/test
-  test_api:
-    path: ../../pkgs/test_api
-  test_core:
-    path: ../../pkgs/test_core

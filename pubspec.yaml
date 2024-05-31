@@ -1,0 +1,20 @@
+name: _
+environment:
+  sdk: ^3.5.0-0
+workspace:
+- integration_tests/regression
+- integration_tests/spawn_hybrid
+- integration_tests/wasm
+- pkgs/checks
+- pkgs/test
+- pkgs/test_api
+- pkgs/test_core
+
+dependency_overrides:
+  test:
+    path: ./pkgs/test
+  test_api:
+    path: ./pkgs/test_api
+  test_core:
+    path: ./pkgs/test_core
+

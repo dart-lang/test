@@ -6,8 +6,8 @@ description: >-
 repository: https://github.com/dart-lang/test/tree/master/pkgs/checks
 
 environment:
-  sdk: ^3.2.0
-
+  sdk: ^3.5.0-0
+resolution: workspace
 dependencies:
   async: ^2.8.0
   meta: ^1.9.0
