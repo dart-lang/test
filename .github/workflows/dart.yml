@@ -79,16 +79,50 @@ jobs:
         if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_core
   job_003:
-    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/regression, integration_tests/spawn_hybrid, pkgs/checks, pkgs/test, pkgs/test_api, pkgs/test_core; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
+    name: "analyze_and_format; linux; Dart 3.4.0; PKG: integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:integration_tests/wasm;commands:format-analyze_0"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:integration_tests/wasm
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      - id: integration_tests_wasm_pub_upgrade
+        name: integration_tests/wasm; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; dart analyze --fatal-infos"
+        run: dart analyze --fatal-infos
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+  job_004:
+    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/regression, integration_tests/spawn_hybrid, integration_tests/wasm, pkgs/checks, pkgs/test, pkgs/test_api, pkgs/test_core; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/test-pkgs/test_api-pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -125,6 +159,19 @@ jobs:
         run: dart analyze --fatal-infos
         if: "always() && steps.integration_tests_spawn_hybrid_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/spawn_hybrid
+      - id: integration_tests_wasm_pub_upgrade
+        name: integration_tests/wasm; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; dart analyze --fatal-infos"
+        run: dart analyze --fatal-infos
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -177,40 +224,6 @@ jobs:
         run: dart analyze --fatal-infos
         if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_core
-  job_004:
-    name: "analyze_and_format; linux; Dart main; PKG: integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm;commands:format-analyze_0"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm
-            os:ubuntu-latest;pub-cache-hosted;sdk:main
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: main
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
-      - id: integration_tests_wasm_pub_upgrade
-        name: integration_tests/wasm; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: integration_tests/wasm
-      - name: "integration_tests/wasm; dart format --output=none --set-exit-if-changed ."
-        run: "dart format --output=none --set-exit-if-changed ."
-        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/wasm
-      - name: "integration_tests/wasm; dart analyze --fatal-infos"
-        run: dart analyze --fatal-infos
-        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/wasm
   job_005:
     name: "unit_test; linux; Dart 3.2.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
@@ -492,6 +505,45 @@ jobs:
       - job_003
       - job_004
   job_013:
+    name: "unit_test; linux; Dart 3.4.0; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:integration_tests/wasm;commands:command_00-test_2"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:integration_tests/wasm
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      - id: integration_tests_wasm_pub_upgrade
+        name: integration_tests/wasm; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; dart test --timeout=60s"
+        run: "dart test --timeout=60s"
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_014:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/regression; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -526,7 +578,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_014:
+  job_015:
     name: "unit_test; linux; Dart dev; PKG: pkgs/checks; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -561,7 +613,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_015:
+  job_016:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -596,7 +648,46 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_016:
+  job_017:
+    name: "unit_test; linux; Dart dev; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm;commands:command_00-test_2"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: dev
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
+      - id: integration_tests_wasm_pub_upgrade
+        name: integration_tests/wasm; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+      - name: "integration_tests/wasm; dart test --timeout=60s"
+        run: "dart test --timeout=60s"
+        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/wasm
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_018:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
@@ -631,7 +722,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_017:
+  job_019:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
@@ -666,7 +757,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_018:
+  job_020:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
@@ -701,7 +792,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_019:
+  job_021:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
@@ -736,7 +827,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_020:
+  job_022:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
@@ -771,7 +862,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_021:
+  job_023:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
@@ -806,46 +897,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_022:
-    name: "unit_test; linux; Dart main; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm;commands:command_00-test_2"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:main;packages:integration_tests/wasm
-            os:ubuntu-latest;pub-cache-hosted;sdk:main
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: main
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b
-      - id: integration_tests_wasm_pub_upgrade
-        name: integration_tests/wasm; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: integration_tests/wasm
-      - name: "integration_tests/wasm; pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
-        run: "pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta"
-        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/wasm
-      - name: "integration_tests/wasm; dart test --timeout=60s"
-        run: "dart test --timeout=60s"
-        if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
-        working-directory: integration_tests/wasm
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-  job_023:
+  job_024:
     name: "unit_test; windows; Dart 3.2.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -870,7 +922,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_024:
+  job_025:
     name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: windows-latest
     steps:
@@ -895,7 +947,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_025:
+  job_026:
     name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: windows-latest
     steps:
@@ -920,7 +972,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_026:
+  job_027:
     name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: windows-latest
     steps:
@@ -945,7 +997,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_027:
+  job_028:
     name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: windows-latest
     steps:
@@ -970,7 +1022,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_028:
+  job_029:
     name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: windows-latest
     steps:
@@ -995,7 +1047,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_029:
+  job_030:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1020,7 +1072,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_030:
+  job_031:
     name: Notify failure
     runs-on: ubuntu-latest
     if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
@@ -1061,3 +1113,4 @@ jobs:
       - job_027
       - job_028
       - job_029
+      - job_030

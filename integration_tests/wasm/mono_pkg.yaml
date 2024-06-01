@@ -1,7 +1,8 @@
 # See https://pub.dev/packages/mono_repo
 
 sdk:
-- main
+- pubspec
+- dev
 
 stages:
 - analyze_and_format:
