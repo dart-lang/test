@@ -2,6 +2,7 @@
 
 sdk:
 - dev
+- pubspec
 
 os:
 - linux
