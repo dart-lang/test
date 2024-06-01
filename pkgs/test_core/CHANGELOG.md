@@ -1,6 +1,8 @@
 ## 0.6.3-wip
 
 * Update min SDK constraint to 3.2.0.
+* Fix testing with dart2wasm - use `dart compile wasm` instead of depending on
+  SDK internals
 
 ## 0.6.2
 

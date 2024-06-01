@@ -30,25 +30,19 @@ class WasmCompilerPool extends CompilerPool {
   Future compileInternal(
       String code, String path, SuiteConfiguration suiteConfig) {
     return withTempDir((dir) async {
-      var wrapperPath = p.join(dir, 'main.dart');
+      final wrapperPath = p.join(dir, 'main.dart');
       File(wrapperPath).writeAsStringSync(code);
-      var outWasmPath = '$path.wasm';
-      var dartBinPath = Platform.resolvedExecutable;
-      var sdkRoot = p.join(p.dirname(dartBinPath), '../');
-      var platformDill =
-          p.join(sdkRoot, 'lib', '_internal', 'dart2wasm_platform.dill');
-      var dartPrecompiledRuntimePath = p.join(sdkRoot, 'bin', 'dartaotruntime');
-      var dart2wasmSnapshotPath =
-          p.join(sdkRoot, 'bin/snapshots', 'dart2wasm_product.snapshot');
-      var process = await Process.start(dartPrecompiledRuntimePath, [
-        dart2wasmSnapshotPath,
-        '--dart-sdk=$sdkRoot',
-        '--platform=$platformDill',
+      final outWasmPath = '$path.wasm';
+      final process = await Process.start(Platform.resolvedExecutable, [
+        'compile',
+        'wasm',
         '--packages=${(await packageConfigUri).path}',
         for (var experiment in enabledExperiments)
           '--enable-experiment=$experiment',
-        wrapperPath,
+        '-O0',
+        '-o',
         outWasmPath,
+        wrapperPath,
       ]);
       if (closed) {
         process.kill();
