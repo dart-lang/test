@@ -1,4 +1,4 @@
-## 0.7.2-wip
+## 0.7.2
 
 * Update min SDK constraint to 3.2.0.
 

@@ -1,6 +1,8 @@
-## 1.25.6-wip
+## 1.25.6
 
 * Point API doc links to `package:test` canonical libraries.
+* Fix testing with `dart2wasm` - use `dart compile wasm` instead of depending on
+  SDK internals
 * Update min SDK constraint to 3.2.0.
 
 ## 1.25.5
