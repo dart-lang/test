@@ -1,5 +1,5 @@
 name: test_api
-version: 0.7.2-wip
+version: 0.7.2
 description: >-
   The user facing API for structuring Dart tests and checking expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
