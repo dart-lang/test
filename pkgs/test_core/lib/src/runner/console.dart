@@ -13,7 +13,8 @@ import '../util/io.dart';
 /// An interactive console for taking user commands.
 class Console {
   /// The registered commands.
-  final _commands = <String, _Command>{};
+  final _commands = <String,
+      ({String name, String description, FutureOr<void> Function() body})>{};
 
   /// The pending next line of standard input, if we're waiting on one.
   CancelableOperation? _nextLine;
@@ -54,7 +55,7 @@ class Console {
       throw ArgumentError('The console already has a command named "$name".');
     }
 
-    _commands[name] = _Command(name, description, body);
+    _commands[name] = (name: name, description: description, body: body);
   }
 
   /// Starts running the console.
@@ -100,18 +101,4 @@ class Console {
       print('$_bold$name$_noColor${command.description}');
     }
   }
-}
-
-/// An individual console command.
-class _Command {
-  /// The name of the command.
-  final String name;
-
-  /// The single-line description of the command.
-  final String description;
-
-  /// The callback to run when the command is invoked.
-  final FutureOr<void> Function() body;
-
-  _Command(this.name, this.description, this.body);
 }
