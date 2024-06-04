@@ -13,8 +13,7 @@ import '../util/io.dart';
 /// An interactive console for taking user commands.
 class Console {
   /// The registered commands.
-  final _commands = <String,
-      ({String name, String description, FutureOr<void> Function() body})>{};
+  final _commands = <String, _Command>{};
 
   /// The pending next line of standard input, if we're waiting on one.
   CancelableOperation? _nextLine;
@@ -102,3 +101,9 @@ class Console {
     }
   }
 }
+
+typedef _Command = ({
+  String name,
+  String description,
+  FutureOr<void> Function() body,
+});
