@@ -47,9 +47,9 @@ class Console {
   ///
   /// The [description] should be a one-line description of the command to print
   /// in the help output. The [body] callback will be called when the user types
-  /// the command, and may return a [Future].
+  /// the command.
   void registerCommand(
-      String name, String description, dynamic Function() body) {
+      String name, String description, FutureOr<void> Function() body) {
     if (_commands.containsKey(name)) {
       throw ArgumentError('The console already has a command named "$name".');
     }
@@ -111,7 +111,7 @@ class _Command {
   final String description;
 
   /// The callback to run when the command is invoked.
-  final Function body;
+  final FutureOr<void> Function() body;
 
   _Command(this.name, this.description, this.body);
 }
