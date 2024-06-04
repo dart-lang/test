@@ -387,7 +387,9 @@ class Engine {
     await Future(() {});
 
     if (!_restarted.contains(liveTest)) {
-      if (_stopOnFirstFailure && liveTest.state.result.isFailing) close();
+      if (_stopOnFirstFailure && liveTest.state.result.isFailing) {
+        unawaited(close());
+      }
       return;
     }
     await _runLiveTest(suiteController, liveTest.copy(),

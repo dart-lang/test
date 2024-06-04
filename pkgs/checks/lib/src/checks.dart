@@ -225,7 +225,7 @@ extension ContextExtension<T> on Subject<T> {
 /// specific signature varies by operation.
 ///
 ///
-/// In expectation extension methods calling [expect], [expectAync], or
+/// In expectation extension methods calling [expect], [expectAsync], or
 /// [expectUnawaited], the `predicate` callback can report a [Rejection] if the
 /// value fails to satisfy the expectation.
 /// The description will be passed in a "clause" callback.
