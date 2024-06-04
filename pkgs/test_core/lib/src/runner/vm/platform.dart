@@ -59,7 +59,7 @@ class VMPlatform extends PlatformPlugin {
         process =
             await _spawnExecutable(path, suiteConfig.metadata, serverSocket);
       } catch (error) {
-        serverSocket.close();
+        unawaited(serverSocket.close());
         rethrow;
       }
       process.stdout.listen(stdout.add);
@@ -100,8 +100,8 @@ class VMPlatform extends PlatformPlugin {
       for (var fn in cleanupCallbacks) {
         fn();
       }
-      eventSub?.cancel();
-      client?.dispose();
+      unawaited(eventSub?.cancel());
+      unawaited(client?.dispose());
       sink.close();
     }));
 

@@ -70,7 +70,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   }
 
   /// Expects that the iterable contains a value matching each expected value
-  /// from [elelements] in the given order, with any extra elements between
+  /// from [elements] in the given order, with any extra elements between
   /// them.
   ///
   /// For example, the following will succeed:

@@ -14,7 +14,6 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
-import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
 import '../util/pair.dart';
 import 'load_exception.dart';
