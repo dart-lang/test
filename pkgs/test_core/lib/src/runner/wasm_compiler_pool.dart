@@ -36,6 +36,7 @@ class WasmCompilerPool extends CompilerPool {
       final process = await Process.start(Platform.resolvedExecutable, [
         'compile',
         'wasm',
+        '--enable-asserts',
         '--packages=${(await packageConfigUri).path}',
         for (var experiment in enabledExperiments)
           '--enable-experiment=$experiment',

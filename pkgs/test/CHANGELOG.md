@@ -1,3 +1,7 @@
+## 1.25.7
+
+* Enable asserts for `dart2wasm` tests.
+
 ## 1.25.6
 
 * Point API doc links to `package:test` canonical libraries.
