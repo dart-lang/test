@@ -13,4 +13,12 @@ void main() {
   test('1 == 1', () {
     expect(1, equals(1));
   });
+
+  test('asserts are enabled', () {
+    expect(shouldFail, throwsA(isA<AssertionError>()));
+  });
+}
+
+void shouldFail() {
+  assert(1 == 2);
 }

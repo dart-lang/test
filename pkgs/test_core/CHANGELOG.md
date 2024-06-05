@@ -1,3 +1,7 @@
+## 0.6.4
+
+* Enable asserts for `dart2wasm` tests.
+
 ## 0.6.3
 
 * Update min SDK constraint to 3.2.0.
