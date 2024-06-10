@@ -1,3 +1,7 @@
+## 1.25.8-wip
+
+* Increase SDK constraint to ^3.4.0.
+
 ## 1.25.7
 
 * Enable asserts for `dart2wasm` tests.
