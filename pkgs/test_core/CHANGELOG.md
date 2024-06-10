@@ -1,7 +1,6 @@
 ## 0.6.5-wip
 
 * Increase SDK constraint to ^3.4.0.
-* Fix race condition when compiling multiple tests at once.
 
 ## 0.6.4
 
