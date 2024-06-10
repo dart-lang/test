@@ -113,8 +113,8 @@ class _TestCompilerForLanguageVersion {
 
     try {
       if (_frontendServerClient == null) {
-        if (await testCache.exists()) {
-          await testCache.copy(_outputDill.path);
+        if (testCache.existsSync()) {
+          testCache.copySync(_outputDill.path);
         }
         compilerOutput = await _createCompiler(tempFile.uri);
       } else {
