@@ -308,181 +308,6 @@ jobs:
       - job_003
       - job_004
   job_007:
-    name: "unit_test; linux; Dart 3.2.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test;commands:command_02"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: "3.2.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-  job_008:
-    name: "unit_test; linux; Dart 3.2.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test;commands:command_03"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: "3.2.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-  job_009:
-    name: "unit_test; linux; Dart 3.2.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test;commands:command_04"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: "3.2.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-  job_010:
-    name: "unit_test; linux; Dart 3.2.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test;commands:command_05"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: "3.2.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-  job_011:
-    name: "unit_test; linux; Dart 3.2.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test;commands:command_06"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.2.0
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
-        with:
-          sdk: "3.2.0"
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
-        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-  job_012:
     name: "unit_test; linux; Dart 3.2.0; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
@@ -517,7 +342,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_013:
+  job_008:
     name: "unit_test; linux; Dart 3.4.0; PKG: integration_tests/regression; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -552,7 +377,7 @@ jobs:
       - job_002
       - job_003
       - job_004
-  job_014:
+  job_009:
     name: "unit_test; linux; Dart 3.4.0; PKG: integration_tests/wasm; `pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta`, `dart test --timeout=60s`"
     runs-on: ubuntu-latest
     steps:
@@ -586,6 +411,181 @@ jobs:
         run: "dart test --timeout=60s"
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_010:
+    name: "unit_test; linux; Dart 3.4.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test;commands:command_02"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_011:
+    name: "unit_test; linux; Dart 3.4.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test;commands:command_03"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_012:
+    name: "unit_test; linux; Dart 3.4.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test;commands:command_04"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_013:
+    name: "unit_test; linux; Dart 3.4.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test;commands:command_05"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+  job_014:
+    name: "unit_test; linux; Dart 3.4.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test;commands:command_06"
+          restore-keys: |
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.4.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
+        with:
+          sdk: "3.4.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+      - name: "pkgs/test; xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
+        run: "xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4"
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
     needs:
       - job_001
       - job_002
@@ -971,13 +971,13 @@ jobs:
       - job_003
       - job_004
   job_026:
-    name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
+    name: "unit_test; windows; Dart 3.4.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
-          sdk: "3.2.0"
+          sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
@@ -996,13 +996,13 @@ jobs:
       - job_003
       - job_004
   job_027:
-    name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
+    name: "unit_test; windows; Dart 3.4.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
-          sdk: "3.2.0"
+          sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
@@ -1021,13 +1021,13 @@ jobs:
       - job_003
       - job_004
   job_028:
-    name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
+    name: "unit_test; windows; Dart 3.4.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
-          sdk: "3.2.0"
+          sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
@@ -1046,13 +1046,13 @@ jobs:
       - job_003
       - job_004
   job_029:
-    name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
+    name: "unit_test; windows; Dart 3.4.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
-          sdk: "3.2.0"
+          sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
@@ -1071,13 +1071,13 @@ jobs:
       - job_003
       - job_004
   job_030:
-    name: "unit_test; windows; Dart 3.2.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
+    name: "unit_test; windows; Dart 3.4.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@f0ead981b4d9a35b37f30d36160575d60931ec30
         with:
-          sdk: "3.2.0"
+          sdk: "3.4.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
