@@ -1,10 +1,10 @@
 name: test_core
-version: 0.6.4
+version: 0.6.5-wip
 description: A basic library for writing tests and running them on the VM.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_core
 
 environment:
-  sdk: ^3.2.0
+  sdk: ^3.4.0
 
 dependencies:
   analyzer: '>=3.3.0 <7.0.0'
