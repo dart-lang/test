@@ -300,7 +300,10 @@ stderr: ${processResult.stderr}''');
       file
         ..createSync(recursive: true)
         ..writeAsStringSync(_bootstrapIsolateTestContents(
-            await absoluteUri(testPath), languageVersionComment));
+          testUri: await absoluteUri(testPath),
+          languageVersionComment: languageVersionComment,
+          packageConfigUri: await Isolate.packageConfig,
+        ));
     }
     return file.uri;
   }
@@ -317,20 +320,30 @@ stderr: ${processResult.stderr}''');
       file
         ..createSync(recursive: true)
         ..writeAsStringSync(_bootstrapNativeTestContents(
-            await absoluteUri(testPath), languageVersionComment));
+          testUri: await absoluteUri(testPath),
+          languageVersionComment: languageVersionComment,
+          packageConfigUri: await Isolate.packageConfig,
+        ));
     }
     return file.path;
   }
 }
 
 /// Creates bootstrap file contents for running [testUri] in a VM isolate.
-String _bootstrapIsolateTestContents(
-        Uri testUri, String languageVersionComment) =>
+String _bootstrapIsolateTestContents({
+  required Uri testUri,
+  required String languageVersionComment,
+  required Uri? packageConfigUri,
+}) =>
     '''
     $languageVersionComment
-    import "dart:isolate";
-    import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
+
+    import 'dart:isolate';
+    import 'package:test_core/src/bootstrap/vm.dart';
+    import '$testUri' as test;
+
+    const packageConfigLocation = '$packageConfigUri';
+
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
@@ -338,13 +351,20 @@ String _bootstrapIsolateTestContents(
 
 /// Creates bootstrap file contents for running [testUri] as a native
 /// executable.
-String _bootstrapNativeTestContents(
-        Uri testUri, String languageVersionComment) =>
+String _bootstrapNativeTestContents({
+  required Uri testUri,
+  required String languageVersionComment,
+  required Uri? packageConfigUri,
+}) =>
     '''
     $languageVersionComment
-    import "dart:isolate";
-    import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
+
+    import 'dart:isolate';
+    import 'package:test_core/src/bootstrap/vm.dart';
+    import '$testUri' as test;
+
+    const packageConfigLocation = '$packageConfigUri';
+
     void main(List<String> args) {
       internalBootstrapNativeTest(() => test.main, args);
     }
