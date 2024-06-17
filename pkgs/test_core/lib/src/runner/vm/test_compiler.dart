@@ -86,23 +86,6 @@ class _TestCompilerForLanguageVersion {
       : _dillCachePath = '$dillCachePrefix.'
             '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  String _generateEntrypoint(Uri testUri, Uri? packageConfigUri) {
-    return '''
-    $_languageVersionComment
-    import "dart:isolate";
-
-    import "package:test_core/src/bootstrap/vm.dart";
-
-    import "$testUri" as test;
-
-    const packageConfigLocation = '$packageConfigUri';
-
-    void main(_, SendPort sendPort) {
-      internalBootstrapVmTest(() => test.main, sendPort);
-    }
-  ''';
-  }
-
   Future<CompilationResponse> compile(Uri mainUri) =>
       _compilePool.withResource(() => _compile(mainUri));
 
@@ -111,8 +94,12 @@ class _TestCompilerForLanguageVersion {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(
-          _generateEntrypoint(mainUri, await Isolate.packageConfig));
+      ..writeAsStringSync(testBootstrapContents(
+        testUri: mainUri,
+        packageConfigUri: await Isolate.packageConfig,
+        languageVersionComment: _languageVersionComment,
+        bootstrapType: 'Vm',
+      ));
     final testCache = File(_dillCachePath);
 
     try {
@@ -215,3 +202,26 @@ String _dillCacheSuffix(
   }
   return base64.encode(utf8.encode(identifierString.toString()));
 }
+
+/// Creates bootstrap file contents for running [testUri] in a VM isolate.
+String testBootstrapContents({
+  required Uri testUri,
+  required String languageVersionComment,
+  required Uri? packageConfigUri,
+  required String bootstrapType,
+}) =>
+    '''
+    $languageVersionComment
+
+    import 'dart:isolate';
+
+    import 'package:test_core/src/bootstrap/vm.dart';
+
+    import '$testUri' as test;
+
+    const packageConfigLocation = '$packageConfigUri';
+
+    void main(_, SendPort sendPort) {
+      internalBootstrap${bootstrapType}Test(() => test.main, sendPort);
+    }
+  ''';
