@@ -203,7 +203,10 @@ String _dillCacheSuffix(
   return base64.encode(utf8.encode(identifierString.toString()));
 }
 
-/// Creates bootstrap file contents for running [testUri] in a VM isolate.
+/// Creates bootstrap file contents for running [testUri].
+///
+/// The [bootstrapType] argument should be either 'Vm' or 'Native' depending on
+/// which `internalBootstrap*Test` function should be used.
 String testBootstrapContents({
   required Uri testUri,
   required String languageVersionComment,
