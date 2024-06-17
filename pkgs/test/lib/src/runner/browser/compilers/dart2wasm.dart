@@ -25,6 +25,7 @@ import '../../../util/math.dart';
 import '../../../util/one_off_handler.dart';
 import '../../../util/path_handler.dart';
 import '../browser_manager.dart';
+import 'boostrap_content.dart';
 import 'compiler_support.dart';
 
 /// Support for Dart2Wasm compiled tests.
@@ -122,16 +123,11 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       var jsRuntimeUrl = '$baseUrl.mjs';
       var htmlUrl = '$baseUrl.html';
 
-      var bootstrapContent = '''
-        ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
-        import 'package:test/src/bootstrap/browser.dart';
-
-        import '${await absoluteUri(dartPath)}' as test;
-
-        void main() {
-          internalBootstrapBrowserTest(() => test.main);
-        }
-      ''';
+      var bootstrapContent = generateDart2WasmBootstrapContent(
+        testUri: await absoluteUri(dartPath),
+        languageVersionComment: suiteConfig.metadata.languageVersionComment ??
+            await rootPackageLanguageVersionComment,
+      );
 
       await _compilerPool.compile(
           bootstrapContent, baseCompiledPath, suiteConfig);

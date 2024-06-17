@@ -10,6 +10,7 @@ import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:coverage/coverage.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
@@ -27,6 +28,7 @@ import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
 import '../../util/io.dart';
 import '../../util/package_config.dart';
+import '../../util/prefix.dart';
 import '../package_version.dart';
 import 'environment.dart';
 import 'test_compiler.dart';
@@ -299,7 +301,7 @@ stderr: ${processResult.stderr}''');
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(_bootstrapIsolateTestContents(
+        ..writeAsStringSync(bootstrapIsolateTestContents(
             await absoluteUri(testPath), languageVersionComment));
     }
     return file.uri;
@@ -316,7 +318,7 @@ stderr: ${processResult.stderr}''');
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(_bootstrapNativeTestContents(
+        ..writeAsStringSync(bootstrapNativeTestContents(
             await absoluteUri(testPath), languageVersionComment));
     }
     return file.path;
@@ -324,13 +326,14 @@ stderr: ${processResult.stderr}''');
 }
 
 /// Creates bootstrap file contents for running [testUri] in a VM isolate.
-String _bootstrapIsolateTestContents(
+@visibleForTesting
+String bootstrapIsolateTestContents(
         Uri testUri, String languageVersionComment) =>
     '''
     $languageVersionComment
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
+    import "$testUri" as $testSuiteImportPrefix;
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
     }
@@ -338,13 +341,14 @@ String _bootstrapIsolateTestContents(
 
 /// Creates bootstrap file contents for running [testUri] as a native
 /// executable.
-String _bootstrapNativeTestContents(
+@visibleForTesting
+String bootstrapNativeTestContents(
         Uri testUri, String languageVersionComment) =>
     '''
     $languageVersionComment
     import "dart:isolate";
     import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
+    import "$testUri" as $testSuiteImportPrefix;
     void main(List<String> args) {
       internalBootstrapNativeTest(() => test.main, args);
     }
