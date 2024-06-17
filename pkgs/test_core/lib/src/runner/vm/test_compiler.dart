@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:frontend_server_client/frontend_server_client.dart';
@@ -85,7 +86,7 @@ class _TestCompilerForLanguageVersion {
       : _dillCachePath = '$dillCachePrefix.'
             '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  String _generateEntrypoint(Uri testUri) {
+  String _generateEntrypoint(Uri testUri, Uri? packageConfigUri) {
     return '''
     $_languageVersionComment
     import "dart:isolate";
@@ -93,6 +94,8 @@ class _TestCompilerForLanguageVersion {
     import "package:test_core/src/bootstrap/vm.dart";
 
     import "$testUri" as test;
+
+    const packageConfigLocation = '$packageConfigUri';
 
     void main(_, SendPort sendPort) {
       internalBootstrapVmTest(() => test.main, sendPort);
@@ -108,7 +111,8 @@ class _TestCompilerForLanguageVersion {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(_generateEntrypoint(mainUri));
+      ..writeAsStringSync(
+          _generateEntrypoint(mainUri, await Isolate.packageConfig));
     final testCache = File(_dillCachePath);
 
     try {
