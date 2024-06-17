@@ -303,7 +303,7 @@ stderr: ${processResult.stderr}''');
           testUri: await absoluteUri(testPath),
           languageVersionComment: languageVersionComment,
           packageConfigUri: await Isolate.packageConfig,
-          bootstrapType: 'Vm',
+          testType: VmTestType.isolate,
         ));
     }
     return file.uri;
@@ -324,7 +324,7 @@ stderr: ${processResult.stderr}''');
           testUri: await absoluteUri(testPath),
           languageVersionComment: languageVersionComment,
           packageConfigUri: await Isolate.packageConfig,
-          bootstrapType: 'Native',
+          testType: VmTestType.process,
         ));
     }
     return file.path;

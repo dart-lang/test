@@ -98,7 +98,7 @@ class _TestCompilerForLanguageVersion {
         testUri: mainUri,
         packageConfigUri: await Isolate.packageConfig,
         languageVersionComment: _languageVersionComment,
-        bootstrapType: 'Vm',
+        testType: VmTestType.isolate,
       ));
     final testCache = File(_dillCachePath);
 
@@ -211,9 +211,13 @@ String testBootstrapContents({
   required Uri testUri,
   required String languageVersionComment,
   required Uri? packageConfigUri,
-  required String bootstrapType,
-}) =>
-    '''
+  required VmTestType testType,
+}) {
+  final (argType, argName, bootstrapType) = switch (testType) {
+    VmTestType.isolate => ('_, SendPort', 'sendPort', 'Vm'),
+    VmTestType.process => ('List<String>', 'args', 'Native'),
+  };
+  return '''
     $languageVersionComment
 
     import 'dart:isolate';
@@ -224,7 +228,10 @@ String testBootstrapContents({
 
     const packageConfigLocation = '$packageConfigUri';
 
-    void main(_, SendPort sendPort) {
-      internalBootstrap${bootstrapType}Test(() => test.main, sendPort);
+    void main($argType $argName) {
+      internalBootstrap${bootstrapType}Test(() => test.main, $argName);
     }
   ''';
+}
+
+enum VmTestType { isolate, process }
