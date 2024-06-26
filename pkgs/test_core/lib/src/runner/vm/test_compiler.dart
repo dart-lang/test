@@ -5,7 +5,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:frontend_server_client/frontend_server_client.dart';
@@ -96,7 +95,7 @@ class _TestCompilerForLanguageVersion {
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
       ..writeAsStringSync(testBootstrapContents(
         testUri: mainUri,
-        packageConfigUri: await Isolate.packageConfig,
+        packageConfigUri: await packageConfigUri,
         languageVersionComment: _languageVersionComment,
         testType: VmTestType.isolate,
       ));
@@ -210,12 +209,12 @@ String _dillCacheSuffix(
 String testBootstrapContents({
   required Uri testUri,
   required String languageVersionComment,
-  required Uri? packageConfigUri,
+  required Uri packageConfigUri,
   required VmTestType testType,
 }) {
-  final (argType, argName, bootstrapType) = switch (testType) {
-    VmTestType.isolate => ('_, SendPort', 'sendPort', 'Vm'),
-    VmTestType.process => ('List<String>', 'args', 'Native'),
+  final (mainArgs, forwardedArgName, bootstrapType) = switch (testType) {
+    VmTestType.isolate => ('_, SendPort sendPort', 'sendPort', 'Vm'),
+    VmTestType.process => ('List<String> args', 'args', 'Native'),
   };
   return '''
     $languageVersionComment
@@ -226,10 +225,12 @@ String testBootstrapContents({
 
     import '$testUri' as test;
 
+    // This variable is read at runtime through the VM service and is unsafe to
+    // remove.
     const packageConfigLocation = '$packageConfigUri';
 
-    void main($argType $argName) {
-      internalBootstrap${bootstrapType}Test(() => test.main, $argName);
+    void main($mainArgs) {
+      internalBootstrap${bootstrapType}Test(() => test.main, $forwardedArgName);
     }
   ''';
 }

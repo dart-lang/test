@@ -302,7 +302,7 @@ stderr: ${processResult.stderr}''');
         ..writeAsStringSync(testBootstrapContents(
           testUri: await absoluteUri(testPath),
           languageVersionComment: languageVersionComment,
-          packageConfigUri: await Isolate.packageConfig,
+          packageConfigUri: await packageConfigUri,
           testType: VmTestType.isolate,
         ));
     }
@@ -323,7 +323,7 @@ stderr: ${processResult.stderr}''');
         ..writeAsStringSync(testBootstrapContents(
           testUri: await absoluteUri(testPath),
           languageVersionComment: languageVersionComment,
-          packageConfigUri: await Isolate.packageConfig,
+          packageConfigUri: await packageConfigUri,
           testType: VmTestType.process,
         ));
     }
