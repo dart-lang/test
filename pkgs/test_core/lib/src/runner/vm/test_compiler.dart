@@ -85,21 +85,6 @@ class _TestCompilerForLanguageVersion {
       : _dillCachePath = '$dillCachePrefix.'
             '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  String _generateEntrypoint(Uri testUri) {
-    return '''
-    $_languageVersionComment
-    import "dart:isolate";
-
-    import "package:test_core/src/bootstrap/vm.dart";
-
-    import "$testUri" as test;
-
-    void main(_, SendPort sendPort) {
-      internalBootstrapVmTest(() => test.main, sendPort);
-    }
-  ''';
-  }
-
   Future<CompilationResponse> compile(Uri mainUri) =>
       _compilePool.withResource(() => _compile(mainUri));
 
@@ -108,7 +93,12 @@ class _TestCompilerForLanguageVersion {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(_generateEntrypoint(mainUri));
+      ..writeAsStringSync(testBootstrapContents(
+        testUri: mainUri,
+        packageConfigUri: await packageConfigUri,
+        languageVersionComment: _languageVersionComment,
+        testType: VmTestType.isolate,
+      ));
     final testCache = File(_dillCachePath);
 
     try {
@@ -211,3 +201,38 @@ String _dillCacheSuffix(
   }
   return base64.encode(utf8.encode(identifierString.toString()));
 }
+
+/// Creates bootstrap file contents for running [testUri].
+///
+/// The [bootstrapType] argument should be either 'Vm' or 'Native' depending on
+/// which `internalBootstrap*Test` function should be used.
+String testBootstrapContents({
+  required Uri testUri,
+  required String languageVersionComment,
+  required Uri packageConfigUri,
+  required VmTestType testType,
+}) {
+  final (mainArgs, forwardedArgName, bootstrapType) = switch (testType) {
+    VmTestType.isolate => ('_, SendPort sendPort', 'sendPort', 'Vm'),
+    VmTestType.process => ('List<String> args', 'args', 'Native'),
+  };
+  return '''
+    $languageVersionComment
+
+    import 'dart:isolate';
+
+    import 'package:test_core/src/bootstrap/vm.dart';
+
+    import '$testUri' as test;
+
+    // This variable is read at runtime through the VM service and is unsafe to
+    // remove.
+    const packageConfigLocation = '$packageConfigUri';
+
+    void main($mainArgs) {
+      internalBootstrap${bootstrapType}Test(() => test.main, $forwardedArgName);
+    }
+  ''';
+}
+
+enum VmTestType { isolate, process }

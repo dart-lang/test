@@ -299,8 +299,12 @@ stderr: ${processResult.stderr}''');
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(_bootstrapIsolateTestContents(
-            await absoluteUri(testPath), languageVersionComment));
+        ..writeAsStringSync(testBootstrapContents(
+          testUri: await absoluteUri(testPath),
+          languageVersionComment: languageVersionComment,
+          packageConfigUri: await packageConfigUri,
+          testType: VmTestType.isolate,
+        ));
     }
     return file.uri;
   }
@@ -316,39 +320,16 @@ stderr: ${processResult.stderr}''');
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(_bootstrapNativeTestContents(
-            await absoluteUri(testPath), languageVersionComment));
+        ..writeAsStringSync(testBootstrapContents(
+          testUri: await absoluteUri(testPath),
+          languageVersionComment: languageVersionComment,
+          packageConfigUri: await packageConfigUri,
+          testType: VmTestType.process,
+        ));
     }
     return file.path;
   }
 }
-
-/// Creates bootstrap file contents for running [testUri] in a VM isolate.
-String _bootstrapIsolateTestContents(
-        Uri testUri, String languageVersionComment) =>
-    '''
-    $languageVersionComment
-    import "dart:isolate";
-    import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
-    void main(_, SendPort sendPort) {
-      internalBootstrapVmTest(() => test.main, sendPort);
-    }
-  ''';
-
-/// Creates bootstrap file contents for running [testUri] as a native
-/// executable.
-String _bootstrapNativeTestContents(
-        Uri testUri, String languageVersionComment) =>
-    '''
-    $languageVersionComment
-    import "dart:isolate";
-    import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
-    void main(List<String> args) {
-      internalBootstrapNativeTest(() => test.main, args);
-    }
-  ''';
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
   final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
