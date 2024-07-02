@@ -1,6 +1,0 @@
-dependency_overrides:
-  test:
-    path: ../test
-  test_core:
-    path: ../test_core
-  matcher: 0.12.16
