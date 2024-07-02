@@ -1,4 +1,4 @@
-## 0.7.3-wip
+## 0.7.3
 
 * Increase SDK constraint to ^3.4.0.
 

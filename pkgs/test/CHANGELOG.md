@@ -1,4 +1,4 @@
-## 1.25.8-wip
+## 1.25.8
 
 * Increase SDK constraint to ^3.4.0.
 
