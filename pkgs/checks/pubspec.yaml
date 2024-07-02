@@ -1,4 +1,5 @@
 name: checks
+version: 0.3.1-wip
 description: >-
   A framework for checking values against expectations and building custom
   expectations.
