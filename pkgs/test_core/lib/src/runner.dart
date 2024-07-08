@@ -127,13 +127,14 @@ class Runner {
         } else {
           var subscription =
               _suiteSubscription = suites.listen(_engine.suiteSink.add);
-          var results = await Future.wait(<Future>[
+          var [_, result as bool?] = await Future.wait(<Future>[
             subscription
                 .asFuture<void>()
                 .then((_) => _engine.suiteSink.close()),
             _engine.run()
           ], eagerError: true);
-          success = results.last as bool?;
+          print('Engine.run: $result');
+          success = result;
         }
 
         if (_closed) return false;
@@ -158,6 +159,10 @@ class Runner {
           }
         }
 
+        print('success: $success');
+        print('Engine.passed: ${_engine.passed.length}');
+        print('Engine.failed: ${_engine.failed.length}');
+        print('Engine.skipped: ${_engine.skipped.length}');
         return (success ?? false) &&
             (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
       });

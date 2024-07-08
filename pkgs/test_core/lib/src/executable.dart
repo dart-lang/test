@@ -147,7 +147,9 @@ Future<void> _execute(List<String> args) async {
 
   try {
     runner = Runner(configuration);
-    exitCode = (await runner.run()) ? 0 : 1;
+    var result = await runner.run();
+    print('Runner.run: $result');
+    exitCode = result ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
