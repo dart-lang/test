@@ -1,4 +1,4 @@
-## 0.6.5-wip
+## 0.6.5
 
 * Increase SDK constraint to ^3.4.0.
 * Ensure we don't create files ending in a `.`, this breaks windows.
