@@ -1,0 +1,14 @@
+name: test_workspace
+publish_to: none
+environment:
+  sdk: ^3.5.0-259.0.dev   # Must be ^3.5.0 or later for workspace to be allowed
+workspace:
+  - integration_tests/regression
+  - integration_tests/spawn_hybrid
+  - integration_tests/wasm
+  - pkgs/checks
+  - pkgs/test
+  - pkgs/test_api
+  - pkgs/test_core
+dev_dependencies:
+  dart_flutter_team_lints: ^3.1.0

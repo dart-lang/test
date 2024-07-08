@@ -1,3 +1,7 @@
+## 0.7.4-wip
+
+* Increase SDK constraint to ^3.5.0-259.0.dev.
+
 ## 0.7.3
 
 * Increase SDK constraint to ^3.4.0.
