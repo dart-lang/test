@@ -112,6 +112,16 @@ class Declarer {
   /// `null`.
   final Set<String>? _seenNames;
 
+  /// Whether this declarer is running in a standalone test executation.
+  ///
+  /// The full test runner awaits asynchronous `main` declarations, and so
+  /// asynchronous work can be performed in between calls to `group`, and `test`
+  /// etc. When running as a standalone file tests are run synchronously
+  /// following the first call to declare a test, so all tests must be declared
+  /// synchronously starting at that point. Track whether we are running in this
+  /// more limited mode to customize the error message for tests declared late.
+  final bool _isStandalone;
+
   /// Creates a new declarer for the root group.
   ///
   /// This is the implicit group that exists outside of any calls to `group()`.
@@ -139,16 +149,19 @@ class Declarer {
     String? fullTestName,
     // TODO: Change the default https://github.com/dart-lang/test/issues/1571
     bool allowDuplicateTestNames = true,
+    bool isStandalone = false,
   }) : this._(
-            null,
-            null,
-            metadata ?? Metadata(),
-            platformVariables ?? const UnmodifiableSetView.empty(),
-            collectTraces,
-            null,
-            noRetry,
-            fullTestName,
-            allowDuplicateTestNames ? null : <String>{});
+          null,
+          null,
+          metadata ?? Metadata(),
+          platformVariables ?? const UnmodifiableSetView.empty(),
+          collectTraces,
+          null,
+          noRetry,
+          fullTestName,
+          allowDuplicateTestNames ? null : <String>{},
+          isStandalone,
+        );
 
   Declarer._(
     this._parent,
@@ -160,6 +173,7 @@ class Declarer {
     this._noRetry,
     this._fullTestName,
     this._seenNames,
+    this._isStandalone,
   );
 
   /// Runs [body] with this declarer as [Declarer.current].
@@ -252,15 +266,17 @@ class Declarer {
     var trace = _collectTraces ? Trace.current(2) : null;
 
     var declarer = Declarer._(
-        this,
-        fullTestPrefix,
-        metadata,
-        _platformVariables,
-        _collectTraces,
-        trace,
-        _noRetry,
-        _fullTestName,
-        _seenNames);
+      this,
+      fullTestPrefix,
+      metadata,
+      _platformVariables,
+      _collectTraces,
+      trace,
+      _noRetry,
+      _fullTestName,
+      _seenNames,
+      _isStandalone,
+    );
     declarer.declare(() {
       // Cast to dynamic to avoid the analyzer complaining about us using the
       // result of a void method.
@@ -340,7 +356,20 @@ class Declarer {
   /// [name] should be the name of the method being called.
   void _checkNotBuilt(String name) {
     if (!_built) return;
-    throw StateError("Can't call $name() once tests have begun running.");
+    final restrictionMessage = _isStandalone
+        ? 'When running a test as an executable directly '
+            '(not as a suite by the test runner), '
+            'tests must be declared in a synchronous block.\n'
+            'If async work is required before any tests are run '
+            'use a `setUpAll` callback.\n'
+            'If async work cannot be avoided before declaring tests, '
+            'all async events must be complete before declaring the first test.'
+        : 'If async work is required before any tests are run '
+            'use a `setUpAll` callback.\n'
+            'If async work cannot be avoided before declaring tests it must '
+            'all be awaited within the Future returned from `main`.';
+    throw StateError("Can't call $name() once tests have begun running.\n"
+        '$restrictionMessage');
   }
 
   /// Run the set-up functions for this and any parent groups.

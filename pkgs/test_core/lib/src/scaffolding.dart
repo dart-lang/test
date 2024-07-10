@@ -44,7 +44,7 @@ Declarer get _declarer {
   // In order to run the tests, we set up our own Declarer via
   // [_globalDeclarer], and pump the event queue as a best effort to wait for
   // all tests to be defined before starting them.
-  _globalDeclarer = Declarer();
+  _globalDeclarer = Declarer(isStandalone: true);
 
   () async {
     await pumpEventQueue();
