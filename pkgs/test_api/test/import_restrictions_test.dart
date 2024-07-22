@@ -69,7 +69,7 @@ class _ImportCheck {
         AnalysisContextCollection(includedPaths: [packagePath]).contexts;
     if (contexts.length != 1) {
       throw StateError(
-          'Expected to find exactly one context root, got $contexts');
+          'Expected to find exactly one context, got $contexts');
     }
     return contexts.first;
   }
