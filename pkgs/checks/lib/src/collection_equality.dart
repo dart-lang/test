@@ -111,32 +111,38 @@ List<String>? _findIterableDifference(Object? actual,
         'expected an iterable with at least ${index + 1} element(s)'
       ];
     }
-    var actualValue = actualIterator.current;
-    var expectedValue = expectedIterator.current;
-    if (expectedValue is Iterable || expectedValue is Map) {
-      if (depth + 1 > _maxDepth) throw _ExceededDepthError();
-      queue.addLast(
-          _Search(path.append(index), actualValue, expectedValue, depth + 1));
-    } else if (expectedValue is Condition) {
-      final failure = softCheck(actualValue, expectedValue);
-      if (failure != null) {
-        final which = failure.rejection.which;
-        return [
-          'has an element ${path.append(index)}that:',
-          ...indent(failure.detail.actual.skip(1)),
-          ...indent(prefixFirst('Actual: ', failure.rejection.actual),
-              failure.detail.depth + 1),
-          if (which != null)
-            ...indent(prefixFirst('which ', which), failure.detail.depth + 1)
-        ];
-      }
-    } else {
-      if (actualValue != expectedValue) {
-        return [
-          ...prefixFirst('${path.append(index)}is ', literal(actualValue)),
-          ...prefixFirst('which does not equal ', literal(expectedValue))
-        ];
-      }
+    final difference = _compareValue(actualIterator.current,
+        expectedIterator.current, path, index, queue, depth);
+    if (difference != null) return difference;
+  }
+  return null;
+}
+
+List<String>? _compareValue(Object? expectedValue, Object? actualValue,
+    _Path path, Object? pathAppend, Queue<_Search> queue, int depth) {
+  if (expectedValue is Iterable || expectedValue is Map) {
+    if (depth + 1 > _maxDepth) throw _ExceededDepthError();
+    queue.addLast(_Search(
+        path.append(pathAppend), actualValue, expectedValue, depth + 1));
+  } else if (expectedValue is Condition) {
+    final failure = softCheck(actualValue, expectedValue);
+    if (failure != null) {
+      final which = failure.rejection.which;
+      return [
+        'has an element ${path.append(pathAppend)}that:',
+        ...indent(failure.detail.actual.skip(1)),
+        ...indent(prefixFirst('Actual: ', failure.rejection.actual),
+            failure.detail.depth + 1),
+        if (which != null)
+          ...indent(prefixFirst('which ', which), failure.detail.depth + 1)
+      ];
+    }
+  } else {
+    if (actualValue != expectedValue) {
+      return [
+        ...prefixFirst('${path.append(pathAppend)}is ', literal(actualValue)),
+        ...prefixFirst('which does not equal ', literal(expectedValue))
+      ];
     }
   }
   return null;
@@ -219,34 +225,9 @@ Iterable<String>? _findUnambiguousMapDifference(
       return prefixFirst(
           '${path}has no key matching expected entry ', _describeEntry(entry));
     }
-    final expectedValue = entry.value;
-    final actualValue = actual[entry.key];
-
-    if (expectedValue is Iterable || expectedValue is Map) {
-      if (depth + 1 > _maxDepth) throw _ExceededDepthError();
-      queue.addLast(_Search(
-          path.append(entry.key), actualValue, expectedValue, depth + 1));
-    } else if (expectedValue is Condition) {
-      final failure = softCheck(actualValue, expectedValue);
-      if (failure != null) {
-        final which = failure.rejection.which;
-        return [
-          'has an element ${path.append(entry.key)}that:',
-          ...indent(failure.detail.actual.skip(1)),
-          ...indent(prefixFirst('Actual: ', failure.rejection.actual),
-              failure.detail.depth + 1),
-          if (which != null)
-            ...indent(prefixFirst('which ', which), failure.detail.depth + 1)
-        ];
-      }
-    } else {
-      if (actualValue != expectedValue) {
-        return [
-          ...prefixFirst('${path.append(entry.key)}is ', literal(actualValue)),
-          ...prefixFirst('which does not equal ', literal(expectedValue))
-        ];
-      }
-    }
+    final difference = _compareValue(
+        entry.value, actual[entry.key], path, entry.key, queue, depth);
+    if (difference != null) return difference;
   }
   for (final entry in actual.entries) {
     if (!expected.containsKey(entry.key)) {
