@@ -1,6 +1,10 @@
 ## 0.3.1-wip
 
-- Update min SDK constraint to 3.4.0.
+-   Directly compare keys across actual and expected `Map` instances when
+    checking deep collection equality and all the keys can be directly compared
+    for equality. This maintains the path into a nested collection for typical
+    cases of checking for equality against a purely value collection.
+-   Update min SDK constraint to 3.4.0.
 
 ## 0.3.0
 
