@@ -68,8 +68,7 @@ class _ImportCheck {
     final contexts =
         AnalysisContextCollection(includedPaths: [packagePath]).contexts;
     if (contexts.length != 1) {
-      throw StateError(
-          'Expected to find exactly one context, got $contexts');
+      throw StateError('Expected to find exactly one context, got $contexts');
     }
     return contexts.first;
   }
