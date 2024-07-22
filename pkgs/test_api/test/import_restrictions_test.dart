@@ -7,8 +7,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:analyzer/dart/analysis/analysis_context.dart';
-import 'package:analyzer/dart/analysis/context_builder.dart';
-import 'package:analyzer/dart/analysis/context_locator.dart';
+import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:glob/glob.dart';
@@ -66,11 +65,13 @@ class _ImportCheck {
     final libPath = await _pathForUri(libUri);
     final packagePath = p.dirname(libPath);
 
-    final roots = ContextLocator().locateRoots(includedPaths: [packagePath]);
-    if (roots.length != 1) {
-      throw StateError('Expected to find exactly one context root, got $roots');
+    final contexts =
+        AnalysisContextCollection(includedPaths: [packagePath]).contexts;
+    if (contexts.length != 1) {
+      throw StateError(
+          'Expected to find exactly one context root, got $contexts');
     }
-    return ContextBuilder().createContext(contextRoot: roots[0]);
+    return contexts.first;
   }
 
   static Future<String> _pathForUri(Uri uri) async {
