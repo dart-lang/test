@@ -12,10 +12,10 @@ import '../context.dart';
 /// {@template deep_collection_equals}
 /// Elements, keys, or values within [expected] which are a collections are
 /// deeply compared for equality with a collection in the same position within
-/// [actual]. Elements which are collection types are note compared with the
+/// [actual]. Elements which are collection types are not compared with the
 /// native identity based equality or custom equality operator overrides.
 ///
-/// Elements, keys, or values within [expected] which are `Condition` callbacks
+/// Elements, keys, or values within [expected] which are [Condition] callbacks
 /// are run against the value in the same position within [actual].
 /// Condition callbacks must take a `Subject<Object?>` or `Subject<dynamic>` and
 /// may not use a more specific generic.
@@ -24,14 +24,25 @@ import '../context.dart';
 /// Note also that the argument type `Subject<Object?>` cannot be inferred and
 /// must be explicit in the function definition.
 ///
-/// Elements, keys, or values within [expected] which are any other type are
-/// compared using `operator ==` equality.
+/// Elements and values within [expected] which are any other type are compared
+/// using `operator ==` equality.
 ///
-/// Comparing sets or maps will have a runtime which is polynomial on the the
-/// size of those collections. Does not use [Set.contains] or [Map.containsKey],
-/// there will not be runtime benefits from hashing. Custom collection behavior
-/// is ignored. For example, it is not possible to distinguish between a `Set`
-/// and a `Set.identity`.
+/// Deep equality checks for [Map] instances depend on the structure of the
+/// expected map.
+/// If all keys of the expectation are non-collection and non-condition values
+/// the keys are compared through the map instances with [Map.containsKey].
+///
+/// If any key in the expectation is a `Condition` or a collection type the map
+/// will be compared as a [Set] of entries where both the key and value must
+/// match.
+///
+/// Comparing sets or maps with complex keys has a runtime which is polynomial
+/// on the the size of those collections.
+/// These comparisons do not use [Set.contains] or [Map.containsKey],
+/// and there will not be runtime benefits from hashing.
+/// Custom collection behavior of `contains` is ignored.
+/// For example, it is not possible to distinguish between a `Set` and a
+/// `Set.identity`.
 ///
 /// Collections may be nested to a maximum depth of 1000. Recursive collections
 /// are not allowed.
@@ -70,7 +81,7 @@ Iterable<String>? _deepCollectionEquals(
     } else {
       currentExpected as Map;
       rejectionWhich = _findMapDifference(
-          currentActual, currentExpected, path, currentDepth);
+          currentActual, currentExpected, path, queue, currentDepth);
     }
     if (rejectionWhich != null) return rejectionWhich;
   }
@@ -100,32 +111,38 @@ List<String>? _findIterableDifference(Object? actual,
         'expected an iterable with at least ${index + 1} element(s)'
       ];
     }
-    var actualValue = actualIterator.current;
-    var expectedValue = expectedIterator.current;
-    if (expectedValue is Iterable || expectedValue is Map) {
-      if (depth + 1 > _maxDepth) throw _ExceededDepthError();
-      queue.addLast(
-          _Search(path.append(index), actualValue, expectedValue, depth + 1));
-    } else if (expectedValue is Condition) {
-      final failure = softCheck(actualValue, expectedValue);
-      if (failure != null) {
-        final which = failure.rejection.which;
-        return [
-          'has an element ${path.append(index)}that:',
-          ...indent(failure.detail.actual.skip(1)),
-          ...indent(prefixFirst('Actual: ', failure.rejection.actual),
-              failure.detail.depth + 1),
-          if (which != null)
-            ...indent(prefixFirst('which ', which), failure.detail.depth + 1)
-        ];
-      }
-    } else {
-      if (actualValue != expectedValue) {
-        return [
-          ...prefixFirst('${path.append(index)}is ', literal(actualValue)),
-          ...prefixFirst('which does not equal ', literal(expectedValue))
-        ];
-      }
+    final difference = _compareValue(actualIterator.current,
+        expectedIterator.current, path, index, queue, depth);
+    if (difference != null) return difference;
+  }
+  return null;
+}
+
+List<String>? _compareValue(Object? actualValue, Object? expectedValue,
+    _Path path, Object? pathAppend, Queue<_Search> queue, int depth) {
+  if (expectedValue is Iterable || expectedValue is Map) {
+    if (depth + 1 > _maxDepth) throw _ExceededDepthError();
+    queue.addLast(_Search(
+        path.append(pathAppend), actualValue, expectedValue, depth + 1));
+  } else if (expectedValue is Condition) {
+    final failure = softCheck(actualValue, expectedValue);
+    if (failure != null) {
+      final which = failure.rejection.which;
+      return [
+        'has an element ${path.append(pathAppend)}that:',
+        ...indent(failure.detail.actual.skip(1)),
+        ...indent(prefixFirst('Actual: ', failure.rejection.actual),
+            failure.detail.depth + 1),
+        if (which != null)
+          ...indent(prefixFirst('which ', which), failure.detail.depth + 1)
+      ];
+    }
+  } else {
+    if (actualValue != expectedValue) {
+      return [
+        ...prefixFirst('${path.append(pathAppend)}is ', literal(actualValue)),
+        ...prefixFirst('which does not equal ', literal(expectedValue))
+      ];
     }
   }
   return null;
@@ -165,38 +182,81 @@ Iterable<String>? _findSetDifference(
 }
 
 Iterable<String>? _findMapDifference(
-    Object? actual, Map<Object?, Object?> expected, _Path path, int depth) {
+    Object? actual,
+    Map<Object?, Object?> expected,
+    _Path path,
+    Queue<_Search> queue,
+    int depth) {
   if (actual is! Map) {
     return ['${path}is not a Map'];
   }
-  Iterable<String> describeEntry(MapEntry<Object?, Object?> entry) {
-    final key = literal(entry.key);
-    final value = literal(entry.value);
-    return [
-      ...key.take(key.length - 1),
-      '${key.last}: ${value.first}',
-      ...value.skip(1)
-    ];
+  if (expected.keys
+      .any((key) => key is Condition || key is Iterable || key is Map)) {
+    return _findAmbiguousMapDifference(actual, expected, path, depth);
+  } else {
+    return _findUnambiguousMapDifference(actual, expected, path, queue, depth);
   }
-
-  return unorderedCompare(
-    actual.entries,
-    expected.entries,
-    (actual, expected) =>
-        _elementMatches(actual.key, expected.key, depth) &&
-        _elementMatches(actual.value, expected.value, depth),
-    (expectedEntry, _, count) => [
-      ...prefixFirst(
-          '${path}has no entry to match ', describeEntry(expectedEntry)),
-      if (count > 1) 'or ${count - 1} other entries',
-    ],
-    (actualEntry, _, count) => [
-      ...prefixFirst(
-          '${path}has unexpected entry ', describeEntry(actualEntry)),
-      if (count > 1) 'and ${count - 1} other unexpected entries',
-    ],
-  );
 }
+
+Iterable<String> _describeEntry(MapEntry<Object?, Object?> entry) {
+  final key = literal(entry.key);
+  final value = literal(entry.value);
+  return [
+    ...key.take(key.length - 1),
+    '${key.last}: ${value.first}',
+    ...value.skip(1)
+  ];
+}
+
+/// Returns a description of a difference found between [actual] and [expected]
+/// when [expected] has only direct key values and there is a 1:1 mapping
+/// between an expected value and a checked value in the map.
+Iterable<String>? _findUnambiguousMapDifference(
+    Map<Object?, Object?> actual,
+    Map<Object?, Object?> expected,
+    _Path path,
+    Queue<_Search> queue,
+    int depth) {
+  for (final entry in expected.entries) {
+    assert(entry.key is! Condition);
+    assert(entry.key is! Iterable);
+    assert(entry.key is! Map);
+    if (!actual.containsKey(entry.key)) {
+      return prefixFirst(
+          '${path}has no key matching expected entry ', _describeEntry(entry));
+    }
+    final difference = _compareValue(
+        actual[entry.key], entry.value, path, entry.key, queue, depth);
+    if (difference != null) return difference;
+  }
+  for (final entry in actual.entries) {
+    if (!expected.containsKey(entry.key)) {
+      return prefixFirst(
+          '${path}has an unexpected key for entry ', _describeEntry(entry));
+    }
+  }
+  return null;
+}
+
+Iterable<String>? _findAmbiguousMapDifference(Map<Object?, Object?> actual,
+        Map<Object?, Object?> expected, _Path path, int depth) =>
+    unorderedCompare(
+      actual.entries,
+      expected.entries,
+      (actual, expected) =>
+          _elementMatches(actual.key, expected.key, depth) &&
+          _elementMatches(actual.value, expected.value, depth),
+      (expectedEntry, _, count) => [
+        ...prefixFirst(
+            '${path}has no entry to match ', _describeEntry(expectedEntry)),
+        if (count > 1) 'or ${count - 1} other entries',
+      ],
+      (actualEntry, _, count) => [
+        ...prefixFirst(
+            '${path}has unexpected entry ', _describeEntry(actualEntry)),
+        if (count > 1) 'and ${count - 1} other unexpected entries',
+      ],
+    );
 
 class _Path {
   final _Path? parent;

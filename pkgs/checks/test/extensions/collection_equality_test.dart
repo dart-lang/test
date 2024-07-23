@@ -129,9 +129,9 @@ void main() {
       }, {
         'a': (Subject<dynamic> it) => it.isA<String>().startsWith('a')
       })).isNotNull().deepEquals([
-        "has no entry to match 'a': <A value that:",
-        '  is a String',
-        "  starts with 'a'>",
+        "has an element at ['a'] that:",
+        "  Actual: 'b'",
+        "  which does not start with 'a'",
       ]);
     });
 
@@ -144,6 +144,21 @@ void main() {
         'has no entry to match <A value that:',
         '  is a String',
         "  starts with 'a'>: 'a'",
+      ]);
+    });
+
+    test('maintains paths through maps when the keys are all values', () {
+      check(deepCollectionEquals({
+        'a': [
+          {'b': 'c'}
+        ]
+      }, {
+        'a': [
+          {'b': 'd'}
+        ]
+      })).isNotNull().deepEquals([
+        "at ['a'][<0>]['b'] is 'c'",
+        "which does not equal 'd'",
       ]);
     });
 
