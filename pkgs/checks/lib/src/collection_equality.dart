@@ -118,7 +118,7 @@ List<String>? _findIterableDifference(Object? actual,
   return null;
 }
 
-List<String>? _compareValue(Object? expectedValue, Object? actualValue,
+List<String>? _compareValue(Object? actualValue, Object? expectedValue,
     _Path path, Object? pathAppend, Queue<_Search> queue, int depth) {
   if (expectedValue is Iterable || expectedValue is Map) {
     if (depth + 1 > _maxDepth) throw _ExceededDepthError();
@@ -226,7 +226,7 @@ Iterable<String>? _findUnambiguousMapDifference(
           '${path}has no key matching expected entry ', _describeEntry(entry));
     }
     final difference = _compareValue(
-        entry.value, actual[entry.key], path, entry.key, queue, depth);
+        actual[entry.key], entry.value, path, entry.key, queue, depth);
     if (difference != null) return difference;
   }
   for (final entry in actual.entries) {
