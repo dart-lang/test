@@ -1,6 +1,7 @@
 ## 0.7.4-wip
 
 * Increase SDK constraint to ^3.5.0-259.0.dev.
+* Support running Node.js tests compiled with dart2wasm.
 
 ## 0.7.3
 

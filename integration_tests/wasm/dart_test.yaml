@@ -1,2 +1,2 @@
-platforms: [chrome, firefox]
+platforms: [chrome, firefox, node]
 compilers: [dart2wasm]

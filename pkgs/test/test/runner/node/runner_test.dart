@@ -116,6 +116,15 @@ void main() {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
+
+    test('compiled with dart2wasm', () async {
+      await d.file('test.dart', _success).create();
+      var test =
+          await runTest(['-p', 'node', '--compiler', 'dart2wasm', 'test.dart']);
+
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
   });
 
   test('defines a node environment constant', () async {
@@ -148,8 +157,18 @@ void main() {
         }
       ''').create();
 
-    var test = await runTest(['-p', 'node', '-p', 'vm', 'test.dart']);
-    expect(test.stdout, emitsThrough(contains('+1 -1: Some tests failed.')));
+    var test = await runTest([
+      '-p',
+      'node',
+      '-p',
+      'vm',
+      '-c',
+      'dart2js',
+      '-c',
+      'dart2wasm',
+      'test.dart'
+    ]);
+    expect(test.stdout, emitsThrough(contains('+1 -2: Some tests failed.')));
     await test.shouldExit(1);
   });
 
