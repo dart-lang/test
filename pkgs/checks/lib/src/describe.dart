@@ -62,8 +62,7 @@ Iterable<String> _prettyPrint(
         .toList();
     return prefixFirst("'", postfixLast("'", escaped));
   } else if (object is Condition) {
-    final value = ['A value that:', ...describe(object)];
-    return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
+    return ['<A value that:', ...postfixLast('>', describe(object))];
   } else {
     final value = const LineSplitter().convert(object.toString());
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;

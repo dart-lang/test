@@ -1,6 +1,7 @@
 ## 0.3.1-wip
 
-- Update min SDK constraint to 3.4.0.
+-   Update min SDK constraint to 3.4.0.
+-   Always wrap Condition descriptions in angle brackets.
 
 ## 0.3.0
 
