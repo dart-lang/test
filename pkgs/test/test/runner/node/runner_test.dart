@@ -6,6 +6,10 @@
 @Tags(['node'])
 library;
 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -27,6 +31,37 @@ final _failure = '''
     test("failure", () => throw TestFailure("oh no"));
   }
 ''';
+
+({int major, String full})? _nodeVersion;
+
+({int major, String full}) _readNodeVersion() {
+  final process = Process.runSync(
+    ExecutableSettings(
+      linuxExecutable: 'node',
+      macOSExecutable: 'node',
+      windowsExecutable: 'node.exe',
+    ).executable,
+    ['--version'],
+    stdoutEncoding: utf8,
+  );
+  if (process.exitCode != 0) {
+    throw const OSError('Could not run node --version');
+  }
+
+  final version = RegExp(r'v(\d+)\..*');
+  final parsed = version.firstMatch(process.stdout as String)!;
+  return (major: int.parse(parsed.group(1)!), full: process.stdout);
+}
+
+String? skipBelowMajorNodeVersion(int minimumMajorVersion) {
+  final (:major, :full) = _nodeVersion ??= _readNodeVersion();
+  if (major < minimumMajorVersion) {
+    return 'This test requires Node $minimumMajorVersion.x or later, '
+        'but is running on $full';
+  }
+
+  return null;
+}
 
 void main() {
   setUpAll(precompileTestExecutable);
@@ -124,7 +159,7 @@ void main() {
 
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
-    });
+    }, skip: skipBelowMajorNodeVersion(22));
   });
 
   test('defines a node environment constant', () async {
@@ -157,6 +192,26 @@ void main() {
         }
       ''').create();
 
+    var test =
+        await runTest(['-p', 'node', '-p', 'vm', '-c', 'dart2js', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1 -1: Some tests failed.')));
+    await test.shouldExit(1);
+  });
+
+  test('runs failing tests that fail only on node (with dart2wasm)', () async {
+    await d.file('test.dart', '''
+        import 'package:path/path.dart' as p;
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {
+            if (const bool.fromEnvironment("node")) {
+              throw TestFailure("oh no");
+            }
+          });
+        }
+      ''').create();
+
     var test = await runTest([
       '-p',
       'node',
@@ -170,7 +225,7 @@ void main() {
     ]);
     expect(test.stdout, emitsThrough(contains('+1 -2: Some tests failed.')));
     await test.shouldExit(1);
-  });
+  }, skip: skipBelowMajorNodeVersion(22));
 
   test('forwards prints from the Node test', () async {
     await d.file('test.dart', '''
