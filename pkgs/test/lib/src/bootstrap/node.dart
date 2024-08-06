@@ -14,5 +14,5 @@ void internalBootstrapNodeTest(Function Function() getMain) {
     if (serialized is! Map) return;
     setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
   });
-  socketChannel().pipe(channel);
+  socketChannel().then((socket) => socket.pipe(channel));
 }

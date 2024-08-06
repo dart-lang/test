@@ -41,8 +41,8 @@ final class Runtime {
       isBrowser: true, isBlink: true);
 
   /// The command-line Node.js VM.
-  static const Runtime nodeJS =
-      Runtime('Node.js', 'node', Compiler.dart2js, [Compiler.dart2js]);
+  static const Runtime nodeJS = Runtime('Node.js', 'node', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.dart2wasm]);
 
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [

@@ -1,6 +1,7 @@
 ## 0.6.6-wip
 
 * Increase SDK constraint to ^3.5.0-259.0.dev.
+* Allow passing additional arguments to `dart compile wasm`.
 
 ## 0.6.5
 
