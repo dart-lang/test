@@ -956,7 +956,7 @@ final class FailureDetail {
   ///
   ///   a List that:
   ///     has length that:
-  ///       equals <3>
+  ///       equals &lt;3&gt;
   ///
   /// If the actual value had an incorrect length, the [depth] will be `1` to
   /// indicate that the failure occurred checking one of the expectations
