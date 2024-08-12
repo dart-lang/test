@@ -4,22 +4,14 @@ sdk:
 - pubspec
 - dev
 
+os:
+- linux
+- windows
+
 stages:
 - analyze_and_format:
   - group:
     - format
     - analyze: --fatal-infos
 - unit_test:
-  - group:
-    - command:
-      - pushd /tmp
-      - wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb
-      - sudo dpkg -i google-chrome-beta_current_amd64.deb
-      - popd
-      - which google-chrome-beta
-      os:
-        - linux
-    # The config here is a regression test for https://github.com/dart-lang/test/issues/2006
-    - test: --timeout=60s
-      os:
-      - linux
+  - test
