@@ -918,7 +918,7 @@ final class FailureDetail {
   ///
   ///   a List that:
   ///     has length that:
-  ///       equals <3>
+  ///       equals &lt;3&gt;
   final Iterable<String> expected;
 
   /// A description of the conditions the checked value satisfied.
