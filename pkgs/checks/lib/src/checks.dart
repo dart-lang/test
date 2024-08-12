@@ -908,11 +908,11 @@ final class CheckFailure {
 final class FailureDetail {
   /// A description of all the conditions the subject was expected to satisfy.
   ///
-  /// Each subject has a label. At the root the label is typically "a <Type>"
-  /// and nested subjects get a label based on the condition which extracted a
-  /// property for further checks. Each level of nesting is described as
-  /// "<label> that:" followed by an indented list of the expectations for that
-  /// property.
+  /// Each subject has a label. At the root the label is typically "a
+  /// &lt;Type&gt;" and nested subjects get a label based on the condition
+  /// which extracted a property for further checks. Each level of nesting is
+  /// described as "&lt;label&gt; that:" followed by an indented list of the
+  /// expectations for that property.
   ///
   /// For example:
   ///
