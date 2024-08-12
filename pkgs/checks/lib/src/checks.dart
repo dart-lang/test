@@ -908,17 +908,17 @@ final class CheckFailure {
 final class FailureDetail {
   /// A description of all the conditions the subject was expected to satisfy.
   ///
-  /// Each subject has a label. At the root the label is typically "a <Type>"
-  /// and nested subjects get a label based on the condition which extracted a
-  /// property for further checks. Each level of nesting is described as
-  /// "<label> that:" followed by an indented list of the expectations for that
-  /// property.
+  /// Each subject has a label. At the root the label is typically "a
+  /// &lt;Type&gt;" and nested subjects get a label based on the condition
+  /// which extracted a property for further checks. Each level of nesting is
+  /// described as "&lt;label&gt; that:" followed by an indented list of the
+  /// expectations for that property.
   ///
   /// For example:
   ///
   ///   a List that:
   ///     has length that:
-  ///       equals <3>
+  ///       equals &lt;3&gt;
   final Iterable<String> expected;
 
   /// A description of the conditions the checked value satisfied.
@@ -956,7 +956,7 @@ final class FailureDetail {
   ///
   ///   a List that:
   ///     has length that:
-  ///       equals <3>
+  ///       equals &lt;3&gt;
   ///
   /// If the actual value had an incorrect length, the [depth] will be `1` to
   /// indicate that the failure occurred checking one of the expectations
