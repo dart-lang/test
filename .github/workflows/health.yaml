@@ -6,3 +6,5 @@ on:
 jobs:
   health:
     uses: dart-lang/ecosystem/.github/workflows/health.yaml@main
+    permissions:
+      pull-requests: write
