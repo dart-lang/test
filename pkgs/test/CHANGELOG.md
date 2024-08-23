@@ -1,7 +1,7 @@
 ## 1.25.9-wip
 
 * Fix dart2wasm tests on windows.
-* Increase SDK constraint to ^3.5.0-259.0.dev.
+* Increase SDK constraint to ^3.5.0-300.0.dev.
 * Support running Node.js tests compiled with dart2wasm.
 
 ## 1.25.8

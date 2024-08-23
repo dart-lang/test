@@ -6,7 +6,7 @@ repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
 resolution: workspace
 
 environment:
-  sdk: ^3.5.0-259.0.dev
+  sdk: ^3.5.0-300.0.dev
 
 dependencies:
   async: ^2.5.0
