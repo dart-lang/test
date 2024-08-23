@@ -42,7 +42,7 @@ class WasmCompilerPool extends CompilerPool {
         'compile',
         'wasm',
         '--enable-asserts',
-        '--packages=${(await packageConfigUri).path}',
+        '--packages=${(await packageConfigUri).toFilePath()}',
         for (var experiment in enabledExperiments)
           '--enable-experiment=$experiment',
         '-O0',
