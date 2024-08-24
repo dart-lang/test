@@ -16,6 +16,7 @@ import 'package:test_api/backend.dart'
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/plugin/customizable_platform.dart'; // ignore: implementation_imports
@@ -110,7 +111,19 @@ class NodePlatform extends PlatformPlugin
       process.stdout.transform(lineSplitter).listen(print);
       process.stderr.transform(lineSplitter).listen(print);
 
-      var socket = await StreamGroup.merge(servers).first;
+      // Wait for the first connection (either over ipv4 or v6). If the proccess
+      // exits before it connects, throw instead of waiting for a connection
+      // indefinitely.
+      var socket = await Future.any([
+        StreamGroup.merge(servers).first,
+        process.exitCode.then((_) => null),
+      ]);
+
+      if (socket == null) {
+        throw LoadException(
+            path, 'Node exited before connecting to the test channel.');
+      }
+
       var channel = StreamChannel(socket.cast<List<int>>(), socket)
           .transform(StreamChannelTransformer.fromCodec(utf8))
           .transform(_chunksToLines)

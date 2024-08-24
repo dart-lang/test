@@ -63,6 +63,16 @@ String? skipBelowMajorNodeVersion(int minimumMajorVersion) {
   return null;
 }
 
+String? skipAboveMajorNodeVersion(int maximumMajorVersion) {
+  final (:major, :full) = _nodeVersion ??= _readNodeVersion();
+  if (major > maximumMajorVersion) {
+    return 'This test requires Node $maximumMajorVersion.x or older, '
+        'but is running on $full';
+  }
+
+  return null;
+}
+
 void main() {
   setUpAll(precompileTestExecutable);
 
@@ -226,6 +236,37 @@ void main() {
     expect(test.stdout, emitsThrough(contains('+1 -2: Some tests failed.')));
     await test.shouldExit(1);
   }, skip: skipBelowMajorNodeVersion(22));
+
+  test(
+    'gracefully handles wasm errors on old node versions',
+    () async {
+      // Old Node.JS versions can't read the WebAssembly modules emitted by
+      // dart2wasm. The node process exits before connecting to the server
+      // opened by the test runner, leading to timeouts. So, this is a
+      // regression test for https://github.com/dart-lang/test/pull/2259#issuecomment-2307868442
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {
+            // Should pass on newer node versions
+          });
+        }
+      ''').create();
+
+      var test = await runTest(['-p', 'node', '-c', 'dart2wasm', 'test.dart']);
+      expect(
+        test.stdout,
+        emitsInOrder([
+          emitsThrough(
+              contains('Node exited before connecting to the test channel.')),
+          emitsThrough(contains('-1: Some tests failed.')),
+        ]),
+      );
+      await test.shouldExit(1);
+    },
+    skip: skipAboveMajorNodeVersion(21),
+  );
 
   test('forwards prints from the Node test', () async {
     await d.file('test.dart', '''
