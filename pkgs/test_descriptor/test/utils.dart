@@ -4,7 +4,7 @@
 
 import 'package:test/test.dart';
 
-/// Converts a [Stream<List<int>>] to a flat byte future.
+/// Converts a [Stream]`<List<int>>` to a flat byte future.
 Future<List<int>> byteStreamToList(Stream<List<int>> stream) =>
     stream.fold(<int>[], (buffer, chunk) {
       buffer.addAll(chunk);
