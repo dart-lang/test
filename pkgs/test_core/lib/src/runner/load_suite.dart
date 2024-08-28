@@ -66,7 +66,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  final Future<(Zone, {RunnerSuite suite})?> _suiteAndZone;
+  final Future<({RunnerSuite suite, Zone zone})?> _suiteAndZone;
 
   /// Returns the test that loads the suite.
   ///
@@ -85,7 +85,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite(String name, SuiteConfiguration config,
       SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
       {String? path}) {
-    var completer = Completer<(Zone, {RunnerSuite suite})?>.sync();
+    var completer = Completer<({RunnerSuite suite, Zone zone})?>.sync();
     return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker!.addOutstandingCallback();
@@ -105,7 +105,8 @@ class LoadSuite extends Suite implements RunnerSuite {
           return;
         }
 
-        completer.complete(suite == null ? null : (suite: suite, Zone.current));
+        completer.complete(
+            suite == null ? null : (suite: suite, zone: Zone.current));
         invoker.removeOutstandingCallback();
       }());
 
@@ -178,12 +179,12 @@ class LoadSuite extends Suite implements RunnerSuite {
     return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 
-      var (:suite, zone) = pair;
+      var (:suite, :zone) = pair;
       RunnerSuite? newSuite;
       zone.runGuarded(() {
         newSuite = change(suite);
       });
-      return newSuite == null ? null : (suite: newSuite!, zone);
+      return newSuite == null ? null : (suite: newSuite!, zone: zone);
     }));
   }
 
