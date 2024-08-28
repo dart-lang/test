@@ -12,7 +12,6 @@ import 'package:test_api/src/backend/platform_selector.dart'; // ignore: impleme
 import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
 
 import '../util/dart.dart';
-import '../util/pair.dart';
 
 /// Parse the test metadata for the test file at [path] with [contents].
 ///
@@ -80,8 +79,7 @@ class _Parser {
     for (var annotation in _annotations) {
       var pair =
           _resolveConstructor(annotation.name, annotation.constructorName);
-      var name = pair.first;
-      var constructorName = pair.last;
+      var (name, constructorName) = pair;
 
       if (name == 'TestOn') {
         _assertSingle(testOn, 'TestOn', annotation);
@@ -309,7 +307,7 @@ class _Parser {
   ///
   /// Since the parsed file isn't fully resolved, this is necessary to
   /// disambiguate between prefixed names and named constructors.
-  Pair<String, String?> _resolveConstructor(
+  (String, String?) _resolveConstructor(
       Identifier identifier, SimpleIdentifier? constructorName) {
     // The syntax is ambiguous between named constructors and prefixed
     // annotations, so we need to resolve that ambiguity using the known
@@ -329,7 +327,7 @@ class _Parser {
           : identifier.name;
       if (constructorName != null) namedConstructor = constructorName.name;
     }
-    return Pair(className, namedConstructor);
+    return (className, namedConstructor);
   }
 
   /// Parses a constructor invocation for [className].
