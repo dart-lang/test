@@ -11,38 +11,38 @@ final class Runtime {
 
   /// The command-line Dart VM.
   static const Runtime vm = Runtime('VM', 'vm', Compiler.kernel,
-      [Compiler.kernel, Compiler.source, Compiler.exe],
+      {Compiler.kernel, Compiler.source, Compiler.exe},
       isDartVM: true);
 
   /// Google Chrome.
   static const Runtime chrome = Runtime('Chrome', 'chrome', Compiler.dart2js,
-      [Compiler.dart2js, Compiler.dart2wasm],
+      {Compiler.dart2js, Compiler.dart2wasm},
       isBrowser: true, isBlink: true);
 
   /// Mozilla Firefox.
   static const Runtime firefox = Runtime('Firefox', 'firefox', Compiler.dart2js,
-      [Compiler.dart2js, Compiler.dart2wasm],
+      {Compiler.dart2js, Compiler.dart2wasm},
       isBrowser: true);
 
   /// Apple Safari.
-  static const Runtime safari = Runtime(
-      'Safari', 'safari', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime safari = Runtime('Safari', 'safari', Compiler.dart2js,
+      {Compiler.dart2js, Compiler.dart2wasm},
       isBrowser: true);
 
   /// Microsoft Internet Explorer.
   @Deprecated('Internet Explorer is no longer supported')
   static const Runtime internetExplorer = Runtime(
-      'Internet Explorer', 'ie', Compiler.dart2js, [Compiler.dart2js],
+      'Internet Explorer', 'ie', Compiler.dart2js, {Compiler.dart2js},
       isBrowser: true);
 
   /// Microsoft Edge (based on Chromium).
   static const Runtime edge = Runtime(
-      'Microsoft Edge', 'edge', Compiler.dart2js, [Compiler.dart2js],
+      'Microsoft Edge', 'edge', Compiler.dart2js, {Compiler.dart2js},
       isBrowser: true, isBlink: true);
 
   /// The command-line Node.js VM.
   static const Runtime nodeJS = Runtime('Node.js', 'node', Compiler.dart2js,
-      [Compiler.dart2js, Compiler.dart2wasm]);
+      {Compiler.dart2js, Compiler.dart2wasm});
 
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [
@@ -89,7 +89,7 @@ final class Runtime {
   final Compiler defaultCompiler;
 
   /// All the supported compilers for this runtime.
-  final List<Compiler> supportedCompilers;
+  final Set<Compiler> supportedCompilers;
 
   const Runtime(
       this.name, this.identifier, this.defaultCompiler, this.supportedCompilers,
@@ -118,11 +118,11 @@ final class Runtime {
     var name = map['name'] as String;
     var identifier = map['identifier'] as String;
     var defaultCompiler =
-        Compiler.deserialize(map['defaultCompiler'] as Object);
-    var supportedCompilers = [
+        Compiler.deserialize(map['defaultCompiler'] as String);
+    var supportedCompilers = {
       for (var compiler in map['supportedCompilers'] as List)
-        Compiler.deserialize(compiler as Object),
-    ];
+        Compiler.deserialize(compiler as String),
+    };
 
     var parent = map['parent'];
     if (parent != null) {

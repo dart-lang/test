@@ -53,7 +53,7 @@ final class SuitePlatform {
     var map = serialized as Map;
     return SuitePlatform(Runtime.deserialize(map['runtime'] as Object),
         compiler: map.containsKey('compiler')
-            ? Compiler.deserialize(map['compiler'] as Object)
+            ? Compiler.deserialize(map['compiler'] as String)
             : null,
         os: OperatingSystem.find(map['os'] as String),
         inGoogle: map['inGoogle'] as bool);
