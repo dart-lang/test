@@ -3,6 +3,7 @@
 * Fix dart2wasm tests on windows.
 * Increase SDK constraint to ^3.5.0-311.0.dev.
 * Support running Node.js tests compiled with dart2wasm.
+* Update binary location for Firefox on MacOS.
 
 ## 1.25.8
 
