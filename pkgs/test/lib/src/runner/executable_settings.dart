@@ -20,18 +20,14 @@ class ExecutableSettings {
   /// looked up on the system path. It may not be relative.
   final String? _linuxExecutable;
 
-  /// The command to execute on Mac OS.
+  /// Potential commands to execute on Mac OS.
   ///
-  /// This may be a basename or an absolute path.
-  /// If this is a basename it is resolved by the OS on the system path.
-  /// Otherwise, the path must be absolute, not relative.
-  final String? _macOSExecutable;
-
-  /// Potential absolute paths to the executable on Mac OS.
-  ///
-  /// When multiple paths are provided the first to exist on the filesystem is
-  /// chosen. Paths must be absolute.
-  final Set<String>? _macOSAbsolutePaths;
+  /// The values may be an absolute path, or a basename.
+  /// The chosen command will be the first value from this list which either is
+  /// a full path that exists, or is a basename. When a basename is included it
+  /// should always be at the end of the list because it will always terminate
+  /// the search through the list. Relative paths are not allowed.
+  final List<String>? _macOSExectuables;
 
   /// The path to the executable on Windows.
   ///
@@ -53,12 +49,13 @@ class ExecutableSettings {
     }
 
     if (Platform.isMacOS) {
-      if (_macOSAbsolutePaths case final paths?) {
+      if (_macOSExectuables case final paths?) {
         for (final path in paths) {
-          if (File(path).existsSync()) return path;
+          if (p.basename(path) == path) return path;
+          if (p.isAbsolute(path) && File(path).existsSync()) return path;
         }
       }
-      return (_macOSExecutable ?? _macOSAbsolutePaths?.first)!;
+      throw ArgumentError('Missing macOsExecutable');
     }
     if (!Platform.isWindows) return _linuxExecutable!;
     final windowsExecutable = _windowsExecutable!;
@@ -191,14 +188,14 @@ class ExecutableSettings {
       {Iterable<String>? arguments,
       String? linuxExecutable,
       String? macOSExecutable,
-      Set<String>? macOsAbsolutePaths,
+      List<String>? macOSExecutables,
       String? windowsExecutable,
       String? environmentOverride,
       bool? headless})
       : arguments = arguments == null ? const [] : List.unmodifiable(arguments),
         _linuxExecutable = linuxExecutable,
-        _macOSExecutable = macOSExecutable,
-        _macOSAbsolutePaths = macOsAbsolutePaths,
+        _macOSExectuables =
+            _normalizeMacExecutable(macOSExecutable, macOSExecutables),
         _windowsExecutable = windowsExecutable,
         _environmentOverride = environmentOverride,
         _headless = headless;
@@ -208,7 +205,13 @@ class ExecutableSettings {
       arguments: arguments.toList()..addAll(other.arguments),
       headless: other._headless ?? _headless,
       linuxExecutable: other._linuxExecutable ?? _linuxExecutable,
-      macOSExecutable: other._macOSExecutable ?? _macOSExecutable,
-      macOsAbsolutePaths: other._macOSAbsolutePaths ?? _macOSAbsolutePaths,
+      macOSExecutables: other._macOSExectuables ?? _macOSExectuables,
       windowsExecutable: other._windowsExecutable ?? _windowsExecutable);
+}
+
+List<String>? _normalizeMacExecutable(
+    String? singleArgument, List<String>? listArgument) {
+  if (listArgument != null) return listArgument;
+  if (singleArgument != null) return [singleArgument];
+  return null;
 }
