@@ -20,7 +20,7 @@ class ExecutableSettings {
   /// looked up on the system path. It may not be relative.
   final String? _linuxExecutable;
 
-  /// Potential commands to execute on Mac OS.
+  /// Potential commands to execute on Mac OS to launch this executable.
   ///
   /// The values may be an absolute path, or a basename.
   /// The chosen command will be the first value from this list which either is
