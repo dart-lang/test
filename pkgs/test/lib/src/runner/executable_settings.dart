@@ -49,8 +49,8 @@ class ExecutableSettings {
     }
 
     if (Platform.isMacOS) {
-      if (_macOSExectuables case final paths?) {
-        for (final path in paths) {
+      if (_macOSExectuables != null) {
+        for (final path in _macOSExectuables) {
           if (p.basename(path) == path) return path;
           if (p.isAbsolute(path) && File(path).existsSync()) return path;
         }
