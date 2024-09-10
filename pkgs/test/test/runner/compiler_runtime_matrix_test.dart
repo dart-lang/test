@@ -26,8 +26,17 @@ void main() {
           (runtime == Runtime.safari && !Platform.isMacOS)) {
         continue;
       }
+      String? skipReason;
+      if (runtime == Runtime.safari) {
+        skipReason = 'https://github.com/dart-lang/test/issues/1253';
+      } else if (compiler == Compiler.dart2wasm) {
+        skipReason = 'Wasm tests are experimental and require special setup';
+      } else if ([Runtime.firefox, Runtime.nodeJS].contains(runtime) &&
+          Platform.isWindows) {
+        skipReason = 'https://github.com/dart-lang/test/issues/1942';
+      }
       group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
-          () {
+          skip: skipReason, () {
         final testArgs = [
           'test.dart',
           '-p',
@@ -112,13 +121,7 @@ void main() {
                   ? 'https://github.com/dart-lang/test/issues/2150'
                   : null);
         }
-      },
-          skip: compiler == Compiler.dart2wasm
-              ? 'Wasm tests are experimental and require special setup'
-              : [Runtime.firefox, Runtime.nodeJS].contains(runtime) &&
-                      Platform.isWindows
-                  ? 'https://github.com/dart-lang/test/issues/1942'
-                  : null);
+      });
     }
   }
 }

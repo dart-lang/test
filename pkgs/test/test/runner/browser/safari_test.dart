@@ -18,7 +18,8 @@ import 'code_server.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('starts Safari with the given URL', () async {
+  test('starts Safari with the given URL',
+      skip: 'https://github.com/dart-lang/test/issues/1253', () async {
     var server = await CodeServer.start();
 
     server.handleJavaScript('''
