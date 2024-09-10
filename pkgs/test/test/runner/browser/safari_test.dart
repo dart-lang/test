@@ -55,7 +55,8 @@ webSocket.addEventListener("open", function() {
             startsWith('Failed to run Safari: $noSuchFileMessage'))));
   });
 
-  test('can run successful tests', () async {
+  test('can run successful tests',
+      skip: 'https://github.com/dart-lang/test/issues/1253', () async {
     await d.file('test.dart', '''
 import 'package:test/test.dart';
 
