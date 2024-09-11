@@ -44,6 +44,9 @@ void printOnFailure(String message) {
 /// test body after marking it as skipped.
 void markTestSkipped(String message) => _currentInvoker..skip(message);
 
+/// The relative path from the package root to the current test suite, if known.
+String? get suitePath => Zone.current[#test.suitePath] as String?;
+
 Invoker get _currentInvoker =>
     Invoker.current ??
     (throw StateError(

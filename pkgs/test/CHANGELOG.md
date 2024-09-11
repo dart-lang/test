@@ -3,6 +3,8 @@
 * Fix dart2wasm tests on windows.
 * Increase SDK constraint to ^3.5.0-311.0.dev.
 * Support running Node.js tests compiled with dart2wasm.
+* Add `suitePath` getter, which can return the package root relative path to
+  the current test suite being ran, if available
 
 ## 1.25.8
 

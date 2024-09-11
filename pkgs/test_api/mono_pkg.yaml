@@ -13,7 +13,7 @@ stages:
     - dev
 - unit_test:
   - group:
-    - command: dart test --preset travis -x browser
+    - command: dart test -p vm,chrome -c dart2js,dart2wasm,exe,kernel,source
       os:
       - linux
       - windows

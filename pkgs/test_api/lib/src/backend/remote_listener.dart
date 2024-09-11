@@ -119,21 +119,26 @@ final class RemoteListener {
 
         await declarer.declare(main);
 
+        final path = message['path'] as String;
         var suite = Suite(
           declarer.build(),
           SuitePlatform.deserialize(message['platform'] as Object),
-          path: message['path'] as String,
+          path: path,
           ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
         );
 
         runZoned(() {
           Invoker.guard(
               () => RemoteListener._(suite, printZone)._listen(channel));
-        },
-            // Make the declarer visible to running tests so that they'll throw
-            // useful errors when calling `test()` and `group()` within a test,
-            // and so they can add to the declarer's `tearDownAll()` list.
-            zoneValues: {#test.declarer: declarer});
+        }, zoneValues: {
+          // Make the declarer visible to running tests so that they'll throw
+          // useful errors when calling `test()` and `group()` within a test,
+          // and so they can add to the declarer's `tearDownAll()` list.
+          #test.declarer: declarer,
+          // Make the test suite path visible to running tests so that they can
+          // ask for it, if available.
+          #test.suitePath: path,
+        });
       }, (error, stackTrace) {
         _sendError(channel, error, stackTrace, verboseChain);
       }, zoneSpecification: spec);

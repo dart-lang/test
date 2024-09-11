@@ -20,4 +20,9 @@ export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridCode, spawnHybridUri;
 export 'src/scaffolding/test_structure.dart'
     show addTearDown, group, setUp, setUpAll, tearDown, tearDownAll, test;
 export 'src/scaffolding/utils.dart'
-    show markTestSkipped, printOnFailure, pumpEventQueue, registerException;
+    show
+        markTestSkipped,
+        printOnFailure,
+        pumpEventQueue,
+        registerException,
+        suitePath;

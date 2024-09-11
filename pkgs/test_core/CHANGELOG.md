@@ -3,6 +3,8 @@
 * Fix dart2wasm tests on windows.
 * Increase SDK constraint to ^3.5.0-311.0.dev.
 * Allow passing additional arguments to `dart compile wasm`.
+* Add `suitePath` getter, which can return the package root relative path to
+  the current test suite being ran, if available
 
 ## 0.6.5
 
