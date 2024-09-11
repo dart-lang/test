@@ -52,10 +52,18 @@ class ExecutableSettings {
       if (_macOSExectuables != null) {
         for (final path in _macOSExectuables) {
           if (p.basename(path) == path) return path;
-          if (p.isAbsolute(path) && File(path).existsSync()) return path;
+          if (p.isAbsolute(path)) {
+            if (File(path).existsSync()) return path;
+            print('Non-existent absolute path: $path');
+          } else {
+            throw ArgumentError(
+                'Mac OS executable must be a basename or an absolute path.'
+                ' Got relative path: $path');
+          }
         }
       }
-      throw ArgumentError('Missing macOsExecutable');
+      throw ArgumentError('Could not find an existing macOS executable in'
+          '$_macOSExectuables');
     }
     if (!Platform.isWindows) return _linuxExecutable!;
     final windowsExecutable = _windowsExecutable!;
