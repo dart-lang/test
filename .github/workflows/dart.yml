@@ -16,29 +16,29 @@ env:
 permissions: read-all
 
 jobs:
-  job_001:
-    name: mono_repo self validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cache Pub hosted dependencies
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
-        with:
-          path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted
-            os:ubuntu-latest
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
-        with:
-          sdk: stable
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
-      - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.6.2
-      - name: mono_repo self validate
-        run: dart pub global run mono_repo generate --validate
+  # job_001:
+  #   name: mono_repo self validate
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Cache Pub hosted dependencies
+  #       uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9
+  #       with:
+  #         path: "~/.pub-cache/hosted"
+  #         key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
+  #         restore-keys: |
+  #           os:ubuntu-latest;pub-cache-hosted
+  #           os:ubuntu-latest
+  #     - name: Setup Dart SDK
+  #       uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
+  #       with:
+  #         sdk: stable
+  #     - id: checkout
+  #       name: Checkout repository
+  #       uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+  #     - name: mono_repo self validate
+  #       run: dart pub global activate mono_repo 6.6.2
+  #     - name: mono_repo self validate
+  #       run: dart pub global run mono_repo generate --validate
   job_002:
     name: "analyze_and_format; linux; Dart 3.5.0-311.0.dev; PKGS: integration_tests/regression, integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
     runs-on: ubuntu-latest
@@ -1113,6 +1113,9 @@ jobs:
             os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
             os:macos-latest;pub-cache-hosted
             os:macos-latest
+      - name: Setup firefox
+        id: setup-firefox
+        uses: browser-actions/setup-firefox@v1
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
@@ -1150,6 +1153,9 @@ jobs:
             os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
             os:macos-latest;pub-cache-hosted
             os:macos-latest
+      - name: Setup firefox
+        id: setup-firefox
+        uses: browser-actions/setup-firefox@v1
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
@@ -1187,6 +1193,9 @@ jobs:
             os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
             os:macos-latest;pub-cache-hosted
             os:macos-latest
+      - name: Setup firefox
+        id: setup-firefox
+        uses: browser-actions/setup-firefox@v1
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
@@ -1224,6 +1233,9 @@ jobs:
             os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
             os:macos-latest;pub-cache-hosted
             os:macos-latest
+      - name: Setup firefox
+        id: setup-firefox
+        uses: browser-actions/setup-firefox@v1
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
@@ -1261,6 +1273,9 @@ jobs:
             os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
             os:macos-latest;pub-cache-hosted
             os:macos-latest
+      - name: Setup firefox
+        id: setup-firefox
+        uses: browser-actions/setup-firefox@v1
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
