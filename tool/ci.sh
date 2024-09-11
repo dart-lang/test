@@ -116,8 +116,8 @@ for PKG in ${PKGS}; do
         dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
       command_11)
-        echo 'dart test --preset travis -x browser'
-        dart test --preset travis -x browser || EXIT_CODE=$?
+        echo 'dart test -p vm,chrome -c dart2js,dart2wasm,exe,kernel,source'
+        dart test -p vm,chrome -c dart2js,dart2wasm,exe,kernel,source || EXIT_CODE=$?
         ;;
       format)
         echo 'dart format --output=none --set-exit-if-changed .'
