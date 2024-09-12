@@ -44,6 +44,9 @@ class Firefox extends Browser {
     for (final file in Directory('/Applications/').listSync()) {
       print(file.path);
     }
+    for (final file in Directory('~').listSync()) {
+      print(file.path);
+    }
 
     var process = await Process.start(settings.executable, [
       '--profile',
