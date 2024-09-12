@@ -27,7 +27,6 @@ final defaultSettings = UnmodifiableMapView({
       macOSExecutables: [
         '/Applications/Firefox.app/Contents/MacOS/firefox-bin',
         '/Applications/Firefox.app/Contents/MacOS/firefox',
-        'firefox',
       ],
       windowsExecutable: r'Mozilla Firefox\firefox.exe',
       environmentOverride: 'FIREFOX_EXECUTABLE'),

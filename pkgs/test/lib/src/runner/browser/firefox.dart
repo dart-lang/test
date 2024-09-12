@@ -41,6 +41,10 @@ class Firefox extends Browser {
     var dir = createTempDir();
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
+    for (final file in Directory('/Applications/').listSync()) {
+      print(file.path);
+    }
+
     var process = await Process.start(settings.executable, [
       '--profile',
       dir,
