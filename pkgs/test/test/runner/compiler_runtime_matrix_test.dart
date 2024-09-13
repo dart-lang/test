@@ -34,6 +34,8 @@ void main() {
       } else if ([Runtime.firefox, Runtime.nodeJS].contains(runtime) &&
           Platform.isWindows) {
         skipReason = 'https://github.com/dart-lang/test/issues/1942';
+      } else if (runtime == Runtime.firefox && Platform.isMacOS) {
+        skipReason = 'https://github.com/dart-lang/test/pull/2276';
       }
       group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
           skip: skipReason, () {

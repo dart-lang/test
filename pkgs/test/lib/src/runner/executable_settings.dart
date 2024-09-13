@@ -61,8 +61,8 @@ class ExecutableSettings {
           }
         }
       }
-      throw ArgumentError('Could not find an existing macOS executable in'
-          '$_macOSExectuables');
+      throw ArgumentError('Could not find a command basename or an existing '
+          'path in $_macOSExectuables');
     }
     if (!Platform.isWindows) return _linuxExecutable!;
     final windowsExecutable = _windowsExecutable!;
