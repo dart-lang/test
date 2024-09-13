@@ -41,16 +41,6 @@ class Firefox extends Browser {
     var dir = createTempDir();
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
-    for (final file in Directory('/Applications/').listSync()) {
-      print(file.path);
-    }
-    final home = Platform.environment['HOME']!;
-    for (final file in Directory(home).listSync()) {
-      print(file.path);
-    }
-    final findResult = await Process.run('find', ['firefox']);
-    print(findResult.stdout);
-
     var process = await Process.start(settings.executable, [
       '--profile',
       dir,
