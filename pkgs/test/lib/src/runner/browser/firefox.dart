@@ -44,11 +44,13 @@ class Firefox extends Browser {
     for (final file in Directory('/Applications/').listSync()) {
       print(file.path);
     }
-    for (final file in Directory('~').listSync()) {
+    final home = Platform.environment['HOME']!;
+    for (final file in Directory(home).listSync()) {
       print(file.path);
     }
     final findResult = await Process.run('find', ['firefox']);
     print(findResult.stdout);
+
     var process = await Process.start(settings.executable, [
       '--profile',
       dir,
