@@ -3,6 +3,7 @@
 * Fix dart2wasm tests on windows.
 * Increase SDK constraint to ^3.5.0-311.0.dev.
 * Support running Node.js tests compiled with dart2wasm.
+* Allow `firefox` or `firefox-bin` executable name on macOS.
 
 ## 1.25.8
 
