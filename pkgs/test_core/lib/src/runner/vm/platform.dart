@@ -107,6 +107,8 @@ class VMPlatform extends PlatformPlugin {
 
     Environment? environment;
     IsolateRef? isolateRef;
+    String? isolateID;
+    Uri? serverUri;
     if (_config.debug) {
       if (platform.compiler == Compiler.exe) {
         throw UnsupportedError(
@@ -115,17 +117,17 @@ class VMPlatform extends PlatformPlugin {
       }
       var info =
           await Service.controlWebServer(enable: true, silenceOutput: true);
-      // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
-      var isolateID = Service.getIsolateID(isolate!)!;
+      serverUri = info.serverUri!;
+      isolateID = Service.getIsolateId(isolate!)!;
 
-      var serviceUri = _wsUriFor(info.serverUri!);
-      client = await vmServiceConnectUri(serviceUri.toString());
+      var serviceWebsocket = _wsUriFor(serverUri);
+      client = await vmServiceConnectUri(serviceWebsocket.toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
           .isolates!
           .firstWhere((isolate) => isolate.number == isolateNumber.toString());
       await client.setName(isolateRef.id!, path);
-      var url = _devtoolsUriFor(serviceUri);
+      var url = _devtoolsUriFor(serviceWebsocket);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -133,7 +135,7 @@ class VMPlatform extends PlatformPlugin {
 
     var controller = deserializeSuite(
         path, platform, suiteConfig, environment, channel.cast(), message,
-        gatherCoverage: () => _gatherCoverage(environment!));
+        gatherCoverage: () => _gatherCoverage(serverUri!, isolateID!));
 
     if (isolateRef != null) {
       await client!.streamListen('Debug');
@@ -327,11 +329,10 @@ stderr: ${processResult.stderr}''');
   }
 }
 
-Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
-  final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
-      .queryParameters['isolateId'];
-  return await collect(environment.observatoryUrl!, false, false, false, {},
-      isolateIds: {isolateId!});
+Future<Map<String, dynamic>> _gatherCoverage(
+    Uri serviceUri, String isolateId) async {
+  return await collect(serviceUri, false, false, false, {},
+      isolateIds: {isolateId});
 }
 
 Uri _wsUriFor(Uri observatoryUrl) =>
