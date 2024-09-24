@@ -118,18 +118,14 @@ class VMPlatform extends PlatformPlugin {
       // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
       var isolateID = Service.getIsolateID(isolate!)!;
 
-      var libraryPath = (await absoluteUri(path)).toString();
-      var serverUri = info.serverUri!;
-      client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
+      var serviceUri = _wsUriFor(info.serverUri!);
+      client = await vmServiceConnectUri(serviceUri.toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
           .isolates!
           .firstWhere((isolate) => isolate.number == isolateNumber.toString());
       await client.setName(isolateRef.id!, path);
-      var libraryRef = (await client.getIsolate(isolateRef.id!))
-          .libraries!
-          .firstWhere((library) => library.uri == libraryPath);
-      var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
+      var url = _devtoolsUriFor(serviceUri);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -341,10 +337,14 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
 Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-    fragment: Uri(
-        path: '/inspect',
-        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
+Uri _devtoolsUriFor(Uri serviceUri) {
+  assert(serviceUri.isScheme('ws'));
+  return serviceUri.resolve('devtools/debugger').replace(
+        scheme: 'http',
+        queryParameters: {'uri': '$serviceUri'},
+        fragment: '',
+      );
+}
 
 var _hasRegistered = false;
 void _setupPauseAfterTests() {
