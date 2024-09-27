@@ -125,6 +125,11 @@ check(because: 'some explanation', actual).expectation();
 -   `pairwiseCompare` -> `pairwiseComparesTo`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
+-   `containsAllInOrder(iterable)` ->
+    `Subject<Iterable>.containsMatchingInOrder(iterable)` to compare with
+    conditions other than equals,
+    `Subject<Iterable>.containsEqualInOrder(iterable)` to compare each index
+    with the equality operator (`==`).
 
 ### Members from `package:test/expect.dart` without a direct replacement
 

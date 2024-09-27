@@ -2,6 +2,8 @@
 
 -   Update min SDK constraint to 3.4.0.
 -   Always wrap Condition descriptions in angle brackets.
+-   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
+    combined functionality in `containsInOrder`.
 
 ## 0.3.0
 

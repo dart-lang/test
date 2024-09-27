@@ -115,6 +115,74 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     });
   }
 
+  /// Expects that the iterable contains a value matching each condition in
+  /// [conditions] in the given order, with any extra elements between them.
+  ///
+  /// For example, the following will succeed:
+  ///
+  /// ```dart
+  /// check([1, 0, 2, 0, 3]).containsMatchingInOrder([
+  ///   (it) => it.isLessThan(2),
+  ///   (it) => it.isLessThan(3),
+  ///   (it) => it.isLessThan(4),
+  /// ]);
+  /// ```
+  void containsMatchingInOrder(Iterable<Condition<T>> conditions) {
+    context
+        .expect(() => prefixFirst('contains, in order: ', literal(conditions)),
+            (actual) {
+      final expected = conditions.toList();
+      if (expected.isEmpty) {
+        throw ArgumentError('expected may not be empty');
+      }
+      var expectedIndex = 0;
+      for (final element in actual) {
+        final currentExpected = expected[expectedIndex];
+        final matches = softCheck(element, currentExpected) == null;
+        if (matches && ++expectedIndex >= expected.length) return null;
+      }
+      return Rejection(which: [
+        ...prefixFirst(
+            'did not have an element matching the expectation at index '
+            '$expectedIndex ',
+            literal(expected[expectedIndex])),
+      ]);
+    });
+  }
+
+  /// Expects that the iterable contains a value equals to each expected value
+  /// from [elements] in the given order, with any extra elements between
+  /// them.
+  ///
+  /// For example, the following will succeed:
+  ///
+  /// ```dart
+  /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
+  /// ```
+  ///
+  /// Values, will be compared with the equality operator.
+  void containsEqualInOrder(Iterable<T> elements) {
+    context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
+        (actual) {
+      final expected = elements.toList();
+      if (expected.isEmpty) {
+        throw ArgumentError('expected may not be empty');
+      }
+      var expectedIndex = 0;
+      for (final element in actual) {
+        final currentExpected = expected[expectedIndex];
+        final matches = currentExpected == element;
+        if (matches && ++expectedIndex >= expected.length) return null;
+      }
+      return Rejection(which: [
+        ...prefixFirst(
+            'did not have an element equal to the expectation at index '
+            '$expectedIndex ',
+            literal(expected[expectedIndex])),
+      ]);
+    });
+  }
+
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
   void any(Condition<T> elementCondition) {

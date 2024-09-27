@@ -112,6 +112,69 @@ void main() {
       ]);
     });
   });
+
+  group('containsMatchingInOrder', () {
+    test('succeeds for happy case', () {
+      check([0, 1, 0, 2, 0, 3]).containsMatchingInOrder([
+        (it) => it.isLessThan(2),
+        (it) => it.isLessThan(3),
+        (it) => it.isLessThan(4),
+      ]);
+    });
+    test('fails for not found elements', () async {
+      check([0]).isRejectedBy(
+          (it) => it.containsMatchingInOrder([(it) => it.isGreaterThan(0)]),
+          which: [
+            'did not have an element matching the expectation at index 0 '
+                '<A value that:',
+            '  is greater than <0>>'
+          ]);
+    });
+    test('can be described', () {
+      check((Subject<Iterable<int>> it) => it.containsMatchingInOrder([
+            (it) => it.isLessThan(2),
+            (it) => it.isLessThan(3),
+            (it) => it.isLessThan(4),
+          ])).description.deepEquals([
+        '  contains, in order: [<A value that:',
+        '    is less than <2>>,',
+        '  <A value that:',
+        '    is less than <3>>,',
+        '  <A value that:',
+        '    is less than <4>>]',
+      ]);
+      check((Subject<Iterable<int>> it) => it.containsMatchingInOrder(
+              [(it) => it.equals(1), (it) => it.equals(2)]))
+          .description
+          .deepEquals([
+        '  contains, in order: [<A value that:',
+        '    equals <1>>,',
+        '  <A value that:',
+        '    equals <2>>]'
+      ]);
+    });
+  });
+
+  group('containsEqualInOrder', () {
+    test('succeeds for happy case', () {
+      check([0, 1, 0, 2, 0, 3]).containsEqualInOrder([1, 2, 3]);
+    });
+    test('fails for not found elements', () async {
+      check([0]).isRejectedBy((it) => it.containsEqualInOrder([1]), which: [
+        'did not have an element equal to the expectation at index 0 <1>'
+      ]);
+    });
+    test('can be described', () {
+      check((Subject<Iterable<int>> it) => it.containsEqualInOrder([1, 2, 3]))
+          .description
+          .deepEquals(['  contains, in order: [1, 2, 3]']);
+      check((Subject<Iterable<int>> it) => it.containsEqualInOrder([1, 2]))
+          .description
+          .deepEquals([
+        '  contains, in order: [1, 2]',
+      ]);
+    });
+  });
   group('every', () {
     test('succeeds for the happy path', () {
       check(_testIterable).every((it) => it.isGreaterOrEqual(-1));
