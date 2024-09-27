@@ -89,6 +89,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// check([1, 0, 2, 0, 3])
   ///   .containsInOrder([1, (Subject<int> v) => v.isGreaterThan(1), 3]);
   /// ```
+  @Deprecated('Use `containsEqualInOrder` for expectations with values compared'
+      ' with `==` or `containsMatchingInOrder` for other expectations')
   void containsInOrder(Iterable<Object?> elements) {
     context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
         (actual) {
@@ -318,7 +320,24 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [description] is used in the Expected clause. It should be a predicate
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
+  @Deprecated('Use `pairwiseMatches`')
   void pairwiseComparesTo<S>(List<S> expected,
+          Condition<T> Function(S) elementCondition, String description) =>
+      pairwiseMatches(expected, elementCondition, description);
+
+  /// Expects that the iterable contains elements that correspond by the
+  /// [elementCondition] exactly to each element in [expected].
+  ///
+  /// Fails if the iterable has a different length than [expected].
+  ///
+  /// For each element in the iterable, calls [elementCondition] with the
+  /// corresponding element from [expected] to get the specific condition for
+  /// that index.
+  ///
+  /// [description] is used in the Expected clause. It should be a predicate
+  /// without the object, for example with the description 'is less than' the
+  /// full expectation will be: "pairwise is less than $expected"
+  void pairwiseMatches<S>(List<S> expected,
       Condition<T> Function(S) elementCondition, String description) {
     context.expect(() {
       return prefixFirst('pairwise $description ', literal(expected));

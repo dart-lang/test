@@ -122,7 +122,7 @@ check(because: 'some explanation', actual).expectation();
 -   `containsPair(key, value)` -> Use `Subject<Map>[key].equals(value)`
 -   `hasLength(expected)` -> `length.equals(expected)`
 -   `isNot(Matcher)` -> `not(conditionCallback)`
--   `pairwiseCompare` -> `pairwiseComparesTo`
+-   `pairwiseCompare` -> `pairwiseMatches`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
 -   `containsAllInOrder(iterable)` ->
