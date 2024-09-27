@@ -4,7 +4,7 @@
     checking deep collection equality and all the keys can be directly compared
     for equality. This maintains the path into a nested collection for typical
     cases of checking for equality against a purely value collection.
--   Update min SDK constraint to 3.4.0.
+-   Always wrap Condition descriptions in angle brackets.
 
 ## 0.3.0
 

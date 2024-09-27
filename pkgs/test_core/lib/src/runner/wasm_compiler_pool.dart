@@ -17,8 +17,13 @@ import 'suite.dart';
 ///
 /// This limits the number of compiler instances running concurrently.
 class WasmCompilerPool extends CompilerPool {
+  /// Extra arguments to pass to `dart compile js`.
+  final List<String> _extraArgs;
+
   /// The currently-active dart2wasm processes.
   final _processes = <Process>{};
+
+  WasmCompilerPool([this._extraArgs = const []]);
 
   /// Compiles [code] to [path].
   ///
@@ -37,10 +42,11 @@ class WasmCompilerPool extends CompilerPool {
         'compile',
         'wasm',
         '--enable-asserts',
-        '--packages=${(await packageConfigUri).path}',
+        '--packages=${(await packageConfigUri).toFilePath()}',
         for (var experiment in enabledExperiments)
           '--enable-experiment=$experiment',
         '-O0',
+        ..._extraArgs,
         '-o',
         outWasmPath,
         wrapperPath,

@@ -107,8 +107,8 @@ void main() {
           .description
           .deepEquals([
         '  contains, in order: [1,',
-        '  A value that:',
-        '    equals <2>]'
+        '  <A value that:',
+        '    equals <2>>]'
       ]);
     });
   });

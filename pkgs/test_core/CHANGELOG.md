@@ -1,6 +1,8 @@
 ## 0.6.6-wip
 
-* Increase SDK constraint to ^3.5.0-259.0.dev.
+* Fix dart2wasm tests on windows.
+* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Allow passing additional arguments to `dart compile wasm`.
 
 ## 0.6.5
 

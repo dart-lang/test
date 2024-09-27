@@ -15,7 +15,6 @@ import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementa
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
-import '../util/pair.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
@@ -61,13 +60,13 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  Future<RunnerSuite?> get suite async => (await _suiteAndZone)?.first;
+  Future<RunnerSuite?> get suite async => (await _suiteAndZone)?.suite;
 
   /// A future that completes to a pair of [suite] and the load test's [Zone].
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  final Future<Pair<RunnerSuite, Zone>?> _suiteAndZone;
+  final Future<({RunnerSuite suite, Zone zone})?> _suiteAndZone;
 
   /// Returns the test that loads the suite.
   ///
@@ -86,7 +85,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite(String name, SuiteConfiguration config,
       SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
       {String? path}) {
-    var completer = Completer<Pair<RunnerSuite, Zone>?>.sync();
+    var completer = Completer<({RunnerSuite suite, Zone zone})?>.sync();
     return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker!.addOutstandingCallback();
@@ -106,7 +105,8 @@ class LoadSuite extends Suite implements RunnerSuite {
           return;
         }
 
-        completer.complete(suite == null ? null : Pair(suite, Zone.current));
+        completer.complete(
+            suite == null ? null : (suite: suite, zone: Zone.current));
         invoker.removeOutstandingCallback();
       }());
 
@@ -179,12 +179,12 @@ class LoadSuite extends Suite implements RunnerSuite {
     return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 
-      var zone = pair.last;
+      var (:suite, :zone) = pair;
       RunnerSuite? newSuite;
       zone.runGuarded(() {
-        newSuite = change(pair.first);
+        newSuite = change(suite);
       });
-      return newSuite == null ? null : Pair(newSuite!, zone);
+      return newSuite == null ? null : (suite: newSuite!, zone: zone);
     }));
   }
 
