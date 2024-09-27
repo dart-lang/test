@@ -241,14 +241,14 @@ void main() {
     });
   });
 
-  group('pairwiseComparesTo', () {
+  group('pairwiseMatches', () {
     test('succeeds for the happy path', () {
-      check(_testIterable).pairwiseComparesTo([1, 2],
+      check(_testIterable).pairwiseMatches([1, 2],
           (expected) => (it) => it.isLessThan(expected), 'is less than');
     });
     test('fails for mismatched element', () async {
       check(_testIterable).isRejectedBy(
-          (it) => it.pairwiseComparesTo([1, 1],
+          (it) => it.pairwiseMatches([1, 1],
               (expected) => (it) => it.isLessThan(expected), 'is less than'),
           which: [
             'does not have an element at index 1 that:',
@@ -259,7 +259,7 @@ void main() {
     });
     test('fails for too few elements', () {
       check(_testIterable).isRejectedBy(
-          (it) => it.pairwiseComparesTo([1, 2, 3],
+          (it) => it.pairwiseMatches([1, 2, 3],
               (expected) => (it) => it.isLessThan(expected), 'is less than'),
           which: [
             'has too few elements, there is no element to match at index 2'
@@ -267,7 +267,7 @@ void main() {
     });
     test('fails for too many elements', () {
       check(_testIterable).isRejectedBy(
-          (it) => it.pairwiseComparesTo([1],
+          (it) => it.pairwiseMatches([1],
               (expected) => (it) => it.isLessThan(expected), 'is less than'),
           which: ['has too many elements, expected exactly 1']);
     });

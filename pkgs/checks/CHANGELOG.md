@@ -4,6 +4,7 @@
 -   Always wrap Condition descriptions in angle brackets.
 -   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
     combined functionality in `containsInOrder`.
+-   Replace `pairwiseComparesTo` with `pairwiseMatches`.
 
 ## 0.3.0
 
