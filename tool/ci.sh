@@ -127,10 +127,6 @@ for PKG in ${PKGS}; do
         echo 'dart test -p chrome,vm,node'
         dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
-      test_2)
-        echo 'dart test --timeout=60s'
-        dart test --timeout=60s || EXIT_CODE=$?
-        ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"
         exit 64
