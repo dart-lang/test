@@ -2,7 +2,8 @@
 
 sdk:
 - pubspec
-- dev
+# TODO(https://github.com/dart-lang/test/issues/1790) - unskip
+# - dev
 
 os:
 - linux
