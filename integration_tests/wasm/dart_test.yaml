@@ -1,5 +1,9 @@
-platforms: [chrome, firefox]
-# Node doesn't work because the version available in the current Ubuntu GitHub runners is too
-# old to support WASM+GC, which would be required to run Dart tests.
-#platforms: [chrome, firefox, node]
+platforms:
+# TODO(https://github.com/dart-lang/test/issues/1790) - unskip
+#- chrome
+- firefox
+# Node doesn't work because the version available in the current Ubuntu GitHub
+# runners is too old to support WASM+GC, which would be required to run Dart
+# tests.
+#- node
 compilers: [dart2wasm]

@@ -6,7 +6,8 @@ sdk:
 
 os:
 - linux
-- windows
+# TODO(https://github.com/dart-lang/test/issues/1790) - unskip
+# - windows
 
 stages:
 - analyze_and_format:
