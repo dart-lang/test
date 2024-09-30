@@ -8,14 +8,14 @@
 (async () => {
   // Fetch and compile Wasm binary.
   let data = document.getElementById('WasmBootstrapInfo').dataset;
-  let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
 
   // Instantiate the Dart module, importing from the global scope.
-  let dart2wasm = await import('./' + data.jsruntimeurl);
-  let dartInstance = await dart2wasm.instantiate(modulePromise, {});
+  let dart2wasmJsRuntime = await import('./' + data.jsruntimeurl);
+  let compiledModule = await dart2wasmJsRuntime.compileStreaming(fetch(data.wasmurl));
+  let instantiatedModule = await compiledModule.instantiate()
 
   // Call `main`. If tasks are placed into the event loop (by scheduling tasks
   // explicitly or awaiting Futures), these will automatically keep the script
   // alive even after `main` returns.
-  await dart2wasm.invoke(dartInstance);
+  await instantiatedModule.invokeMain();
 })();
