@@ -26,6 +26,6 @@
     // Old, deprecated API.
     let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
     let dartInstance = await dart2wasmJsRuntime.instantiate(modulePromise, {});
-    await dart2wasm.invoke(dartInstance);
+    await dart2wasmJsRuntime.invoke(dartInstance);
   }
 })();
