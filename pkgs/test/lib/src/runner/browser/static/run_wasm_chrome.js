@@ -11,11 +11,21 @@
 
   // Instantiate the Dart module, importing from the global scope.
   let dart2wasmJsRuntime = await import('./' + data.jsruntimeurl);
-  let compiledModule = await dart2wasmJsRuntime.compileStreaming(fetch(data.wasmurl));
-  let instantiatedModule = await compiledModule.instantiate()
 
-  // Call `main`. If tasks are placed into the event loop (by scheduling tasks
-  // explicitly or awaiting Futures), these will automatically keep the script
-  // alive even after `main` returns.
-  await instantiatedModule.invokeMain();
+  // Check whether the JS shim has the new instantiation API.
+  if (dart2wasmJsRuntime.CompiledApp !== undefined) {
+    // New API.
+    let compiledModule = await dart2wasmJsRuntime.compileStreaming(fetch(data.wasmurl));
+    let instantiatedModule = await compiledModule.instantiate()
+
+    // Call `main`. If tasks are placed into the event loop (by scheduling tasks
+    // explicitly or awaiting Futures), these will automatically keep the script
+    // alive even after `main` returns.
+    await instantiatedModule.invokeMain();
+  } else {
+    // Old, deprecated API.
+    let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
+    let dartInstance = await dart2wasmJsRuntime.instantiate(modulePromise, {});
+    await dart2wasm.invoke(dartInstance);
+  }
 })();
