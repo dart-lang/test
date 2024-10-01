@@ -7,23 +7,39 @@
 // affect chrome.
 (async () => {
   // Fetch and compile Wasm binary.
-  let data = document.getElementById('WasmBootstrapInfo').dataset;
+  let data = document.getElementById("WasmBootstrapInfo").dataset;
 
   // Instantiate the Dart module, importing from the global scope.
-  let dart2wasmJsRuntime = await import('./' + data.jsruntimeurl);
+  let dart2wasmJsRuntime = await import("./" + data.jsruntimeurl);
 
-  // Check whether the JS shim has the new instantiation API.
-  if (dart2wasmJsRuntime.CompiledApp !== undefined) {
-    // New API.
-    let compiledModule = await dart2wasmJsRuntime.compileStreaming(fetch(data.wasmurl));
-    let instantiatedModule = await compiledModule.instantiate()
+  // Support three versions of dart2wasm:
+  //
+  // (1) Versions before 3.6.0-167.0.dev require the user to compile using the
+  // browser's `WebAssembly` API, the compiled module needs to be instantiated
+  // using the JS runtime.
+  //
+  // (2) Versions starting with 3.6.0-167.0.dev added helpers for compiling and
+  // instantiating.
+  //
+  // (3) Versions starting with 3.6.0-212.0.dev made compilation functions
+  // return a new type that comes with instantiation and invoke methods.
 
-    // Call `main`. If tasks are placed into the event loop (by scheduling tasks
-    // explicitly or awaiting Futures), these will automatically keep the script
-    // alive even after `main` returns.
-    await instantiatedModule.invokeMain();
+  if (dart2wasmJsRuntime.compileStreaming !== undefined) {
+    // Version (2) or (3).
+    let compiledModule = await dart2wasmJsRuntime.compileStreaming(
+      fetch(data.wasmurl),
+    );
+    if (compiledModule.instantiate !== undefined) {
+      // Version (3).
+      let instantiatedModule = await compiledModule.instantiate();
+      instantiatedModule.invokeMain();
+    } else {
+      // Version (2).
+      let dartInstance = await dart2wasm.instantiate(compiledModule, {});
+      await dart2wasm.invoke(dartInstance);
+    }
   } else {
-    // Old, deprecated API.
+    // Version (1).
     let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
     let dartInstance = await dart2wasmJsRuntime.instantiate(modulePromise, {});
     await dart2wasmJsRuntime.invoke(dartInstance);
