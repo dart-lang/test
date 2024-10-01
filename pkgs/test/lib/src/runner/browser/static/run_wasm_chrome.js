@@ -35,8 +35,8 @@
       instantiatedModule.invokeMain();
     } else {
       // Version (2).
-      let dartInstance = await dart2wasm.instantiate(compiledModule, {});
-      await dart2wasm.invoke(dartInstance);
+      let dartInstance = await dart2wasmJsRuntime.instantiate(compiledModule, {});
+      await dart2wasmJsRuntime.invoke(dartInstance);
     }
   } else {
     // Version (1).
