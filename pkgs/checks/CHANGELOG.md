@@ -5,6 +5,9 @@
     for equality. This maintains the path into a nested collection for typical
     cases of checking for equality against a purely value collection.
 -   Always wrap Condition descriptions in angle brackets.
+-   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
+    combined functionality in `containsInOrder`.
+-   Replace `pairwiseComparesTo` with `pairwiseMatches`.
 
 ## 0.3.0
 

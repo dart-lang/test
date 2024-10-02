@@ -61,7 +61,7 @@ Iterable<String> _prettyPrint(
         .map((line) => line.replaceAll("'", r"\'"))
         .toList();
     return prefixFirst("'", postfixLast("'", escaped));
-  } else if (object is Condition) {
+  } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];
   } else {
     final value = const LineSplitter().convert(object.toString());

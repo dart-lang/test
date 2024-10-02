@@ -122,9 +122,14 @@ check(because: 'some explanation', actual).expectation();
 -   `containsPair(key, value)` -> Use `Subject<Map>[key].equals(value)`
 -   `hasLength(expected)` -> `length.equals(expected)`
 -   `isNot(Matcher)` -> `not(conditionCallback)`
--   `pairwiseCompare` -> `pairwiseComparesTo`
+-   `pairwiseCompare` -> `pairwiseMatches`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
+-   `containsAllInOrder(iterable)` ->
+    `Subject<Iterable>.containsMatchingInOrder(iterable)` to compare with
+    conditions other than equals,
+    `Subject<Iterable>.containsEqualInOrder(iterable)` to compare each index
+    with the equality operator (`==`).
 
 ### Members from `package:test/expect.dart` without a direct replacement
 
