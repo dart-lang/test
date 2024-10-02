@@ -89,6 +89,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// check([1, 0, 2, 0, 3])
   ///   .containsInOrder([1, (Subject<int> v) => v.isGreaterThan(1), 3]);
   /// ```
+  @Deprecated('Use `containsEqualInOrder` for expectations with values compared'
+      ' with `==` or `containsMatchingInOrder` for other expectations')
   void containsInOrder(Iterable<Object?> elements) {
     context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
         (actual) {
@@ -109,6 +111,74 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
       return Rejection(which: [
         ...prefixFirst(
             'did not have an element matching the expectation at index '
+            '$expectedIndex ',
+            literal(expected[expectedIndex])),
+      ]);
+    });
+  }
+
+  /// Expects that the iterable contains a value matching each condition in
+  /// [conditions] in the given order, with any extra elements between them.
+  ///
+  /// For example, the following will succeed:
+  ///
+  /// ```dart
+  /// check([1, 10, 2, 10, 3]).containsMatchingInOrder([
+  ///   (it) => it.isLessThan(2),
+  ///   (it) => it.isLessThan(3),
+  ///   (it) => it.isLessThan(4),
+  /// ]);
+  /// ```
+  void containsMatchingInOrder(Iterable<Condition<T>> conditions) {
+    context
+        .expect(() => prefixFirst('contains, in order: ', literal(conditions)),
+            (actual) {
+      final expected = conditions.toList();
+      if (expected.isEmpty) {
+        throw ArgumentError('expected may not be empty');
+      }
+      var expectedIndex = 0;
+      for (final element in actual) {
+        final currentExpected = expected[expectedIndex];
+        final matches = softCheck(element, currentExpected) == null;
+        if (matches && ++expectedIndex >= expected.length) return null;
+      }
+      return Rejection(which: [
+        ...prefixFirst(
+            'did not have an element matching the expectation at index '
+            '$expectedIndex ',
+            literal(expected[expectedIndex])),
+      ]);
+    });
+  }
+
+  /// Expects that the iterable contains a value equals to each expected value
+  /// from [elements] in the given order, with any extra elements between
+  /// them.
+  ///
+  /// For example, the following will succeed:
+  ///
+  /// ```dart
+  /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
+  /// ```
+  ///
+  /// Values, will be compared with the equality operator.
+  void containsEqualInOrder(Iterable<T> elements) {
+    context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
+        (actual) {
+      final expected = elements.toList();
+      if (expected.isEmpty) {
+        throw ArgumentError('expected may not be empty');
+      }
+      var expectedIndex = 0;
+      for (final element in actual) {
+        final currentExpected = expected[expectedIndex];
+        final matches = currentExpected == element;
+        if (matches && ++expectedIndex >= expected.length) return null;
+      }
+      return Rejection(which: [
+        ...prefixFirst(
+            'did not have an element equal to the expectation at index '
             '$expectedIndex ',
             literal(expected[expectedIndex])),
       ]);
@@ -250,7 +320,24 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [description] is used in the Expected clause. It should be a predicate
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
+  @Deprecated('Use `pairwiseMatches`')
   void pairwiseComparesTo<S>(List<S> expected,
+          Condition<T> Function(S) elementCondition, String description) =>
+      pairwiseMatches(expected, elementCondition, description);
+
+  /// Expects that the iterable contains elements that correspond by the
+  /// [elementCondition] exactly to each element in [expected].
+  ///
+  /// Fails if the iterable has a different length than [expected].
+  ///
+  /// For each element in the iterable, calls [elementCondition] with the
+  /// corresponding element from [expected] to get the specific condition for
+  /// that index.
+  ///
+  /// [description] is used in the Expected clause. It should be a predicate
+  /// without the object, for example with the description 'is less than' the
+  /// full expectation will be: "pairwise is less than $expected"
+  void pairwiseMatches<S>(List<S> expected,
       Condition<T> Function(S) elementCondition, String description) {
     context.expect(() {
       return prefixFirst('pairwise $description ', literal(expected));
