@@ -123,7 +123,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// For example, the following will succeed:
   ///
   /// ```dart
-  /// check([1, 0, 2, 0, 3]).containsMatchingInOrder([
+  /// check([1, 10, 2, 10, 3]).containsMatchingInOrder([
   ///   (it) => it.isLessThan(2),
   ///   (it) => it.isLessThan(3),
   ///   (it) => it.isLessThan(4),
