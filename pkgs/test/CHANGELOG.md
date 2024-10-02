@@ -4,6 +4,7 @@
 * Increase SDK constraint to ^3.5.0-311.0.dev.
 * Support running Node.js tests compiled with dart2wasm.
 * Allow `firefox` or `firefox-bin` executable name on macOS.
+* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 1.25.8
 
