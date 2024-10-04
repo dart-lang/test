@@ -320,9 +320,9 @@ class FakeTimer implements Timer {
     assert(isActive);
     _tick++;
     if (isPeriodic) {
+      _nextCall += duration;
       // ignore: avoid_dynamic_calls
       _callback(this);
-      _nextCall += duration;
     } else {
       cancel();
       // ignore: avoid_dynamic_calls
