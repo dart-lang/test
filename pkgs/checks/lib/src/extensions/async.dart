@@ -233,7 +233,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// await check(someStream).withQueue.inOrder([
   ///   (s) => s.emits((e) => e.equals(0)),
   ///   (s) => s.emits((e) => e.equals(1)),
-  //  ]);
+  ///  ]);
   /// ```
   ///
   /// If this expectation fails, the source queue will be left in its original
