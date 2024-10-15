@@ -150,7 +150,7 @@ $_usage''');
     test('an invalid option is passed', () async {
       var test = await runTest(['--asdf']);
       expectStderrEquals(test, '''
-Could not find an option named "asdf".
+Could not find an option named "--asdf".
 
 $_usage''');
       await test.shouldExit(exit_codes.usage);
