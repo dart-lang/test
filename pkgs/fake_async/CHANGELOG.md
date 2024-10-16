@@ -1,9 +1,11 @@
-## 1.3.2-wip
+## 1.3.2
 
 * Require Dart 3.3
 * Fix bug where a `flushTimers` or `elapse` call from within
   the callback of a periodic timer would immediately invoke
   the same timer.
+* Move to `dart-lang/test` monorepo.
+* Require Dart 3.5.
 
 ## 1.3.1
 
