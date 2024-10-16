@@ -1,3 +1,7 @@
+## 0.12.17-wip
+
+* Require Dart 3.4
+
 ## 0.12.16+1
 
 * Require Dart 3.0

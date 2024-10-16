@@ -8,7 +8,9 @@ import 'description.dart';
 import 'interfaces.dart';
 import 'util.dart';
 
-/// A useful utility class for implementing other matchers through inheritance.
+/// A base class for [Matcher] instances that match based on some feature of the
+/// value under test.
+///
 /// Derived classes should call the base constructor with a feature name and
 /// description, and an instance matcher, and should implement the
 /// [featureValueOf] abstract method.

@@ -121,9 +121,9 @@ class Throws extends AsyncMatcher {
     if (_matcher == null) return null;
 
     var matchState = {};
-    if (_matcher!.matches(error, matchState)) return null;
+    if (_matcher.matches(error, matchState)) return null;
 
-    var result = _matcher!
+    var result = _matcher
         .describeMismatch(error, StringDescription(), matchState, false)
         .toString();
 

@@ -55,12 +55,12 @@ class _Completes extends AsyncMatcher {
 
       String? result;
       if (_matcher is AsyncMatcher) {
-        result = await (_matcher as AsyncMatcher).matchAsync(value) as String?;
+        result = await _matcher.matchAsync(value) as String?;
         if (result == null) return null;
       } else {
         var matchState = {};
-        if (_matcher!.matches(value, matchState)) return null;
-        result = _matcher!
+        if (_matcher.matches(value, matchState)) return null;
+        result = _matcher
             .describeMismatch(value, StringDescription(), matchState, false)
             .toString();
       }

@@ -203,7 +203,7 @@ class _ExpectedFunction<T> {
   void _afterRun() {
     if (_complete) return;
     if (_minExpectedCalls > 0 && _actualCalls < _minExpectedCalls) return;
-    if (_isDone != null && !_isDone!()) return;
+    if (_isDone != null && !_isDone()) return;
 
     // Mark this callback as complete and remove it from the test case's
     // outstanding callback count; if that hits zero the test is done.
