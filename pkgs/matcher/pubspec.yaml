@@ -3,7 +3,7 @@ version: 0.12.17-wip
 description: >-
   Support for specifying test expectations via an extensible Matcher class.
   Also includes a number of built-in Matcher implementations for common cases.
-repository: https://github.com/dart-lang/matcher
+repository: https://github.com/dart-lang/test/tree/master/pkgs/matcher
 
 environment:
   sdk: ^3.4.0
