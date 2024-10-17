@@ -1,4 +1,3 @@
-[![Dart CI](https://github.com/dart-lang/matcher/actions/workflows/ci.yml/badge.svg)](https://github.com/dart-lang/matcher/actions/workflows/ci.yml)
 [![pub package](https://img.shields.io/pub/v/matcher.svg)](https://pub.dev/packages/matcher)
 [![package publisher](https://img.shields.io/pub/publisher/matcher.svg)](https://pub.dev/packages/matcher/publisher)
 

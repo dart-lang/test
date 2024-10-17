@@ -1,6 +1,7 @@
-## 0.12.17-wip
+## 0.12.17
 
 * Require Dart 3.4
+* Move to `dart-lang/test` monorepo.
 
 ## 0.12.16+1
 
