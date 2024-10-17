@@ -1,5 +1,5 @@
 name: fake_async
-version: 1.3.2
+version: 1.3.2-wip
 description: >-
   Fake asynchronous events such as timers and microtasks for deterministic
   testing.
