@@ -17,6 +17,7 @@ literate API.
 | Package | Description | Version |
 |---|---|---|
 | [checks](pkgs/checks/) | A framework for checking values against expectations and building custom expectations. | [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks) |
+| [mockito](pkgs/mockito/) | A mock framework inspired by Mockito with APIs for Fakes, Mocks, behavior verification, and stubbing. | [![pub package](https://img.shields.io/pub/v/mockito.svg)](https://pub.dev/packages/mockito) |
 | [test](pkgs/test/) | A full featured library for writing and running Dart tests across platforms. | [![pub package](https://img.shields.io/pub/v/test.svg)](https://pub.dev/packages/test) |
 | [test_api](pkgs/test_api/) |  | [![pub package](https://img.shields.io/pub/v/test_api.svg)](https://pub.dev/packages/test_api) |
 | [test_core](pkgs/test_core/) |  | [![pub package](https://img.shields.io/pub/v/test_core.svg)](https://pub.dev/packages/test_core) |

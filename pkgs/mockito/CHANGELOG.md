@@ -1,4 +1,4 @@
-## 5.4.5-wip
+## 5.4.5
 
 * Ignore "must_be_immutable" warning in generated files. Mocks cannot be made
   immutable anyway, but this way users aren't prevented from using generated
@@ -9,6 +9,7 @@
 * Require dart_style >= 2.3.7, so that the current Dart language version can be
   passed to `DartFormatter`.
 * Add topics to `pubspec.yaml`.
+* Move to `dart-lang/test` monorepo.
 
 ## 5.4.4
 

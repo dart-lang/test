@@ -1,11 +1,18 @@
-name: Dart CI
+name: package:mockito
 
 on:
-  # Run on PRs and pushes to the default branch.
+  # Run on PRs and pushes to the default branch, in either the ffigen directory,
+  # or the objective_c directory.
   push:
-    branches: [ master ]
+    branches: [master]
+    paths:
+      - '.github/workflows/mockito.yaml'
+      - 'pkgs/mockito/**'
   pull_request:
-    branches: [ master ]
+    branches: [master]
+    paths:
+      - '.github/workflows/mockito.yaml'
+      - 'pkgs/mockito/**'
   schedule:
     - cron: "0 0 * * 0"
 
