@@ -144,13 +144,13 @@ class isInstanceOf<T> extends TypeMatcher<T> {
 /// a wrapper will have to be created.
 const Matcher returnsNormally = _ReturnsNormally();
 
-class _ReturnsNormally extends FeatureMatcher<void Function()> {
+class _ReturnsNormally extends FeatureMatcher<Function> {
   const _ReturnsNormally();
 
   @override
-  bool typedMatches(void Function() f, Map matchState) {
+  bool typedMatches(Object f, Map matchState) {
     try {
-      f();
+      (f as Function)();
       return true;
     } catch (e, s) {
       addStateInfo(matchState, {'exception': e, 'stack': s});
