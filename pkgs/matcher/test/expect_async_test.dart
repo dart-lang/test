@@ -336,7 +336,7 @@ void main() {
     test('works with no arguments', () async {
       var callbackRun = false;
       var monitor = await TestCaseMonitor.run(() {
-        // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package, avoid_dynamic_calls
         expectAsync(() {
           callbackRun = true;
         })();
@@ -349,7 +349,7 @@ void main() {
     test('works with dynamic arguments', () async {
       var callbackRun = false;
       var monitor = await TestCaseMonitor.run(() {
-        // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package, avoid_dynamic_calls
         expectAsync((arg1, arg2) {
           callbackRun = true;
         })(1, 2);
@@ -362,7 +362,7 @@ void main() {
     test('works with non-nullable arguments', () async {
       var callbackRun = false;
       var monitor = await TestCaseMonitor.run(() {
-        // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package, avoid_dynamic_calls
         expectAsync((int arg1, int arg2) {
           callbackRun = true;
         })(1, 2);
@@ -375,7 +375,7 @@ void main() {
     test('works with 6 arguments', () async {
       var callbackRun = false;
       var monitor = await TestCaseMonitor.run(() {
-        // ignore: deprecated_member_use_from_same_package
+        // ignore: deprecated_member_use_from_same_package, avoid_dynamic_calls
         expectAsync((arg1, arg2, arg3, arg4, arg5, arg6) {
           callbackRun = true;
         })(1, 2, 3, 4, 5, 6);

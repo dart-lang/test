@@ -57,7 +57,7 @@ class _AllOf extends Matcher {
   @override
   Description describeMismatch(dynamic item, Description mismatchDescription,
       Map matchState, bool verbose) {
-    var matcher = matchState['matcher'];
+    var matcher = matchState['matcher'] as Matcher;
     matcher.describeMismatch(
         item, mismatchDescription, matchState['state'], verbose);
     return mismatchDescription;

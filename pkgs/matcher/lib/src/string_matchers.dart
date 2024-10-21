@@ -80,7 +80,7 @@ class _StringStartsWith extends FeatureMatcher<String> {
   const _StringStartsWith(this._prefix);
 
   @override
-  bool typedMatches(dynamic item, Map matchState) => item.startsWith(_prefix);
+  bool typedMatches(String item, Map matchState) => item.startsWith(_prefix);
 
   @override
   Description describe(Description description) =>
@@ -97,7 +97,7 @@ class _StringEndsWith extends FeatureMatcher<String> {
   const _StringEndsWith(this._suffix);
 
   @override
-  bool typedMatches(dynamic item, Map matchState) => item.endsWith(_suffix);
+  bool typedMatches(String item, Map matchState) => item.endsWith(_suffix);
 
   @override
   Description describe(Description description) =>
@@ -119,7 +119,7 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
   const _StringContainsInOrder(this._substrings);
 
   @override
-  bool typedMatches(dynamic item, Map matchState) {
+  bool typedMatches(String item, Map matchState) {
     var fromIndex = 0;
     for (var s in _substrings) {
       var index = item.indexOf(s, fromIndex);

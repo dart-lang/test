@@ -95,6 +95,7 @@ void main() {
   group('[throwsNoSuchMethodError]', () {
     test('passes when a NoSuchMethodError is thrown', () {
       expect(() {
+        // ignore: avoid_dynamic_calls
         (1 as dynamic).notAMethodOnInt();
       }, throwsNoSuchMethodError);
     });
