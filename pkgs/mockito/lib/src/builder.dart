@@ -1689,6 +1689,7 @@ class _MockClassInfo {
               .call([refer('parent'), refer('parentInvocation')]).code)));
 
         final toStringMethod =
+            // ignore: deprecated_member_use
             elementToFake.lookUpMethod('toString', elementToFake.library);
         if (toStringMethod != null && toStringMethod.parameters.isNotEmpty) {
           // If [elementToFake] includes an overriding `toString` implementation,

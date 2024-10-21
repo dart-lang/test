@@ -16,42 +16,43 @@
 export 'package:test_api/fake.dart' show Fake;
 
 export 'src/dummies.dart'
-    show provideDummy, provideDummyBuilder, MissingDummyValueError;
+    show MissingDummyValueError, provideDummy, provideDummyBuilder;
 export 'src/mock.dart'
     show
-        Mock,
-        SmartFake,
-        named, // ignore: deprecated_member_use_from_same_package
+        Answering,
+        Expectation,
+        FakeFunctionUsedError, // ignore: deprecated_member_use_from_same_package
 
         // -- setting behaviour
-        when,
+        FakeUsedError,
+        ListOfVerificationResult,
+        MissingStubError,
+        Mock,
+        PostExpectation,
+        SmartFake,
+        Verification,
+        VerificationResult,
         any,
         anyNamed,
+
+        // -- verification
         argThat,
         captureAny,
         captureAnyNamed,
         captureThat,
-        Answering,
-        Expectation,
-        PostExpectation,
+        clearInteractions,
+        logInvocations,
+        // ignore: deprecated_member_use_from_same_package
+        named,
+        reset,
 
-        // -- verification
+        // -- misc
+        resetMockitoState,
+        throwOnMissingStub,
+        untilCalled,
         verify,
         verifyInOrder,
         verifyNever,
         verifyNoMoreInteractions,
         verifyZeroInteractions,
-        VerificationResult,
-        Verification,
-        ListOfVerificationResult,
-
-        // -- misc
-        throwOnMissingStub,
-        clearInteractions,
-        reset,
-        resetMockitoState,
-        logInvocations,
-        untilCalled,
-        MissingStubError,
-        FakeUsedError,
-        FakeFunctionUsedError;
+        when;
