@@ -144,7 +144,7 @@ class isInstanceOf<T> extends TypeMatcher<T> {
 /// a wrapper will have to be created.
 const Matcher returnsNormally = _ReturnsNormally();
 
-class _ReturnsNormally extends FeatureMatcher<Function> {
+class _ReturnsNormally extends FeatureMatcher<void Function()> {
   const _ReturnsNormally();
 
   @override
