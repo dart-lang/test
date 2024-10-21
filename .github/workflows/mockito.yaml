@@ -1,8 +1,6 @@
 name: package:mockito
 
 on:
-  # Run on PRs and pushes to the default branch, in either the ffigen directory,
-  # or the objective_c directory.
   push:
     branches: [master]
     paths:
@@ -18,6 +16,10 @@ on:
 
 env:
   PUB_ENVIRONMENT: bot.github
+
+defaults:
+  run:
+    working-directory: pkgs/mockito
 
 permissions: read-all
 
