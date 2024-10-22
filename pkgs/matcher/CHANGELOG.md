@@ -1,6 +1,6 @@
 ## 0.12.18-wip
 
-* Remove some dynamic invocation.
+* Remove some dynamic invocations.
 
 ## 0.12.17
 
