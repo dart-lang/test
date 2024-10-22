@@ -148,8 +148,9 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
   const _ReturnsNormally();
 
   @override
-  bool typedMatches(Object f, Map matchState) {
+  bool typedMatches(Function f, Map matchState) {
     try {
+      // ignore: unnecessary_cast
       (f as Function)();
       return true;
     } catch (e, s) {
