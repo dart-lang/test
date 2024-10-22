@@ -35,7 +35,7 @@ import 'package:test_core/src/runner/suite.dart';
 final suitePlatform = SuitePlatform(Runtime.vm, compiler: null);
 
 // The last state change detected via [expectStates].
-State? lastState;
+State? _lastState;
 
 /// Asserts that exactly [states] will be emitted via [liveTest.onStateChange].
 ///
@@ -43,7 +43,7 @@ State? lastState;
 void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
   var states = Queue.of(statesIter);
   liveTest.onStateChange.listen(expectAsync1((state) {
-    lastState = state;
+    _lastState = state;
     expect(state, equals(states.removeFirst()));
   }, count: states.length, max: states.length));
 }
@@ -67,37 +67,16 @@ void expectSingleFailure(LiveTest liveTest) {
 
   expectErrors(liveTest, [
     (error) {
-      expect(lastState!.status, equals(Status.complete));
-      expect(error, isTestFailure('oh no'));
+      expect(_lastState!.status, equals(Status.complete));
+      expect(error, _isTestFailure('oh no'));
     }
   ]);
 }
-
-/// Asserts that [liveTest] will have a single error, the string `"oh no"`.
-void expectSingleError(LiveTest liveTest) {
-  expectStates(liveTest, [
-    const State(Status.running, Result.success),
-    const State(Status.complete, Result.error)
-  ]);
-
-  expectErrors(liveTest, [
-    (error) {
-      expect(lastState!.status, equals(Status.complete));
-      expect(error, equals('oh no'));
-    }
-  ]);
-}
-
-/// Returns a matcher that matches a callback or Future that throws a
-/// [TestFailure] with the given [message].
-///
-/// [message] can be a string or a [Matcher].
-Matcher throwsTestFailure(Object message) => throwsA(isTestFailure(message));
 
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isTestFailure(Object message) => const TypeMatcher<TestFailure>()
+Matcher _isTestFailure(Object message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
 /// Returns a matcher that matches a [ApplicationException] with the given
@@ -109,19 +88,10 @@ Matcher isApplicationException(Object message) =>
         .having((e) => e.message, 'message', message);
 
 /// Returns a local [LiveTest] that runs [body].
-LiveTest createTest(dynamic Function() body) {
+LiveTest _createTest(dynamic Function() body) {
   var test = LocalTest('test', Metadata(chainStackTraces: true), body);
   var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
   return test.load(suite);
-}
-
-/// Runs [body] as a test.
-///
-/// Once it completes, returns the [LiveTest] used to run it.
-Future<LiveTest> runTestBody(dynamic Function() body) async {
-  var liveTest = createTest(body);
-  await liveTest.run();
-  return liveTest;
 }
 
 /// Asserts that [liveTest] has completed and passed.
@@ -147,46 +117,7 @@ void expectTestFailed(LiveTest liveTest, Object message) {
   expect(liveTest.state.status, equals(Status.complete));
   expect(liveTest.state.result, equals(Result.failure));
   expect(liveTest.errors, hasLength(1));
-  expect(liveTest.errors.first.error, isTestFailure(message));
-}
-
-/// Assert that the [test] callback causes a test to block until [stopBlocking]
-/// is called at some later time.
-///
-/// [stopBlocking] is passed the return value of [test].
-Future<void> expectTestBlocks(
-    dynamic Function() test, dynamic Function(dynamic) stopBlocking) async {
-  late LiveTest liveTest;
-  late Future<void> future;
-  liveTest = createTest(() {
-    var value = test();
-    future = pumpEventQueue().then((_) {
-      expect(liveTest.state.status, equals(Status.running));
-      stopBlocking(value);
-    });
-  });
-
-  await liveTest.run();
-  expectTestPassed(liveTest);
-  // Ensure that the outer test doesn't complete until the inner future
-  // completes.
-  return future;
-}
-
-/// Runs [body] with a declarer, runs all the declared tests, and asserts that
-/// they pass.
-///
-/// This is typically used to run multiple tests where later tests make
-/// assertions about the results of previous ones.
-Future<void> expectTestsPass(void Function() body) async {
-  var engine = declareEngine(body);
-  var success = await engine.run();
-
-  for (var test in engine.liveTests) {
-    expectTestPassed(test);
-  }
-
-  expect(success, isTrue);
+  expect(liveTest.errors.first.error, _isTestFailure(message));
 }
 
 /// Runs [body] with a declarer and returns the declared entries.
