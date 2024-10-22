@@ -15,7 +15,6 @@ linter:
     - join_return_with_assignment
     - literal_only_boolean_expressions
     - no_adjacent_strings_in_list
-    - package_api_docs
     - prefer_const_constructors
     - prefer_final_locals
     - test_types_in_equals
