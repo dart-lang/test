@@ -11,13 +11,10 @@ import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/group_entry.dart';
-import 'package:test_api/src/backend/invoker.dart';
 import 'package:test_api/src/backend/live_test.dart';
-import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/platform_selector.dart';
 import 'package:test_api/src/backend/runtime.dart';
 import 'package:test_api/src/backend/state.dart';
-import 'package:test_api/src/backend/suite.dart';
 import 'package:test_api/src/backend/suite_platform.dart';
 import 'package:test_core/src/runner/application_exception.dart';
 import 'package:test_core/src/runner/compiler_selection.dart';
@@ -87,12 +84,6 @@ Matcher isApplicationException(Object message) =>
     const TypeMatcher<ApplicationException>()
         .having((e) => e.message, 'message', message);
 
-/// Returns a local [LiveTest] that runs [body].
-LiveTest _createTest(dynamic Function() body) {
-  var test = LocalTest('test', Metadata(chainStackTraces: true), body);
-  var suite = Suite(Group.root([test]), suitePlatform, ignoreTimeouts: false);
-  return test.load(suite);
-}
 
 /// Asserts that [liveTest] has completed and passed.
 ///
