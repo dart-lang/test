@@ -84,7 +84,6 @@ Matcher isApplicationException(Object message) =>
     const TypeMatcher<ApplicationException>()
         .having((e) => e.message, 'message', message);
 
-
 /// Asserts that [liveTest] has completed and passed.
 ///
 /// If the test had any errors, they're surfaced nicely into the outer test.
