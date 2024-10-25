@@ -80,7 +80,7 @@ class _OrderingMatcher extends Matcher {
       return _equalValue;
     } else if ((item as dynamic) < _value) {
       return _lessThanValue;
-    } else if (item > _value) {
+    } else if ((item as dynamic) > _value) {
       return _greaterThanValue;
     } else {
       return false;

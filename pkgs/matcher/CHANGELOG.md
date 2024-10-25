@@ -1,3 +1,7 @@
+## 0.12.18-wip
+
+* Remove some dynamic invocations.
+
 ## 0.12.17
 
 * Require Dart 3.4

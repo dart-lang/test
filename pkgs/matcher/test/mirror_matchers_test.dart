@@ -5,6 +5,7 @@
 // ignore_for_file: deprecated_member_use_from_same_package
 
 @TestOn('vm')
+library;
 
 import 'package:matcher/mirror_matchers.dart';
 import 'package:test/test.dart';
