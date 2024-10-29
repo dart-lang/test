@@ -204,7 +204,7 @@ class _UnorderedMatches extends _IterableMatcher {
       .add(' unordered');
 
   @override
-  Description describeTypedMismatch(dynamic item,
+  Description describeTypedMismatch(Iterable item,
           Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item.toList())!);
 

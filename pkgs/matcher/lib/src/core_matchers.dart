@@ -150,7 +150,8 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
   @override
   bool typedMatches(Function f, Map matchState) {
     try {
-      f();
+      // ignore: unnecessary_cast
+      (f as Function)();
       return true;
     } catch (e, s) {
       addStateInfo(matchState, {'exception': e, 'stack': s});
