@@ -7,6 +7,7 @@ import 'dart:collection';
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group.dart';

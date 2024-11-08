@@ -4,4 +4,5 @@ environment:
   sdk: ^3.5.0-311.0.dev
 resolution: workspace
 dependencies:
+  matcher: any
   test: any

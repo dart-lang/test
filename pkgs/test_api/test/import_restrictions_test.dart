@@ -13,6 +13,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:graphs/graphs.dart';
+import 'package:matcher/expect.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 

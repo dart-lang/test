@@ -9,6 +9,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:isolate';
 
+import 'package:matcher/expect.dart';
 import 'package:package_config/package_config.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
