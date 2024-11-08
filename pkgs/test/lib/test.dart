@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// Library directive avoids confusing the deprecation for the entire library.
+// ignore: unnecessary_library_directive
+library;
 
 @Deprecated('import `package:matcher/expect.dart`')
 export 'package:matcher/expect.dart';
