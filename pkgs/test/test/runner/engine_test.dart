@@ -60,7 +60,7 @@ void main() {
   });
 
   test('returns fail if any test does not complete', () async {
-    var completer = Completer();
+    var completer = Completer<void>();
     var engine = declareEngine(() {
       test('completes', () {});
       test('does not complete', () async {
@@ -129,6 +129,19 @@ void main() {
     expect(engine.run(), completion(isFalse));
   });
 
+  test('.run() does not run more tests after failure for stopOnFirstFailure',
+      () async {
+    var secondTestRan = false;
+    var engine = declareEngine(() {
+      test('failure', () => throw 'oh no');
+      test('subsequent', () {
+        secondTestRan = true;
+      });
+    }, stopOnFirstFailure: true);
+    await expectLater(engine.run(), completion(isFalse));
+    expect(secondTestRan, false);
+  });
+
   test('.run() may not be called more than once', () {
     var engine = Engine.withSuites([]);
     expect(engine.run(), completes);
@@ -148,7 +161,7 @@ void main() {
     var engine = declareEngine(() {
       // This ensures that the first test doesn't actually finish until the
       // second test runs.
-      var firstTestCompleter = Completer();
+      var firstTestCompleter = Completer<void>();
 
       group('group', () {
         tearDown(tearDownBody);
@@ -156,7 +169,7 @@ void main() {
         test('first test', () async {
           await firstTestCompleter.future;
           firstTestFinished = true;
-        }, timeout: Timeout(Duration.zero));
+        }, timeout: const Timeout(Duration.zero));
       });
 
       test('second test', () {
@@ -244,6 +257,18 @@ void main() {
       expect(bodyRun, isTrue);
     });
 
+    test('runs tests in the group when they are skip: false', () async {
+      var bodyRun = false;
+      var engine = declareEngine(() {
+        group('group', () {
+          test('test', skip: false, () => bodyRun = true);
+        }, skip: true);
+      });
+
+      await engine.run();
+      expect(bodyRun, isTrue);
+    });
+
     test('exposes a LiveTest that emits the correct states', () {
       var entries = declare(() {
         group('group', () {
@@ -298,7 +323,7 @@ void main() {
           }
           // Simulate the test/loading taking some amount of time so that
           // we actually reach max concurrency.
-          await Future.delayed(Duration(milliseconds: 100));
+          await Future<void>.delayed(const Duration(milliseconds: 100));
           if (!isLoadSuite) {
             testsRunning--;
             testsLoaded--;

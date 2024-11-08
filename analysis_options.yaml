@@ -1,13 +1,22 @@
-include: package:lints/recommended.yaml
+include: package:dart_flutter_team_lints/analysis_options.yaml
+
+
 analyzer:
   language:
     strict-casts: true
   errors:
     # There are a number of deprecated members used through this package
     deprecated_member_use_from_same_package: ignore
+
+    # Ignoring a number of lints from dart_flutter_team_lints – for now
+    avoid_catching_errors: ignore
+    avoid_dynamic_calls: ignore
+    comment_references: ignore
+    lines_longer_than_80_chars: ignore
+    only_throw_errors: ignore
+    unawaited_futures: ignore
     unsafe_html: ignore
+
 linter:
   rules:
     - avoid_private_typedef_functions
-    - directives_ordering
-    - prefer_single_quotes

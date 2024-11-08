@@ -24,7 +24,7 @@ final _whitespace = RegExp(r'\s+');
 /// can be overridden entirely; with [Timeout.factor], it can be scaled
 /// relative to the default.
 @Target({TargetKind.library})
-class Timeout {
+final class Timeout {
   /// A constant indicating that a test should never time out.
   static const none = Timeout._none();
 
@@ -79,7 +79,7 @@ class Timeout {
 
     // Scan a number. This will be either a time unit or a scale factor.
     scanner.expect(_untilUnit, name: 'number');
-    var number = double.parse((scanner.lastMatch![0])!);
+    var number = double.parse(scanner.lastMatch![0]!);
 
     // A number followed by "x" is a scale factor.
     if (scanner.scan('x') || scanner.scan('X')) {
@@ -92,13 +92,13 @@ class Timeout {
     var microseconds = 0.0;
     while (true) {
       scanner.expect(_unit, name: 'unit');
-      microseconds += _microsecondsFor(number, (scanner.lastMatch![0])!);
+      microseconds += _microsecondsFor(number, scanner.lastMatch![0]!);
 
       scanner.scan(_whitespace);
 
       // Scan the next number, if it's available.
       if (!scanner.scan(_untilUnit)) break;
-      number = double.parse((scanner.lastMatch![0])!);
+      number = double.parse(scanner.lastMatch![0]!);
     }
 
     scanner.expectDone();
@@ -106,24 +106,15 @@ class Timeout {
   }
 
   /// Returns the number of microseconds in [number] [unit]s.
-  static double _microsecondsFor(double number, String unit) {
-    switch (unit) {
-      case 'd':
-        return number * 24 * 60 * 60 * 1000000;
-      case 'h':
-        return number * 60 * 60 * 1000000;
-      case 'm':
-        return number * 60 * 1000000;
-      case 's':
-        return number * 1000000;
-      case 'ms':
-        return number * 1000;
-      case 'us':
-        return number;
-      default:
-        throw ArgumentError('Unknown unit $unit.');
-    }
-  }
+  static double _microsecondsFor(double number, String unit) => switch (unit) {
+        'd' => number * 24 * 60 * 60 * 1000000,
+        'h' => number * 60 * 60 * 1000000,
+        'm' => number * 60 * 1000000,
+        's' => number * 1000000,
+        'ms' => number * 1000,
+        'us' => number,
+        _ => throw ArgumentError('Unknown unit $unit.'),
+      };
 
   /// Returns a new [Timeout] that merges [this] with [other].
   ///
@@ -150,7 +141,7 @@ class Timeout {
   int get hashCode => duration.hashCode ^ 5 * scaleFactor.hashCode;
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is Timeout &&
       other.duration == duration &&
       other.scaleFactor == scaleFactor;

@@ -10,7 +10,6 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart' show RemoteException;
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 
@@ -51,14 +50,14 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
           onExit: onExitPort.sendPort);
 
       // Ensure that we close [port] and [channel] when the isolate exits.
-      var disconnector = Disconnector();
+      var disconnector = Disconnector<void>();
       onExitPort.listen((_) {
         disconnector.disconnect();
         port.close();
         onExitPort.close();
       });
 
-      return IsolateChannel.connectReceive(port)
+      return IsolateChannel<Object?>.connectReceive(port)
           .transform(disconnector)
           .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
         // If the user closes the stream channel, kill the isolate.
@@ -77,7 +76,7 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
             'type': 'error',
             'error': RemoteException.serialize(error, stackTrace)
           })),
-          NullStreamSink());
+          NullStreamSink<void>());
     }
   }());
 }
@@ -160,15 +159,9 @@ Future<String> _languageVersionCommentFor(String url) async {
   return '';
 }
 
-Future<String> _readUri(Uri uri) async {
-  switch (uri.scheme) {
-    case '':
-    case 'file':
-      return File.fromUri(uri).readAsString();
-    case 'data':
-      return uri.data!.contentAsString();
-    default:
-      throw ArgumentError.value(uri, 'uri',
-          'Only data and file uris (as well as relative paths) are supported');
-  }
-}
+Future<String> _readUri(Uri uri) async => switch (uri.scheme) {
+      '' || 'file' => await File.fromUri(uri).readAsString(),
+      'data' => uri.data!.contentAsString(),
+      _ => throw ArgumentError.value(uri, 'uri',
+          'Only data and file uris (as well as relative paths) are supported'),
+    };

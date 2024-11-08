@@ -8,9 +8,7 @@
 /// {@canonicalFor tags.Tags}
 /// {@canonicalFor test_on.TestOn}
 /// {@canonicalFor timeout.Timeout}
-@Deprecated('package:test_api is not intended for general use. '
-    'Please use package:test.')
-library test_api.scaffolding;
+library;
 
 export 'src/backend/configuration/on_platform.dart' show OnPlatform;
 export 'src/backend/configuration/retry.dart' show Retry;
@@ -18,8 +16,8 @@ export 'src/backend/configuration/skip.dart' show Skip;
 export 'src/backend/configuration/tags.dart' show Tags;
 export 'src/backend/configuration/test_on.dart' show TestOn;
 export 'src/backend/configuration/timeout.dart' show Timeout;
-export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridUri, spawnHybridCode;
+export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridCode, spawnHybridUri;
 export 'src/scaffolding/test_structure.dart'
-    show group, test, setUp, setUpAll, tearDown, tearDownAll, addTearDown;
+    show addTearDown, group, setUp, setUpAll, tearDown, tearDownAll, test;
 export 'src/scaffolding/utils.dart'
-    show pumpEventQueue, printOnFailure, markTestSkipped;
+    show markTestSkipped, printOnFailure, pumpEventQueue, registerException;

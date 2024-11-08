@@ -28,16 +28,11 @@ class MessageType {
   /// The name of the message type.
   final String name;
 
-  factory MessageType.parse(String name) {
-    switch (name) {
-      case 'print':
-        return MessageType.print;
-      case 'skip':
-        return MessageType.skip;
-      default:
-        throw ArgumentError('Invalid message type "$name".');
-    }
-  }
+  factory MessageType.parse(String name) => switch (name) {
+        'print' => MessageType.print,
+        'skip' => MessageType.skip,
+        _ => throw ArgumentError('Invalid message type "$name".'),
+      };
 
   const MessageType._(this.name);
 

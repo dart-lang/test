@@ -30,5 +30,3 @@ Stream<T> inCompletionOrder<T>(Iterable<CancelableOperation<T>> operations) {
 
   return controller.stream;
 }
-
-void unawaited(Future<void> f) {}

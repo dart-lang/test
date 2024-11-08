@@ -48,7 +48,7 @@ class RunnerSuite extends Suite {
   /// debugging mode and doesn't support suite channels.
   factory RunnerSuite(Environment environment, SuiteConfiguration config,
       Group group, SuitePlatform platform,
-      {String? path, Function()? onClose}) {
+      {String? path, void Function()? onClose}) {
     var controller =
         RunnerSuiteController._local(environment, config, onClose: onClose);
     var suite = RunnerSuite._(controller, group, platform, path: path);
@@ -95,7 +95,7 @@ class RunnerSuiteController {
   final MultiChannel? _suiteChannel;
 
   /// The function to call when the suite is closed.
-  final Function()? _onClose;
+  final FutureOr<void> Function()? _onClose;
 
   /// The backing value for [suite.isDebugging].
   bool _isDebugging = false;
@@ -112,7 +112,7 @@ class RunnerSuiteController {
   RunnerSuiteController(this._environment, this._config, this._suiteChannel,
       Future<Group> groupFuture, SuitePlatform platform,
       {String? path,
-      Function()? onClose,
+      void Function()? onClose,
       Future<Map<String, dynamic>> Function()? gatherCoverage})
       : _onClose = onClose,
         _gatherCoverage = gatherCoverage {
@@ -123,7 +123,7 @@ class RunnerSuiteController {
   /// Used by [RunnerSuite.new] to create a runner suite that's not loaded from
   /// an external source.
   RunnerSuiteController._local(this._environment, this._config,
-      {Function()? onClose,
+      {void Function()? onClose,
       Future<Map<String, dynamic>> Function()? gatherCoverage})
       : _suiteChannel = null,
         _onClose = onClose,
@@ -171,5 +171,5 @@ class RunnerSuiteController {
         var onClose = _onClose;
         if (onClose != null) await onClose();
       });
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
 }

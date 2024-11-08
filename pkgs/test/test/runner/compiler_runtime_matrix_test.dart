@@ -3,10 +3,13 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+@Timeout.factor(2)
+library;
+
 import 'dart:io';
 
 import 'package:test/test.dart';
-import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
+import 'package:test_api/backend.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
@@ -19,12 +22,23 @@ void main() {
   for (var runtime in Runtime.builtIn) {
     for (var compiler in runtime.supportedCompilers) {
       // Ignore the platforms we can't run on this OS.
-      if (runtime == Runtime.internetExplorer && !Platform.isWindows ||
-          runtime == Runtime.safari && !Platform.isMacOS) {
+      if ((runtime == Runtime.edge && !Platform.isWindows) ||
+          (runtime == Runtime.safari && !Platform.isMacOS)) {
         continue;
       }
+      String? skipReason;
+      if (runtime == Runtime.safari) {
+        skipReason = 'https://github.com/dart-lang/test/issues/1253';
+      } else if (compiler == Compiler.dart2wasm) {
+        skipReason = 'Wasm tests are experimental and require special setup';
+      } else if ([Runtime.firefox, Runtime.nodeJS].contains(runtime) &&
+          Platform.isWindows) {
+        skipReason = 'https://github.com/dart-lang/test/issues/1942';
+      } else if (runtime == Runtime.firefox && Platform.isMacOS) {
+        skipReason = 'https://github.com/dart-lang/test/pull/2276';
+      }
       group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
-          () {
+          skip: skipReason, () {
         final testArgs = [
           'test.dart',
           '-p',
@@ -74,14 +88,10 @@ void main() {
         test('fails gracefully if a test file throws in main', () async {
           await d.file('test.dart', _throwingTest).create();
           var test = await runTest(testArgs);
-          var compileOrLoadMessage =
-              compiler == Compiler.dart2js ? 'compiling' : 'loading';
-
           expect(
               test.stdout,
               containsInOrder([
-                '-1: [${runtime.name}, ${compiler.name}] $compileOrLoadMessage '
-                    'test.dart [E]',
+                '-1: [${runtime.name}, ${compiler.name}] loading test.dart [E]',
                 'Failed to load "test.dart": oh no'
               ]));
           await test.shouldExit(1);
@@ -103,21 +113,17 @@ void main() {
         if (runtime.isDartVM) {
           test('forwards stdout/stderr', () async {
             await d.file('test.dart', _testWithStdOutAndErr).create();
-            var test = await runTest(testArgs);
+            var test = await runTest(testArgs, reporter: 'silent');
 
             expect(test.stdout, emitsThrough('hello'));
             expect(test.stderr, emits('world'));
             await test.shouldExit(0);
-          });
-        }
-      },
-          skip: compiler == Compiler.dart2wasm
-              ? 'Wasm tests are experimental and require special setup'
-              : [Runtime.firefox, Runtime.nodeJS, Runtime.internetExplorer]
-                          .contains(runtime) &&
-                      Platform.isWindows
-                  ? 'https://github.com/dart-lang/test/issues/1942'
+          },
+              skip: Platform.isWindows && compiler == Compiler.exe
+                  ? 'https://github.com/dart-lang/test/issues/2150'
                   : null);
+        }
+      });
     }
   }
 }

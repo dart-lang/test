@@ -4,10 +4,8 @@
 
 @Deprecated('package:test_core is not intended for general use. '
     'Please use package:test.')
-library test_core;
+library;
 
 export 'package:test_api/hooks.dart' show TestFailure;
-// Not yet deprecated, but not exposed through focused libraries.
-export 'package:test_api/test_api.dart' show registerException;
 
 export 'scaffolding.dart';

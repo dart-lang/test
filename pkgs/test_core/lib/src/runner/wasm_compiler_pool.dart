@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '../util/dart.dart';
 import '../util/io.dart';
 import '../util/package_config.dart';
 import 'compiler_pool.dart';
@@ -16,8 +17,13 @@ import 'suite.dart';
 ///
 /// This limits the number of compiler instances running concurrently.
 class WasmCompilerPool extends CompilerPool {
+  /// Extra arguments to pass to `dart compile js`.
+  final List<String> _extraArgs;
+
   /// The currently-active dart2wasm processes.
   final _processes = <Process>{};
+
+  WasmCompilerPool([this._extraArgs = const []]);
 
   /// Compiles [code] to [path].
   ///
@@ -29,23 +35,21 @@ class WasmCompilerPool extends CompilerPool {
   Future compileInternal(
       String code, String path, SuiteConfiguration suiteConfig) {
     return withTempDir((dir) async {
-      var wrapperPath = p.join(dir, 'main.dart');
+      final wrapperPath = p.join(dir, 'main.dart');
       File(wrapperPath).writeAsStringSync(code);
-      var outWasmPath = '$path.wasm';
-      var dartBinPath = Platform.resolvedExecutable;
-      var sdkRoot = p.join(p.dirname(dartBinPath), '../');
-      var platformDill =
-          p.join(sdkRoot, 'lib', '_internal', 'dart2wasm_platform.dill');
-      var dartPrecompiledRuntimePath = p.join(sdkRoot, 'bin', 'dartaotruntime');
-      var dart2wasmSnapshotPath =
-          p.join(sdkRoot, 'bin/snapshots', 'dart2wasm_product.snapshot');
-      var process = await Process.start(dartPrecompiledRuntimePath, [
-        dart2wasmSnapshotPath,
-        '--dart-sdk=$sdkRoot',
-        '--platform=$platformDill',
-        '--packages=${(await packageConfigUri).path}',
-        wrapperPath,
+      final outWasmPath = '$path.wasm';
+      final process = await Process.start(Platform.resolvedExecutable, [
+        'compile',
+        'wasm',
+        '--enable-asserts',
+        '--packages=${(await packageConfigUri).toFilePath()}',
+        for (var experiment in enabledExperiments)
+          '--enable-experiment=$experiment',
+        '-O0',
+        ..._extraArgs,
+        '-o',
         outWasmPath,
+        wrapperPath,
       ]);
       if (closed) {
         process.kill();

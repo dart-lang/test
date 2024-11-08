@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -15,9 +14,7 @@ import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
-import '../util/async.dart';
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
-import '../util/pair.dart';
 import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
@@ -29,7 +26,7 @@ import 'suite.dart';
 /// compiled with dart2js doesn't trigger it, but short enough that it fires
 /// before the host kills it. For example, Google's Forge service has a
 /// 15-minute timeout.
-final _timeout = Duration(minutes: 12);
+final _timeout = const Duration(minutes: 12);
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
@@ -63,13 +60,13 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  Future<RunnerSuite?> get suite async => (await _suiteAndZone)?.first;
+  Future<RunnerSuite?> get suite async => (await _suiteAndZone)?.suite;
 
   /// A future that completes to a pair of [suite] and the load test's [Zone].
   ///
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
-  final Future<Pair<RunnerSuite, Zone>?> _suiteAndZone;
+  final Future<({RunnerSuite suite, Zone zone})?> _suiteAndZone;
 
   /// Returns the test that loads the suite.
   ///
@@ -88,7 +85,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   factory LoadSuite(String name, SuiteConfiguration config,
       SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
       {String? path}) {
-    var completer = Completer<Pair<RunnerSuite, Zone>?>.sync();
+    var completer = Completer<({RunnerSuite suite, Zone zone})?>.sync();
     return LoadSuite._(name, config, platform, () {
       var invoker = Invoker.current;
       invoker!.addOutstandingCallback();
@@ -108,7 +105,8 @@ class LoadSuite extends Suite implements RunnerSuite {
           return;
         }
 
-        completer.complete(suite == null ? null : Pair(suite, Zone.current));
+        completer.complete(
+            suite == null ? null : (suite: suite, zone: Zone.current));
         invoker.removeOutstandingCallback();
       }());
 
@@ -181,12 +179,12 @@ class LoadSuite extends Suite implements RunnerSuite {
     return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
       if (pair == null) return null;
 
-      var zone = pair.last;
+      var (:suite, :zone) = pair;
       RunnerSuite? newSuite;
       zone.runGuarded(() {
-        newSuite = change(pair.first);
+        newSuite = change(suite);
       });
-      return newSuite == null ? null : Pair(newSuite!, zone);
+      return newSuite == null ? null : (suite: newSuite!, zone: zone);
     }));
   }
 
@@ -202,7 +200,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     if (liveTest.errors.isEmpty) return await suite;
 
     var error = liveTest.errors.first;
-    await Future.error(error.error, error.stackTrace);
+    await Future<void>.error(error.error, error.stackTrace);
     throw 'unreachable';
   }
 

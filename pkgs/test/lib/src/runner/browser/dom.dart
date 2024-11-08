@@ -11,7 +11,10 @@ import 'package:js/js.dart';
 class Window extends EventTarget {}
 
 extension WindowExtension on Window {
+  @pragma('dart2js:as:trust')
+  Window get parent => js_util.getProperty<dynamic>(this, 'parent') as Window;
   external Location get location;
+  Console get console => js_util.getProperty(this, 'console') as Console;
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       js_util.callMethod(this, 'getComputedStyle', <Object>[
         elt,
@@ -29,6 +32,15 @@ extension WindowExtension on Window {
 
 @JS('window')
 external Window get window;
+
+@JS()
+@staticInterop
+class Console {}
+
+extension ConsoleExtension on Console {
+  external void log(Object? object);
+  external void warn(Object? object);
+}
 
 @JS()
 @staticInterop
@@ -85,7 +97,7 @@ extension NodeExtension on Node {
   external Node appendChild(Node node);
   void remove() {
     if (parentNode != null) {
-      final Node parent = parentNode!;
+      final parent = parentNode!;
       parent.removeChild(this);
     }
   }
@@ -102,7 +114,7 @@ extension EventTargetExtension on EventTarget {
   void addEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'addEventListener',
+      js_util.callMethod<void>(this, 'addEventListener',
           <Object>[type, listener, if (useCapture != null) useCapture]);
     }
   }
@@ -110,7 +122,7 @@ extension EventTargetExtension on EventTarget {
   void removeEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      js_util.callMethod(this, 'removeEventListener',
+      js_util.callMethod<void>(this, 'removeEventListener',
           <Object>[type, listener, if (useCapture != null) useCapture]);
     }
   }
@@ -135,6 +147,33 @@ extension MessageEventExtension on MessageEvent {
   external String get origin;
   List<MessagePort> get ports =>
       js_util.getProperty<List>(this, 'ports').cast<MessagePort>();
+
+  /// The source may be a `WindowProxy`, a `MessagePort`, or a `ServiceWorker`.
+  ///
+  /// When a message is sent from an iframe through `window.parent.postMessage`
+  /// the source will be a `WindowProxy` which has the same methods as [Window].
+  @pragma('dart2js:as:trust')
+  MessageEventSource get source =>
+      js_util.getProperty<dynamic>(this, 'source') as MessageEventSource;
+}
+
+@JS()
+@staticInterop
+class MessageEventSource {}
+
+extension MessageEventSourceExtension on MessageEventSource {
+  @pragma('dart2js:as:trust')
+  MessageEventSourceLocation? get location =>
+      js_util.getProperty<dynamic>(this, 'location')
+          as MessageEventSourceLocation;
+}
+
+@JS()
+@staticInterop
+class MessageEventSourceLocation {}
+
+extension MessageEventSourceLocationExtension on MessageEventSourceLocation {
+  external String? get href;
 }
 
 @JS()
@@ -221,7 +260,7 @@ Object? _findConstructor(String constructorName) =>
     js_util.getProperty(window, constructorName);
 
 Object? _callConstructor(String constructorName, List<Object?> args) {
-  final Object? constructor = _findConstructor(constructorName);
+  final constructor = _findConstructor(constructorName);
   if (constructor == null) {
     return null;
   }

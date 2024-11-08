@@ -70,14 +70,15 @@ Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(description, dynamic Function() body,
+void test(Object? description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
-    skip,
-    tags,
+    Object? skip,
+    Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @Deprecated('Debug only') bool solo = false}) {
+    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.test(description.toString(), body,
       testOn: testOn,
       timeout: timeout,
@@ -148,14 +149,15 @@ void test(description, dynamic Function() body,
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(description, dynamic Function() body,
+void group(Object? description, dynamic Function() body,
     {String? testOn,
     Timeout? timeout,
-    skip,
-    tags,
+    Object? skip,
+    Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
-    @Deprecated('Debug only') bool solo = false}) {
+    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.group(description.toString(), body,
       testOn: testOn,
       timeout: timeout,

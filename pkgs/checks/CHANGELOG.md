@@ -1,4 +1,22 @@
-## 0.2.2-dev
+## 0.3.1-wip
+
+-   Directly compare keys across actual and expected `Map` instances when
+    checking deep collection equality and all the keys can be directly compared
+    for equality. This maintains the path into a nested collection for typical
+    cases of checking for equality against a purely value collection.
+-   Always wrap Condition descriptions in angle brackets.
+-   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
+    combined functionality in `containsInOrder`.
+-   Replace `pairwiseComparesTo` with `pairwiseMatches`.
+
+## 0.3.0
+
+-   **Breaking Changes**
+    -   Remove the `Condition` class and the `it()` utility. Replace calls to
+        `(it()..someExpectation())` with `((it) => it.someExpectation())`.
+-   Add class modifiers to restrict extension of implementation classes.
+
+## 0.2.2
 
 -   Return the first failure from `softCheck` and `softCheckAsync` as
     documented, instead of the last failure when there are multiple failures.

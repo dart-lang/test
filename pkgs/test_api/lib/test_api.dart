@@ -4,11 +4,7 @@
 
 @Deprecated('package:test_api is not intended for general use. '
     'Please use package:test.')
-library test_api;
-
-export 'package:matcher/expect.dart';
+library;
 
 export 'hooks.dart' show TestFailure;
 export 'scaffolding.dart';
-// Not yet deprecated, but not exposed through focused libraries.
-export 'src/scaffolding/utils.dart' show registerException;

@@ -1,18 +1,18 @@
 name: checks
-version: 0.2.2-dev
+version: 0.3.1-wip
 description: >-
   A framework for checking values against expectations and building custom
   expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/checks
+resolution: workspace
 
 environment:
-  sdk: ">=2.18.0 <3.0.0"
+  sdk: ^3.5.0-311.0.dev
 
 dependencies:
   async: ^2.8.0
   meta: ^1.9.0
-  test_api: ^0.5.0
+  test_api: ">=0.5.0 <0.8.0"
 
 dev_dependencies:
   test: ^1.21.3
-  lints: ^2.0.0

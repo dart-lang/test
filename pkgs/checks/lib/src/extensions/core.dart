@@ -4,8 +4,9 @@
 
 import 'dart:convert';
 
-import 'package:checks/context.dart';
 import 'package:meta/meta.dart' as meta;
+
+import '../../context.dart';
 
 extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.
@@ -20,7 +21,7 @@ extension CoreChecks<T> on Subject<T> {
       } catch (e, st) {
         return Extracted.rejection(which: [
           ...prefixFirst('threw while trying to read $name: ', literal(e)),
-          ...(const LineSplitter()).convert(st.toString())
+          ...const LineSplitter().convert(st.toString())
         ]);
       }
     });
@@ -35,11 +36,11 @@ extension CoreChecks<T> on Subject<T> {
   /// ```
   /// check(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
-  ///   ..has((s) => s.bar, 'bar').which(it()
+  ///   ..has((s) => s.bar, 'bar').which((b) => b
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  void which(Condition<T> condition) => condition.apply(this);
+  void which(Condition<T> condition) => condition(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.

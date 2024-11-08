@@ -8,9 +8,7 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
-    show
-        Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
@@ -120,7 +118,7 @@ class _ConfigurationLoader {
     var foldStackFrames = _loadFoldedStackFrames();
     var jsTrace = _getBool('js_trace');
 
-    var timeout = _parseValue('timeout', (value) => Timeout.parse(value));
+    var timeout = _parseValue('timeout', Timeout.parse);
 
     var onPlatform = _getMap('on_platform',
         key: (keyNode) => _parseNode(keyNode, 'on_platform key',
@@ -156,7 +154,7 @@ class _ConfigurationLoader {
             foldTraceExcept: foldStackFrames['except'],
             foldTraceOnly: foldStackFrames['only'])
         .merge(_extractPresets<PlatformSelector>(
-            onPlatform, (map) => Configuration.onPlatform(map)));
+            onPlatform, Configuration.onPlatform));
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -196,8 +194,8 @@ class _ConfigurationLoader {
         'add_tags', (tagNode) => _parseIdentifierLike(tagNode, 'Tag name'));
 
     var tags = _getMap('tags',
-        key: (keyNode) => _parseNode(
-            keyNode, 'tags key', (value) => BooleanSelector.parse(value)),
+        key: (keyNode) =>
+            _parseNode(keyNode, 'tags key', BooleanSelector.parse),
         value: (valueNode) =>
             _nestedConfig(valueNode, 'tag value', runnerConfig: false));
 
@@ -215,8 +213,7 @@ class _ConfigurationLoader {
             addTags: addTags,
             allowTestRandomization: allowTestRandomization,
             allowDuplicateTestNames: allowDuplicateTestNames)
-        .merge(_extractPresets<BooleanSelector>(
-            tags, (map) => Configuration.tags(map)));
+        .merge(_extractPresets<BooleanSelector>(tags, Configuration.tags));
   }
 
   /// Loads runner configuration that's allowed in the global configuration
@@ -333,7 +330,6 @@ class _ConfigurationLoader {
   /// if there are any local test-level configuration fields.
   Configuration _loadLocalRunnerConfig() {
     if (!_runnerConfig || _global) {
-      _disallow('pub_serve');
       _disallow('names');
       _disallow('plain_names');
       _disallow('paths');
@@ -344,16 +340,14 @@ class _ConfigurationLoader {
       return Configuration.empty;
     }
 
-    var pubServePort = _getInt('pub_serve');
-
     var patterns = _getList('names', (nameNode) {
       _validate(nameNode, 'Names must be strings.', (value) => value is String);
-      return _parseNode(nameNode, 'name', (value) => RegExp(value));
+      return _parseNode(nameNode, 'name', RegExp.new);
     })
       ..addAll(_getList('plain_names', (nameNode) {
         _validate(
             nameNode, 'Names must be strings.', (value) => value is String);
-        return _parseNode(nameNode, 'name', (value) => RegExp(value));
+        return _parseNode(nameNode, 'name', RegExp.new);
       }));
 
     var paths = _getList('paths', (pathNode) {
@@ -363,7 +357,7 @@ class _ConfigurationLoader {
       return _parseNode(pathNode, 'path', p.fromUri);
     });
 
-    var filename = _parseValue('filename', (value) => Glob(value));
+    var filename = _parseValue('filename', Glob.new);
 
     var includeTags = _parseBooleanSelector('include_tags');
     var excludeTags = _parseBooleanSelector('exclude_tags');
@@ -371,7 +365,6 @@ class _ConfigurationLoader {
     var defineRuntimes = _loadDefineRuntimes();
 
     return Configuration.localRunner(
-        pubServePort: pubServePort,
         globalPatterns: patterns,
         testSelections: {
           for (var path in paths) path: const {TestSelection()}
@@ -551,7 +544,7 @@ class _ConfigurationLoader {
 
   /// Parses [node]'s value as a boolean selector.
   BooleanSelector? _parseBooleanSelector(String name) =>
-      _parseValue(name, (value) => BooleanSelector.parse(value));
+      _parseValue(name, BooleanSelector.parse);
 
   /// Parses [node]'s value as a platform selector.
   PlatformSelector? _parsePlatformSelector(String field) {

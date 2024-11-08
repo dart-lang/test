@@ -62,7 +62,7 @@ void main() {
     test('emits an error from the stream channel if the isolate fails to load',
         () {
       expect(spawnHybridUri('non existent file').stream.first,
-          throwsA(TypeMatcher<Exception>()));
+          throwsA(isA<Exception>()));
     });
   });
 
@@ -215,7 +215,7 @@ void main() {
         }
       ''');
 
-      expect(channel.stream.first, throwsA(TypeMatcher<TestFailure>()));
+      expect(channel.stream.first, throwsA(isA<TestFailure>()));
     });
 
     test('gracefully handles an unserializable message in the VM', () {
@@ -225,7 +225,7 @@ void main() {
         void hybridMain(StreamChannel channel) {}
       ''');
 
-      expect(() => channel.sink.add([].iterator), throwsArgumentError);
+      expect(() => channel.sink.add(<Object>[].iterator), throwsArgumentError);
     });
 
     test('gracefully handles an unserializable message in the browser',
@@ -236,7 +236,7 @@ void main() {
         void hybridMain(StreamChannel channel) {}
       ''');
 
-      expect(() => channel.sink.add([].iterator), throwsArgumentError);
+      expect(() => channel.sink.add(<Object>[].iterator), throwsArgumentError);
     }, testOn: 'browser');
 
     test('gracefully handles an unserializable message in the hybrid isolate',

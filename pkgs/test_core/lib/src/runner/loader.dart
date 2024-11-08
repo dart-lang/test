@@ -11,10 +11,10 @@ import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
+import 'compiler_selection.dart';
 import 'configuration.dart';
 import 'hack_register_platform.dart';
 import 'load_exception.dart';
@@ -65,7 +65,7 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
-    _registerPlatformPlugin([Runtime.vm], () => VMPlatform());
+    _registerPlatformPlugin([Runtime.vm], VMPlatform.new);
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
@@ -141,7 +141,7 @@ class Loader {
     return StreamGroup.merge(
         Directory(dir).listSync(recursive: true).map((entry) {
       if (entry is! File || !_config.filename.matches(p.basename(entry.path))) {
-        return Stream.empty();
+        return const Stream.empty();
       }
 
       return loadFile(entry.path, suiteConfig);
@@ -170,14 +170,6 @@ class Loader {
     }
 
     if (_config.excludeTags.evaluate(suiteConfig.metadata.tags.contains)) {
-      return;
-    }
-
-    if (_config.pubServeUrl != null && !p.isWithin('test', path)) {
-      yield LoadSuite.forLoadException(
-          LoadException(
-              path, 'When using "pub serve", all test files must be in test/.'),
-          suiteConfig);
       return;
     }
 
@@ -215,12 +207,7 @@ class Loader {
           continue;
         }
 
-        var name =
-            (platform.runtime.isJS && platformConfig.precompiledPath == null
-                    ? 'compiling '
-                    : 'loading ') +
-                path;
-        yield LoadSuite(name, platformConfig, platform, () async {
+        yield LoadSuite('loading $path', platformConfig, platform, () async {
           var memo = _platformPlugins[platform.runtime]!;
 
           var retriesLeft = suiteConfig.metadata.retry;
@@ -237,13 +224,13 @@ class Loader {
               if (retriesLeft > 0) {
                 retriesLeft--;
                 print('Retrying load of $path in 1s ($retriesLeft remaining)');
-                await Future.delayed(Duration(seconds: 1));
+                await Future<void>.delayed(const Duration(seconds: 1));
                 continue;
               }
               if (error is LoadException) {
                 rethrow;
               }
-              await Future.error(LoadException(path, error), stackTrace);
+              await Future<void>.error(LoadException(path, error), stackTrace);
               return null;
             }
           }
@@ -306,5 +293,5 @@ class Loader {
         _platformCallbacks.clear();
         _suites.clear();
       });
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
 }

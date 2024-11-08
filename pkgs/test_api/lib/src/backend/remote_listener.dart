@@ -20,7 +20,7 @@ import 'suite_channel_manager.dart';
 import 'suite_platform.dart';
 import 'test.dart';
 
-class RemoteListener {
+final class RemoteListener {
   /// The test suite to run.
   final Suite _suite;
 
@@ -76,7 +76,7 @@ class RemoteListener {
           return;
         }
 
-        if (main is! Function()) {
+        if (main is! FutureOr<void> Function()) {
           _sendLoadException(
               channel, 'Top-level main() function takes arguments.');
           return;
@@ -98,7 +98,7 @@ class RemoteListener {
         });
 
         if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
-        var metadata = Metadata.deserialize(message['metadata']);
+        var metadata = Metadata.deserialize(message['metadata'] as Map);
         verboseChain = metadata.verboseTrace;
         var declarer = Declarer(
           metadata: metadata,
@@ -261,7 +261,7 @@ class RemoteListener {
     });
 
     liveTest.onMessage.listen((message) {
-      if (_printZone != null) _printZone!.print(message.text);
+      if (_printZone != null) _printZone.print(message.text);
       channel.sink.add({
         'type': 'message',
         'message-type': message.type.name,

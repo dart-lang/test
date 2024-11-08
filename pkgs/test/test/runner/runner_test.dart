@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:io';
 import 'dart:math' as math;
@@ -82,7 +83,6 @@ $_runtimeCompilers
                                       (defaults to "$_defaultConcurrency")
     --total-shards                    The total number of invocations of the test runner being run.
     --shard-index                     The index of this test runner invocation (of --total-shards).
-    --pub-serve=<port>                The port of a pub serve instance serving "test/".
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
     --ignore-timeouts                 Ignore all timeouts (useful if debugging)
@@ -101,14 +101,17 @@ $_runtimeCompilers
                                       Must be a 32bit unsigned integer or "random".
                                       If "random", pick a random seed to use.
                                       If not passed, do not randomize test case execution order.
+    --[no-]fail-fast                  Stop running tests after the first failure.
 
 Output:
 -r, --reporter=<option>               Set how to print test results.
 
           [compact]                   A single line, updated continuously.
           [expanded] (default)        A separate line for each update.
+          [failures-only]             A separate line for failing tests with no output for passing tests
           [github]                    A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).
           [json]                      A machine-readable format (see https://dart.dev/go/test-docs/json_reporter.md).
+          [silent]                    A reporter with no output. May be useful when only the exit code is meaningful.
 
     --file-reporter                   Enable an additional reporter writing test results to a file.
                                       Should be in the form <reporter>:<filepath>, Example: "json:reports/tests.json"
@@ -120,17 +123,15 @@ Output:
 
 final _runtimes = '[vm (default), chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
-    '${Platform.isWindows ? ', ie' : ''}, node, '
-    'experimental-chrome-wasm]';
+    ', edge, node]';
 
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe',
-  '[chrome]: dart2js (default)',
-  '[firefox]: dart2js (default)',
+  '[chrome]: dart2js (default), dart2wasm',
+  '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
-  if (Platform.isWindows) '[ie]: dart2js (default)',
-  '[node]: dart2js (default)',
-  '[experimental-chrome-wasm]: dart2wasm (default)',
+  '[edge]: dart2js (default)',
+  '[node]: dart2js (default), dart2wasm',
 ].map((str) => '                                      $str').join('\n');
 
 void main() {
@@ -149,7 +150,7 @@ $_usage''');
     test('an invalid option is passed', () async {
       var test = await runTest(['--asdf']);
       expectStderrEquals(test, '''
-Could not find an option named "asdf".
+Could not find an option named "--asdf".
 
 $_usage''');
       await test.shouldExit(exit_codes.usage);
@@ -518,7 +519,8 @@ $_usage''');
         import 'package:test/test.dart';
 
         void main() {
-          test("success", () {});
+          test('success', () {});
+          test('explicitly unskipped', skip: false, () {});
         }
       ''').create();
     });
@@ -531,7 +533,7 @@ $_usage''');
 
     test('runs all tests with --run-skipped', () async {
       var test = await runTest(['--run-skipped', 'test.dart']);
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
       await test.shouldExit(0);
     });
   });

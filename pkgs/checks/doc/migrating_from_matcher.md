@@ -11,12 +11,16 @@ tests.
 with `package:checks`, and old tests can continue to use matchers. Test cases
 within the same file can use a mix of `expect` and `check`.
 
-**Do I need to migrate right away?** No. When `package:test`stops exporting
-these members it will be possible to add a dependency on `package:matcher` and
-continue to use them. `package:matcher` will get deprecated and will not see new
-development, but the existing features will continue to work.
+**_Should_ I migrate all at once?** Probably not, it depends on your tolerance
+for having tests use a mix of APIs. As you add new tests, or need to make
+updates to existing tests, using `checks` will make testing easier. Tests which
+are stable and passing will not get significant benefits from a migration.
 
-**Why is the Dart team moving away from matcher?** The `matcher` package has a
+**Do I need to migrate at all?** No. When `package:test`stops exporting
+these members it will be possible to add a dependency on `package:matcher` and
+continue to use them. `package:matcher` will continue to be available.
+
+**Why is the Dart team adding a second framework?** The `matcher` package has a
 design which is fundamentally incompatible with using static types to validate
 correct use. With an entirely new design, the static types in `checks` give
 confidence that the expectation is appropriate for the value, and can narrow
@@ -24,11 +28,11 @@ autocomplete choices in the IDE for a better editing experience. The clean break
 from the legacy implementation and API also gives an opportunity to make small
 behavior and signature changes to align with modern Dart idioms.
 
-**Should I start using checks over matcher for new tests?** There is still a
+**Should I start using checks right away?** There is still a
 high potential for minor or major breaking changes during the preview window.
 Once this package is stable, yes! The experience of using `checks` improves on
 `matcher`. See some of the [improvements to look forward to in checks
-below][#improvements-you-can-expect].
+below](#improvements-you-can-expect).
 
 [matcher]: https://pub.dev/packages/matcher
 
@@ -87,11 +91,12 @@ check(because: 'some explanation', actual).expectation();
 -   Streams must be explicitly wrapped into a `StreamQueue` before they can be
     tested for behavior. Use `check(actualStream).withQueue`.
 -   `emitsAnyOf` is `Subject<StreamQueue>.anyOf`. `emitsInOrder` is `inOrder`.
-    The arguments are `Condition<StreamQueue>` and match a behavior of the
-    entire stream. In `matcher` the elements to expect could have been a bare
-    value to check for equality, a matcher for the emitted value, or a matcher
-    for the entire queue which would match multiple values. Use `it()..emits()`
-    to check the emitted elements.
+    The arguments are `FutureOr<void> Function(Subject<StreamQueue>)` and match
+    a behavior of the entire stream. In `matcher` the elements to expect could
+    have been a bare value to check for equality, a matcher for the emitted
+    value, or a matcher for the entire queue which would match multiple values.
+    Use `(s) => s.emits((e) => e.interestingCheck())` to check the emitted
+    elements.
 -   In `package:matcher` the [`matches` Matcher][matches] converted a `String`
     argument into a `Regex`, so `matches(r'\d')` would match the value `'1'`.
     This was potentially confusing, because even though `String` is a subtype of
@@ -113,21 +118,26 @@ check(because: 'some explanation', actual).expectation();
 
 -   `anyElement` -> `Subject<Iterable>.any`
 -   `everyElement` -> `Subject<Iterable>.every`
--   `completion(Matcher)` -> `completes(Condition)`
+-   `completion(Matcher)` -> `completes(conditionCallback)`
 -   `containsPair(key, value)` -> Use `Subject<Map>[key].equals(value)`
 -   `hasLength(expected)` -> `length.equals(expected)`
--   `isNot(Matcher)` -> `not(Condition)`
--   `pairwiseCompare` -> `pairwiseComparesTo`
+-   `isNot(Matcher)` -> `not(conditionCallback)`
+-   `pairwiseCompare` -> `pairwiseMatches`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
+-   `containsAllInOrder(iterable)` ->
+    `Subject<Iterable>.containsMatchingInOrder(iterable)` to compare with
+    conditions other than equals,
+    `Subject<Iterable>.containsEqualInOrder(iterable)` to compare each index
+    with the equality operator (`==`).
 
 ### Members from `package:test/expect.dart` without a direct replacement
 
 -   `checks` does not ship with any type checking matchers for specific types.
     Instead of, for example,  `isArgumentError` use `isA<ArgumentError>`, and
     similary `throws<ArgumentError>` over `throwsArgumentError`.
--   `anything`. When a `Condition` is needed that should accept any value, pass
-    `it()` without cascading any expectation checks.
+-   `anything`. When a condition callback is needed that should accept any
+    value, pass `(_) {}`.
 -   Specific numeric comparison - `isNegative`, `isPositive`, `isZero` and their
     inverses. Use `isLessThan`, `isGreaterThan`, `isLessOrEqual`, and
     `isGreaterOrEqual` with appropriate numeric arguments.
@@ -142,7 +152,7 @@ check(because: 'some explanation', actual).expectation();
 -   `orderedEquals`: Use `deepEquals`. If the equality needs to specifically
     *not* be deep equality (this is unusual, nested collections are unlikely to
     have a meaningful equality), force using `operator ==` at the first level
-    with `check(actual).deepEquals(expected.map((e) => it()..equals(e)))`;
+    with `.deepEquals(expected.map((e) => (Subject<Object?> s) => s.equals(e)))`;
 -   `prints`: TODO add missing expectation? Is this one worth replacing?
 -   `predicate`: TODO add missing expectation
 
@@ -190,4 +200,4 @@ it was up to the author to correctly use `await expecLater` for asynchronous
 cases, and `expect` for synchronous cases, and if `expect` was used with an
 asynchronous matcher the expectation could fail at any point.
 
-[unawaited lint]:https://dart-lang.github.io/linter/lints/unawaited_futures.html
+[unawaited lint]: https://dart.dev/lints/unawaited_futures

@@ -30,7 +30,7 @@ final _universalValidVariables = {
 /// This uses the [boolean selector][] syntax.
 ///
 /// [boolean selector]: https://pub.dev/packages/boolean_selector
-class PlatformSelector {
+final class PlatformSelector {
   /// A selector that declares that a test can be run on all platforms.
   static const all = PlatformSelector._(BooleanSelector.all);
 
@@ -79,32 +79,23 @@ class PlatformSelector {
   }
 
   /// Returns whether the selector matches the given [platform].
-  bool evaluate(SuitePlatform platform) {
-    return _inner.evaluate((String variable) {
-      if (variable == platform.runtime.identifier) return true;
-      if (variable == platform.runtime.parent?.identifier) return true;
-      if (variable == platform.os.identifier) return true;
-      if (variable == platform.compiler.identifier) return true;
-      switch (variable) {
-        case 'dart-vm':
-          return platform.runtime.isDartVM;
-        case 'browser':
-          return platform.runtime.isBrowser;
-        case 'js':
-          return platform.runtime.isJS;
-        case 'blink':
-          return platform.runtime.isBlink;
-        case 'posix':
-          return platform.os.isPosix;
-        case 'google':
-          return platform.inGoogle;
-        case 'wasm':
-          return platform.runtime.isWasm;
-        default:
-          return false;
-      }
-    });
-  }
+  bool evaluate(SuitePlatform platform) =>
+      _inner.evaluate((String variable) => switch (variable) {
+            _
+                when variable == platform.runtime.identifier ||
+                    variable == platform.runtime.parent?.identifier ||
+                    variable == platform.os.identifier ||
+                    variable == platform.compiler.identifier =>
+              true,
+            'dart-vm' => platform.runtime.isDartVM,
+            'browser' => platform.runtime.isBrowser,
+            'js' => platform.compiler.isJS,
+            'blink' => platform.runtime.isBlink,
+            'posix' => platform.os.isPosix,
+            'google' => platform.inGoogle,
+            'wasm' => platform.compiler.isWasm,
+            _ => false,
+          });
 
   /// Returns a new [PlatformSelector] that matches only platforms matched by
   /// both [this] and [other].
@@ -117,7 +108,7 @@ class PlatformSelector {
   String toString() => _inner.toString();
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is PlatformSelector && _inner == other._inner;
 
   @override

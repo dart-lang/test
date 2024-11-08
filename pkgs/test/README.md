@@ -17,7 +17,6 @@
   * [Compiler Selectors](#compiler-selectors)
   * [Running Tests on Node.js](#running-tests-on-nodejs)
 * [Asynchronous Tests](#asynchronous-tests)
-  * [Stream Matchers](#stream-matchers)
 * [Running Tests With Custom HTML](#running-tests-with-custom-html)
   * [Providing a custom HTML template](#providing-a-custom-html-template)
 * [Configuring Tests](#configuring-tests)
@@ -38,7 +37,7 @@
 Tests are specified using the top-level [`test()`] function.
 Test asserts can be made using [`expect` from `package:matcher`][expect]
 
-[`test()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/test.html
+[`test()`]: https://pub.dev/documentation/test/latest/test/test.html
 
 [expect]: https://pub.dev/documentation/matcher/latest/expect/expect.html
 
@@ -61,7 +60,7 @@ void main() {
 Tests can be grouped together using the [`group()`] function. Each group's
 description is added to the beginning of its test's descriptions.
 
-[`group()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/group.html
+[`group()`]: https://pub.dev/documentation/test/latest/test/group.html
 
 ```dart
 import 'package:test/test.dart';
@@ -117,9 +116,9 @@ void main() {
 }
 ```
 
-[`setUp()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/setUp.html
+[`setUp()`]: https://pub.dev/documentation/test/latest/test/setUp.html
 
-[`tearDown()`]: https://pub.dev/documentation/test_core/latest/test_core.scaffolding/tearDown.html
+[`tearDown()`]: https://pub.dev/documentation/test/latest/test/tearDown.html
 
 ## Running Tests
 
@@ -136,9 +135,16 @@ It's also possible to run a test on the Dart VM only by invoking it using `dart
 path/to/test.dart`, but this doesn't load the full test runner and will be
 missing some features.
 
-The test runner considers any file that ends with `_test.dart` to be a test
-file. If you don't pass any paths, it will run all the test files in your
-`test/` directory, making it easy to test your entire application at once.
+The test runner accepts one or more path arguments. If there are no path
+arguments the runner defaults to running tests under the `test/` directory. When
+running for `test/` or any other directory, the runner will recursively search
+the directory for files that match the test name pattern `*_test.dart`. The
+pattern can be overridden in `dart_test.yaml`. When a path argument is a file
+instead of a directory it will be run as a test, regardless of the file name.
+Arguments which use shell globbing should avoid including non-test files in the
+path argument. Tests which are run by other test runners may use a different
+default path, such as `integration_test/`. Directories other than `test/` are
+ignored by `dart test` unless passed explicitly as a path to run.
 
 You can select specific tests cases to run by name using `dart test -n "test
 name"`. The string is interpreted as a regular expression, and only tests whose
@@ -311,7 +317,7 @@ void main() {
 }
 ```
 
-[`@TestOn`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/TestOn-class.html
+[`@TestOn`]: https://pub.dev/documentation/test/latest/test/TestOn-class.html
 
 The string you pass to `@TestOn` is what's called a "platform selector", and it
 specifies exactly which platforms a test can run on. It can be as simple as the
@@ -341,7 +347,7 @@ only supports boolean operations. The following identifiers are defined:
 
 * `safari`: Whether the test is running on Apple Safari.
 
-* `ie`: Whether the test is running on Microsoft Internet Explorer.
+* `edge`: Whether the test is running on Microsoft Edge browser.
 
 * `node`: Whether the test is running on Node.js.
 
@@ -734,9 +740,9 @@ running with `pub run test`, or by passing them to the `dart` command before the
 Tests can be debugged interactively using platforms' built-in development tools.
 Tests running on browsers can use those browsers' development consoles to inspect
 the document, set breakpoints, and step through code. Those running on the Dart
-VM use [the Dart Observatory][observatory]'s .
+VM use [Dart DevTools][devtools].
 
-[observatory]: https://dart-lang.github.io/observatory/
+[devtools]: https://dart.dev/tools/dart-devtools
 
 The first step when debugging is to pass the `--pause-after-load` flag to the
 test runner. This pauses the browser after each test suite has loaded, so that
@@ -770,9 +776,9 @@ The only difference is where the code from the isolate comes from:
 `spawnHybridUri()` takes a URL. They both return a [`StreamChannel`] that
 communicates with the hybrid isolate. For example:
 
-[`spawnHybridCode()`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/spawnHybridCode.html
+[`spawnHybridCode()`]: https://pub.dev/documentation/test/latest/test/spawnHybridCode.html
 
-[`spawnHybridUri()`]: https://pub.dev/documentation/test_api/latest/test_api.scaffolding/spawnHybridUri.html
+[`spawnHybridUri()`]: https://pub.dev/documentation/test/latest/test/spawnHybridUri.html
 
 [dart:isolate]: https://api.dart.dev/stable/dart-isolate/dart-isolate-library.html
 

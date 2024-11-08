@@ -16,7 +16,7 @@ import 'util/pretty_print.dart';
 ///
 /// This metadata comes from declarations on the test itself; it doesn't include
 /// configuration from the user.
-class Metadata {
+final class Metadata {
   /// Empty metadata with only default values.
   ///
   /// Using this is slightly more efficient than manually constructing a new
@@ -123,7 +123,7 @@ class Metadata {
   /// Parses a user-provided [String] or [Iterable] into the value for [tags].
   ///
   /// Throws an [ArgumentError] if [tags] is not a [String] or an [Iterable].
-  static Set<String> _parseTags(tags) {
+  static Set<String> _parseTags(Object? tags) {
     if (tags == null) return {};
     if (tags is String) return {tags};
     if (tags is! Iterable) {
@@ -231,7 +231,7 @@ class Metadata {
       bool? chainStackTraces,
       int? retry,
       Map<String, dynamic>? onPlatform,
-      tags,
+      Object? /* String|Iterable<String> */ tags,
       this.languageVersionComment})
       : testOn = testOn == null
             ? PlatformSelector.all
@@ -255,7 +255,7 @@ class Metadata {
   }
 
   /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
-  Metadata.deserialize(serialized)
+  Metadata.deserialize(Map serialized)
       : testOn = serialized['testOn'] == null
             ? PlatformSelector.all
             : PlatformSelector.parse(serialized['testOn'] as String),
@@ -264,25 +264,26 @@ class Metadata {
         skipReason = serialized['skipReason'] as String?,
         _verboseTrace = serialized['verboseTrace'] as bool?,
         _chainStackTraces = serialized['chainStackTraces'] as bool?,
-        _retry = serialized['retry'] as int?,
+        _retry = (serialized['retry'] as num?)?.toInt(),
         tags = Set.from(serialized['tags'] as Iterable),
         onPlatform = {
           for (var pair in serialized['onPlatform'] as List)
             PlatformSelector.parse(pair.first as String):
-                Metadata.deserialize(pair.last)
+                Metadata.deserialize(pair.last as Map)
         },
         forTag = (serialized['forTag'] as Map).map((key, nested) => MapEntry(
             BooleanSelector.parse(key as String),
-            Metadata.deserialize(nested))),
+            Metadata.deserialize(nested as Map))),
         languageVersionComment =
             serialized['languageVersionComment'] as String?;
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
-  static Timeout _deserializeTimeout(serialized) {
+  static Timeout _deserializeTimeout(Object? serialized) {
     if (serialized == 'none') return Timeout.none;
-    var scaleFactor = serialized['scaleFactor'];
+    var scaleFactor = (serialized as Map)['scaleFactor'];
     if (scaleFactor != null) return Timeout.factor(scaleFactor as num);
-    return Timeout(Duration(microseconds: serialized['duration'] as int));
+    return Timeout(
+        Duration(microseconds: (serialized['duration'] as num).toInt()));
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
@@ -387,7 +388,7 @@ class Metadata {
   /// [Metadata.deserialize].
   Map<String, dynamic> serialize() {
     // Make this a list to guarantee that the order is preserved.
-    var serializedOnPlatform = [];
+    var serializedOnPlatform = <List<Object>>[];
     onPlatform.forEach((key, value) {
       serializedOnPlatform.add([key.toString(), value.serialize()]);
     });

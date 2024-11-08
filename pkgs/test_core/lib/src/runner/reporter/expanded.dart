@@ -171,9 +171,9 @@ class ExpandedReporter implements Reporter {
     } else if (_engine.active.isEmpty &&
         _engine.activeSuiteLoads.length == 1 &&
         _engine.activeSuiteLoads.first == liveTest &&
-        liveTest.test.name.startsWith('compiling ')) {
-      // Print a progress line for load tests that come from compiling JS, since
-      // that takes a long time.
+        liveTest.test.name.startsWith('loading ')) {
+      // Print a progress line for ongoing suite loading synthetic test since it
+      // may be slow (or stuck) depending on the platform.
       _progressLine(_description(liveTest));
     }
 
@@ -200,7 +200,7 @@ class ExpandedReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  void _onError(LiveTest liveTest, Object error, StackTrace stackTrace) {
     if (!liveTest.test.metadata.chainStackTraces &&
         !liveTest.suite.isLoadSuite) {
       _shouldPrintStackTraceChainingNotice = true;

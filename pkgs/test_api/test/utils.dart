@@ -27,7 +27,7 @@ State? lastState;
 ///
 /// The most recent emitted state is stored in [_lastState].
 void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
-  var states = Queue.from(statesIter);
+  var states = Queue.of(statesIter);
   liveTest.onStateChange.listen(expectAsync1((state) {
     lastState = state;
     expect(state, equals(states.removeFirst()));
@@ -36,8 +36,9 @@ void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
 
 /// Asserts that errors will be emitted via [liveTest.onError] that match
 /// [validators], in order.
-void expectErrors(LiveTest liveTest, Iterable<Function> validatorsIter) {
-  var validators = Queue.from(validatorsIter);
+void expectErrors(
+    LiveTest liveTest, Iterable<void Function(Object)> validatorsIter) {
+  var validators = Queue.of(validatorsIter);
   liveTest.onError.listen(expectAsync1((error) {
     validators.removeFirst()(error.error);
   }, count: validators.length, max: validators.length));
@@ -76,7 +77,7 @@ void expectSingleError(LiveTest liveTest) {
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
+Matcher isTestFailure(Object message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
 /// Asserts that [liveTest] has completed and passed.
@@ -98,7 +99,7 @@ void expectTestPassed(LiveTest liveTest) {
 
 /// Asserts that [liveTest] failed with a single [TestFailure] whose message
 /// matches [message].
-void expectTestFailed(LiveTest liveTest, message) {
+void expectTestFailed(LiveTest liveTest, Object message) {
   expect(liveTest.state.status, equals(Status.complete));
   expect(liveTest.state.result, equals(Result.failure));
   expect(liveTest.errors, hasLength(1));

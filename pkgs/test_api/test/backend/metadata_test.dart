@@ -135,8 +135,8 @@ void main() {
   group('onPlatform', () {
     test('parses a valid map', () {
       var metadata = Metadata.parse(onPlatform: {
-        'chrome': Timeout.factor(2),
-        'vm': [Skip(), Timeout.factor(3)]
+        'chrome': const Timeout.factor(2),
+        'vm': [const Skip(), const Timeout.factor(3)]
       });
 
       var key = metadata.onPlatform.keys.first;
@@ -157,28 +157,28 @@ void main() {
 
     test('refuses an invalid value', () {
       expect(() {
-        Metadata.parse(onPlatform: {'chrome': TestOn('chrome')});
+        Metadata.parse(onPlatform: {'chrome': const TestOn('chrome')});
       }, throwsArgumentError);
     });
 
     test('refuses an invalid value in a list', () {
       expect(() {
         Metadata.parse(onPlatform: {
-          'chrome': [TestOn('chrome')]
+          'chrome': [const TestOn('chrome')]
         });
       }, throwsArgumentError);
     });
 
     test('refuses an invalid platform selector', () {
       expect(() {
-        Metadata.parse(onPlatform: {'vm &&': Skip()});
+        Metadata.parse(onPlatform: {'vm &&': const Skip()});
       }, throwsFormatException);
     });
 
     test('refuses multiple Timeouts', () {
       expect(() {
         Metadata.parse(onPlatform: {
-          'chrome': [Timeout.factor(2), Timeout.factor(3)]
+          'chrome': [const Timeout.factor(2), const Timeout.factor(3)]
         });
       }, throwsArgumentError);
     });
@@ -186,7 +186,7 @@ void main() {
     test('refuses multiple Skips', () {
       expect(() {
         Metadata.parse(onPlatform: {
-          'chrome': [Skip(), Skip()]
+          'chrome': [const Skip(), const Skip()]
         });
       }, throwsArgumentError);
     });
@@ -194,7 +194,7 @@ void main() {
 
   group('validatePlatformSelectors', () {
     test('succeeds if onPlatform uses valid platforms', () {
-      Metadata.parse(onPlatform: {'vm || browser': Skip()})
+      Metadata.parse(onPlatform: {'vm || browser': const Skip()})
           .validatePlatformSelectors({'vm'});
     });
 
@@ -208,7 +208,7 @@ void main() {
 
     test('fails if onPlatform uses an invalid platform', () {
       expect(() {
-        Metadata.parse(onPlatform: {'unknown': Skip()})
+        Metadata.parse(onPlatform: {'unknown': const Skip()})
             .validatePlatformSelectors({'vm'});
       }, throwsFormatException);
     });
@@ -230,7 +230,7 @@ void main() {
     test('preserves all fields if no parameters are passed', () {
       var metadata = Metadata(
           testOn: PlatformSelector.parse('linux'),
-          timeout: Timeout.factor(2),
+          timeout: const Timeout.factor(2),
           skip: true,
           skipReason: 'just because',
           verboseTrace: true,
@@ -242,15 +242,16 @@ void main() {
             PlatformSelector.parse('mac-os'): Metadata(skip: false)
           },
           forTag: {
-            BooleanSelector.parse('slow'): Metadata(timeout: Timeout.factor(4))
+            BooleanSelector.parse('slow'):
+                Metadata(timeout: const Timeout.factor(4))
           });
       expect(metadata.serialize(), equals(metadata.change().serialize()));
     });
 
     test('updates a changed field', () {
-      var metadata = Metadata(timeout: Timeout.factor(2));
-      expect(metadata.change(timeout: Timeout.factor(3)).timeout,
-          equals(Timeout.factor(3)));
+      var metadata = Metadata(timeout: const Timeout.factor(2));
+      expect(metadata.change(timeout: const Timeout.factor(3)).timeout,
+          equals(const Timeout.factor(3)));
     });
   });
 }

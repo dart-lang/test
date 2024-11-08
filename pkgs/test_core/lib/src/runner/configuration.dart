@@ -10,9 +10,7 @@ import 'package:collection/collection.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
-    show
-        Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 
@@ -83,10 +81,6 @@ class Configuration {
   /// Whether to disable retries of tests.
   bool get noRetry => _noRetry ?? false;
   final bool? _noRetry;
-
-  /// The URL for the `pub serve` instance from which to load tests, or `null`
-  /// if tests should be loaded from the filesystem.
-  final Uri? pubServeUrl;
 
   /// Whether to use command-line color escapes.
   bool get color => _color ?? canUseSpecialChars;
@@ -209,6 +203,11 @@ class Configuration {
   /// The same seed will shuffle the tests in the same way every time.
   final int? testRandomizeOrderingSeed;
 
+  final bool? _stopOnFirstFailure;
+
+  /// Whether to stop running subsequent tests after a test fails.
+  bool get stopOnFirstFailure => _stopOnFirstFailure ?? false;
+
   /// Returns the current configuration, or a default configuration if no
   /// current configuration is set.
   ///
@@ -258,7 +257,6 @@ class Configuration {
       required String? reporter,
       required Map<String, String>? fileReporters,
       required String? coverage,
-      required int? pubServePort,
       required int? concurrency,
       required int? shardIndex,
       required int? totalShards,
@@ -272,6 +270,7 @@ class Configuration {
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
       required int? testRandomizeOrderingSeed,
+      required bool? stopOnFirstFailure,
 
       // Suite-level configuration
       required bool? allowDuplicateTestNames,
@@ -310,7 +309,6 @@ class Configuration {
         reporter: reporter,
         fileReporters: fileReporters,
         coverage: coverage,
-        pubServePort: pubServePort,
         concurrency: concurrency,
         shardIndex: shardIndex,
         totalShards: totalShards,
@@ -324,6 +322,7 @@ class Configuration {
         defineRuntimes: defineRuntimes,
         noRetry: noRetry,
         testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+        stopOnFirstFailure: stopOnFirstFailure,
         includeTags: includeTags,
         excludeTags: excludeTags,
         globalPatterns: globalPatterns,
@@ -367,7 +366,6 @@ class Configuration {
           String? reporter,
           Map<String, String>? fileReporters,
           String? coverage,
-          int? pubServePort,
           int? concurrency,
           int? shardIndex,
           int? totalShards,
@@ -381,6 +379,7 @@ class Configuration {
           Map<String, CustomRuntime>? defineRuntimes,
           bool? noRetry,
           int? testRandomizeOrderingSeed,
+          bool? stopOnFirstFailure,
 
           // Suite-level configuration
           bool? allowDuplicateTestNames,
@@ -418,7 +417,6 @@ class Configuration {
           reporter: reporter,
           fileReporters: fileReporters,
           coverage: coverage,
-          pubServePort: pubServePort,
           concurrency: concurrency,
           shardIndex: shardIndex,
           totalShards: totalShards,
@@ -432,6 +430,7 @@ class Configuration {
           defineRuntimes: defineRuntimes,
           noRetry: noRetry,
           testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+          stopOnFirstFailure: stopOnFirstFailure,
           allowDuplicateTestNames: allowDuplicateTestNames,
           allowTestRandomization: allowTestRandomization,
           jsTrace: jsTrace,
@@ -486,7 +485,6 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
-        pubServePort: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -498,6 +496,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         ignoreTimeouts: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
@@ -551,7 +550,6 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
-        pubServePort: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -565,6 +563,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         jsTrace: null,
         runSkipped: null,
         dart2jsArgs: null,
@@ -618,7 +617,6 @@ class Configuration {
         color: null,
         configurationPath: null,
         coverage: null,
-        pubServePort: null,
         shardIndex: null,
         totalShards: null,
         testSelections: null,
@@ -629,6 +627,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
         jsTrace: null,
@@ -656,15 +655,13 @@ class Configuration {
   /// should only be configured per package and not at the global level (global
   /// config is user specific).
   factory Configuration.localRunner(
-          {required int? pubServePort,
-          required Iterable<Pattern>? globalPatterns,
+          {required Iterable<Pattern>? globalPatterns,
           required Map<String, Set<TestSelection>>? testSelections,
           required Glob? filename,
           required BooleanSelector? includeTags,
           required BooleanSelector? excludeTags,
           required Map<String, CustomRuntime>? defineRuntimes}) =>
       Configuration(
-          pubServePort: pubServePort,
           globalPatterns: globalPatterns,
           testSelections: testSelections,
           filename: filename,
@@ -691,6 +688,7 @@ class Configuration {
           overrideRuntimes: null,
           noRetry: null,
           testRandomizeOrderingSeed: null,
+          stopOnFirstFailure: null,
           allowDuplicateTestNames: null,
           allowTestRandomization: null,
           jsTrace: null,
@@ -742,7 +740,6 @@ class Configuration {
       required String? reporter,
       required Map<String, String>? fileReporters,
       required this.coverage,
-      required int? pubServePort,
       required int? concurrency,
       required this.shardIndex,
       required this.totalShards,
@@ -756,6 +753,7 @@ class Configuration {
       required Map<String, CustomRuntime>? defineRuntimes,
       required bool? noRetry,
       required this.testRandomizeOrderingSeed,
+      required bool? stopOnFirstFailure,
       required BooleanSelector? includeTags,
       required BooleanSelector? excludeTags,
       required Iterable<Pattern>? globalPatterns,
@@ -768,9 +766,6 @@ class Configuration {
         _configurationPath = configurationPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
-        pubServeUrl = pubServePort == null
-            ? null
-            : Uri.parse('http://localhost:$pubServePort'),
         _concurrency = concurrency,
         _testSelections = testSelections == null || testSelections.isEmpty
             ? null
@@ -788,6 +783,7 @@ class Configuration {
         globalPatterns = globalPatterns == null
             ? const {}
             : UnmodifiableSetView(globalPatterns.toSet()),
+        _stopOnFirstFailure = stopOnFirstFailure,
         suiteDefaults = (() {
           var config = suiteDefaults ?? SuiteConfiguration.empty;
           if (pauseAfterLoad == true) {
@@ -795,10 +791,10 @@ class Configuration {
           }
           return config;
         }()) {
-    if (_filename != null && _filename!.context.style != p.style) {
+    if (_filename != null && _filename.context.style != p.style) {
       throw ArgumentError(
           "filename's context must match the current operating system, was "
-          '${_filename!.context.style}.');
+          '${_filename.context.style}.');
     }
 
     if ((shardIndex == null) != (totalShards == null)) {
@@ -827,7 +823,6 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
-        pubServePort: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -841,6 +836,7 @@ class Configuration {
         defineRuntimes: null,
         noRetry: null,
         testRandomizeOrderingSeed: null,
+        stopOnFirstFailure: null,
         includeTags: null,
         excludeTags: null,
       );
@@ -901,15 +897,15 @@ class Configuration {
     var foldTraceExcept = other._foldTraceExcept ?? _foldTraceExcept;
     if (_foldTraceOnly != null) {
       if (other._foldTraceExcept != null) {
-        foldTraceOnly = _foldTraceOnly!.difference(other._foldTraceExcept!);
+        foldTraceOnly = _foldTraceOnly.difference(other._foldTraceExcept);
       } else if (other._foldTraceOnly != null) {
-        foldTraceOnly = other._foldTraceOnly!.intersection(_foldTraceOnly!);
+        foldTraceOnly = other._foldTraceOnly.intersection(_foldTraceOnly);
       }
     } else if (_foldTraceExcept != null) {
       if (other._foldTraceOnly != null) {
-        foldTraceOnly = other._foldTraceOnly!.difference(_foldTraceExcept!);
+        foldTraceOnly = other._foldTraceOnly.difference(_foldTraceExcept);
       } else if (other._foldTraceExcept != null) {
-        foldTraceExcept = other._foldTraceExcept!.union(_foldTraceExcept!);
+        foldTraceExcept = other._foldTraceExcept.union(_foldTraceExcept);
       }
     }
 
@@ -925,7 +921,6 @@ class Configuration {
         reporter: other._reporter ?? _reporter,
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other.coverage ?? coverage,
-        pubServePort: (other.pubServeUrl ?? pubServeUrl)?.port,
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
@@ -946,6 +941,7 @@ class Configuration {
         noRetry: other._noRetry ?? _noRetry,
         testRandomizeOrderingSeed:
             other.testRandomizeOrderingSeed ?? testRandomizeOrderingSeed,
+        stopOnFirstFailure: other._stopOnFirstFailure ?? _stopOnFirstFailure,
         includeTags: includeTags.intersection(other.includeTags),
         excludeTags: excludeTags.union(other.excludeTags),
         globalPatterns: globalPatterns.union(other.globalPatterns),
@@ -973,7 +969,6 @@ class Configuration {
       String? reporter,
       Map<String, String>? fileReporters,
       String? coverage,
-      int? pubServePort,
       int? concurrency,
       int? shardIndex,
       int? totalShards,
@@ -1021,7 +1016,6 @@ class Configuration {
         reporter: reporter ?? _reporter,
         fileReporters: fileReporters ?? this.fileReporters,
         coverage: coverage ?? this.coverage,
-        pubServePort: pubServePort ?? pubServeUrl?.port,
         concurrency: concurrency ?? _concurrency,
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,
@@ -1036,6 +1030,7 @@ class Configuration {
         noRetry: noRetry ?? _noRetry,
         testRandomizeOrderingSeed:
             testRandomizeOrderingSeed ?? this.testRandomizeOrderingSeed,
+        stopOnFirstFailure: _stopOnFirstFailure,
         includeTags: includeTags,
         excludeTags: excludeTags,
         globalPatterns: globalPatterns,

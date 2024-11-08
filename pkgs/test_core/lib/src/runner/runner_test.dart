@@ -6,7 +6,6 @@ import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Metadata, RemoteException, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
@@ -44,22 +43,24 @@ class RunnerTest extends Test {
       _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
       testChannel.stream.listen((message) {
-        switch (message['type'] as String) {
+        final msg = message as Map;
+        switch (msg['type'] as String) {
           case 'error':
-            var asyncError = RemoteException.deserialize(message['error']);
+            var asyncError = RemoteException.deserialize(
+                msg['error'] as Map<String, dynamic>);
             var stackTrace = asyncError.stackTrace;
             controller.addError(asyncError.error, stackTrace);
             break;
 
           case 'state-change':
-            controller.setState(State(Status.parse(message['status'] as String),
-                Result.parse(message['result'] as String)));
+            controller.setState(State(Status.parse(msg['status'] as String),
+                Result.parse(msg['result'] as String)));
             break;
 
           case 'message':
             controller.message(Message(
-                MessageType.parse(message['message-type'] as String),
-                message['text'] as String));
+                MessageType.parse(msg['message-type'] as String),
+                msg['text'] as String));
             break;
 
           case 'complete':
@@ -70,8 +71,8 @@ class RunnerTest extends Test {
             // When we kill the isolate that the test lives in, that will close
             // this virtual channel and cause the spawned isolate to close as
             // well.
-            spawnHybridUri(message['url'] as String, message['message'], suite)
-                .pipe(testChannel.virtualChannel(message['channel'] as int));
+            spawnHybridUri(msg['url'] as String, msg['message'], suite).pipe(
+                testChannel.virtualChannel((msg['channel'] as num).toInt()));
             break;
         }
       }, onDone: () {

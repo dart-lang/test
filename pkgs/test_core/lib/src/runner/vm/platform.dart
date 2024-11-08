@@ -13,8 +13,7 @@ import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/backend.dart'; // ignore: deprecated_member_use
-import 'package:test_core/src/runner/vm/test_compiler.dart';
+import 'package:test_api/backend.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
 import 'package:vm_service/vm_service_io.dart';
 
@@ -30,6 +29,7 @@ import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
 import 'environment.dart';
+import 'test_compiler.dart';
 
 var _shouldPauseAfterTests = false;
 
@@ -40,7 +40,6 @@ class VMPlatform extends PlatformPlugin {
   final _compiler = TestCompiler(
       p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
   final _closeMemo = AsyncMemoizer<void>();
-  final _workingDirectory = Directory.current.uri;
   final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
 
   @override
@@ -60,7 +59,7 @@ class VMPlatform extends PlatformPlugin {
         process =
             await _spawnExecutable(path, suiteConfig.metadata, serverSocket);
       } catch (error) {
-        serverSocket.close();
+        unawaited(serverSocket.close());
         rethrow;
       }
       process.stdout.listen(stdout.add);
@@ -81,9 +80,7 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
-      cleanupCallbacks
-        ..add(receivePort.close)
-        ..add(isolate.kill);
+      cleanupCallbacks.add(isolate.kill);
     }
     cleanupCallbacks.add(outerChannel.sink.close);
 
@@ -103,8 +100,8 @@ class VMPlatform extends PlatformPlugin {
       for (var fn in cleanupCallbacks) {
         fn();
       }
-      eventSub?.cancel();
-      client?.dispose();
+      unawaited(eventSub?.cancel());
+      unawaited(client?.dispose());
       sink.close();
     }));
 
@@ -118,9 +115,10 @@ class VMPlatform extends PlatformPlugin {
       }
       var info =
           await Service.controlWebServer(enable: true, silenceOutput: true);
+      // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
       var isolateID = Service.getIsolateID(isolate!)!;
 
-      var libraryPath = _absolute(path).toString();
+      var libraryPath = (await absoluteUri(path)).toString();
       var serverUri = info.serverUri!;
       client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
@@ -135,7 +133,7 @@ class VMPlatform extends PlatformPlugin {
       environment = VMEnvironment(url, isolateRef, client);
     }
 
-    environment ??= PluginEnvironment();
+    environment ??= const PluginEnvironment();
 
     var controller = deserializeSuite(
         path, platform, suiteConfig, environment, channel.cast(), message,
@@ -163,12 +161,6 @@ class VMPlatform extends PlatformPlugin {
         _tempDir.deleteWithRetry(),
       ]));
 
-  Uri _absolute(String path) {
-    final uri = p.toUri(path);
-    if (uri.isAbsolute) return uri;
-    return _workingDirectory.resolveUri(uri);
-  }
-
   /// Compiles [path] to a native executable and spawns it as a process.
   ///
   /// Sets up a communication channel as well by passing command line arguments
@@ -186,7 +178,7 @@ class VMPlatform extends PlatformPlugin {
 
   /// Compiles [path] to a native executable using `dart compile exe`.
   Future<String> _compileToNative(String path, Metadata suiteMetadata) async {
-    var bootstrapPath = _bootstrapNativeTestFile(
+    var bootstrapPath = await _bootstrapNativeTestFile(
         path,
         suiteMetadata.languageVersionComment ??
             await rootPackageLanguageVersionComment);
@@ -222,25 +214,19 @@ stderr: ${processResult.stderr}''');
       if (precompiledPath != null) {
         return _spawnPrecompiledIsolate(
             path, message, precompiledPath, compiler);
-      } else if (_config.pubServeUrl != null) {
-        return _spawnPubServeIsolate(
-            path, message, _config.pubServeUrl!, compiler);
       }
-      switch (compiler) {
-        case Compiler.kernel:
-          return _spawnIsolateWithUri(
-              await _compileToKernel(path, suiteMetadata), message);
-        case Compiler.source:
-          return _spawnIsolateWithUri(
-              _bootstrapIsolateTestFile(
-                  path,
-                  suiteMetadata.languageVersionComment ??
-                      await rootPackageLanguageVersionComment),
-              message);
-        default:
-          throw StateError(
-              'Unsupported compiler $compiler for the VM platform');
-      }
+      return switch (compiler) {
+        Compiler.kernel => _spawnIsolateWithUri(
+            await _compileToKernel(path, suiteMetadata), message),
+        Compiler.source => _spawnIsolateWithUri(
+            await _bootstrapIsolateTestFile(
+                path,
+                suiteMetadata.languageVersionComment ??
+                    await rootPackageLanguageVersionComment),
+            message),
+        _ => throw StateError(
+            'Unsupported compiler $compiler for the VM platform'),
+      };
     } catch (_) {
       if (_closeMemo.hasRun) return null;
       rethrow;
@@ -249,12 +235,13 @@ stderr: ${processResult.stderr}''');
 
   /// Compiles [path] to kernel and returns the uri to the compiled dill.
   Future<Uri> _compileToKernel(String path, Metadata suiteMetadata) async {
-    final response = await _compiler.compile(_absolute(path), suiteMetadata);
+    final response =
+        await _compiler.compile(await absoluteUri(path), suiteMetadata);
     var compiledDill = response.kernelOutputUri?.toFilePath();
     if (compiledDill == null || response.errorCount > 0) {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
     }
-    return _absolute(compiledDill);
+    return absoluteUri(compiledDill);
   }
 
   /// Runs [uri] in an isolate, passing [message].
@@ -265,22 +252,26 @@ stderr: ${processResult.stderr}''');
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
       String precompiledPath, Compiler compiler) async {
-    testPath =
-        _absolute('${p.join(precompiledPath, testPath)}.vm_test.dart').path;
+    var testUri =
+        await absoluteUri('${p.join(precompiledPath, testPath)}.vm_test.dart');
+    testUri = testUri.replace(path: testUri.path.stripDriveLetterLeadingSlash);
+
     switch (compiler) {
       case Compiler.kernel:
-        var dillTestpath =
-            '${testPath.substring(0, testPath.length - '.dart'.length)}'
-            '.vm.app.dill';
-        if (await File(dillTestpath).exists()) {
-          testPath = dillTestpath;
+        // Load `.dill` files from their absolute file path.
+        var dillUri = (await Isolate.resolvePackageUri(testUri.replace(
+            path:
+                '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
+                '.vm.app.dill')))!;
+        if (await File.fromUri(dillUri).exists()) {
+          testUri = dillUri;
         }
         // TODO: Compile to kernel manually here? Otherwise we aren't compiling
         // with kernel when we technically should be, based on the compiler
         // setting.
         break;
       case Compiler.source:
-        // Just leave test path as is.
+        // Just leave test uri as is.
         break;
       default:
         throw StateError('Unsupported compiler for the VM platform $compiler.');
@@ -293,7 +284,7 @@ stderr: ${processResult.stderr}''');
         packageConfig = null;
       }
     }
-    return await Isolate.spawnUri(p.toUri(testPath), [], message,
+    return await Isolate.spawnUri(testUri, [], message,
         packageConfig: packageConfig?.uri, checked: true);
   }
 
@@ -301,15 +292,19 @@ stderr: ${processResult.stderr}''');
   /// file.
   ///
   /// Returns the [Uri] to the created file.
-  Uri _bootstrapIsolateTestFile(
-      String testPath, String languageVersionComment) {
+  Future<Uri> _bootstrapIsolateTestFile(
+      String testPath, String languageVersionComment) async {
     var file = File(p.join(
         _tempDir.path, p.setExtension(testPath, '.bootstrap.isolate.dart')));
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(_bootstrapIsolateTestContents(
-            _absolute(testPath), languageVersionComment));
+        ..writeAsStringSync(testBootstrapContents(
+          testUri: await absoluteUri(testPath),
+          languageVersionComment: languageVersionComment,
+          packageConfigUri: await packageConfigUri,
+          testType: VmTestType.isolate,
+        ));
     }
     return file.uri;
   }
@@ -318,82 +313,29 @@ stderr: ${processResult.stderr}''');
   /// contents to a temporary file.
   ///
   /// Returns the path to the created file.
-  String _bootstrapNativeTestFile(
-      String testPath, String languageVersionComment) {
+  Future<String> _bootstrapNativeTestFile(
+      String testPath, String languageVersionComment) async {
     var file = File(p.join(
         _tempDir.path, p.setExtension(testPath, '.bootstrap.native.dart')));
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(_bootstrapNativeTestContents(
-            _absolute(testPath), languageVersionComment));
+        ..writeAsStringSync(testBootstrapContents(
+          testUri: await absoluteUri(testPath),
+          languageVersionComment: languageVersionComment,
+          packageConfigUri: await packageConfigUri,
+          testType: VmTestType.process,
+        ));
     }
     return file.path;
   }
 }
-
-/// Creates bootstrap file contents for running [testUri] in a VM isolate.
-String _bootstrapIsolateTestContents(
-        Uri testUri, String languageVersionComment) =>
-    '''
-    $languageVersionComment
-    import "dart:isolate";
-    import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
-    void main(_, SendPort sendPort) {
-      internalBootstrapVmTest(() => test.main, sendPort);
-    }
-  ''';
-
-/// Creates bootstrap file contents for running [testUri] as a native
-/// executable.
-String _bootstrapNativeTestContents(
-        Uri testUri, String languageVersionComment) =>
-    '''
-    $languageVersionComment
-    import "dart:isolate";
-    import "package:test_core/src/bootstrap/vm.dart";
-    import "$testUri" as test;
-    void main(List<String> args) {
-      internalBootstrapNativeTest(() => test.main, args);
-    }
-  ''';
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
   final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
       .queryParameters['isolateId'];
   return await collect(environment.observatoryUrl!, false, false, false, {},
       isolateIds: {isolateId!});
-}
-
-Future<Isolate> _spawnPubServeIsolate(String testPath, SendPort message,
-    Uri pubServeUrl, Compiler compiler) async {
-  if (compiler != Compiler.source) {
-    throw ArgumentError(
-        'The --pub-serve option requires the `--compiler none` option but the '
-        'compiler was $compiler');
-  }
-  var url = pubServeUrl.resolveUri(
-      p.toUri('${p.relative(testPath, from: 'test')}.vm_test.dart'));
-
-  try {
-    return await Isolate.spawnUri(url, [], message, checked: true);
-  } on IsolateSpawnException catch (error) {
-    if (error.message.contains('OS Error: Connection refused') ||
-        error.message.contains('The remote computer refused')) {
-      throw LoadException(
-          testPath,
-          'Error getting $url: Connection refused\n'
-          'Make sure "pub serve" is running.');
-    } else if (error.message.contains('404 Not Found')) {
-      throw LoadException(
-          testPath,
-          'Error getting $url: 404 Not Found\n'
-          'Make sure "pub serve" is serving the test/ directory.');
-    }
-
-    throw LoadException(testPath, error);
-  }
 }
 
 Uri _wsUriFor(Uri observatoryUrl) =>

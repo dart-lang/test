@@ -5,9 +5,7 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
-import 'package:test_api/scaffolding.dart' // ignore: deprecated_member_use
-    show
-        Timeout;
+import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
@@ -23,7 +21,7 @@ import 'runtime_selection.dart';
 /// matches any test selection.
 ///
 /// An empty [TestSelection()] will run all tests in the suite.
-class TestSelection {
+final class TestSelection {
   /// The patterns to check against test case names.
   ///
   /// Only run tests which match all the patterns.
@@ -41,7 +39,7 @@ class TestSelection {
 /// Suite-level configuration.
 ///
 /// This tracks configuration that can differ from suite to suite.
-class SuiteConfiguration {
+final class SuiteConfiguration {
   /// Empty configuration with only default values.
   ///
   /// Using this is slightly more efficient than manually constructing a new
@@ -112,7 +110,7 @@ class SuiteConfiguration {
   /// The set of runtimes on which to run tests.
   List<String> get runtimes => _runtimes == null
       ? const ['vm']
-      : List.unmodifiable(_runtimes!.map((runtime) => runtime.name));
+      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
   /// Configuration for particular tags.

@@ -10,11 +10,11 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/no_tests_found_exception.dart';
 
 import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/no_tests_found_exception.dart';
 import 'runner/version.dart';
 import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
@@ -39,6 +39,7 @@ Future<void> main(List<String> args) async {
   completeShutdown();
 }
 
+// ignore: unreachable_from_main
 Future<void> runTests(List<String> args) async {
   await _execute(args);
 }
@@ -63,7 +64,7 @@ Future<void> _execute(List<String> args) async {
   final signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
       : Platform.isFuchsia // Signals don't exist on Fuchsia.
-          ? Stream.empty()
+          ? const Stream<Never>.empty()
           : StreamGroup.merge(
               [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 

@@ -48,7 +48,7 @@ class LiveTestController extends LiveTest {
 
   /// The current state of the test.
   @override
-  var state = const State(Status.pending, Result.success);
+  State state = const State(Status.pending, Result.success);
 
   /// The controller for [onStateChange].
   ///

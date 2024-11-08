@@ -25,7 +25,7 @@ abstract class CompilerPool {
   bool get closed => _closeMemo.hasRun;
 
   /// The memoizer for running [close] exactly once.
-  final _closeMemo = AsyncMemoizer();
+  final _closeMemo = AsyncMemoizer<void>();
 
   /// Creates a compiler pool that multiple instances of a compiler at once.
   CompilerPool() : _pool = Pool(Configuration.current.concurrency);

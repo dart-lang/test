@@ -51,11 +51,10 @@ void main() {
         'a',
         'b'
       ], [
-        it()
-          ..isA<String>().which(it()
-            ..startsWith('a')
-            ..length.isLessThan(2)),
-        it()..isA<String>().startsWith('b')
+        (Subject<dynamic> it) => it.isA<String>().which((it) => it
+          ..startsWith('a')
+          ..length.isLessThan(2)),
+        (Subject<dynamic> it) => it.isA<String>().startsWith('b')
       ])).isNull();
     });
 
@@ -63,18 +62,26 @@ void main() {
       check(deepCollectionEquals([
         {'a': 'b'}
       ], [
-        {'a': it()..isA<String>().startsWith('b')}
+        {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('b')}
       ])).isNull();
     });
 
     test('allows conditions in place of elements in sets', () {
-      check(deepCollectionEquals(
-          {'b', 'a'}, {'a', it()..isA<String>().startsWith('b')})).isNull();
+      check(deepCollectionEquals({
+        'b',
+        'a'
+      }, {
+        'a',
+        (Subject<dynamic> it) => it.isA<String>().startsWith('b')
+      })).isNull();
     });
 
     test('allows conditions in place of keys in maps', () {
-      check(deepCollectionEquals(
-          {'a': 'b'}, {it()..isA<String>().startsWith('a'): 'b'})).isNull();
+      check(deepCollectionEquals({
+        'a': 'b'
+      }, {
+        (Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'b'
+      })).isNull();
     });
 
     test('reports non-Set elements', () {
@@ -106,7 +113,8 @@ void main() {
     });
 
     test('reports unmet conditions in iterables', () {
-      check(deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]))
+      check(deepCollectionEquals(
+              [0], [(Subject<dynamic> it) => it.isA<int>().isGreaterThan(0)]))
           .isNotNull()
           .deepEquals([
         'has an element at [<0>] that:',
@@ -116,29 +124,46 @@ void main() {
     });
 
     test('reports unmet conditions in map values', () {
-      check(deepCollectionEquals(
-              {'a': 'b'}, {'a': it()..isA<String>().startsWith('a')}))
-          .isNotNull()
-          .deepEquals([
-        "has no entry to match 'a': <A value that:",
-        '  is a String',
-        "  starts with 'a'>",
+      check(deepCollectionEquals({
+        'a': 'b'
+      }, {
+        'a': (Subject<dynamic> it) => it.isA<String>().startsWith('a')
+      })).isNotNull().deepEquals([
+        "has an element at ['a'] that:",
+        "  Actual: 'b'",
+        "  which does not start with 'a'",
       ]);
     });
 
     test('reports unmet conditions in map keys', () {
-      check(deepCollectionEquals(
-              {'b': 'a'}, {it()..isA<String>().startsWith('a'): 'a'}))
-          .isNotNull()
-          .deepEquals([
+      check(deepCollectionEquals({
+        'b': 'a'
+      }, {
+        (Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'a'
+      })).isNotNull().deepEquals([
         'has no entry to match <A value that:',
         '  is a String',
         "  starts with 'a'>: 'a'",
       ]);
     });
 
+    test('maintains paths through maps when the keys are all values', () {
+      check(deepCollectionEquals({
+        'a': [
+          {'b': 'c'}
+        ]
+      }, {
+        'a': [
+          {'b': 'd'}
+        ]
+      })).isNotNull().deepEquals([
+        "at ['a'][<0>]['b'] is 'c'",
+        "which does not equal 'd'",
+      ]);
+    });
+
     test('reports recursive lists', () {
-      var l = [];
+      var l = <Object>[];
       l.add(l);
       check(deepCollectionEquals(l, l))
           .isNotNull()

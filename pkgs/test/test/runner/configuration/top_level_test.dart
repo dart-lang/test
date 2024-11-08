@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -91,7 +91,7 @@ void main() {
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
-    await Future.delayed(Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 2));
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
@@ -369,60 +369,6 @@ void main() {
     expect(test.stdout, emitsThrough(contains('"testStart"')));
     await test.shouldExit(0);
   });
-
-  test('uses the specified pub serve port', () async {
-    await d.file('pubspec.yaml', '''
-name: myapp
-dependencies:
-  barback: any
-  test: {path: ${p.current}}
-transformers:
-- myapp:
-    \$include: test/**_test.dart
-''').create();
-
-    await d.dir('lib', [
-      d.file('myapp.dart', '''
-        import 'package:barback/barback.dart';
-
-        class MyTransformer extends Transformer {
-          final allowedExtensions = '.dart';
-
-          MyTransformer.asPlugin();
-
-          Future apply(Transform transform) async {
-            var contents = await transform.primaryInput.readAsString();
-            transform.addOutput(Asset.fromString(
-                transform.primaryInput.id,
-                contents.replaceAll("isFalse", "isTrue")));
-          }
-        }
-      ''')
-    ]).create();
-
-    await (await runPub(['get'])).shouldExit(0);
-
-    await d.dir('test', [
-      d.file('my_test.dart', '''
-        import 'package:test/test.dart';
-
-        void main() {
-          test("success", () => expect(true, isFalse));
-        }
-      ''')
-    ]).create();
-
-    var pub = await runPubServe();
-
-    await d
-        .file('dart_test.yaml', jsonEncode({'pub_serve': pubServePort}))
-        .create();
-
-    var test = await runTest([]);
-    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-    await test.shouldExit(0);
-    await pub.kill();
-  }, tags: 'pub', skip: 'https://github.com/dart-lang/test/issues/821');
 
   test('uses the specified concurrency', () async {
     await d.file('dart_test.yaml', jsonEncode({'concurrency': 2})).create();

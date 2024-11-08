@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:convert';
 
 import 'package:test/test.dart';
@@ -93,7 +95,7 @@ void main() {
   group('disallows local-only configuration:', () {
     for (var field in [
       'skip', 'retry', 'test_on', 'paths', 'filename', 'names', 'tags', //
-      'plain_names', 'include_tags', 'exclude_tags', 'pub_serve', 'add_tags',
+      'plain_names', 'include_tags', 'exclude_tags', 'add_tags',
       'define_platforms', 'allow_duplicate_test_names',
     ]) {
       test('for $field', () async {

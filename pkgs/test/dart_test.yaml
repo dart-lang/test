@@ -39,10 +39,9 @@ tags:
     add_tags: [dart2js]
     test_on: mac-os
 
-  ie:
+  edge:
     add_tags: [dart2js]
     test_on: windows
-    skip: https://github.com/dart-lang/test/issues/1614
 
   # Tests that run pub. These tests may need to be excluded when there are local
   # dependency_overrides.

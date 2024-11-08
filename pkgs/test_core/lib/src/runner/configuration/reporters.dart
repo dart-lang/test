@@ -11,6 +11,7 @@ import '../engine.dart';
 import '../reporter.dart';
 import '../reporter/compact.dart';
 import '../reporter/expanded.dart';
+import '../reporter/failures_only.dart';
 import '../reporter/github.dart';
 import '../reporter/json.dart';
 
@@ -46,8 +47,17 @@ final _allReporters = <String, ReporterDetails>{
               Directory(config.testSelections.keys.single).existsSync(),
           printPlatform: config.suiteDefaults.runtimes.length > 1 ||
               config.suiteDefaults.compilerSelections != null)),
+  'failures-only': ReporterDetails(
+      'A separate line for failing tests with no output for passing tests',
+      (config, engine, sink) => FailuresOnlyReporter.watch(engine, sink,
+          color: config.color,
+          printPath: config.testSelections.length > 1 ||
+              Directory(config.testSelections.keys.single).existsSync(),
+          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
+              config.suiteDefaults.compilerSelections != null)),
   'github': ReporterDetails(
-      'A custom reporter for GitHub Actions (the default reporter when running on GitHub Actions).',
+      'A custom reporter for GitHub Actions '
+      '(the default reporter when running on GitHub Actions).',
       (config, engine, sink) => GithubReporter.watch(engine, sink,
           printPath: config.testSelections.length > 1 ||
               Directory(config.testSelections.keys.single).existsSync(),
@@ -58,6 +68,10 @@ final _allReporters = <String, ReporterDetails>{
       'https://dart.dev/go/test-docs/json_reporter.md).',
       (config, engine, sink) =>
           JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
+  'silent': ReporterDetails(
+      'A reporter with no output. '
+      'May be useful when only the exit code is meaningful.',
+      (config, engine, sink) => SilentReporter()),
 };
 
 final defaultReporter = inTestTests

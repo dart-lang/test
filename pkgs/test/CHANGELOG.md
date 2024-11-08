@@ -1,4 +1,135 @@
-## 1.24.1-dev
+## 1.25.9-wip
+
+* Fix dart2wasm tests on windows.
+* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Support running Node.js tests compiled with dart2wasm.
+* Allow `firefox` or `firefox-bin` executable name on macOS.
+
+## 1.25.8
+
+* Increase SDK constraint to ^3.4.0.
+
+## 1.25.7
+
+* Enable asserts for `dart2wasm` tests.
+
+## 1.25.6
+
+* Point API doc links to `package:test` canonical libraries.
+* Fix testing with `dart2wasm` - use `dart compile wasm` instead of depending on
+  SDK internals
+* Update min SDK constraint to 3.2.0.
+
+## 1.25.5
+
+* Update the `package:web_socket_channel` version constraint to allow `3.x`.
+* Update the `package:shelf_web_socket` version constraint to allow `2.x`.
+
+## 1.25.4
+
+* Add `@doNotSubmit` to more declarations of the `solo` parameter.
+
+## 1.25.3
+
+* Remove outdated StreamMatcher link from README table of contents.
+* Document the silent reporter in CLI help output.
+* Support enabling experiments with the dart2wasm compiler.
+* Added [`@doNotSubmit`](https://pub.dev/documentation/meta/latest/meta/doNotSubmit-constant.html) to `test(solo: ...)` and `group(solo: ...)`. In
+  practice, this means that code that was relying on ignoring deprecation
+  warnings and using `solo` or `group` with a `skip` parameter will now fail if
+  `dart analyze --fatal-infos` (or similar) is enabled.
+
+## 1.25.2
+
+* Fix a bug running browser tests with paths containing windows directory
+  separator follow by a character which is an invalid Dart string escape
+  sequence.
+
+## 1.25.1
+
+* Fix a bug where in precompiled mode, html files for tests were no longer
+  created.
+* Support the latest version of `package:js`.
+* Document the silent reporter in CLI help output.
+
+## 1.25.0
+
+* Handle paths with leading `/` when spawning test isolates.
+* Add support for the `dart2wasm` compiler in chrome and firefox.
+* **BREAKING**: Remove the `experimental-chrome-wasm` platform, you can now use
+  `-p chrome -c dart2wasm` instead.
+  * Note that this has always been advertised as a change that would happen in a
+    future non-breaking release.
+* **BREAKING**:Dropped support for `--pub-serve` which has long not been tested
+  or supported.
+  * We do not anticipate much if any actual breakage or existing usage of this
+    feature, which is why we are making this change in a non-breaking release.
+  * If you do require this feature, file an issue and we can look at adding it
+    back.
+* **BREAKING**: Fully remove support for Internet Explorer.
+* Fix running of tests defined under `lib/` with relative imports to other
+  libraries in the package.
+
+## 1.24.9
+
+* Update the vm_service constraint to allow version `13.x`.
+
+## 1.24.8
+
+* Remove spurious deprecation during autocomplete for `setUp` and `tearDown`.
+
+## 1.24.7
+
+* Simplify the initialization of the per-suite message channel within browser
+  tests. See https://github.com/dart-lang/test/issues/2065
+* Add a timeout to browser test suite loads.
+* Fix running of browser tests that use deferred loaded libraries.
+
+## 1.24.6
+
+* Fix communication failures between minified test apps and the non-minified
+  host app.
+* Add support for discontinuing after the first failing test with `--fail-fast`.
+
+## 1.24.5
+
+* Change `compiling <path>` to `loading <path>` message in all cases. Surface
+  the "loading" messages in the situations where previously only the
+  "compiling" message would be used.
+* Support browser tests where the frame creates the message channel.
+
+## 1.24.4
+
+* Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
+* Make some annotation classes `final`: `OnPlatform`, `Retry`, `Skip`, `Tags`,
+  `TestOn`, `Timeout`.
+* Fix the `root_` fields in the JSON reporter when running a test on Windows
+  with an absolute path.
+* Add support for `SAFARI_EXECUTABLE`, `FIREFOX_EXECUTABLE` and
+  `MS_EDGE_EXECUTABLE` for custom browser installations.
+* Allow the latest analyzer (6.x.x).
+* Add `MOZ_AUTOMATION=1` environmental variable to Firefox runner, to make
+  launcher process on Windows wait for browser exit.
+
+## 1.24.3
+
+* Fix compatibility with wasm number semantics.
+
+## 1.24.2
+
+* Copy an existing nonce from a script on the test HTML page to the script
+  created by the test runner host javascript. This only impacts environments
+  testing with custom HTML that includes a nonce.
+* Support the Microsoft Edge browser (use the `edge` platform in your test
+  configuration file or `-p edge` on the command line).
+
+## 1.24.1
+
+* Handle a missing `'compiler'` value when running a test compiled against a
+  newer `test_api` than the runner back end is using. The expectation was that
+  the json protocol is only used across packages compatible with the same major
+  version of the `test_api` package, but `flutter test` does not check the
+  version of packages in the pub solve for user test code.
 
 * Deprecate the export of `package:matcher` APIs. Add an import to
   `package:matcher/expect.dart`.

@@ -44,11 +44,13 @@ final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 /// The current operating system.
 final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 
-/// Returns a [SuitePlatform] with the given [runtime], and with [os] and
-/// [inGoogle] determined automatically.
+/// Returns a [SuitePlatform] with the given [runtime], and with
+/// [SuitePlatform.os] and [inGoogle] determined automatically.
 ///
-/// If [runtime] is a browser, this will set [os] to [OperatingSystem.none].
-SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
+/// If [runtime] is a browser, this will set [SuitePlatform.os] to
+/// [OperatingSystem.none].
+// TODO: https://github.com/dart-lang/test/issues/2119 - require compiler
+SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
     SuitePlatform(runtime,
         compiler: compiler,
         os: runtime.isBrowser ? OperatingSystem.none : currentOS,
@@ -65,8 +67,10 @@ final lineSplitter = StreamTransformer<List<int>, String>(
 ///
 /// Also returns an empty stream for Fuchsia since Fuchsia components can't
 /// access stdin.
-StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
-    Platform.isFuchsia ? Stream<String>.empty() : lineSplitter.bind(stdin));
+StreamQueue<String> get stdinLines =>
+    _stdinLines ??= StreamQueue(Platform.isFuchsia
+        ? const Stream<String>.empty()
+        : lineSplitter.bind(stdin));
 
 StreamQueue<String>? _stdinLines;
 
@@ -220,7 +224,8 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     var response = await request.close();
     var jsonObject =
         await json.fuse(utf8).decoder.bind(response).single as List;
-    return base.resolve(jsonObject.first['devtoolsFrontendUrl'] as String);
+    return base
+        .resolve((jsonObject.first as Map)['devtoolsFrontendUrl'] as String);
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
@@ -238,8 +243,25 @@ extension RetryDelete on FileSystemEntity {
       } on FileSystemException {
         if (attempt == 2) rethrow;
         attempt++;
-        await Future.delayed(Duration(milliseconds: pow(10, attempt).toInt()));
+        await Future<void>.delayed(
+            Duration(milliseconds: pow(10, attempt).toInt()));
       }
     }
+  }
+}
+
+extension WindowsFilePaths on String {
+  /// Strip out the leading slash before the drive letter on windows.
+  ///
+  /// In some windows environments full paths get passed with `/` before the
+  /// drive letter. Normalize paths to exclude this slash when it exists.
+  String get stripDriveLetterLeadingSlash {
+    if (Platform.isWindows &&
+        startsWith('/') &&
+        length >= 3 &&
+        this[2] == ':') {
+      return substring(1);
+    }
+    return this;
   }
 }

@@ -11,7 +11,6 @@ import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
-// ignore: deprecated_member_use
 import 'package:test_api/backend.dart'
     show Compiler, Runtime, StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
@@ -25,10 +24,10 @@ import 'package:test_core/src/runner/plugin/environment.dart'; // ignore: implem
 import 'package:test_core/src/runner/plugin/platform_helpers.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/runner_suite.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/wasm_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/package_config.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/pair.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
@@ -42,13 +41,11 @@ class NodePlatform extends PlatformPlugin
   final Configuration _config;
 
   /// The [Dart2JsCompilerPool] managing active instances of `dart2js`.
-  final _compilers = Dart2JsCompilerPool(['-Dnode=true', '--server-mode']);
+  final _jsCompilers = Dart2JsCompilerPool(['-Dnode=true', '--server-mode']);
+  final _wasmCompilers = WasmCompilerPool(['-Dnode=true']);
 
   /// The temporary directory in which compiled JS is emitted.
   final _compiledDir = createTempDir();
-
-  /// The HTTP client to use when fetching JS files for `pub serve`.
-  final HttpClient? _http;
 
   /// Executable settings for [Runtime.nodeJS] and runtimes that extend
   /// it.
@@ -59,9 +56,7 @@ class NodePlatform extends PlatformPlugin
         windowsExecutable: 'node.exe')
   };
 
-  NodePlatform()
-      : _config = Configuration.current,
-        _http = Configuration.current.pubServeUrl == null ? null : HttpClient();
+  NodePlatform() : _config = Configuration.current;
 
   @override
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
@@ -82,15 +77,17 @@ class NodePlatform extends PlatformPlugin
   @override
   Future<RunnerSuite> load(String path, SuitePlatform platform,
       SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
-    if (platform.compiler != Compiler.dart2js) {
+    if (platform.compiler != Compiler.dart2js &&
+        platform.compiler != Compiler.dart2wasm) {
       throw StateError(
           'Unsupported compiler for the Node platform ${platform.compiler}.');
     }
-    var pair = await _loadChannel(path, platform, suiteConfig);
-    var controller = deserializeSuite(
-        path, platform, suiteConfig, PluginEnvironment(), pair.first, message);
+    var (channel, stackMapper) =
+        await _loadChannel(path, platform, suiteConfig);
+    var controller = deserializeSuite(path, platform, suiteConfig,
+        const PluginEnvironment(), channel, message);
 
-    controller.channel('test.node.mapper').sink.add(pair.last?.serialize());
+    controller.channel('test.node.mapper').sink.add(stackMapper?.serialize());
 
     return await controller.suite;
   }
@@ -99,16 +96,13 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<StreamChannel<Object?>, StackTraceMapper?>> _loadChannel(
-      String path,
-      SuitePlatform platform,
-      SuiteConfiguration suiteConfig) async {
+  Future<(StreamChannel<Object?>, StackTraceMapper?)> _loadChannel(String path,
+      SuitePlatform platform, SuiteConfiguration suiteConfig) async {
     final servers = await _loopback();
 
     try {
-      var pair = await _spawnProcess(
-          path, platform.runtime, suiteConfig, servers.first.port);
-      var process = pair.first;
+      var (process, stackMapper) =
+          await _spawnProcess(path, platform, suiteConfig, servers.first.port);
 
       // Forward Node's standard IO to the print handler so it's associated with
       // the load test.
@@ -117,7 +111,19 @@ class NodePlatform extends PlatformPlugin
       process.stdout.transform(lineSplitter).listen(print);
       process.stderr.transform(lineSplitter).listen(print);
 
-      var socket = await StreamGroup.merge(servers).first;
+      // Wait for the first connection (either over ipv4 or v6). If the proccess
+      // exits before it connects, throw instead of waiting for a connection
+      // indefinitely.
+      var socket = await Future.any([
+        StreamGroup.merge(servers).first,
+        process.exitCode.then((_) => null),
+      ]);
+
+      if (socket == null) {
+        throw LoadException(
+            path, 'Node exited before connecting to the test channel.');
+      }
+
       var channel = StreamChannel(socket.cast<List<int>>(), socket)
           .transform(StreamChannelTransformer.fromCodec(utf8))
           .transform(_chunksToLines)
@@ -127,7 +133,7 @@ class NodePlatform extends PlatformPlugin
         sink.close();
       }));
 
-      return Pair(channel, pair.last);
+      return (channel, stackMapper);
     } finally {
       unawaited(Future.wait<void>(servers.map((s) =>
           s.close().then<ServerSocket?>((v) => v).onError((_, __) => null))));
@@ -138,25 +144,28 @@ class NodePlatform extends PlatformPlugin
   ///
   /// Returns that channel along with a [StackTraceMapper] representing the
   /// source map for the compiled suite.
-  Future<Pair<Process, StackTraceMapper?>> _spawnProcess(String path,
-      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
+  Future<(Process, StackTraceMapper?)> _spawnProcess(
+      String path,
+      SuitePlatform platform,
+      SuiteConfiguration suiteConfig,
+      int socketPort) async {
     if (_config.suiteDefaults.precompiledPath != null) {
-      return _spawnPrecompiledProcess(path, runtime, suiteConfig, socketPort,
-          _config.suiteDefaults.precompiledPath!);
-    } else if (_config.pubServeUrl != null) {
-      return _spawnPubServeProcess(path, runtime, suiteConfig, socketPort);
+      return _spawnPrecompiledProcess(path, platform.runtime, suiteConfig,
+          socketPort, _config.suiteDefaults.precompiledPath!);
     } else {
-      return _spawnNormalProcess(path, runtime, suiteConfig, socketPort);
+      return switch (platform.compiler) {
+        Compiler.dart2js => _spawnNormalJsProcess(
+            path, platform.runtime, suiteConfig, socketPort),
+        Compiler.dart2wasm => _spawnNormalWasmProcess(
+            path, platform.runtime, suiteConfig, socketPort),
+        _ => throw StateError('Unsupported compiler ${platform.compiler}'),
+      };
     }
   }
 
-  /// Compiles [testPath] with dart2js, adds the node preamble, and then spawns
-  /// a Node.js process that loads that Dart test suite.
-  Future<Pair<Process, StackTraceMapper?>> _spawnNormalProcess(String testPath,
-      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
-    var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
-    await _compilers.compile('''
+  Future<String> _entrypointScriptForTest(
+      String testPath, SuiteConfiguration suiteConfig) async {
+    return '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import "package:test/src/bootstrap/node.dart";
 
@@ -165,7 +174,20 @@ class NodePlatform extends PlatformPlugin
         void main() {
           internalBootstrapNodeTest(() => test.main);
         }
-      ''', jsPath, suiteConfig);
+      ''';
+  }
+
+  /// Compiles [testPath] with dart2js, adds the node preamble, and then spawns
+  /// a Node.js process that loads that Dart test suite.
+  Future<(Process, StackTraceMapper?)> _spawnNormalJsProcess(String testPath,
+      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
+    var dir = Directory(_compiledDir).createTempSync('test_').path;
+    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
+    await _jsCompilers.compile(
+      await _entrypointScriptForTest(testPath, suiteConfig),
+      jsPath,
+      suiteConfig,
+    );
 
     // Add the Node.js preamble to ensure that the dart2js output is
     // compatible. Use the minified version so the source map remains valid.
@@ -182,12 +204,63 @@ class NodePlatform extends PlatformPlugin
           packageMap: (await currentPackageConfig).toPackageMap());
     }
 
-    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+    return (await _startProcess(runtime, jsPath, socketPort), mapper);
+  }
+
+  /// Compiles [testPath] with dart2wasm, adds a JS entrypoint and then spawns
+  /// a Node.js process loading the compiled test suite.
+  Future<(Process, StackTraceMapper?)> _spawnNormalWasmProcess(String testPath,
+      Runtime runtime, SuiteConfiguration suiteConfig, int socketPort) async {
+    var dir = Directory(_compiledDir).createTempSync('test_').path;
+    // dart2wasm will emit a .wasm file and a .mjs file responsible for loading
+    // that file.
+    var wasmPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.wasm');
+    var loader = '${p.basename(testPath)}.node_test.dart.wasm.mjs';
+
+    // We need to create an additional entrypoint file loading the wasm module.
+    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
+
+    await _wasmCompilers.compile(
+      await _entrypointScriptForTest(testPath, suiteConfig),
+      wasmPath,
+      suiteConfig,
+    );
+
+    await File(jsPath).writeAsString('''
+const { createReadStream } = require('fs');
+const { once } = require('events');
+const { PassThrough } = require('stream');
+
+const main = async () => {
+  const { instantiate, invoke } = await import("./$loader");
+
+  const wasmContents = createReadStream("$wasmPath.wasm");
+  const stream = new PassThrough();
+  wasmContents.pipe(stream);
+
+  await once(wasmContents, 'open');
+  const response = new Response(
+    stream,
+    {
+      headers: {
+        "Content-Type": "application/wasm"
+      }
+    }
+  );
+  const instancePromise = WebAssembly.compileStreaming(response);
+  const module = await instantiate(instancePromise, {});
+  invoke(module);
+};
+
+main();
+''');
+
+    return (await _startProcess(runtime, jsPath, socketPort), null);
   }
 
   /// Spawns a Node.js process that loads the Dart test suite at [testPath]
   /// under [precompiledPath].
-  Future<Pair<Process, StackTraceMapper?>> _spawnPrecompiledProcess(
+  Future<(Process, StackTraceMapper?)> _spawnPrecompiledProcess(
       String testPath,
       Runtime runtime,
       SuiteConfiguration suiteConfig,
@@ -204,35 +277,7 @@ class NodePlatform extends PlatformPlugin
               .toPackageMap());
     }
 
-    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
-  }
-
-  /// Requests the compiled js for [testPath] from the pub serve url, prepends
-  /// the node preamble, and then spawns a Node.js process that loads that Dart
-  /// test suite.
-  Future<Pair<Process, StackTraceMapper?>> _spawnPubServeProcess(
-      String testPath,
-      Runtime runtime,
-      SuiteConfiguration suiteConfig,
-      int socketPort) async {
-    var dir = Directory(_compiledDir).createTempSync('test_').path;
-    var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
-    var url = _config.pubServeUrl!.resolveUri(
-        p.toUri('${p.relative(testPath, from: 'test')}.node_test.dart.js'));
-
-    var js = await _get(url, testPath);
-    await File(jsPath).writeAsString(preamble.getPreamble(minified: true) + js);
-
-    StackTraceMapper? mapper;
-    if (!suiteConfig.jsTrace) {
-      var mapUrl = url.replace(path: '${url.path}.map');
-      mapper = JSStackTraceMapper(await _get(mapUrl, testPath),
-          mapUrl: mapUrl,
-          sdkRoot: p.toUri('packages/\$sdk'),
-          packageMap: (await currentPackageConfig).toPackagesDirPackageMap());
-    }
-
-    return Pair(await _startProcess(runtime, jsPath, socketPort), mapper);
+    return (await _startProcess(runtime, jsPath, socketPort), mapper);
   }
 
   /// Starts the Node.js process for [runtime] with [jsPath].
@@ -259,49 +304,11 @@ class NodePlatform extends PlatformPlugin
     }
   }
 
-  /// Runs an HTTP GET on [url].
-  ///
-  /// If this fails, throws a [LoadException] for [suitePath].
-  Future<String> _get(Uri url, String suitePath) async {
-    try {
-      var response = await (await _http!.getUrl(url)).close();
-
-      if (response.statusCode != 200) {
-        // We don't care about the response body, but we have to drain it or
-        // else the process can't exit.
-        response.listen(null);
-
-        throw LoadException(
-            suitePath,
-            'Error getting $url: ${response.statusCode} '
-            '${response.reasonPhrase}\n'
-            'Make sure "pub serve" is serving the test/ directory.');
-      }
-
-      return await utf8.decodeStream(response);
-    } on IOException catch (error) {
-      var message = getErrorMessage(error);
-      if (error is SocketException) {
-        message = '${error.osError?.message} '
-            '(errno ${error.osError?.errorCode})';
-      }
-
-      throw LoadException(
-          suitePath,
-          'Error getting $url: $message\n'
-          'Make sure "pub serve" is running.');
-    }
-  }
-
   @override
   Future<void> close() => _closeMemo.runOnce(() async {
-        await _compilers.close();
-
-        if (_config.pubServeUrl == null) {
-          await Directory(_compiledDir).deleteWithRetry();
-        } else {
-          _http!.close();
-        }
+        await _jsCompilers.close();
+        await _wasmCompilers.close();
+        await Directory(_compiledDir).deleteWithRetry();
       });
   final _closeMemo = AsyncMemoizer<void>();
 }

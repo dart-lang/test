@@ -191,7 +191,7 @@ class CompactReporter implements Reporter {
       _stopwatch.start();
 
       // Keep updating the time even when nothing else is happening.
-      _subscriptions.add(Stream.periodic(Duration(seconds: 1))
+      _subscriptions.add(Stream<void>.periodic(const Duration(seconds: 1))
           .listen((_) => _progressLine(_lastProgressMessage ?? '')));
     }
 
@@ -252,7 +252,7 @@ class CompactReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  void _onError(LiveTest liveTest, Object error, StackTrace stackTrace) {
     if (!liveTest.test.metadata.chainStackTraces &&
         !liveTest.suite.isLoadSuite) {
       _shouldPrintStackTraceChainingNotice = true;
