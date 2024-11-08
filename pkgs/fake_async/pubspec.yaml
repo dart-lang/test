@@ -15,3 +15,4 @@ dev_dependencies:
   async: ^2.5.0
   dart_flutter_team_lints: ^2.0.0
   test: ^1.16.0
+  matcher: any

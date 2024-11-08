@@ -11,3 +11,4 @@ dev_dependencies:
   other_package:
     path: other_package/
   test: any
+  matcher: any

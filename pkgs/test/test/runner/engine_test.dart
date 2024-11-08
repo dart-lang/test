@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
 import 'package:test_api/src/backend/state.dart';

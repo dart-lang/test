@@ -16,6 +16,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:fake_async/fake_async.dart';
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 
 void main() {

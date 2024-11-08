@@ -33,3 +33,4 @@ dependencies:
 
 dev_dependencies:
   test: any
+  matcher: any
