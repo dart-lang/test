@@ -8,7 +8,7 @@ dependencies:
   path: ^1.8.2
   stream_channel: ^2.1.0
 dev_dependencies:
+  matcher: any
   other_package:
     path: other_package/
   test: any
-  matcher: any

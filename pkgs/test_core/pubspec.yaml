@@ -32,5 +32,5 @@ dependencies:
   yaml: ^3.0.0
 
 dev_dependencies:
-  test: any
   matcher: any
+  test: any

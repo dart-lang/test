@@ -24,7 +24,7 @@ dev_dependencies:
   fake_async: ^1.2.0
   glob: ^2.0.0
   graphs: ^2.0.0
+  matcher: any
   path: ^1.8.0
   test: any
   test_core: any
-  matcher: any
