@@ -106,8 +106,8 @@ class TypeMatcher<T> extends Matcher {
 final _dart2DynamicArgs = RegExp('<dynamic(, dynamic)*>');
 
 /// With this expression `{}.runtimeType.toString`,
-/// Dart 1: "<Instance of Map>
-/// Dart 2: "<Instance of Map<dynamic, dynamic>>"
+/// Dart 1: "`<Instance of Map>`"
+/// Dart 2: "`<Instance of Map<dynamic, dynamic>>`"
 ///
 /// This functions returns the Dart 1 output, when Dart 2 runtime semantics
 /// are enabled.

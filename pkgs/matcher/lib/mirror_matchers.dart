@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @Deprecated('Check properties on known types')
-library mirror_matchers;
+library;
 
 /// The mirror matchers library provides some additional matchers that
 /// make use of `dart:mirrors`.
