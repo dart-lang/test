@@ -1,7 +1,8 @@
-## 0.6.6-wip
+## 0.6.6
 
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
 * Fix dart2wasm tests on windows.
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Increase SDK constraint to ^3.5.0.
 * Allow passing additional arguments to `dart compile wasm`.
 
 ## 0.6.5

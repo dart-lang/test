@@ -100,23 +100,23 @@ jobs:
         if: "always() && steps.pkgs_matcher_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/matcher
   job_004:
-    name: "analyze_and_format; linux; Dart 3.5.0-311.0.dev; PKGS: integration_tests/regression, integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
+    name: "analyze_and_format; linux; Dart 3.5.0; PKGS: integration_tests/regression, integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/regression-integration_tests/wasm;commands:format-analyze_0"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/regression-integration_tests/wasm;commands:format-analyze_0"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/regression-integration_tests/wasm
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/regression-integration_tests/wasm
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -147,23 +147,23 @@ jobs:
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
   job_005:
-    name: "analyze_and_format; linux; Dart 3.5.0-311.0.dev; PKGS: pkgs/checks, pkgs/test_core; `dart analyze`"
+    name: "analyze_and_format; linux; Dart 3.5.0; PKGS: pkgs/checks, pkgs/test_core; `dart analyze`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/checks-pkgs/test_core;commands:analyze_1"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/checks-pkgs/test_core;commands:analyze_1"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/checks-pkgs/test_core
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/checks-pkgs/test_core
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -324,13 +324,13 @@ jobs:
         if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_core
   job_007:
-    name: "analyze_and_format; windows; Dart 3.5.0-311.0.dev; PKG: integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
+    name: "analyze_and_format; windows; Dart 3.5.0; PKG: integration_tests/wasm; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -450,23 +450,23 @@ jobs:
       - job_007
       - job_008
   job_011:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: integration_tests/regression; `dart test`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: integration_tests/regression; `dart test`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/regression;commands:command_00"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/regression;commands:command_00"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/regression
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/regression
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -489,23 +489,23 @@ jobs:
       - job_007
       - job_008
   job_012:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/checks; `dart test`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/checks; `dart test`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/checks;commands:command_00"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/checks;commands:command_00"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/checks
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/checks
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -528,23 +528,23 @@ jobs:
       - job_007
       - job_008
   job_013:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test_core; `dart test`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test_core; `dart test`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test_core;commands:command_00"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test_core;commands:command_00"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test_core
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test_core
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -567,23 +567,23 @@ jobs:
       - job_007
       - job_008
   job_014:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/spawn_hybrid;commands:test_1"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/spawn_hybrid;commands:test_1"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/spawn_hybrid
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/spawn_hybrid
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -606,23 +606,23 @@ jobs:
       - job_007
       - job_008
   job_015:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: integration_tests/wasm; `dart test --timeout=60s`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: integration_tests/wasm; `dart test --timeout=60s`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/wasm;commands:test_2"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/wasm;commands:test_2"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:integration_tests/wasm
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:integration_tests/wasm
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -645,23 +645,23 @@ jobs:
       - job_007
       - job_008
   job_016:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_01"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_01"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -684,23 +684,23 @@ jobs:
       - job_007
       - job_008
   job_017:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_02"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_02"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -723,23 +723,23 @@ jobs:
       - job_007
       - job_008
   job_018:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_03"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_03"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -762,23 +762,23 @@ jobs:
       - job_007
       - job_008
   job_019:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_04"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_04"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -801,23 +801,23 @@ jobs:
       - job_007
       - job_008
   job_020:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_05"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_05"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -840,23 +840,23 @@ jobs:
       - job_007
       - job_008
   job_021:
-    name: "unit_test; linux; Dart 3.5.0-311.0.dev; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
+    name: "unit_test; linux; Dart 3.5.0; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test_api;commands:command_11"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test_api;commands:command_11"
           restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test_api
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test_api
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.5.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1386,23 +1386,23 @@ jobs:
       - job_007
       - job_008
   job_035:
-    name: "unit_test; osx; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
+    name: "unit_test; osx; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_06"
+          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_06"
           restore-keys: |
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0
             os:macos-latest;pub-cache-hosted
             os:macos-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1425,23 +1425,23 @@ jobs:
       - job_007
       - job_008
   job_036:
-    name: "unit_test; osx; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
+    name: "unit_test; osx; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_07"
+          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_07"
           restore-keys: |
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0
             os:macos-latest;pub-cache-hosted
             os:macos-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1464,23 +1464,23 @@ jobs:
       - job_007
       - job_008
   job_037:
-    name: "unit_test; osx; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
+    name: "unit_test; osx; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_08"
+          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_08"
           restore-keys: |
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0
             os:macos-latest;pub-cache-hosted
             os:macos-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1503,23 +1503,23 @@ jobs:
       - job_007
       - job_008
   job_038:
-    name: "unit_test; osx; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
+    name: "unit_test; osx; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_09"
+          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_09"
           restore-keys: |
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0
             os:macos-latest;pub-cache-hosted
             os:macos-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1542,23 +1542,23 @@ jobs:
       - job_007
       - job_008
   job_039:
-    name: "unit_test; osx; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
+    name: "unit_test; osx; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test;commands:command_10"
+          key: "os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test;commands:command_10"
           restore-keys: |
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev;packages:pkgs/test
-            os:macos-latest;pub-cache-hosted;sdk:3.5.0-311.0.dev
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0;packages:pkgs/test
+            os:macos-latest;pub-cache-hosted;sdk:3.5.0
             os:macos-latest;pub-cache-hosted
             os:macos-latest
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1581,13 +1581,13 @@ jobs:
       - job_007
       - job_008
   job_040:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1610,13 +1610,13 @@ jobs:
       - job_007
       - job_008
   job_041:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: integration_tests/wasm; `dart test --timeout=60s`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: integration_tests/wasm; `dart test --timeout=60s`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1639,13 +1639,13 @@ jobs:
       - job_007
       - job_008
   job_042:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1668,13 +1668,13 @@ jobs:
       - job_007
       - job_008
   job_043:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1697,13 +1697,13 @@ jobs:
       - job_007
       - job_008
   job_044:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1726,13 +1726,13 @@ jobs:
       - job_007
       - job_008
   job_045:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -1755,13 +1755,13 @@ jobs:
       - job_007
       - job_008
   job_046:
-    name: "unit_test; windows; Dart 3.5.0-311.0.dev; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
+    name: "unit_test; windows; Dart 3.5.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@0a8a0fc875eb934c15d08629302413c671d3f672
         with:
-          sdk: "3.5.0-311.0.dev"
+          sdk: "3.5.0"
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

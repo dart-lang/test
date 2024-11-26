@@ -1,6 +1,7 @@
-## 0.7.4-wip
+## 0.7.4
 
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
+* Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 
 ## 0.7.3
