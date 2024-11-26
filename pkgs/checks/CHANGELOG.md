@@ -8,6 +8,7 @@
 -   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
     combined functionality in `containsInOrder`.
 -   Replace `pairwiseComparesTo` with `pairwiseMatches`.
+-   Increase SDK constraint to ^3.5.0.
 
 ## 0.3.0
 
