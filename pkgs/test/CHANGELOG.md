@@ -1,7 +1,8 @@
-## 1.25.9-wip
+## 1.25.9
 
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
 * Fix dart2wasm tests on windows.
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 * Allow `firefox` or `firefox-bin` executable name on macOS.
 
