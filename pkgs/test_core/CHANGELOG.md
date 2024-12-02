@@ -1,4 +1,5 @@
 ## 0.6.7
+
 * Update the `package:vm_service` constraint to allow version `15.x`.
 
 ## 0.6.6
