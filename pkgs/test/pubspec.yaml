@@ -1,5 +1,5 @@
 name: test
-version: 1.25.10
+version: 1.25.11
 description: >-
   A full featured library for writing and running Dart tests across platforms.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test
@@ -29,7 +29,7 @@ dependencies:
   shelf: ^1.0.0
   shelf_packages_handler: ^3.0.0
   shelf_static: ^1.0.0
-  shelf_web_socket: '>=1.0.0 <3.0.0'
+  shelf_web_socket: '>=1.0.0 <4.0.0'
   source_span: ^1.8.0
   stack_trace: ^1.10.0
   stream_channel: ^2.1.0

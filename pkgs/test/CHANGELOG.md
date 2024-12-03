@@ -1,3 +1,7 @@
+## 1.25.11
+
+* Update the `package:shelf_web_socket` constraint to allow version `3.x`.
+
 ## 1.25.10
 
 * Update the `package:vm_service` constraint to allow version `15.x`.

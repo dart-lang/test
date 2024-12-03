@@ -798,7 +798,7 @@ import 'package:stream_channel/stream_channel.dart';
 // returned spawnHybridCode().
 hybridMain(StreamChannel channel) async {
   // Start a WebSocket server that just sends "hello!" to its clients.
-  var server = await io.serve(webSocketHandler((webSocket) {
+  var server = await io.serve(webSocketHandler((webSocket, _) {
     webSocket.sink.add('hello!');
   }), 'localhost', 0);
 

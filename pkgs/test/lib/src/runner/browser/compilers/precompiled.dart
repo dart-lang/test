@@ -137,7 +137,10 @@ abstract class PrecompiledSupport extends CompilerSupport {
   @override
   (Uri, Future<WebSocketChannel>) get webSocket {
     var completer = Completer<WebSocketChannel>.sync();
-    var path = _webSocketHandler.create(webSocketHandler(completer.complete));
+    var path =
+        _webSocketHandler.create(webSocketHandler((WebSocketChannel ws, _) {
+      completer.complete(ws);
+    }));
     var webSocketUrl = serverUrl.replace(scheme: 'ws').resolve(path);
     return (webSocketUrl, completer.future);
   }
