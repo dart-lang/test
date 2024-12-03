@@ -1,6 +1,6 @@
 ## 1.25.11
 
-* Update the `package:shelf_web_socket` constraint to allow version `3.x`.
+* Update to be forward compatible with `package:shelf_web_socket` version `3.x`.
 
 ## 1.25.10
 
