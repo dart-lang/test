@@ -59,6 +59,8 @@ class CodeServer {
   /// future that will complete to the WebSocket.
   Future<WebSocketChannel> handleWebSocket() {
     var completer = Completer<WebSocketChannel>();
+    // Note: the WebSocketChannel type below is needed for compatibility with
+    // package:shelf_web_socket v2.
     _handler.expect('GET', '/', webSocketHandler((WebSocketChannel ws, _) {
       completer.complete(ws);
     }));

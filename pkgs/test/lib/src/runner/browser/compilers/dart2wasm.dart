@@ -180,6 +180,8 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
   @override
   (Uri, Future<WebSocketChannel>) get webSocket {
     var completer = Completer<WebSocketChannel>.sync();
+    // Note: the WebSocketChannel type below is needed for compatibility with
+    // package:shelf_web_socket v2.
     var path =
         _webSocketHandler.create(webSocketHandler((WebSocketChannel ws, _) {
       completer.complete(ws);
