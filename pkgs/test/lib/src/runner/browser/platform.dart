@@ -211,10 +211,21 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// If no browser manager is running yet, starts one.
   Future<BrowserManager?> _browserManagerFor(
-      Runtime browser, Compiler compiler) async {
+      Runtime browser, Compiler compiler) {
     var managerFuture = _browserManagers[(browser, compiler)];
     if (managerFuture != null) return managerFuture;
 
+    var future = _createBrowserManager(browser, compiler);
+    // Store null values for browsers that error out so we know not to load them
+    // again.
+    _browserManagers[(browser, compiler)] =
+        future.then<BrowserManager?>((value) => value).onError((_, __) => null);
+
+    return future;
+  }
+
+  Future<BrowserManager> _createBrowserManager(
+      Runtime browser, Compiler compiler) async {
     var support = await compilerSupport(compiler);
     var (webSocketUrl, socketFuture) = support.webSocket;
     var hostUrl = support.serverUrl
@@ -224,15 +235,8 @@ class BrowserPlatform extends PlatformPlugin
       'debug': _config.debug.toString()
     });
 
-    var future = BrowserManager.start(
+    return BrowserManager.start(
         browser, hostUrl, socketFuture, _browserSettings[browser]!, _config);
-
-    // Store null values for browsers that error out so we know not to load them
-    // again.
-    _browserManagers[(browser, compiler)] =
-        future.then<BrowserManager?>((value) => value).onError((_, __) => null);
-
-    return future;
   }
 
   /// Close all the browsers that the server currently has open.

@@ -1,3 +1,7 @@
+## 0.6.8
+
+* Fix hang when running multiple precompiled browser tests.
+
 ## 0.6.7
 
 * Update the `package:vm_service` constraint to allow version `15.x`.

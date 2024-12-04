@@ -42,7 +42,7 @@ void main() {
 
     test('run two precompiled tests', () async {
       await _precompileBrowserTest('test_2.dart');
-      var test = await runTest([
+      var test = await runTest(concurrency: 2, [
         '-p',
         'chrome',
         '--precompiled=precompiled/',

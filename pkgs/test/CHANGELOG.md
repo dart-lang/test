@@ -1,3 +1,7 @@
+## 1.25.12
+
+* Fix hang when running multiple precompiled browser tests.
+
 ## 1.25.11
 
 * Update to be forward compatible with `package:shelf_web_socket` version `3.x`.
