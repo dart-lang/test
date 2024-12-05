@@ -10,9 +10,9 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:test/src/runner/node/preamble.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -102,7 +102,7 @@ void main() {
 
       var jsFile = File(jsPath);
       await jsFile.writeAsString(
-          preamble.getPreamble(minified: true) + await jsFile.readAsString());
+          getPreamble(minified: true) + await jsFile.readAsString());
 
       await d.dir('test', [d.file('test.dart', 'invalid dart}')]).create();
     });

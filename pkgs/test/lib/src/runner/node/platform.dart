@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
@@ -33,6 +32,7 @@ import 'package:yaml/yaml.dart';
 
 import '../../util/package_map.dart';
 import '../executable_settings.dart';
+import 'preamble.dart';
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
@@ -193,7 +193,7 @@ class NodePlatform extends PlatformPlugin
     // compatible. Use the minified version so the source map remains valid.
     var jsFile = File(jsPath);
     await jsFile.writeAsString(
-        preamble.getPreamble(minified: true) + await jsFile.readAsString());
+        getPreamble(minified: true) + await jsFile.readAsString());
 
     StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
