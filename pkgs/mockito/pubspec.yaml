@@ -3,7 +3,7 @@ version: 5.4.5
 description: >-
   A mock framework inspired by Mockito with APIs for Fakes, Mocks,
   behavior verification, and stubbing.
-repository: https://github.com/dart-lang/mockito
+repository: https://github.com/dart-lang/test/tree/master/pkgs/mockito
 
 topics:
  - testing
