@@ -1,18 +1,27 @@
-name: Dart CI
+name: package:test_descriptor
 
 on:
   # Run on PRs and pushes to the default branch.
   push:
     branches: [ master ]
+    paths:
+      - '.github/workflows/test_descriptor.yaml'
+      - 'pkgs/test_descriptor/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '.github/workflows/test_descriptor.yaml'
+      - 'pkgs/test_descriptor/**'
   schedule:
     - cron: "0 0 * * 0"
 
 env:
   PUB_ENVIRONMENT: bot.github
 
-permissions: read-all
+
+defaults:
+  run:
+    working-directory: pkgs/test_descriptor/
 
 jobs:
   # Check code formatting and static analysis on a single OS (linux)

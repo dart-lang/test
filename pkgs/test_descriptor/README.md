@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/test_descriptor/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/test_descriptor/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/test/actions/workflows/test_descriptor.yaml/badge.svg)](https://github.com/dart-lang/test/actions/workflows/test_descriptor.yaml)
 [![pub package](https://img.shields.io/pub/v/test_descriptor.svg)](https://pub.dev/packages/test_descriptor)
 [![package publisher](https://img.shields.io/pub/publisher/test_descriptor.svg)](https://pub.dev/packages/test_descriptor/publisher)
 

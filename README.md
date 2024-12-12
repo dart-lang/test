@@ -22,3 +22,4 @@ literate API.
 | [test](pkgs/test/) | A full featured library for writing and running Dart tests across platforms. | [![pub package](https://img.shields.io/pub/v/test.svg)](https://pub.dev/packages/test) |
 | [test_api](pkgs/test_api/) |  | [![pub package](https://img.shields.io/pub/v/test_api.svg)](https://pub.dev/packages/test_api) |
 | [test_core](pkgs/test_core/) |  | [![pub package](https://img.shields.io/pub/v/test_core.svg)](https://pub.dev/packages/test_core) |
+| [test_descriptor](pkgs/test_descriptor/) | An API for defining and verifying files and directory structures. | [![pub package](https://img.shields.io/pub/v/test_descriptor.svg)](https://pub.dev/packages/test_descriptor) |

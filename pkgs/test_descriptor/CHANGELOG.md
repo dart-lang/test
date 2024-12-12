@@ -1,6 +1,7 @@
-## 2.0.2-wip
+## 2.0.2
 
 * Require Dart 3.1 or later.
+* Move to `dart-lang/test` monorepo.
 
 ## 2.0.1
 
