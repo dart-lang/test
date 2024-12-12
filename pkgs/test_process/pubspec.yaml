@@ -2,7 +2,7 @@ name: test_process
 version: 2.1.1-wip
 description:
   "Test processes: starting; validating stdout and stderr; checking exit code"
-repository: https://github.com/dart-lang/test_process
+repository: https://github.com/dart-lang/test/tree/master/pkgs/test_process
 
 environment:
   sdk: ^3.1.0
