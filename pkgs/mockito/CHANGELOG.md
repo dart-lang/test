@@ -1,4 +1,4 @@
-## 5.4.5
+## 5.4.5-dev.0
 
 * Ignore "must_be_immutable" warning in generated files. Mocks cannot be made
   immutable anyway, but this way users aren't prevented from using generated
