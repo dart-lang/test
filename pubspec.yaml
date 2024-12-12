@@ -10,6 +10,5 @@ workspace:
   - pkgs/test
   - pkgs/test_api
   - pkgs/test_core
-  - pkgs/mockito
 dev_dependencies:
   dart_flutter_team_lints: ^3.1.0
