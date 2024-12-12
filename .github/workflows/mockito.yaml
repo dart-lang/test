@@ -1,18 +1,24 @@
-name: Dart CI
-
-on:
-  # Run on PRs and pushes to the default branch.
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-  schedule:
-    - cron: "0 0 * * 0"
-
-env:
-  PUB_ENVIRONMENT: bot.github
+name: package:mockito
 
 permissions: read-all
+
+on:
+  # Run CI on all PRs (against any branch) and on pushes to the master branch.
+  pull_request:
+    paths:
+      - '.github/workflows/mockito.yaml'
+      - 'pkgs/mockito/**'
+  push:
+    branches: [ master ]
+    paths:
+      - '.github/workflows/mockito.yaml'
+      - 'pkgs/mockito/**'
+  schedule:
+    - cron: '0 0 * * 0' # weekly
+
+defaults:
+  run:
+    working-directory: pkgs/mockito
 
 jobs:
   # Check code formatting with the dev SDK.

@@ -1,4 +1,4 @@
-[![Dart CI](https://github.com/dart-lang/mockito/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/mockito/actions/workflows/test-package.yml)
+[![Build Status](https://github.com/dart-lang/test/actions/workflows/mockito.yaml/badge.svg)](https://github.com/dart-lang/test/actions/workflows/mockito.yaml)
 [![Pub](https://img.shields.io/pub/v/mockito.svg)](https://pub.dev/packages/mockito)
 [![package publisher](https://img.shields.io/pub/publisher/mockito.svg)](https://pub.dev/packages/mockito/publisher)
 
@@ -65,7 +65,7 @@ you want to add Mockito annotations in other places, you will need to add a
 The generated mock class, `MockCat`, extends Mockito's Mock class and implements
 the Cat class, giving us a class which supports stubbing and verifying.
 
-[NULL_SAFETY_README]: https://github.com/dart-lang/mockito/blob/master/NULL_SAFETY_README.md
+[NULL_SAFETY_README]: https://github.com/dart-lang/test/blob/master/pkgs/mockito/NULL_SAFETY_README.md
 
 ## Let's verify some behavior!
 
@@ -460,7 +460,7 @@ utilities on a class which `extends Mock` if it helps with code structure.
 ## Frequently asked questions
 
 Read more information about this package in the
-[FAQ](https://github.com/dart-lang/mockito/blob/master/FAQ.md).
+[FAQ](https://github.com/dart-lang/test/blob/master/pkgs/mockito/FAQ.md).
 
 [`verify`]: https://pub.dev/documentation/mockito/latest/mockito/verify.html
 [`verifyInOrder`]: https://pub.dev/documentation/mockito/latest/mockito/verifyInOrder.html

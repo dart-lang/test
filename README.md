@@ -19,6 +19,7 @@ literate API.
 | [checks](pkgs/checks/) | A framework for checking values against expectations and building custom expectations. | [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks) |
 | [fake_async](pkgs/fake_async/) | Fake asynchronous events such as timers and microtasks for deterministic testing. | [![pub package](https://img.shields.io/pub/v/fake_async.svg)](https://pub.dev/packages/fake_async) |
 | [matcher](pkgs/matcher/) | Support for specifying test expectations via an extensible Matcher class. | [![pub package](https://img.shields.io/pub/v/matcher.svg)](https://pub.dev/packages/matcher) |
+| [mockito](pkgs/mockito/) | A mock framework inspired by Mockito with APIs for Fakes, Mocks, behavior verification, and stubbing. | [![pub package](https://img.shields.io/pub/v/mockito.svg)](https://pub.dev/packages/mockito) |
 | [test](pkgs/test/) | A full featured library for writing and running Dart tests across platforms. | [![pub package](https://img.shields.io/pub/v/test.svg)](https://pub.dev/packages/test) |
 | [test_api](pkgs/test_api/) |  | [![pub package](https://img.shields.io/pub/v/test_api.svg)](https://pub.dev/packages/test_api) |
 | [test_core](pkgs/test_core/) |  | [![pub package](https://img.shields.io/pub/v/test_core.svg)](https://pub.dev/packages/test_core) |

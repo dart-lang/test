@@ -13,6 +13,7 @@
 * Fix a bug where type aliases in type arguments were not correctly
   resolved.
 * Fix a bug where record types were not correctly resolved.
+* Move to `dart-lang/test` monorepo.
 
 ## 5.4.4
 
