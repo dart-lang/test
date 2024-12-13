@@ -15,7 +15,7 @@ void main() {
 
   test("doesn't throw if it isn't called", () async {
     var monitor = await TestCaseMonitor.run(() {
-      const Stream.empty().listen(neverCalled);
+      const Stream<Never>.empty().listen(neverCalled);
     });
 
     expectTestPassed(monitor);
