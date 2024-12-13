@@ -71,7 +71,7 @@ void main() {
 
     test('rejects an empty stream', () {
       expect(
-          expectLater(const Stream.empty(), emits(1)),
+          expectLater(const Stream<Never>.empty(), emits(1)),
           throwsTestFailure(allOf([
             startsWith('Expected: should emit an event that <1>\n'),
             endsWith('   Which: emitted x Stream closed.\n')
@@ -96,7 +96,7 @@ void main() {
 
   group('emitsDone', () {
     test('succeeds for an empty stream', () {
-      expect(const Stream.empty(), emitsDone);
+      expect(const Stream<Never>.empty(), emitsDone);
     });
 
     test('fails for a stream with events', () {

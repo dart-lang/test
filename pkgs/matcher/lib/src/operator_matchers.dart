@@ -59,7 +59,7 @@ class _AllOf extends Matcher {
       Map matchState, bool verbose) {
     var matcher = matchState['matcher'] as Matcher;
     matcher.describeMismatch(
-        item, mismatchDescription, matchState['state'], verbose);
+        item, mismatchDescription, matchState['state'] as Map, verbose);
     return mismatchDescription;
   }
 

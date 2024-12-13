@@ -43,8 +43,7 @@ Matcher wrapMatcher(Object? valueOrMatcher) {
   } else if (valueOrMatcher is bool Function(Never)) {
     // unary predicate, but expects a specific type
     // so wrap it.
-    // ignore: unnecessary_lambdas
-    return predicate((a) => (valueOrMatcher as dynamic)(a));
+    return predicate((a) => (valueOrMatcher as dynamic)(a) as bool);
   } else {
     return equals(valueOrMatcher);
   }

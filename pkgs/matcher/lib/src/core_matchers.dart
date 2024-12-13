@@ -14,7 +14,8 @@ class _Empty extends Matcher {
   const _Empty();
 
   @override
-  bool matches(Object? item, Map matchState) => (item as dynamic).isEmpty;
+  bool matches(Object? item, Map matchState) =>
+      (item as dynamic).isEmpty as bool;
 
   @override
   Description describe(Description description) => description.add('empty');
@@ -27,7 +28,8 @@ class _NotEmpty extends Matcher {
   const _NotEmpty();
 
   @override
-  bool matches(Object? item, Map matchState) => (item as dynamic).isNotEmpty;
+  bool matches(Object? item, Map matchState) =>
+      (item as dynamic).isNotEmpty as bool;
 
   @override
   Description describe(Description description) => description.add('non-empty');

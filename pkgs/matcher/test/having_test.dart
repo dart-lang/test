@@ -5,7 +5,7 @@
 // ignore_for_file: lines_longer_than_80_chars
 
 import 'package:matcher/matcher.dart';
-import 'package:test/test.dart' show test, expect, throwsA, group;
+import 'package:test/test.dart' show expect, group, test, throwsA;
 
 import 'test_utils.dart';
 

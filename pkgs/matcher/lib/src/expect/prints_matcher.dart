@@ -33,7 +33,7 @@ class _Prints extends AsyncMatcher {
   // synchronous.
   @override
   dynamic /*FutureOr<String>*/ matchAsync(Object? item) {
-    if (item is! Function()) return 'was not a unary Function';
+    if (item is! Object? Function()) return 'was not a unary Function';
 
     var buffer = StringBuffer();
     var result = runZoned(item,
@@ -53,7 +53,7 @@ class _Prints extends AsyncMatcher {
   /// Verifies that [actual] matches [_matcher] and returns a [String]
   /// description of the failure if it doesn't.
   String? _check(String actual) {
-    var matchState = {};
+    var matchState = <Object?, Object?>{};
     if (_matcher.matches(actual, matchState)) return null;
 
     var result = _matcher

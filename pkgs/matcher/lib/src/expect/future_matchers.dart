@@ -58,7 +58,7 @@ class _Completes extends AsyncMatcher {
         result = await _matcher.matchAsync(value) as String?;
         if (result == null) return null;
       } else {
-        var matchState = {};
+        var matchState = <Object?, Object?>{};
         if (_matcher.matches(value, matchState)) return null;
         result = _matcher
             .describeMismatch(value, StringDescription(), matchState, false)

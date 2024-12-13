@@ -34,7 +34,7 @@ StreamMatcher emits(Object? matcher) {
   return StreamMatcher((queue) async {
     if (!await queue.hasNext) return '';
 
-    var matchState = {};
+    var matchState = <Object?, Object?>{};
     var actual = await queue.next;
     if (wrapped.matches(actual, matchState)) return null;
 
@@ -138,7 +138,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
     if (consumedMost == null) {
       transaction.reject();
       if (firstError != null) {
-        await Future.error(firstError!, firstStackTrace);
+        await Future<Never>.error(firstError!, firstStackTrace);
       }
 
       var failureMessages = <String>[];
@@ -368,7 +368,9 @@ Future<bool> _tryInAnyOrder(
 
   if (consumedMost == null) {
     transaction.reject();
-    if (firstError != null) await Future.error(firstError!, firstStackTrace);
+    if (firstError != null) {
+      await Future<Never>.error(firstError!, firstStackTrace);
+    }
     return false;
   } else {
     transaction.commit(consumedMost!);

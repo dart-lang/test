@@ -167,7 +167,7 @@ class _DeepMatcher extends Matcher {
       Object? expected, Object? actual, String location, int depth) {
     // If the expected value is a matcher, try to match it.
     if (expected is Matcher) {
-      var matchState = {};
+      var matchState = <Object?, Object?>{};
       if (expected.matches(actual, matchState)) return null;
       return _Mismatch(location, actual, (description, verbose) {
         var oldLength = description.length;
