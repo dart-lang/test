@@ -1,6 +1,7 @@
 ## 0.12.18-wip
 
 * Remove some dynamic invocations.
+* Add explicit casts from `dynamic` values.
 
 ## 0.12.17
 
