@@ -2,6 +2,7 @@
 
 * Remove some dynamic invocations.
 * Add explicit casts from `dynamic` values.
+* Require Dart 3.5
 
 ## 0.12.17
 
