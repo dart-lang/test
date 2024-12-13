@@ -74,7 +74,10 @@ Future expectLater(dynamic actual, dynamic matcher,
 
 /// The implementation of [expect] and [expectLater].
 Future _expect(Object? actual, Object? matcher,
-    {String? reason, skip, bool verbose = false, ErrorFormatter? formatter}) {
+    {String? reason,
+    Object? skip,
+    bool verbose = false,
+    ErrorFormatter? formatter}) {
   final test = TestHandle.current;
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = StringDescription();
@@ -133,7 +136,7 @@ Future _expect(Object? actual, Object? matcher,
     return Future.sync(() {});
   }
 
-  var matchState = {};
+  var matchState = <Object?, Object?>{};
   try {
     if ((matcher as Matcher).matches(actual, matchState)) {
       return Future.sync(() {});
