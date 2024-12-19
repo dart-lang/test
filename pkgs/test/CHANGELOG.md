@@ -1,3 +1,7 @@
+## 1.25.13
+
+* Use secure random for url secrets.
+
 ## 1.25.12
 
 * Fix hang when running multiple precompiled browser tests.
