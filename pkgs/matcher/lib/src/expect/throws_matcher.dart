@@ -116,10 +116,10 @@ class Throws extends AsyncMatcher {
 
   /// Verifies that [error] matches [_matcher] and returns a [String]
   /// description of the failure if it doesn't.
-  String? _check(error, StackTrace? trace) {
+  String? _check(Object error, StackTrace? trace) {
     if (_matcher == null) return null;
 
-    var matchState = {};
+    var matchState = <Object?, Object?>{};
     if (_matcher.matches(error, matchState)) return null;
 
     var result = _matcher

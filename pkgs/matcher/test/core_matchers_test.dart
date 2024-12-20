@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
-import 'package:test/test.dart' show test, group;
+import 'package:test/test.dart' show group, test;
 
 import 'test_utils.dart';
 
@@ -42,22 +42,22 @@ void main() {
   });
 
   test('same', () {
-    var a = {};
-    var b = {};
+    var a = <Object?, Object?>{};
+    var b = <Object?, Object?>{};
     shouldPass(a, same(a));
     shouldFail(b, same(a), 'Expected: same instance as {} Actual: {}');
   });
 
   test('equals', () {
-    var a = {};
-    var b = {};
+    var a = <Object?, Object?>{};
+    var b = <Object?, Object?>{};
     shouldPass(a, equals(a));
     shouldPass(a, equals(b));
   });
 
   test('equals with null', () {
     Object? a; // null
-    var b = {};
+    var b = <Object?, Object?>{};
     shouldPass(a, equals(a));
     shouldFail(
         a, equals(b), 'Expected: {} Actual: <null> Which: expected a map');
@@ -87,7 +87,7 @@ void main() {
   });
 
   test('anything', () {
-    var a = {};
+    var a = <Object?, Object?>{};
     shouldPass(0, anything);
     shouldPass(null, anything);
     shouldPass(a, anything);
@@ -107,8 +107,8 @@ void main() {
   });
 
   test('hasLength', () {
-    var a = {};
-    var b = [];
+    var a = <Object?, Object?>{};
+    var b = <Object?>[];
     shouldPass(a, hasLength(0));
     shouldPass(b, hasLength(0));
     shouldPass('a', hasLength(1));
@@ -173,13 +173,13 @@ void main() {
       ['foo', 'bar'],
       ['foo'],
       3,
-      []
+      <Object?>[]
     ];
     var expected1 = [
       ['foo', 'bar'],
       ['foo'],
       4,
-      []
+      <Object?>[]
     ];
     var reason1 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'bar'], ['foo'], 3, []] "
@@ -189,13 +189,13 @@ void main() {
       ['foo', 'barry'],
       ['foo'],
       4,
-      []
+      <Object?>[]
     ];
     var expected2 = [
       ['foo', 'bar'],
       ['foo'],
       4,
-      []
+      <Object?>[]
     ];
     var reason2 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'barry'], ['foo'], 4, []] "

@@ -124,15 +124,17 @@ class _ExpectedFunction<T> {
   /// Returns a function that has the same number of positional arguments as the
   /// wrapped function (up to a total of 6).
   Function get func {
-    if (_callback is Function(Never, Never, Never, Never, Never, Never)) {
+    if (_callback is void Function(Never, Never, Never, Never, Never, Never)) {
       return max6;
     }
-    if (_callback is Function(Never, Never, Never, Never, Never)) return max5;
-    if (_callback is Function(Never, Never, Never, Never)) return max4;
-    if (_callback is Function(Never, Never, Never)) return max3;
-    if (_callback is Function(Never, Never)) return max2;
-    if (_callback is Function(Never)) return max1;
-    if (_callback is Function()) return max0;
+    if (_callback is void Function(Never, Never, Never, Never, Never)) {
+      return max5;
+    }
+    if (_callback is void Function(Never, Never, Never, Never)) return max4;
+    if (_callback is void Function(Never, Never, Never)) return max3;
+    if (_callback is void Function(Never, Never)) return max2;
+    if (_callback is void Function(Never)) return max1;
+    if (_callback is void Function()) return max0;
 
     _outstandingWork?.complete();
     throw ArgumentError(
@@ -219,7 +221,8 @@ class _ExpectedFunction<T> {
 @Deprecated('Will be removed in 0.13.0')
 Function expectAsync(Function callback,
         {int count = 1, int max = 0, String? id, String? reason}) =>
-    _ExpectedFunction(callback, count, max, id: id, reason: reason).func;
+    _ExpectedFunction<Object?>(callback, count, max, id: id, reason: reason)
+        .func;
 
 /// Informs the framework that the given [callback] of arity 0 is expected to be
 /// called [count] number of times (by default 1).
@@ -415,7 +418,8 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
 @Deprecated('Will be removed in 0.13.0')
 Function expectAsyncUntil(Function callback, bool Function() isDone,
         {String? id, String? reason}) =>
-    _ExpectedFunction(callback, 0, -1, id: id, reason: reason, isDone: isDone)
+    _ExpectedFunction<Object?>(callback, 0, -1,
+            id: id, reason: reason, isDone: isDone)
         .func;
 
 /// Informs the framework that the given [callback] of arity 0 is expected to be

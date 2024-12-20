@@ -6,7 +6,7 @@ import 'dart:collection';
 
 import 'package:matcher/matcher.dart';
 import 'package:matcher/src/pretty_print.dart';
-import 'package:test/test.dart' show group, test, expect;
+import 'package:test/test.dart' show expect, group, test;
 
 class DefaultToString {}
 

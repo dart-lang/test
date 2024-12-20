@@ -1,5 +1,5 @@
 import 'package:matcher/matcher.dart'
-    show contains, containsValue, containsPair;
+    show contains, containsPair, containsValue;
 import 'package:test/test.dart' show test;
 
 import 'test_utils.dart';

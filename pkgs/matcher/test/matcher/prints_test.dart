@@ -158,7 +158,7 @@ void main() {
     });
 
     test('describes a failure with no text nicely', () async {
-      void local() => Future.value();
+      void local() => Future<void>.value();
       var monitor = await TestCaseMonitor.run(() {
         expect(local, prints(contains('Goodbye')));
       });
@@ -186,7 +186,7 @@ void main() {
     });
 
     test("blocks expectLater's Future", () async {
-      var completer = Completer();
+      var completer = Completer<void>();
       var fired = false;
 
       unawaited(expectLater(() {

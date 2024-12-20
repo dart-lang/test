@@ -4,13 +4,13 @@
 
 // ignore_for_file: deprecated_member_use_from_same_package
 import 'package:matcher/matcher.dart';
-import 'package:test/test.dart' show test, group;
+import 'package:test/test.dart' show group, test;
 
 import 'test_utils.dart';
 
 void main() {
-  _test(isMap, {}, name: 'Map');
-  _test(isList, [], name: 'List');
+  _test(isMap, <Object?, Object?>{}, name: 'Map');
+  _test(isList, <Object?>[], name: 'List');
   _test(isArgumentError, ArgumentError());
   _test(isCastError, TypeError());
   _test<Exception>(isException, const FormatException());

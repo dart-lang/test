@@ -38,14 +38,14 @@ export 'src/expect/prints_matcher.dart' show prints;
 export 'src/expect/stream_matcher.dart' show StreamMatcher;
 export 'src/expect/stream_matchers.dart'
     show
-        emitsDone,
         emits,
-        emitsError,
-        mayEmit,
         emitsAnyOf,
-        emitsInOrder,
+        emitsDone,
+        emitsError,
         emitsInAnyOrder,
+        emitsInOrder,
         emitsThrough,
+        mayEmit,
         mayEmitMultiple,
         neverEmits;
 export 'src/expect/throws_matcher.dart' show Throws, throws, throwsA;

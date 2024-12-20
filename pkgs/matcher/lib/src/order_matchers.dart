@@ -78,9 +78,9 @@ class _OrderingMatcher extends Matcher {
   bool matches(Object? item, Map matchState) {
     if (item == _value) {
       return _equalValue;
-    } else if ((item as dynamic) < _value) {
+    } else if ((item as dynamic) < _value as bool) {
       return _lessThanValue;
-    } else if ((item as dynamic) > _value) {
+    } else if ((item as dynamic) > _value as bool) {
       return _greaterThanValue;
     } else {
       return false;

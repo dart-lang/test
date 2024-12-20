@@ -61,7 +61,7 @@ class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
       description.addDescriptionOf(_matchValue).add(' ignoring whitespace');
 
   @override
-  Description describeTypedMismatch(dynamic item,
+  Description describeTypedMismatch(String item,
       Description mismatchDescription, Map matchState, bool verbose) {
     return mismatchDescription
         .add('is ')
@@ -152,7 +152,7 @@ class _MatchesRegExp extends FeatureMatcher<String> {
                 : throw ArgumentError('matches requires a regexp or string');
 
   @override
-  bool typedMatches(dynamic item, Map matchState) => _regexp.hasMatch(item);
+  bool typedMatches(String item, Map matchState) => _regexp.hasMatch(item);
 
   @override
   Description describe(Description description) =>

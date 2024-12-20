@@ -115,13 +115,13 @@ void main() {
     group('[throws]', () {
       test('with a Future that throws an error', () {
         // ignore: deprecated_member_use_from_same_package
-        expect(Future.error('oh no'), throws);
+        expect(Future<Never>.error('oh no'), throws);
       });
 
       test("with a Future that doesn't throw", () async {
         var monitor = await TestCaseMonitor.run(() {
           // ignore: deprecated_member_use_from_same_package
-          expect(Future.value(), throws);
+          expect(Future<void>.value(), throws);
         });
 
         expectTestFailed(
@@ -136,7 +136,7 @@ void main() {
 
       test('with a closure that returns a Future that throws an error', () {
         // ignore: deprecated_member_use_from_same_package
-        expect(() => Future.error('oh no'), throws);
+        expect(() => Future<Never>.error('oh no'), throws);
       });
 
       test("with a closure that returns a Future that doesn't throw", () async {
@@ -173,17 +173,17 @@ void main() {
 
     group('[throwsA]', () {
       test('with a Future that throws an identical error', () {
-        expect(Future.error('oh no'), throwsA('oh no'));
+        expect(Future<Never>.error('oh no'), throwsA('oh no'));
       });
 
       test('with a Future that throws a matching error', () {
-        expect(Future.error(const FormatException('bad')),
+        expect(Future<Never>.error(const FormatException('bad')),
             throwsA(isFormatException));
       });
 
       test("with a Future that doesn't throw", () async {
         var monitor = await TestCaseMonitor.run(() {
-          expect(Future.value(), throwsA('oh no'));
+          expect(Future<void>.value(), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -198,7 +198,7 @@ void main() {
 
       test('with a Future that throws the wrong error', () async {
         var monitor = await TestCaseMonitor.run(() {
-          expect(Future.error('aw dang'), throwsA('oh no'));
+          expect(Future<Never>.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -213,7 +213,7 @@ void main() {
 
       test('with a closure that returns a Future that throws a matching error',
           () {
-        expect(() => Future.error(const FormatException('bad')),
+        expect(() => Future<Never>.error(const FormatException('bad')),
             throwsA(isFormatException));
       });
 
@@ -235,7 +235,7 @@ void main() {
       test('with closure that returns a Future that throws the wrong error',
           () async {
         var monitor = await TestCaseMonitor.run(() {
-          expect(() => Future.error('aw dang'), throwsA('oh no'));
+          expect(() => Future<Never>.error('aw dang'), throwsA('oh no'));
         });
 
         expectTestFailed(
@@ -264,7 +264,7 @@ void main() {
       });
 
       test("blocks expectLater's Future", () async {
-        var completer = Completer();
+        var completer = Completer<Never>();
         var fired = false;
         unawaited(expectLater(completer.future, throwsArgumentError).then((_) {
           fired = true;

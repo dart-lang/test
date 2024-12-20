@@ -18,7 +18,7 @@ void main() {
     });
 
     test('contains an async error', () {
-      expect(expectLater(Future.error('oh no'), completion(isFalse)),
+      expect(expectLater(Future<Never>.error('oh no'), completion(isFalse)),
           throwsA('oh no'));
     });
   });
