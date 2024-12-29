@@ -72,7 +72,11 @@ Iterable<String> _prettyPrint(
 Iterable<String> _prettyPrintCollection(
     String open, String close, List<Iterable<String>> elements, int maxLength) {
   if (elements.length > _maxItems) {
-    elements.replaceRange(_maxItems - 1, elements.length, [
+    // Force inference as List<String>, otherwise the type is
+    // List<Iterable<String>> which ends up as a type error in dart:collection
+    // when the underlying list is actually a List<List<String>>. See
+    // https://github.com/dart-lang/test/issues/2441 for more details.
+    elements.replaceRange(_maxItems - 1, elements.length, <List<String>>[
       ['...']
     ]);
   }
