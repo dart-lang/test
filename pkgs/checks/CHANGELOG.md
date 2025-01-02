@@ -8,6 +8,8 @@
 -   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
     combined functionality in `containsInOrder`.
 -   Replace `pairwiseComparesTo` with `pairwiseMatches`.
+-   Fix a bug where printing the result of a failed deep quality check would
+    fail with a `TypeError` when comparing large `Map` instances 
 -   Increase SDK constraint to ^3.5.0.
 
 ## 0.3.0
