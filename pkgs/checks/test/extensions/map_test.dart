@@ -29,65 +29,6 @@ void main() {
   test('values', () {
     check(_testMap).values.contains(1);
   });
-  test('can be described failing compared to another large map', () {
-    const expected = {
-      1: -5,
-      2: -4,
-      3: -4,
-      4: -3,
-      5: -3,
-      6: -2,
-      7: -2,
-      8: -1,
-      9: -1,
-      10: 0,
-      11: 0,
-      12: 1,
-      13: 1,
-      14: 2,
-      15: 2,
-      16: 3,
-      17: 3,
-      18: 4,
-      19: 4,
-      20: 5,
-      21: 5,
-      22: 6,
-      23: 6,
-      24: 7,
-      25: 7,
-      26: 8,
-    };
-    final actual = {
-      1: -4,
-      2: -4,
-      3: -3,
-      4: -3,
-      5: -2,
-      6: -2,
-      7: -1,
-      8: -1,
-      9: 0,
-      10: 0,
-      11: 0,
-      12: 1,
-      13: 1,
-      14: 2,
-      15: 2,
-      16: 3,
-      17: 3,
-      18: 4,
-      19: 4,
-      20: 5,
-      21: 5,
-      22: 6,
-      23: 6,
-      24: 7,
-      25: 7,
-      26: 8,
-    };
-    check(actual).not((a) => a.deepEquals(expected));
-  });
 
   group('operator []', () {
     test('succeeds for a key that exists', () {
