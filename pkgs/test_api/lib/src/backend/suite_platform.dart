@@ -38,9 +38,6 @@ final class SuitePlatform {
       this.os = OperatingSystem.none,
       this.inGoogle = false})
       : compiler = compiler ?? runtime.defaultCompiler {
-    if (runtime.isBrowser && os != OperatingSystem.none) {
-      throw ArgumentError('No OS should be passed for runtime "$runtime".');
-    }
     if (!runtime.supportedCompilers.contains(this.compiler)) {
       throw ArgumentError(
           'The platform $runtime does not support the compiler ${this.compiler}');
