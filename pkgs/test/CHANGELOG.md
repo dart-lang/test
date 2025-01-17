@@ -1,3 +1,8 @@
+## 1.25.15-wip
+
+* Support using the OS platform selector to configure browser tests.
+  TODO: Longer changelog with potential impacts.
+
 ## 1.25.14
 
 * Use secure random for url secrets.
