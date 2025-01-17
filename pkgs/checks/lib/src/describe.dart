@@ -72,9 +72,10 @@ Iterable<String> _prettyPrint(
 Iterable<String> _prettyPrintCollection(
     String open, String close, List<Iterable<String>> elements, int maxLength) {
   if (elements.length > _maxItems) {
-    elements.replaceRange(_maxItems - 1, elements.length, [
+    const ellipsisElement = [
       ['...']
-    ]);
+    ];
+    elements.replaceRange(_maxItems - 1, elements.length, ellipsisElement);
   }
   if (elements.every((e) => e.length == 1)) {
     final singleLine = '$open${elements.map((e) => e.single).join(', ')}$close';
