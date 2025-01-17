@@ -191,12 +191,8 @@ MultiChannel<dynamic> _connectToServer() {
 /// the key 'exception' set to true and details in the value for 'data' (coming
 /// from `dart.js` due to a load exception).
 ///
-/// Legacy bootstrap implementations send a `{'ready': true}` message as a
-/// signal for this host to create a [MessageChannel] and send the port through
-/// the frame's `window.onMessage` channel.
-///
-/// Upcoming bootstrap implementations will send the string 'port' and include a
-/// port for a prepared [MessageChannel].
+/// Bootstrap implementations send the string 'port' and include a port for a
+/// prepared [MessageChannel].
 ///
 /// Returns a [StreamChannel] which will be connected to the frame once the
 /// message channel port is active.
