@@ -829,15 +829,16 @@ void main() {
       log.clear();
 
       async.flushMicrotasks();
-      expect(log, ['run0', '#1()']);
+      // Some zone implementations may introduce extra `run` calls.
+      expect(log.tail(2), ['run0', '#1()']);
       log.clear();
 
       async.elapse(elapseBy);
-      expect(log, ['run0', '#2()']);
+      expect(log.tail(2), ['run0', '#2()']);
       log.clear();
 
       async.elapse(elapseBy);
-      expect(log, ['run1', '#3(_)']);
+      expect(log.tail(2), ['run1', '#3(_)']);
 
       zone.run(() {
         log.clear();
@@ -852,15 +853,15 @@ void main() {
       log.clear();
 
       async.flushMicrotasks();
-      expect(log, ['run0', '#4()', 'ERR(microtask error)']);
+      expect(log.tail(3), ['run0', '#4()', 'ERR(microtask error)']);
       log.clear();
 
       async.elapse(elapseBy);
-      expect(log, ['run0', '#5()', 'ERR(timer error)']);
+      expect(log.tail(3), ['run0', '#5()', 'ERR(timer error)']);
       log.clear();
 
       async.elapse(elapseBy);
-      expect(log, ['run1', '#3(_)', 'ERR(periodic timer error)']);
+      expect(log.tail(3), ['run1', '#3(_)', 'ERR(periodic timer error)']);
       log.clear();
     });
   });
@@ -872,3 +873,7 @@ Matcher _closeToTime(DateTime expected) => predicate(
     (actual) =>
         expected.difference(actual as DateTime).inMilliseconds.abs() < 100,
     'is close to $expected');
+
+extension<T> on List<T> {
+  List<T> tail(int count) => sublist(length - count);
+}
