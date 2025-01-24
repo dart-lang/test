@@ -821,7 +821,7 @@ void main() {
         log.clear();
         Timer.periodic(elapseBy * 2, (t) {
           if (t.tick == 2) {
-            throw 'periodic timer error'; // ignore: only_throw_errors 
+            throw 'periodic timer error'; // ignore: only_throw_errors
           }
         });
       });
@@ -842,10 +842,10 @@ void main() {
       zone.run(() {
         log.clear();
         scheduleMicrotask(() {
-          throw 'microtask error'; // ignore: only_throw_errors 
+          throw 'microtask error'; // ignore: only_throw_errors
         });
         Timer(elapseBy, () {
-          throw 'timer error'; // ignore: only_throw_errors 
+          throw 'timer error'; // ignore: only_throw_errors
         });
       });
       expect(log, ['r0(#4)', 'r0(#5)']);
