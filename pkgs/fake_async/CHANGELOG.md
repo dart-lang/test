@@ -16,7 +16,6 @@
   the callback of a periodic timer would immediately invoke
   the same timer.
 * Move to `dart-lang/test` monorepo.
-* Require Dart 3.5.
 
 ## 1.3.1
 
