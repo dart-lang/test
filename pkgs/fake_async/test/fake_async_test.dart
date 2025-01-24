@@ -27,9 +27,18 @@ void main() {
   });
 
   group('elapseBlocking', () {
-    test('should elapse time without calling timers', () {
-      Timer(elapseBy ~/ 2, neverCalled);
-      FakeAsync().elapseBlocking(elapseBy);
+    test('should elapse time without calling timers or microtasks', () {
+      FakeAsync()
+        ..run((_) {
+          // Do not use [neverCalled] from package:test.
+          // It schedules timers to "pump the event loop",
+          // which stalls the test if you don't call `elapse` or `flushTimers`.
+          final notCalled = expectAsync0(count: 0, () {});
+          scheduleMicrotask(notCalled);
+          Timer(elapseBy ~/ 2, notCalled);
+          Timer(Duration.zero, expectAsync0(count: 0, notCalled));
+        })
+        ..elapseBlocking(elapseBy);
     });
 
     test('should elapse time by the specified amount', () {
@@ -270,7 +279,7 @@ void main() {
       // TODO: Pausing and resuming the timeout Stream doesn't work since
       // it uses `new Stopwatch()`.
       //
-      // See https://code.google.com/p/dart/issues/detail?id=18149
+      // See https://dartbug.com/18149
       test('should work with Stream.periodic', () {
         FakeAsync().run((async) {
           expect(Stream.periodic(const Duration(minutes: 1), (i) => i),
@@ -603,6 +612,94 @@ void main() {
         expect(log, ['periodic 1', 'single']);
       });
     });
+
+    test('can increment periodic timer tick by more than one', () {
+      final async = FakeAsync();
+      final ticks = <(int ms, int tick)>[];
+      final timer = async
+          .run((_) => Timer.periodic(const Duration(milliseconds: 1000), (t) {
+                final tick = t.tick;
+                ticks.add((async.elapsed.inMilliseconds, tick));
+              }));
+      expect(timer.tick, 0);
+      expect(ticks, isEmpty);
+
+      // Run timer once.
+      async.elapse(const Duration(milliseconds: 1000));
+      expect(ticks, [(1000, 1)]);
+      expect(timer.tick, 1);
+      expect(async.elapsed, const Duration(milliseconds: 1000));
+      ticks.clear();
+
+      // Block past two timer ticks without running events.
+      async.elapseBlocking(const Duration(milliseconds: 2300));
+      expect(async.elapsed, const Duration(milliseconds: 3300));
+      // Runs no events.
+      expect(ticks, isEmpty);
+
+      // Run due timers only. Time does not advance.
+      async.flushTimers(flushPeriodicTimers: false);
+      expect(ticks, [(3300, 3)]); // Timer ran only once.
+      expect(timer.tick, 3);
+      expect(async.elapsed, const Duration(milliseconds: 3300));
+      ticks.clear();
+
+      // Pass more time, but without reaching tick 4.
+      async.elapse(const Duration(milliseconds: 300));
+      expect(ticks, isEmpty);
+      expect(timer.tick, 3);
+      expect(async.elapsed, const Duration(milliseconds: 3600));
+
+      // Pass next timer.
+      async.elapse(const Duration(milliseconds: 500));
+      expect(ticks, [(4000, 4)]);
+      expect(timer.tick, 4);
+      expect(async.elapsed, const Duration(milliseconds: 4100));
+    });
+
+    test('can run elapseBlocking during periodic timer callback', () {
+      final async = FakeAsync();
+      final ticks = <(int ms, int tick)>[];
+      final timer = async
+          .run((_) => Timer.periodic(const Duration(milliseconds: 1000), (t) {
+                ticks.add((async.elapsed.inMilliseconds, t.tick));
+                if (t.tick == 2) {
+                  async.elapseBlocking(const Duration(milliseconds: 2300));
+                  // Log time at end of callback as well.
+                  ticks.add((async.elapsed.inMilliseconds, t.tick));
+                }
+              }));
+      expect(timer.tick, 0);
+      expect(ticks, isEmpty);
+
+      // Run timer once.
+      async.elapse(const Duration(milliseconds: 1100));
+      expect(ticks, [(1000, 1)]);
+      expect(timer.tick, 1); // Didn't tick yet.
+      expect(async.elapsed, const Duration(milliseconds: 1100));
+      ticks.clear();
+
+      // Run timer once more.
+      // This blocks for additional 2300 ms, making timer due again,
+      // and `flushTimers` will run it.
+      async.elapse(const Duration(milliseconds: 1100));
+      expect(ticks, [(2000, 2), (4300, 2), (4300, 4)]);
+      expect(timer.tick, 4);
+      expect(async.elapsed, const Duration(milliseconds: 4300));
+      ticks.clear();
+
+      // Pass more time, but without reaching tick 5.
+      async.elapse(const Duration(milliseconds: 300));
+      expect(ticks, isEmpty);
+      expect(timer.tick, 4);
+      expect(async.elapsed, const Duration(milliseconds: 4600));
+
+      // Pass next timer normally.
+      async.elapse(const Duration(milliseconds: 500));
+      expect(ticks, [(5000, 5)]);
+      expect(timer.tick, 5);
+      expect(async.elapsed, const Duration(milliseconds: 5100));
+    });
   });
 
   group('clock', () {
@@ -651,6 +748,120 @@ void main() {
           expect(clock.now(), start.add(elapseBy));
         });
       });
+    });
+  });
+
+  group('zone', () {
+    test('can be used directly', () {
+      final async = FakeAsync();
+      final zone = async.run((_) => Zone.current);
+      final log = <String>[];
+      zone
+        ..scheduleMicrotask(() {
+          log.add('microtask');
+        })
+        ..createPeriodicTimer(elapseBy, (_) {
+          log.add('periodicTimer');
+        })
+        ..createTimer(elapseBy, () {
+          log.add('timer');
+        });
+      expect(log, isEmpty);
+      async.elapse(elapseBy);
+      expect(log, ['microtask', 'periodicTimer', 'timer']);
+    });
+
+    test('runs in outer zone, passes run/register/error through', () {
+      var counter = 0;
+      final log = <String>[];
+      final (async, zone) = runZoned(
+          () => fakeAsync((newAsync) {
+                return (newAsync, Zone.current);
+              }),
+          zoneSpecification:
+              ZoneSpecification(registerCallback: <R>(s, p, z, f) {
+            final id = ++counter;
+            log.add('r0(#$id)');
+            f = p.registerCallback(z, f);
+            return () {
+              log.add('#$id()');
+              return f();
+            };
+          }, registerUnaryCallback: <R, P>(s, p, z, f) {
+            final id = ++counter;
+            log.add('r1(#$id)');
+            f = p.registerUnaryCallback(z, f);
+            return (v) {
+              log.add('#$id(_)');
+              return f(v);
+            };
+          }, run: <R>(s, p, z, f) {
+            log.add('run0');
+            return p.run(z, f);
+          }, runUnary: <R, P>(s, p, z, f, v) {
+            log.add('run1');
+            return p.runUnary(z, f, v);
+          }, handleUncaughtError: (s, p, z, e, _) {
+            log.add('ERR($e)');
+          }));
+
+      zone.run(() {
+        log.clear(); // Forget everything until here.
+        scheduleMicrotask(() {});
+      });
+      expect(log, ['r0(#1)']);
+
+      zone.run(() {
+        log.clear();
+        Timer(elapseBy, () {});
+      });
+      expect(log, ['r0(#2)']);
+
+      zone.run(() {
+        log.clear();
+        Timer.periodic(elapseBy * 2, (t) {
+          if (t.tick == 2) {
+            throw 'periodic timer error'; // ignore: only_throw_errors 
+          }
+        });
+      });
+      expect(log, ['r1(#3)']);
+      log.clear();
+
+      async.flushMicrotasks();
+      expect(log, ['run0', '#1()']);
+      log.clear();
+
+      async.elapse(elapseBy);
+      expect(log, ['run0', '#2()']);
+      log.clear();
+
+      async.elapse(elapseBy);
+      expect(log, ['run1', '#3(_)']);
+
+      zone.run(() {
+        log.clear();
+        scheduleMicrotask(() {
+          throw 'microtask error'; // ignore: only_throw_errors 
+        });
+        Timer(elapseBy, () {
+          throw 'timer error'; // ignore: only_throw_errors 
+        });
+      });
+      expect(log, ['r0(#4)', 'r0(#5)']);
+      log.clear();
+
+      async.flushMicrotasks();
+      expect(log, ['run0', '#4()', 'ERR(microtask error)']);
+      log.clear();
+
+      async.elapse(elapseBy);
+      expect(log, ['run0', '#5()', 'ERR(timer error)']);
+      log.clear();
+
+      async.elapse(elapseBy);
+      expect(log, ['run1', '#3(_)', 'ERR(periodic timer error)']);
+      log.clear();
     });
   });
 }
