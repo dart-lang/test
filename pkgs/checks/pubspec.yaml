@@ -4,6 +4,7 @@ description: >-
   A framework for checking values against expectations and building custom
   expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/checks
+issue_tracker: https://github.com/dart-lang/test/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Achecks
 resolution: workspace
 
 environment:
