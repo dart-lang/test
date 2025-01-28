@@ -1,4 +1,4 @@
-## 1.3.3-wip
+## 1.3.3
 
 * Make the zone `create*Timer` and `scheduleMicrotask`
   be responsible for running callbacks in the zone they're
