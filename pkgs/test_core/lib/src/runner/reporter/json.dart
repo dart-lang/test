@@ -9,9 +9,7 @@ import 'dart:io' show pid;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/hooks.dart' // ignore: implementation_imports
-    show
-        TestFailure;
+import 'package:test_api/hooks.dart' show TestFailure;
 import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
