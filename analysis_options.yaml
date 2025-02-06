@@ -19,3 +19,4 @@ analyzer:
 linter:
   rules:
     - avoid_private_typedef_functions
+    - unnecessary_ignore
