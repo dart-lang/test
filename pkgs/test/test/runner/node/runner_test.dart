@@ -290,17 +290,17 @@ void main() {
   test('forwards raw JS prints from the Node test', () async {
     await d.file('test.dart', '''
       import 'dart:async';
-
-      import 'package:js/js.dart';
+      import 'dart:js_interop';
+      
       import 'package:test/test.dart';
-
-      @JS("console.log")
-      external void log(value);
-
+      
+      @JS('console.log')
+      external void log(JSString value);
+      
       void main() {
-        test("test", () {
-          log("Hello,");
-          return Future(() => log("world!"));
+        test('test', () {
+          log('Hello,'.toJS);
+          return Future(() => log('world!'.toJS));
         });
       }
     ''').create();
@@ -339,20 +339,21 @@ void main() {
     ]).create();
 
     await d.file('test.dart', '''
-      import 'package:js/js.dart';
+      import 'dart:js_interop';
+      
       import 'package:test/test.dart';
-
+      
       @JS()
       external MyModule require(String name);
-
+      
       @JS()
-      class MyModule {
+      extension type MyModule(JSObject _) implements JSObject {
         external int get value;
       }
-
+      
       void main() {
-        test("can load from a module", () {
-          expect(require("my_module").value, equals(12));
+        test('can load from a module', () {
+          expect(require('my_module').value, equals(12));
         });
       }
     ''').create();
