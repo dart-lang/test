@@ -5,6 +5,7 @@
 // ignore: deprecated_member_use
 import 'dart:js_util' as js_util;
 
+// ignore: deprecated_member_use
 import 'package:js/js.dart';
 
 @JS()
