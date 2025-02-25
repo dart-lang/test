@@ -1,0 +1,12 @@
+name: test_analyzer_plugin
+description: An analyzer plugin to report improper usage of the test package.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  analysis_server_plugin: any
+  analyzer: ^7.2.0
+
