@@ -12,7 +12,7 @@ import 'package:analyzer_plugin/utilities/range_factory.dart';
 import 'utilities.dart';
 
 class MoveBelowEnclosingTestCall extends ResolvedCorrectionProducer {
-  static const _wrapInQuotesKind = FixKind(
+  static const _moveBelowEnclosingTestCallKind = FixKind(
       'dart.fix.moveBelowEnclosingTestCall',
       DartFixKindPriority.standard,
       "Move below the enclosing 'test' call");
@@ -26,7 +26,7 @@ class MoveBelowEnclosingTestCall extends ResolvedCorrectionProducer {
       CorrectionApplicability.singleLocation;
 
   @override
-  FixKind get fixKind => _wrapInQuotesKind;
+  FixKind get fixKind => _moveBelowEnclosingTestCallKind;
 
   @override
   Future<void> compute(ChangeBuilder builder) async {
