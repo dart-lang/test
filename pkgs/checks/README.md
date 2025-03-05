@@ -18,7 +18,7 @@ For documentation about migrating from `package:matcher` to `checks`, see the
 
 ## Quickstart
 
-1. Add a `dev_dependency` on `checks: ^0.2.0`.
+1. Add a `dev_dependency` on `checks` (`dart pub add dev:checks`).
 
 1. Add an import for `package:checks/checks.dart`.
 
