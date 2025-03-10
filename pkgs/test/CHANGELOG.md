@@ -4,6 +4,9 @@
 
 * Allow the latest version of `package:shelf_web_socket`.
 
+* Support using the OS platform selector to configure browser tests.
+  TODO: Longer changelog with potential impacts.
+
 ## 1.25.14
 
 * Use secure random for url secrets.

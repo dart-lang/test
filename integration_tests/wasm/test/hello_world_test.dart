@@ -4,7 +4,7 @@
 
 @TestOn('wasm')
 // TODO: https://github.com/dart-lang/test/issues/2288
-@OnPlatform({'firefox': Skip()})
+@OnPlatform({'windows && firefox': Skip()})
 // This retry is a regression test for https://github.com/dart-lang/test/issues/2006
 @Retry(2)
 library;

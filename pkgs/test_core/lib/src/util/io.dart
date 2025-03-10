@@ -51,10 +51,12 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [OperatingSystem.none].
 // TODO: https://github.com/dart-lang/test/issues/2119 - require compiler
 SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
-    SuitePlatform(runtime,
-        compiler: compiler,
-        os: runtime.isBrowser ? OperatingSystem.none : currentOS,
-        inGoogle: inGoogle);
+    SuitePlatform(
+      runtime,
+      compiler: compiler,
+      os: currentOS,
+      inGoogle: inGoogle,
+    );
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = StreamTransformer<List<int>, String>(
