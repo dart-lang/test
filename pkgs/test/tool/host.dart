@@ -174,7 +174,7 @@ MultiChannel<dynamic> _connectToServer() {
   });
 
   controller.local.stream
-      .listen((message) => webSocket.send(jsonEncode(message)));
+      .listen((message) => webSocket.send(jsonEncode(message).toJS));
 
   return MultiChannel(controller.foreign);
 }
