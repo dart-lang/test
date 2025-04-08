@@ -5,9 +5,6 @@
 import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
-// ignore: deprecated_member_use
-import 'dart:js_util' as js_util;
-
 extension type Window(EventTarget _) implements EventTarget {
   @pragma('dart2js:as:trust')
   Window get parent => getProperty('parent'.toJS) as Window;
@@ -180,7 +177,7 @@ extension type WebSocket(EventTarget _) implements EventTarget {
 }
 
 WebSocket createWebSocket(String url) =>
-    _callConstructor('WebSocket', <Object>[url])! as WebSocket;
+    _callConstructor('WebSocket', <JSAny?>[url.toJS])! as WebSocket;
 
 extension type MessageChannel(JSObject _) implements JSObject {
   external MessagePort get port1;
@@ -188,17 +185,15 @@ extension type MessageChannel(JSObject _) implements JSObject {
 }
 
 MessageChannel createMessageChannel() =>
-    _callConstructor('MessageChannel', <Object>[])! as MessageChannel;
+    _callConstructor('MessageChannel', <JSAny?>[])! as MessageChannel;
 
-Object? _findConstructor(String constructorName) =>
-    window.getProperty(constructorName.toJS);
-
-Object? _callConstructor(String constructorName, List<Object?> args) {
-  final constructor = _findConstructor(constructorName);
+Object? _callConstructor(String constructorName, List<JSAny?> args) {
+  final constructor = window.getProperty(constructorName.toJS) as JSFunction?;
   if (constructor == null) {
     return null;
   }
-  return js_util.callConstructor(constructor, args);
+
+  return constructor.callAsConstructorVarArgs(args);
 }
 
 class Subscription {
