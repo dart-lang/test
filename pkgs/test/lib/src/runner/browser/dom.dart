@@ -10,14 +10,14 @@ import 'dart:js_util' as js_util;
 
 extension type Window(EventTarget _) implements EventTarget {
   @pragma('dart2js:as:trust')
-  Window get parent => _.getProperty('parent'.toJS) as Window;
+  Window get parent => getProperty('parent'.toJS) as Window;
 
   external Location get location;
 
-  Console get console => _.getProperty('console'.toJS) as Console;
+  Console get console => getProperty('console'.toJS) as Console;
 
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
-      _.callMethodVarArgs('getComputedStyle'.toJS, <JSAny?>[
+      callMethodVarArgs('getComputedStyle'.toJS, <JSAny?>[
         elt._._,
         if (pseudoElt != null) pseudoElt.toJS
       ]) as CSSStyleDeclaration?;
@@ -26,7 +26,7 @@ extension type Window(EventTarget _) implements EventTarget {
 
   void postMessage(Object message, String targetOrigin,
           [List<MessagePort>? messagePorts]) =>
-      _.callMethodVarArgs('postMessage'.toJS, <JSAny?>[
+      callMethodVarArgs('postMessage'.toJS, <JSAny?>[
         message.jsify(),
         targetOrigin.toJS,
         if (messagePorts != null) messagePorts.toJS
@@ -41,12 +41,12 @@ extension type Console(JSObject _) implements JSObject {
   external void warn(JSAny? object);
 }
 
-extension type Document(Node _) {
+extension type Document(Node _) implements Node {
   external Element? querySelector(String selectors);
 
-  Element createElement(String name, [Object? options]) =>
-      _._.callMethodVarArgs('createElement'.toJS,
-          <JSAny?>[name.toJS, if (options != null) options.jsify()]) as Element;
+  Element createElement(String name, [Object? options]) => callMethodVarArgs(
+      'createElement'.toJS,
+      <JSAny?>[name.toJS, if (options != null) options.jsify()]) as Element;
 }
 
 extension type HTMLDocument(Document _) implements Document {
@@ -86,9 +86,9 @@ extension type EventTarget(JSObject _) implements JSObject {
   void addEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      _.callMethodVarArgs('addEventListener'.toJS, <JSAny?>[
+      callMethodVarArgs('addEventListener'.toJS, <JSAny?>[
         type.jsify(),
-        listener.jsify(),
+        listener.toJS,
         if (useCapture != null) useCapture.jsify()
       ]);
     }
@@ -97,9 +97,9 @@ extension type EventTarget(JSObject _) implements JSObject {
   void removeEventListener(String type, EventListener? listener,
       [bool? useCapture]) {
     if (listener != null) {
-      _.callMethodVarArgs('removeEventListener'.toJS, <JSAny?>[
+      callMethodVarArgs('removeEventListener'.toJS, <JSAny?>[
         type.jsify(),
-        listener.jsify(),
+        listener.toJS,
         if (useCapture != null) useCapture.jsify()
       ]);
     }
@@ -113,12 +113,12 @@ extension type Event(JSObject _) implements JSObject {
 }
 
 extension type MessageEvent(Event _) implements Event {
-  dynamic get data => _._.getProperty('data'.toJS).dartify();
+  dynamic get data => getProperty('data'.toJS).dartify();
 
   external String get origin;
 
   List<MessagePort> get ports =>
-      (_._.getProperty('ports'.toJS).dartify() as List).cast<MessagePort>();
+      (getProperty('ports'.toJS).dartify() as List).cast<MessagePort>();
 
   /// The source may be a `WindowProxy`, a `MessagePort`, or a `ServiceWorker`.
   ///
@@ -126,13 +126,13 @@ extension type MessageEvent(Event _) implements Event {
   /// the source will be a `WindowProxy` which has the same methods as [Window].
   @pragma('dart2js:as:trust')
   MessageEventSource get source =>
-      _._.getProperty('source'.toJS) as MessageEventSource;
+      getProperty('source'.toJS) as MessageEventSource;
 }
 
 extension type MessageEventSource(JSObject _) implements JSObject {
   @pragma('dart2js:as:trust')
   MessageEventSourceLocation? get location =>
-      _.getProperty('location'.toJS) as MessageEventSourceLocation;
+      getProperty('location'.toJS) as MessageEventSourceLocation;
 }
 
 extension type MessageEventSourceLocation(JSObject _) implements JSObject {
@@ -145,7 +145,7 @@ extension type Location(JSObject _) implements JSObject {
 }
 
 extension type MessagePort(EventTarget _) implements EventTarget {
-  void postMessage(Object? message) => _.callMethodVarArgs(
+  void postMessage(Object? message) => callMethodVarArgs(
       'postMessage'.toJS, <JSAny?>[if (message != null) message.jsify()]);
 
   external void start();
@@ -153,7 +153,7 @@ extension type MessagePort(EventTarget _) implements EventTarget {
 
 extension type CSSStyleDeclaration(JSObject _) implements JSObject {}
 
-extension type HTMLScriptElement(HTMLElement _) {
+extension type HTMLScriptElement(HTMLElement _) implements HTMLElement {
   external set src(String value);
 }
 

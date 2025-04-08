@@ -83,9 +83,8 @@ void main() {
 
       await d.file('js_with_unicode_test.dart', '''
         import 'dart:async';
-
-        import 'package:js/js.dart';
-        import 'package:js/js_util.dart';
+        import 'dart:js_interop';
+        import 'dart:js_interop_unsafe';
 
         import 'package:test/src/runner/browser/dom.dart' as dom;
         import 'package:test/test.dart';
@@ -95,9 +94,9 @@ void main() {
           final scriptLoaded = controller.stream.first;
           final script = dom.createHTMLScriptElement()..src = src;
           script.addEventListener('load',
-              allowInterop((_) {
+              (_) {
                 controller.add('loaded');
-              }));
+              });
           dom.document.body!.appendChild(script);
           await scriptLoaded.timeout(Duration(seconds: 1));
         }
@@ -105,8 +104,8 @@ void main() {
         void main() {
           test("test 1", () async {
             await loadScript('file_with_unicode.js');
-            expect(getProperty(dom.window, 'foo'), isNotNull);
-            callMethod(dom.window, 'foo', []);
+            expect(dom.window.getProperty('foo'.toJS), isNotNull);
+            dom.window.callMethodVarArgs('foo'.toJS, []);
             expect(true, isTrue);
           });
         }
