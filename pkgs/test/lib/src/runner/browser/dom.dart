@@ -10,7 +10,6 @@ import 'dart:js_util' as js_util;
 
 extension type Window(EventTarget _) implements EventTarget {
   @pragma('dart2js:as:trust')
-
   Window get parent => _.getProperty('parent'.toJS) as Window;
 
   external Location get location;
