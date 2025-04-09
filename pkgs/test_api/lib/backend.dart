@@ -11,3 +11,4 @@ export 'src/backend/runtime.dart' show Runtime;
 export 'src/backend/stack_trace_formatter.dart' show StackTraceFormatter;
 export 'src/backend/stack_trace_mapper.dart' show StackTraceMapper;
 export 'src/backend/suite_platform.dart' show SuitePlatform;
+export 'src/backend/test_location.dart' show TestLocation;

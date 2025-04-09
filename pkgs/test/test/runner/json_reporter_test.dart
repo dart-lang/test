@@ -587,6 +587,70 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 ''',
           });
     });
+
+    test('groups and tests with custom locations', () {
+      return _expectReport('''
+      group('group 1 inferred', () {
+        setUpAll(() {});
+        test('test 1 inferred', () {});
+        tearDownAll(() {});
+      });
+      group('group 2 custom', location: TestLocation('file:///foo/group', 123, 234), () {
+        setUpAll(location: TestLocation('file:///foo/setUpAll', 345, 456), () {});
+        test('test 2 custom', location: TestLocation('file:///foo/test', 567, 789), () {});
+        tearDownAll(location: TestLocation('file:///foo/tearDownAll', 890, 901), () {});
+      });
+    ''', [
+        [
+          suiteJson(0),
+          testStartJson(1, 'loading test.dart', groupIDs: []),
+          testDoneJson(1, hidden: true),
+        ],
+        [
+          groupJson(2, testCount: 2),
+          groupJson(3,
+              name: 'group 1 inferred',
+              parentID: 2,
+              line: 6,
+              column: 7,
+              testCount: 1),
+          testStartJson(4, 'group 1 inferred (setUpAll)',
+              groupIDs: [2, 3], line: 7, column: 9),
+          testDoneJson(4, hidden: true),
+          testStartJson(5, 'group 1 inferred test 1 inferred',
+              groupIDs: [2, 3], line: 8, column: 9),
+          testDoneJson(5),
+          testStartJson(6, 'group 1 inferred (tearDownAll)',
+              groupIDs: [2, 3], line: 9, column: 9),
+          testDoneJson(6, hidden: true),
+          groupJson(7,
+              name: 'group 2 custom',
+              parentID: 2,
+              url: 'file:///foo/group',
+              line: 123,
+              column: 234,
+              testCount: 1),
+          testStartJson(8, 'group 2 custom (setUpAll)',
+              url: 'file:///foo/setUpAll',
+              groupIDs: [2, 7],
+              line: 345,
+              column: 456),
+          testDoneJson(8, hidden: true),
+          testStartJson(9, 'group 2 custom test 2 custom',
+              url: 'file:///foo/test',
+              groupIDs: [2, 7],
+              line: 567,
+              column: 789),
+          testDoneJson(9),
+          testStartJson(10, 'group 2 custom (tearDownAll)',
+              url: 'file:///foo/tearDownAll',
+              groupIDs: [2, 7],
+              line: 890,
+              column: 901),
+          testDoneJson(10, hidden: true),
+        ]
+      ], doneJson());
+    });
   });
 
   test(

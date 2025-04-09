@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 import '../backend/configuration/timeout.dart';
 import '../backend/declarer.dart';
 import '../backend/invoker.dart';
+import '../backend/test_location.dart';
 
 // test_core does not support running tests directly, so the Declarer should
 // always be on the Zone.
@@ -77,6 +78,7 @@ void test(Object? description, dynamic Function() body,
     Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
+    TestLocation? location,
     // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
     @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.test(description.toString(), body,
@@ -86,6 +88,7 @@ void test(Object? description, dynamic Function() body,
       onPlatform: onPlatform,
       tags: tags,
       retry: retry,
+      location: location,
       solo: solo);
 
   // Force dart2js not to inline this function. We need it to be separate from
@@ -156,6 +159,7 @@ void group(Object? description, dynamic Function() body,
     Object? tags,
     Map<String, dynamic>? onPlatform,
     int? retry,
+    TestLocation? location,
     // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
     @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
   _declarer.group(description.toString(), body,
@@ -165,6 +169,7 @@ void group(Object? description, dynamic Function() body,
       tags: tags,
       onPlatform: onPlatform,
       retry: retry,
+      location: location,
       solo: solo);
 
   // Force dart2js not to inline this function. We need it to be separate from
@@ -234,7 +239,8 @@ void addTearDown(dynamic Function() callback) {
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
+void setUpAll(dynamic Function() callback, {TestLocation? location}) =>
+    _declarer.setUpAll(callback, location: location);
 
 /// Registers a function to be run once after all tests.
 ///
@@ -247,5 +253,5 @@ void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(dynamic Function() callback) =>
-    _declarer.tearDownAll(callback);
+void tearDownAll(dynamic Function() callback, {TestLocation? location}) =>
+    _declarer.tearDownAll(callback, location: location);
