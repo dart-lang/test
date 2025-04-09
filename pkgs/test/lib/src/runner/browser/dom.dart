@@ -115,7 +115,7 @@ extension type MessageEvent(Event _) implements Event {
   external String get origin;
 
   List<MessagePort> get ports =>
-      (getProperty('ports'.toJS).dartify() as List).cast<MessagePort>();
+      getProperty<JSArray>('ports'.toJS).toDart.cast<MessagePort>();
 
   /// The source may be a `WindowProxy`, a `MessagePort`, or a `ServiceWorker`.
   ///
