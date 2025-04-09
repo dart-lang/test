@@ -15,7 +15,7 @@ extension type Window(EventTarget _) implements EventTarget {
 
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       callMethodVarArgs('getComputedStyle'.toJS, <JSAny?>[
-        elt._._,
+        elt,
         if (pseudoElt != null) pseudoElt.toJS
       ]) as CSSStyleDeclaration?;
 
@@ -84,9 +84,9 @@ extension type EventTarget(JSObject _) implements JSObject {
       [bool? useCapture]) {
     if (listener != null) {
       callMethodVarArgs('addEventListener'.toJS, <JSAny?>[
-        type.jsify(),
+        type.toJS,
         listener.toJS,
-        if (useCapture != null) useCapture.jsify()
+        if (useCapture != null) useCapture.toJS
       ]);
     }
   }
@@ -95,9 +95,9 @@ extension type EventTarget(JSObject _) implements JSObject {
       [bool? useCapture]) {
     if (listener != null) {
       callMethodVarArgs('removeEventListener'.toJS, <JSAny?>[
-        type.jsify(),
+        type.toJS,
         listener.toJS,
-        if (useCapture != null) useCapture.jsify()
+        if (useCapture != null) useCapture.toJS
       ]);
     }
   }

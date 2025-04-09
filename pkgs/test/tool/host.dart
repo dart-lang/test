@@ -103,7 +103,7 @@ final _currentUrl = Uri.parse(dom.window.location.href);
 /// does mean that the server needs to be sure to nest its [MultiChannel]s at
 /// the same place the client does.
 void main() {
-  dom.window.console.log('Dart test runner browser host running'.jsify());
+  dom.window.console.log('Dart test runner browser host running'.toJS);
   if (_currentUrl.queryParameters['debug'] == 'true') {
     dom.document.body!.classList.add('debug');
   }
