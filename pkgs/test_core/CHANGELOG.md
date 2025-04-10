@@ -1,3 +1,5 @@
+## 0.6.9-wip
+
 ## 0.6.8
 
 * Fix hang when running multiple precompiled browser tests.

@@ -1,4 +1,8 @@
-## 1.25.15-wip
+## 1.25.16-wip
+
+## 1.25.15
+
+* Allow the latest version of `package:shelf_web_socket`.
 
 ## 1.25.14
 

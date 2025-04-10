@@ -112,13 +112,14 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
       var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
       var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
+        import 'dart:js_interop';
         import 'package:test/src/bootstrap/browser.dart';
         import 'package:test/src/runner/browser/dom.dart' as dom;
 
         import '${await absoluteUri(dartPath)}' as test;
 
         void main() {
-          dom.window.console.log(r'Startup for test path $dartPath');
+          dom.window.console.log(r'Startup for test path $dartPath'.toJS);
           internalBootstrapBrowserTest(() => test.main);
         }
       ''';

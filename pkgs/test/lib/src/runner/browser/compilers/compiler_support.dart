@@ -11,7 +11,7 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:test_api/backend.dart' show StackTraceMapper, SuitePlatform;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
-import 'package:web_socket_channel/web_socket_channel.dart'; // ignore: implementation_imports
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// The shared interface for all compiler support libraries.
 abstract class CompilerSupport {
