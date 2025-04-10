@@ -17,24 +17,11 @@ import 'package:test/src/runner/browser/dom.dart' as dom;
 ///
 /// These are exposed so that tools like IDEs can interact with them via remote
 /// debugging.
-@JS()
-@anonymous
-@staticInterop
-class _JSApi {
-  external factory _JSApi(
-      {void Function() resume, void Function() restartCurrent});
-}
-
-extension _JSApiExtension on _JSApi {
-  /// Causes the test runner to resume running, as though the user had clicked
-  /// the "play" button.
-  // ignore: unused_element
-  external Function get resume;
-
-  /// Causes the test runner to restart the current test once it finishes
-  /// running.
-  // ignore: unused_element
-  external Function get restartCurrent;
+extension type _JSApi._(JSObject _) implements JSObject {
+  external factory _JSApi({
+    JSFunction resume,
+    JSFunction restartCurrent,
+  });
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
@@ -151,9 +138,9 @@ void main() {
       if (!dom.document.body!.classList.contains('paused')) return;
       dom.document.body!.classList.remove('paused');
       serverChannel.sink.add({'command': 'resume'});
-    }, restartCurrent: () {
+    }.toJS, restartCurrent: () {
       serverChannel.sink.add({'command': 'restart'});
-    });
+    }.toJS);
   }, (error, stackTrace) {
     dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}'.toJS);
   });
