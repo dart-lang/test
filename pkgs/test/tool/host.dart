@@ -134,13 +134,15 @@ void main() {
       serverChannel.sink.add({'command': 'resume'});
     });
 
-    _jsApi = _JSApi(resume: () {
-      if (!dom.document.body!.classList.contains('paused')) return;
-      dom.document.body!.classList.remove('paused');
-      serverChannel.sink.add({'command': 'resume'});
-    }.toJS, restartCurrent: () {
-      serverChannel.sink.add({'command': 'restart'});
-    }.toJS);
+    _jsApi = _JSApi(
+        resume: () {
+          if (!dom.document.body!.classList.contains('paused')) return;
+          dom.document.body!.classList.remove('paused');
+          serverChannel.sink.add({'command': 'resume'});
+        }.toJS,
+        restartCurrent: () {
+          serverChannel.sink.add({'command': 'restart'});
+        }.toJS);
   }, (error, stackTrace) {
     dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}'.toJS);
   });
