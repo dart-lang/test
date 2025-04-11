@@ -18,6 +18,7 @@ import 'suite.dart';
 import 'suite_platform.dart';
 import 'test.dart';
 import 'test_failure.dart';
+import 'test_location.dart';
 import 'util/pretty_print.dart';
 
 /// A test in this isolate.
@@ -30,6 +31,9 @@ class LocalTest extends Test {
 
   @override
   final Trace? trace;
+
+  @override
+  final TestLocation? location;
 
   /// Whether this is a test defined using `setUpAll()` or `tearDownAll()`.
   final bool isScaffoldAll;
@@ -47,11 +51,14 @@ class LocalTest extends Test {
   /// the caller's responsibility to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
   LocalTest(this.name, this.metadata, this._body,
-      {this.trace, bool guarded = true, this.isScaffoldAll = false})
+      {this.trace,
+      this.location,
+      bool guarded = true,
+      this.isScaffoldAll = false})
       : _guarded = guarded;
 
-  LocalTest._(this.name, this.metadata, this._body, this.trace, this._guarded,
-      this.isScaffoldAll);
+  LocalTest._(this.name, this.metadata, this._body, this.trace, this.location,
+      this._guarded, this.isScaffoldAll);
 
   /// Loads a single runnable instance of this test.
   @override
@@ -64,7 +71,7 @@ class LocalTest extends Test {
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
-        _guarded, isScaffoldAll);
+        location, _guarded, isScaffoldAll);
   }
 }
 

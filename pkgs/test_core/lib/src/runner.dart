@@ -309,11 +309,13 @@ class Runner {
             var line = selection.line;
             var col = selection.col;
             if (line == null && col == null) return true;
+
             var trace = test.trace;
-            if (trace == null) {
+            var location = test.location;
+            if (trace == null && location == null) {
               throw StateError(
                   'Cannot filter by line/column for this test suite, no stack'
-                  'trace available.');
+                  'trace or location available.');
             }
             var path = suite.path;
             if (path == null) {
@@ -324,6 +326,17 @@ class Runner {
             // The absolute path as it will appear in stack traces.
             var absoluteSuitePath = File(path).absolute.uri.toFilePath();
 
+            // First check if we're a match for the overridden location.
+            if (location != null) {
+              if ((line == null || location.line == line) &&
+                  (col == null || location.column == col) &&
+                  location.uri.isScheme('file') &&
+                  location.uri.toFilePath() == absoluteSuitePath) {
+                return true;
+              }
+            }
+
+            // Next, check if any frames in the stack trace match.
             bool matchLineAndCol(Frame frame) {
               switch (frame.uri.scheme) {
                 case 'file':
@@ -352,7 +365,7 @@ class Runner {
               return true;
             }
 
-            return trace.frames.any(matchLineAndCol);
+            return trace?.frames.any(matchLineAndCol) ?? false;
           });
         }));
       });

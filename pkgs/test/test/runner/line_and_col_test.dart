@@ -56,13 +56,43 @@ void main() {
       await test.shouldExit(0);
     });
 
+    test('additionally selects test with matching custom location', () async {
+      var testFileUri = Uri.file(d.file('test.dart').io.path);
+      var notTestFileUri = Uri.file(d.file('not_test.dart').io.path);
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("a", () {}); // Line 4 from stack trace
+
+          // Custom line 4 match
+          test("b", location: TestLocation('$testFileUri', 4, 0), () {});
+
+          // Custom different line, same file
+          test("c", location: TestLocation('$testFileUri', 5, 0), () => throw TestFailure("oh no"));
+
+          // Custom line 4 match but different file (no match)
+          test("d", location: TestLocation('$notTestFileUri', 4, 0), () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?line=4']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+
+      await test.shouldExit(0);
+    });
+
     test('selects groups with a matching line', () async {
       await d.file('test.dart', '''
         import 'package:test/test.dart';
 
         void main() {
           group("a", () {
-            test("b", () {});
+            test("a", () {});
           });
           group("b", () {
             test("b", () => throw TestFailure("oh no"));
@@ -75,6 +105,52 @@ void main() {
       expect(
         test.stdout,
         emitsThrough(contains('+1: All tests passed!')),
+      );
+
+      await test.shouldExit(0);
+    });
+
+    test('additionally selects groups with a matching custom location',
+        () async {
+      // TODO(dantup): This fails because we don't ever look at a groups
+      //  location.. instead, we only look at tests. The reason we can
+      //  normally run groups by line/col is because they just happen to be
+      //  in the stack trace for the test() call too.
+      //
+      //  So maybe we need to look up the tree to match location (in
+      //  Runner._loadSuites() filter)?
+      var testFileUri = Uri.file(d.file('test.dart').io.path);
+      var notTestFileUri = Uri.file(d.file('not_test.dart').io.path);
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          group("a", () { // Line 4 from stack trace
+            test("a", () {});
+          });
+
+          // Custom line 4 match
+          group("b", location: TestLocation('$testFileUri', 4, 0), () {
+            test("b", () {});
+          });
+
+          // Custom different line, same file
+          group("c", location: TestLocation('$testFileUri', 5, 0), () {
+            test("c", () => throw TestFailure("oh no"));
+          });
+
+          // Custom line 4 match but different file (no match)
+          group("d", location: TestLocation('$notTestFileUri', 4, 0), () {
+            test("d", () => throw TestFailure("oh no"));
+          });
+        }
+      ''').create();
+
+      var test = await runTest(['test.dart?line=4']);
+
+      expect(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
       );
 
       await test.shouldExit(0);

@@ -196,6 +196,7 @@ final class RemoteListener {
                   ?.formatStackTrace(group.trace!)
                   .toString() ??
               group.trace?.toString(),
+      'location': group.location?.serialize(),
       'setUpAll': _serializeTest(channel, group.setUpAll, parents),
       'tearDownAll': _serializeTest(channel, group.tearDownAll, parents),
       'entries': group.entries.map((entry) {
@@ -231,6 +232,7 @@ final class RemoteListener {
                   ?.formatStackTrace(test.trace!)
                   .toString() ??
               test.trace?.toString(),
+      'location': test.location?.serialize(),
       'channel': testChannel.id
     };
   }
