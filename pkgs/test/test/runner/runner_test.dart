@@ -129,7 +129,7 @@ final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe',
   '[chrome]: dart2js (default), dart2wasm',
   '[firefox]: dart2js (default), dart2wasm',
-  if (Platform.isMacOS) '[safari]: dart2js (default)',
+  if (Platform.isMacOS) '[safari]: dart2js (default), dart2wasm',
   '[edge]: dart2js (default)',
   '[node]: dart2js (default), dart2wasm',
 ].map((str) => '                                      $str').join('\n');
