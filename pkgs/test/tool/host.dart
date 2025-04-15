@@ -22,19 +22,19 @@ import 'package:test/src/runner/browser/dom.dart' as dom;
 @staticInterop
 class _JSApi {
   external factory _JSApi(
-      {void Function() resume, void Function() restartCurrent});
+      {JSFunction resume, JSFunction restartCurrent});
 }
 
 extension _JSApiExtension on _JSApi {
   /// Causes the test runner to resume running, as though the user had clicked
   /// the "play" button.
   // ignore: unused_element
-  external Function get resume;
+  external JSFunction get resume;
 
   /// Causes the test runner to restart the current test once it finishes
   /// running.
   // ignore: unused_element
-  external Function get restartCurrent;
+  external JSFunction get restartCurrent;
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
@@ -151,9 +151,9 @@ void main() {
       if (!dom.document.body!.classList.contains('paused')) return;
       dom.document.body!.classList.remove('paused');
       serverChannel.sink.add({'command': 'resume'});
-    }, restartCurrent: () {
+    }.toJS, restartCurrent: () {
       serverChannel.sink.add({'command': 'restart'});
-    });
+    }.toJS);
   }, (error, stackTrace) {
     dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}'.toJS);
   });
@@ -212,15 +212,17 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
     // running, but it's good practice to check the origin anyway.
     var message = event as dom.MessageEvent;
     if (message.origin != dom.window.location.origin) return;
+
     // Disambiguate between frames for different test suites.
     // Depending on the source type, the `location.href` may be missing.
-    if (message.source.location?.href != iframe.src) return;
+    var data = message.data as Map;
+    if (data['href'] != iframe.src) return;
 
     message.stopPropagation();
     windowSubscription.cancel();
 
     switch (message.data) {
-      case 'port':
+      case {'messageType': 'port'}:
         dom.window.console.log('Connecting channel for suite $suiteUrl'.toJS);
         // The frame is starting and sending a port to forward for the suite.
         final port = message.ports.first;

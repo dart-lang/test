@@ -196,6 +196,12 @@ Object? _callConstructor(String constructorName, List<JSAny?> args) {
   return constructor.callAsConstructorVarArgs(args);
 }
 
+extension type InitializationMessage._(JSObject _) implements JSObject {
+  external InitializationMessage({String messageType, String href});
+  external String get messageType;
+  external String get href;
+}
+
 class Subscription {
   final String type;
   final EventTarget target;
