@@ -8,7 +8,7 @@ class TestLocation {
   final int line;
   final int column;
 
-  TestLocation(String uri, this.line, this.column) : uri = Uri.parse(uri);
+  TestLocation(this.uri, this.line, this.column);
 
   /// Serializes [this] into a JSON-safe object that can be deserialized using
   /// [TestLocation.deserialize].
@@ -22,6 +22,6 @@ class TestLocation {
 
   /// Deserializes the result of [TestLocation.serialize] into a new [TestLocation].
   TestLocation.deserialize(Map serialized)
-      : this(serialized['url'] as String, serialized['line'] as int,
+      : this(Uri.parse(serialized['url'] as String), serialized['line'] as int,
             serialized['column'] as int);
 }

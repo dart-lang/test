@@ -595,10 +595,10 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
         test('test 1 inferred', () {});
         tearDownAll(() {});
       });
-      group('group 2 custom', location: TestLocation('file:///foo/group', 123, 234), () {
-        setUpAll(location: TestLocation('file:///foo/setUpAll', 345, 456), () {});
-        test('test 2 custom', location: TestLocation('file:///foo/test', 567, 789), () {});
-        tearDownAll(location: TestLocation('file:///foo/tearDownAll', 890, 901), () {});
+      group('group 2 custom', location: TestLocation(Uri.parse('file:///foo/group'), 123, 234), () {
+        setUpAll(location: TestLocation(Uri.parse('file:///foo/setUpAll'), 345, 456), () {});
+        test('test 2 custom', location: TestLocation(Uri.parse('file:///foo/test'), 567, 789), () {});
+        tearDownAll(location: TestLocation(Uri.parse('file:///foo/tearDownAll'), 890, 901), () {});
       });
     ''', [
         [

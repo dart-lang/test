@@ -324,23 +324,14 @@ class Runner {
                   'path available.');
             }
             // The absolute path as it will appear in stack traces.
-            var absoluteSuitePath = File(path).absolute.uri.toFilePath();
+            var suiteUri = File(path).absolute.uri;
+            var absoluteSuitePath = suiteUri.toFilePath();
 
-            // First check if we're a match for the overridden location.
-            if (location != null) {
-              if ((line == null || location.line == line) &&
-                  (col == null || location.column == col) &&
-                  location.uri.isScheme('file') &&
-                  location.uri.toFilePath() == absoluteSuitePath) {
-                return true;
-              }
-            }
-
-            // Next, check if any frames in the stack trace match.
-            bool matchLineAndCol(Frame frame) {
-              switch (frame.uri.scheme) {
+            /// Helper to check if [uri] matches the suite path.
+            bool matchesUri(Uri uri) {
+              switch (uri.scheme) {
                 case 'file':
-                  if (frame.uri.toFilePath() != absoluteSuitePath) {
+                  if (uri.toFilePath() != absoluteSuitePath) {
                     return false;
                   }
                 case 'package':
@@ -351,10 +342,28 @@ class Runner {
                   // Now we can assume that the kernel is compiled using
                   // --filesystem-scheme.
                   // In this case, because we don't know the --filesystem-root, as
-                  // long as the file path matches we assume it is the same file.
-                  if (!absoluteSuitePath.endsWith(frame.uri.path)) {
+                  // long as the path matches we assume it is the same file.
+                  if (!suiteUri.path.endsWith(uri.path)) {
                     return false;
                   }
+              }
+
+              return true;
+            }
+
+            // First check if we're a match for the overridden location.
+            if (location != null) {
+              if ((line == null || location.line == line) &&
+                  (col == null || location.column == col) &&
+                  matchesUri(location.uri)) {
+                return true;
+              }
+            }
+
+            /// Helper to check if [frame] matches the suite path, line and col.
+            bool matchLineAndCol(Frame frame) {
+              if (!matchesUri(frame.uri)) {
+                return false;
               }
               if (line != null && frame.line != line) {
                 return false;
@@ -365,6 +374,7 @@ class Runner {
               return true;
             }
 
+            // Check if any frames in the stack trace match.
             return trace?.frames.any(matchLineAndCol) ?? false;
           });
         }));
