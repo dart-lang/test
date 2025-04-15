@@ -1,5 +1,7 @@
 ## 0.6.9-wip
 
+- Add support for native assets for `dart test` in pub workspaces.
+
 ## 0.6.8
 
 * Fix hang when running multiple precompiled browser tests.
