@@ -868,4 +868,41 @@ void main() {
       await test.shouldExit(0);
     }, skip: 'https://github.com/dart-lang/test/issues/1803');
   });
+
+  group('using @file as the final argument', () {
+    test('prints a suitable message if the file does not exist', () async {
+      var test = await runTest(['@mytestfile']);
+      expect(
+          test.stderr,
+          emitsThrough(
+              contains('Failed to read the file "mytestfile" for arguments')));
+      await test.shouldExit(64);
+    });
+
+    test('runs test suites provided in the file', () async {
+      await d.file('test.dart', _success).create();
+      await d.file('mytestargs.txt', 'test.dart').create();
+      var test = await runTest(['@mytestargs.txt']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('handles empty lines in the file', () async {
+      await d.file('test.dart', _success).create();
+      await d.file('mytestargs.txt', '\n\r\ntest.dart\r\n').create();
+      var test = await runTest(['@mytestargs.txt']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
+    test('handles other arguments in the file', () async {
+      await d.file('mytestargs.txt', '--help').create();
+      var test = await runTest(['@mytestargs.txt']);
+      expectStdoutEquals(test, '''
+Runs tests in this package.
+
+$_usage''');
+      await test.shouldExit(0);
+    });
+  });
 }

@@ -1,5 +1,8 @@
 ## 1.25.16-wip
 
+* Allow the final argument to be a filename prefixed with `@` that contains a
+  list of arguments as if they had been provided on the command line directly.
+
 ## 1.25.15
 
 * Allow the latest version of `package:shelf_web_socket`.
