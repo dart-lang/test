@@ -14854,7 +14854,7 @@
   };
   A._connectToIframe_closure.prototype = {
     call$1($event) {
-      var t2, t3, t4, _0_0, _0_4, t5, port, data, _0_9, _0_14, _this = this,
+      var t2, data, t3, t4, _0_0, _0_6, port, _0_10, _0_15, _this = this,
         _s11_ = "messageType",
         _s9_ = "exception",
         t1 = type$.JSObject;
@@ -14862,26 +14862,35 @@
       t2 = init.G;
       if (A._asString($event.origin) !== A._asString(t1._as(t1._as(t2.window).location).origin))
         return;
-      t3 = type$.Map_dynamic_dynamic;
-      if (!J.$eq$(t3._as(A.dartify($event.data)).$index(0, "href"), A._asStringQ(_this.iframe.src)))
+      data = A.dartify($event.data);
+      t3 = $event.source.location;
+      t3 = t3 == null ? null : A._asStringQ(t3.href);
+      t4 = _this.iframe;
+      if (t3 != A._asStringQ(t4.src))
+        t3 = !type$.Map_dynamic_dynamic._is(data) || !J.$eq$(data.$index(0, "href"), A._asStringQ(t4.src));
+      else
+        t3 = false;
+      if (t3)
         return;
       $event.stopPropagation();
-      t4 = _this.windowSubscription._readLocal$0();
-      A.EventTarget_removeEventListener(t4.target, t4.type, t4.listener);
+      t3 = _this.windowSubscription._readLocal$0();
+      A.EventTarget_removeEventListener(t3.target, t3.type, t3.listener);
       $label0$0: {
         _0_0 = A.dartify($event.data);
-        t3 = t3._is(_0_0);
-        t4 = false;
+        if ("port" !== _0_0) {
+          t3 = false;
+          if (type$.Map_dynamic_dynamic._is(_0_0)) {
+            _0_6 = _0_0.$index(0, _s11_);
+            if (_0_6 == null)
+              t4 = _0_0.containsKey$1(_s11_);
+            else
+              t4 = true;
+            if (t4)
+              t3 = "port" === _0_6;
+          }
+        } else
+          t3 = true;
         if (t3) {
-          _0_4 = _0_0.$index(0, _s11_);
-          if (_0_4 == null)
-            t5 = _0_0.containsKey$1(_s11_);
-          else
-            t5 = true;
-          if (t5)
-            t4 = "port" === _0_4;
-        }
-        if (t4) {
           t1._as(t1._as(t2.window).console).log("Connecting channel for suite " + _this.suiteUrl.toString$0(0));
           t2 = type$.JSArray_nullable_Object._as($event.ports);
           t1 = B.JSArray_methods.cast$1$0(t2, t1);
@@ -14899,21 +14908,21 @@
         }
         data = null;
         t1 = false;
-        if (t3) {
-          _0_9 = _0_0.$index(0, _s9_);
-          if (_0_9 == null)
+        if (type$.Map_dynamic_dynamic._is(_0_0)) {
+          _0_10 = _0_0.$index(0, _s9_);
+          if (_0_10 == null)
             t2 = _0_0.containsKey$1(_s9_);
           else
             t2 = true;
           if (t2)
-            if (true === _0_9) {
-              _0_14 = _0_0.$index(0, "data");
-              if (_0_14 == null)
+            if (true === _0_10) {
+              _0_15 = _0_0.$index(0, "data");
+              if (_0_15 == null)
                 t1 = _0_0.containsKey$1("data");
               else
                 t1 = true;
               if (t1)
-                data = _0_14;
+                data = _0_15;
             }
         }
         if (t1) {

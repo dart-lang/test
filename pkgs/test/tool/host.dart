@@ -204,14 +204,17 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
 
     // Disambiguate between frames for different test suites.
     // Depending on the source type, the `location.href` may be missing.
-    var data = message.data as Map;
-    if (data['href'] != iframe.src) return;
+    var data = message.data;
+    if (message.source.location?.href != iframe.src &&
+        (data is! Map || data['href'] != iframe.src)) {
+      return;
+    }
 
     message.stopPropagation();
     windowSubscription.cancel();
 
     switch (message.data) {
-      case {'messageType': 'port'}:
+      case 'port' || {'messageType': 'port'}:
         dom.window.console.log('Connecting channel for suite $suiteUrl'.toJS);
         // The frame is starting and sending a port to forward for the suite.
         final port = message.ports.first;
