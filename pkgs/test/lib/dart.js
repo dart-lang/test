@@ -14,6 +14,7 @@ var sendLoadException = function(message) {
   window.parent.postMessage({
     "data": [0, {"type": "loadException", "message": message}],
     "exception": true,
+    "href": window.location.href,
   }, window.location.origin);
 }
 
