@@ -89,6 +89,7 @@ Map<String, Object> groupJson(int id,
     int? parentID,
     Object? skip,
     int? testCount,
+    String? url,
     int? line,
     int? column}) {
   if ((line == null) != (column == null)) {
@@ -96,6 +97,8 @@ Map<String, Object> groupJson(int id,
         'line and column must either both be null or both be passed');
   }
 
+  url ??=
+      line == null ? null : p.toUri(p.join(d.sandbox, 'test.dart')).toString();
   return {
     'type': 'group',
     'group': {
@@ -107,9 +110,7 @@ Map<String, Object> groupJson(int id,
       'testCount': testCount ?? 1,
       'line': line,
       'column': column,
-      'url': line == null
-          ? null
-          : p.toUri(p.join(d.sandbox, 'test.dart')).toString()
+      'url': url
     }
   };
 }
@@ -117,7 +118,7 @@ Map<String, Object> groupJson(int id,
 /// Returns the event emitted by the JSON reporter indicating that a test has
 /// begun running.
 ///
-/// If [parentIDs] is passed, it's the IDs of groups containing this test. If
+/// If [groupIDs] is passed, it's the IDs of groups containing this test. If
 /// [skip] is `true`, the test is expected to be marked as skipped without a
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.

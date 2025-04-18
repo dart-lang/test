@@ -13,6 +13,7 @@ import 'group_entry.dart';
 import 'invoker.dart';
 import 'metadata.dart';
 import 'test.dart';
+import 'test_location.dart';
 
 /// A class that manages the state of tests as they're declared.
 ///
@@ -44,6 +45,9 @@ class Declarer {
   /// This is `null` for the root (implicit) group.
   final Trace? _trace;
 
+  /// The optional location override for this group.
+  final TestLocation? _location;
+
   /// Whether to collect stack traces for [GroupEntry]s.
   final bool _collectTraces;
 
@@ -69,6 +73,9 @@ class Declarer {
   /// [setUpAll] is always run and the rest are only run if that one succeeds.
   Trace? _setUpAllTrace;
 
+  /// The optional location override for [setUpAll].
+  TestLocation? _setUpAllLocation;
+
   /// The tear-down functions to run once for this group.
   final _tearDownAlls = <void Function()>[];
 
@@ -77,6 +84,9 @@ class Declarer {
   /// All [tearDownAll]s are run in a single logical test, so they can only have
   /// one trace. The first trace matches [_setUpAllTrace].
   Trace? _tearDownAllTrace;
+
+  /// The optional location override for [tearDownAll].
+  TestLocation? _tearDownAllLocation;
 
   /// The children of this group, either tests or sub-groups.
   ///
@@ -157,6 +167,7 @@ class Declarer {
           platformVariables ?? const UnmodifiableSetView.empty(),
           collectTraces,
           null,
+          null,
           noRetry,
           fullTestName,
           allowDuplicateTestNames ? null : <String>{},
@@ -170,6 +181,7 @@ class Declarer {
     this._platformVariables,
     this._collectTraces,
     this._trace,
+    this._location,
     this._noRetry,
     this._fullTestName,
     this._seenNames,
@@ -189,6 +201,7 @@ class Declarer {
       Object? skip,
       Map<String, dynamic>? onPlatform,
       Object? tags,
+      TestLocation? location,
       int? retry,
       bool solo = false}) {
     _checkNotBuilt('test');
@@ -231,7 +244,10 @@ class Declarer {
           // Make the declarer visible to running tests so that they'll throw
           // useful errors when calling `test()` and `group()` within a test.
           zoneValues: {#test.declarer: this});
-    }, trace: _collectTraces ? Trace.current(2) : null, guarded: false));
+    },
+        trace: _collectTraces ? Trace.current(2) : null,
+        location: location,
+        guarded: false));
 
     if (solo) {
       _soloEntries.add(_entries.last);
@@ -245,6 +261,7 @@ class Declarer {
       Object? skip,
       Map<String, dynamic>? onPlatform,
       Object? tags,
+      TestLocation? location,
       int? retry,
       bool solo = false}) {
     _checkNotBuilt('group');
@@ -272,6 +289,7 @@ class Declarer {
       _platformVariables,
       _collectTraces,
       trace,
+      location,
       _noRetry,
       _fullTestName,
       _seenNames,
@@ -307,16 +325,18 @@ class Declarer {
   }
 
   /// Registers a function to be run once before all tests.
-  void setUpAll(dynamic Function() callback) {
+  void setUpAll(dynamic Function() callback, {TestLocation? location}) {
     _checkNotBuilt('setUpAll');
     if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
+    _setUpAllLocation ??= location;
     _setUpAlls.add(callback);
   }
 
   /// Registers a function to be run once after all tests.
-  void tearDownAll(dynamic Function() callback) {
+  void tearDownAll(dynamic Function() callback, {TestLocation? location}) {
     _checkNotBuilt('tearDownAll');
     if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
+    _tearDownAllLocation ??= location;
     _tearDownAlls.add(callback);
   }
 
@@ -347,6 +367,7 @@ class Declarer {
     return Group(_name ?? '', entries,
         metadata: _metadata,
         trace: _trace,
+        location: _location,
         setUpAll: _setUpAll,
         tearDownAll: _tearDownAll);
   }
@@ -393,7 +414,11 @@ class Declarer {
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
           zoneValues: {#test.declarer: this});
-    }, trace: _setUpAllTrace, guarded: false, isScaffoldAll: true);
+    },
+        trace: _setUpAllTrace,
+        location: _setUpAllLocation,
+        guarded: false,
+        isScaffoldAll: true);
   }
 
   /// Returns a [Test] that runs the callbacks in [_tearDownAll], or `null`.
@@ -408,7 +433,11 @@ class Declarer {
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
           zoneValues: {#test.declarer: this});
-    }, trace: _tearDownAllTrace, guarded: false, isScaffoldAll: true);
+    },
+        trace: _tearDownAllTrace,
+        location: _tearDownAllLocation,
+        guarded: false,
+        isScaffoldAll: true);
   }
 
   void _addEntry(GroupEntry entry) {
