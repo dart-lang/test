@@ -1,6 +1,9 @@
 ## 0.6.9-wip
 
-- Add support for native assets for `dart test` in pub workspaces.
+* Add support for native assets for `dart test` in pub workspaces.
+* Allow the final argument provided to the executable `main` method to be a
+  filename prefixed with `@` that contains a list of arguments as if they had
+  been provided on the command line directly.
 
 ## 0.6.8
 

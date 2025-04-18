@@ -68,6 +68,29 @@ Future<void> _execute(List<String> args) async {
           : StreamGroup.merge(
               [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
 
+  // The last arg can start with @ and is a file that contains a list
+  // of args that should replace the filename as if they were just provided
+  // inline.
+  // It is up to the calling code to clean up this file (if required) after
+  // the test process terminates.
+  if (args.isNotEmpty) {
+    args = args.toList(); // Ensure mutable
+    var lastArg = args.last;
+    if (lastArg.startsWith('@')) {
+      lastArg = lastArg.substring(1); // Strip @
+      var argsFile = File(lastArg); // Path must be relative to cwd
+      try {
+        args.removeLast();
+        args.addAll(
+            argsFile.readAsLinesSync().where((line) => line.trim().isNotEmpty));
+      } catch (e) {
+        _printUsage('Failed to read the file "$lastArg" for arguments: $e');
+        exitCode = exit_codes.usage;
+        return;
+      }
+    }
+  }
+
   Configuration configuration;
   try {
     configuration = Configuration.parse(args);
