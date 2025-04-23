@@ -12,6 +12,9 @@ class TestLocation {
 
   /// Serializes [this] into a JSON-safe object that can be deserialized using
   /// [TestLocation.deserialize].
+  ///
+  /// This method is also used to provide the location in the JSON reporter when
+  /// a custom location is provided for the test.
   Map<String, dynamic> serialize() {
     return {
       'url': uri.toString(),

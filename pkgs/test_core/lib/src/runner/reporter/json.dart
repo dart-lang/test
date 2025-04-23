@@ -311,11 +311,7 @@ class JsonReporter implements Reporter {
       String suitePath) {
     // If this test has a location override, always use that.
     if (location != null) {
-      return {
-        'line': location.line,
-        'column': location.column,
-        'url': location.uri.toString()
-      };
+      return location.serialize();
     }
 
     var absoluteSuitePath = p.canonicalize(p.absolute(suitePath));
