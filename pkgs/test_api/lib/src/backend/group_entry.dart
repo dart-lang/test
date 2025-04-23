@@ -2,11 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// @docImport 'group.dart';
-library;
-
 import 'package:stack_trace/stack_trace.dart';
 
+import 'group.dart';
 import 'metadata.dart';
 import 'suite_platform.dart';
 import 'test.dart';
@@ -19,6 +17,12 @@ abstract class GroupEntry {
   ///
   /// This will be empty for the root group.
   String get name;
+
+  /// The parent of this entry.
+  ///
+  /// This field is set during during building in the Declarer and also during
+  /// deserialization of the parent.
+  Group? parent;
 
   /// The metadata for the entry, including the metadata from any containing
   /// [Group]s.

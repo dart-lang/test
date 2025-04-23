@@ -404,7 +404,8 @@ class Engine {
   Future _runSkippedTest(LiveSuiteController suiteController, Test test,
       List<Group> parents) async {
     await _onUnpaused;
-    var skipped = LocalTest(test.name, test.metadata, () {}, trace: test.trace);
+    var skipped = LocalTest(test.name, test.metadata, () {},
+        trace: test.trace, location: test.location);
 
     late LiveTestController controller;
     controller =

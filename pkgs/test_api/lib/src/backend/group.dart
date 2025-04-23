@@ -18,6 +18,9 @@ class Group implements GroupEntry {
   final String name;
 
   @override
+  Group? parent;
+
+  @override
   final Metadata metadata;
 
   @override

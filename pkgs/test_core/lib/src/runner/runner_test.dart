@@ -106,7 +106,11 @@ class RunnerTest extends Test {
   @override
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return RunnerTest(
+    var result = RunnerTest(
         name, metadata.forPlatform(platform), trace, location, _channel);
+    // Parents are copied after construction, since usually we build
+    // bottom-up.
+    result.parent = parent;
+    return result;
   }
 }

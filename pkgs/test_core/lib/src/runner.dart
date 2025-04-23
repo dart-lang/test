@@ -311,8 +311,7 @@ class Runner {
             if (line == null && col == null) return true;
 
             var trace = test.trace;
-            var location = test.location;
-            if (trace == null && location == null) {
+            if (trace == null && test.location == null) {
               throw StateError(
                   'Cannot filter by line/column for this test suite, no stack'
                   'trace or location available.');
@@ -351,13 +350,19 @@ class Runner {
               return true;
             }
 
-            // First check if we're a match for the overridden location.
-            if (location != null) {
-              if ((line == null || location.line == line) &&
-                  (col == null || location.column == col) &&
-                  matchesUri(location.uri)) {
-                return true;
+            // First check if we're a match for the overridden location for this
+            // item or any parents.
+            var current = test as GroupEntry?;
+            while (current != null) {
+              var location = current.location;
+              if (location != null) {
+                if ((line == null || location.line == line) &&
+                    (col == null || location.column == col) &&
+                    matchesUri(location.uri)) {
+                  return true;
+                }
               }
+              current = current.parent;
             }
 
             /// Helper to check if [frame] matches the suite path, line and col.

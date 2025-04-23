@@ -21,6 +21,9 @@ abstract class Test implements GroupEntry {
   String get name;
 
   @override
+  Group? parent;
+
+  @override
   Metadata get metadata;
 
   @override

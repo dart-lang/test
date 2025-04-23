@@ -118,13 +118,6 @@ void main() {
 
     test('additionally selects groups with a matching custom location',
         () async {
-      // TODO(dantup): This fails because we don't ever look at a groups
-      //  location.. instead, we only look at tests. The reason we can
-      //  normally run groups by line/col is because they just happen to be
-      //  in the stack trace for the test() call too.
-      //
-      //  So maybe we need to look up the tree to match location (in
-      //  Runner._loadSuites() filter)?
       await d.dir('test').create();
       var testFileUri = Uri.file(d.file('test/aaa_test.dart').io.path);
       var notTestFileUri = Uri.file(d.file('test/bbb.dart').io.path);
