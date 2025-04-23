@@ -151,12 +151,22 @@ class _TestCompilerForLanguageVersion {
         p.relative(p.dirname(p.dirname(Platform.resolvedExecutable)));
     final packageConfigUriAwaited = await packageConfigUri;
 
-    // If we have native assets for the host os in JIT mode, they are here.
+    // If we have native assets for the host os in JIT mode, they are either
+    // in the `.dart_tool/` in the root package or in the pub workspace.
     Uri? nativeAssetsYaml;
     if (enabledExperiments.contains('native-assets')) {
-      nativeAssetsYaml = packageConfigUriAwaited.resolve('native_assets.yaml');
-      if (!await File.fromUri(nativeAssetsYaml).exists()) {
-        nativeAssetsYaml = null;
+      final nativeAssetsYamlRootPackage =
+          Directory.current.uri.resolve('.dart_tool/native_assets.yaml');
+      final nativeAssetsYamlWorkspace =
+          packageConfigUriAwaited.resolve('native_assets.yaml');
+      for (final potentialNativeAssetsUri in [
+        nativeAssetsYamlRootPackage,
+        nativeAssetsYamlWorkspace
+      ]) {
+        if (await File.fromUri(potentialNativeAssetsUri).exists()) {
+          nativeAssetsYaml = potentialNativeAssetsUri;
+          break;
+        }
       }
     }
 

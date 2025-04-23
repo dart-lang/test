@@ -115,7 +115,7 @@ check(someValue)
 
 Some expectations take arguments which are themselves expectations to apply to
 other values. These expectations take `Condition` arguments which have the
-signature void Function(Subject)`. The conditions check expectations when they
+signature `void Function(Subject)`. The conditions check expectations when they
 are called with a `Subject` argument.
 
 ```dart
@@ -128,7 +128,7 @@ Expectation extension methods checking asynchronous behavior return a `Future`.
 The future should typically be awaited within the test body, however
 asynchronous expectations will also ensure that the test is not considered
 complete before the expectation is complete.
-Expectations with no concrete end conditions, such as an expectation that a
+Expectations with no concrete end conditions, such as any expectation that a
 future never completes, cannot be awaited and may cause a failure after the test
 has already appeared to complete.
 
