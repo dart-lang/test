@@ -1,5 +1,9 @@
 ## 1.25.16-wip
 
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
 ## 1.25.15
 
 * Allow the latest version of `package:shelf_web_socket`.

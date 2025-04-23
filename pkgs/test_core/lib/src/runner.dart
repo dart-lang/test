@@ -354,8 +354,7 @@ class Runner {
             // item or any parents.
             var current = test as GroupEntry?;
             while (current != null) {
-              var location = current.location;
-              if (location != null) {
+              if (current.location case var location?) {
                 if ((line == null || location.line == line) &&
                     (col == null || location.column == col) &&
                     matchesUri(location.uri)) {

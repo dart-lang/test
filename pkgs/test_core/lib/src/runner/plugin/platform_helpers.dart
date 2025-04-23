@@ -144,22 +144,12 @@ class _Deserializer {
       return _deserializeTest(map)!;
     }).toList();
 
-    var result = Group(group['name'] as String, entries,
+    return Group(group['name'] as String, entries,
         metadata: metadata,
         trace: trace,
         location: location,
         setUpAll: _deserializeTest(group['setUpAll'] as Map?),
         tearDownAll: _deserializeTest(group['tearDownAll'] as Map?));
-
-    // Now we have created the group, we can set it as the parent for all
-    // child entries.
-    for (var entry in result.entries) {
-      entry.parent = result;
-    }
-    result.setUpAll?.parent = result;
-    result.tearDownAll?.parent = result;
-
-    return result;
   }
 
   /// Deserializes [test] into a concrete [Test] class.

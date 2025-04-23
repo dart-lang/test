@@ -63,7 +63,16 @@ class Group implements GroupEntry {
       this.setUpAll,
       this.tearDownAll})
       : entries = List<GroupEntry>.unmodifiable(entries),
-        metadata = metadata ?? Metadata();
+        metadata = metadata ?? Metadata() {
+    for (var entry in entries) {
+      assert(entry.parent == null);
+      entry.parent = this;
+    }
+    assert(setUpAll?.parent == null);
+    setUpAll?.parent = this;
+    assert(tearDownAll?.parent == null);
+    tearDownAll?.parent = this;
+  }
 
   @override
   Group? forPlatform(SuitePlatform platform) {

@@ -364,22 +364,12 @@ class Declarer {
       return entry;
     }).toList();
 
-    var result = Group(_name ?? '', entries,
+    return Group(_name ?? '', entries,
         metadata: _metadata,
         trace: _trace,
         location: _location,
         setUpAll: _setUpAll,
         tearDownAll: _tearDownAll);
-
-    // Now we have created the group, we can set it as the parent for all
-    // child entries.
-    for (var entry in result.entries) {
-      entry.parent = result;
-    }
-    result.setUpAll?.parent = result;
-    result.tearDownAll?.parent = result;
-
-    return result;
   }
 
   /// Throws a [StateError] if [build] has been called.
