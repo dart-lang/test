@@ -84,8 +84,8 @@ class Group implements GroupEntry {
         metadata: newMetadata,
         trace: trace,
         location: location,
-        setUpAll: setUpAll,
-        tearDownAll: tearDownAll);
+        setUpAll: setUpAll?.forPlatform(platform),
+        tearDownAll: tearDownAll?.forPlatform(platform));
   }
 
   @override
