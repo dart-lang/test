@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
+import 'package:test_api/src/backend/group_entry.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_core/src/runner/engine.dart';
 
@@ -27,8 +28,8 @@ void main() {
     });
 
     var engine = Engine.withSuites([
-      runnerSuite(Group.root(tests.take(2))),
-      runnerSuite(Group.root(tests.skip(2)))
+      runnerSuite(tests.take(2).asRootGroup()),
+      runnerSuite(tests.skip(2).asRootGroup())
     ]);
 
     await engine.run();
@@ -55,7 +56,7 @@ void main() {
         }),
         completes);
 
-    engine.suiteSink.add(runnerSuite(Group.root(tests)));
+    engine.suiteSink.add(runnerSuite(tests.asRootGroup()));
     engine.suiteSink.close();
   });
 
@@ -207,7 +208,7 @@ void main() {
         test('test', () {}, skip: true);
       });
 
-      var engine = Engine.withSuites([runnerSuite(Group.root(tests))]);
+      var engine = Engine.withSuites([runnerSuite(tests.asRootGroup())]);
 
       engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
@@ -276,7 +277,7 @@ void main() {
         }, skip: true);
       });
 
-      var engine = Engine.withSuites([runnerSuite(Group.root(entries))]);
+      var engine = Engine.withSuites([runnerSuite(entries.asRootGroup())]);
 
       engine.onTestStarted.listen(expectAsync1((liveTest) {
         expect(liveTest, same(engine.liveTests.single));
@@ -341,7 +342,7 @@ void main() {
           for (var i = 0; i < testCount; i++)
             loadSuite('group $i', () async {
               await updateAndCheckConcurrency(isLoadSuite: true);
-              return runnerSuite(Group.root([tests[i]]));
+              return runnerSuite([tests[i]].asRootGroup());
             }),
         ], concurrency: concurrency);
 
@@ -354,4 +355,12 @@ void main() {
       }
     });
   });
+}
+
+extension on Iterable<GroupEntry> {
+  /// Clones these entries into a new root group, assigning the new parent group
+  /// as necessary.
+  Group asRootGroup() {
+    return Group.root(map((entry) => entry.filter((_) => true)!));
+  }
 }

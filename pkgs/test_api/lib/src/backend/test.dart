@@ -41,5 +41,5 @@ abstract class Test implements GroupEntry {
   Test? forPlatform(SuitePlatform platform);
 
   @override
-  Test? filter(bool Function(Test) callback) => callback(this) ? this : null;
+  Test? filter(bool Function(Test) callback);
 }

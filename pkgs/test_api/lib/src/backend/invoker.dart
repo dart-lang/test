@@ -73,6 +73,18 @@ class LocalTest extends Test {
     return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
         location, _guarded, isScaffoldAll);
   }
+
+  @override
+  Test? filter(bool Function(Test) callback) {
+    if (callback(this)) {
+      // filter() always returns new copies because they need to be attached
+      // to their new parents.
+      return LocalTest._(
+          name, metadata, _body, trace, location, _guarded, isScaffoldAll);
+    }
+
+    return null;
+  }
 }
 
 /// The class responsible for managing the lifecycle of a single local test.

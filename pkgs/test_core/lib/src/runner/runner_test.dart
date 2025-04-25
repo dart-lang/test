@@ -109,4 +109,15 @@ class RunnerTest extends Test {
     return RunnerTest(
         name, metadata.forPlatform(platform), trace, location, _channel);
   }
+
+  @override
+  Test? filter(bool Function(Test) callback) {
+    if (callback(this)) {
+      // filter() always returns new copies because they need to be attached
+      // to their new parents.
+      return RunnerTest(name, metadata, trace, location, _channel);
+    }
+
+    return null;
+  }
 }
