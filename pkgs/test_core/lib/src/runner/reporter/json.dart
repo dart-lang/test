@@ -16,6 +16,7 @@ import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/test_location.dart'; // ignore: implementation_imports
 
 import '../../platform.dart';
 import '../engine.dart';
@@ -139,7 +140,11 @@ class JsonReporter implements Reporter {
         'suiteID': suiteID,
         'groupIDs': groupIDs,
         'metadata': _serializeMetadata(suiteConfig, liveTest.test.metadata),
-        ..._frameInfo(suiteConfig, liveTest.test.trace, liveTest.suite.platform,
+        ..._locationInfo(
+            suiteConfig,
+            liveTest.test.trace,
+            liveTest.test.location,
+            liveTest.suite.platform,
             liveTest.suite.path!),
       }
     });
@@ -224,7 +229,8 @@ class JsonReporter implements Reporter {
           'name': group.name,
           'metadata': _serializeMetadata(suiteConfig, group.metadata),
           'testCount': group.testCount,
-          ..._frameInfo(suiteConfig, group.trace, suite.platform, suite.path!)
+          ..._locationInfo(suiteConfig, group.trace, group.location,
+              suite.platform, suite.path!)
         }
       });
       parentID = id;
@@ -297,8 +303,17 @@ class JsonReporter implements Reporter {
   /// If javascript traces are enabled and the test is on a javascript platform,
   /// or if the [trace] is null or empty, then the line, column, and url will
   /// all be `null`.
-  Map<String, dynamic> _frameInfo(SuiteConfiguration suiteConfig, Trace? trace,
-      SuitePlatform platform, String suitePath) {
+  Map<String, dynamic> _locationInfo(
+      SuiteConfiguration suiteConfig,
+      Trace? trace,
+      TestLocation? location,
+      SuitePlatform platform,
+      String suitePath) {
+    // If this test has a location override, always use that.
+    if (location != null) {
+      return location.serialize();
+    }
+
     var absoluteSuitePath = p.canonicalize(p.absolute(suitePath));
     var frame = trace?.frames.first;
     if (frame == null || (suiteConfig.jsTrace && platform.compiler.isJS)) {

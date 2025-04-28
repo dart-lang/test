@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
-    show Metadata, RemoteException, SuitePlatform;
+    show Metadata, RemoteException, SuitePlatform, TestLocation;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
@@ -26,11 +26,14 @@ class RunnerTest extends Test {
   final Metadata metadata;
   @override
   final Trace? trace;
+  @override
+  final TestLocation? location;
 
   /// The channel used to communicate with the test's `RemoteListener`.
   final MultiChannel _channel;
 
-  RunnerTest(this.name, this.metadata, this.trace, this._channel);
+  RunnerTest(
+      this.name, this.metadata, this.trace, this.location, this._channel);
 
   @override
   LiveTest load(Suite suite, {Iterable<Group>? groups}) {
@@ -103,6 +106,18 @@ class RunnerTest extends Test {
   @override
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return RunnerTest(name, metadata.forPlatform(platform), trace, _channel);
+    return RunnerTest(
+        name, metadata.forPlatform(platform), trace, location, _channel);
+  }
+
+  @override
+  Test? filter(bool Function(Test) callback) {
+    if (callback(this)) {
+      // filter() always returns new copies because they need to be attached
+      // to their new parents.
+      return RunnerTest(name, metadata, trace, location, _channel);
+    }
+
+    return null;
   }
 }

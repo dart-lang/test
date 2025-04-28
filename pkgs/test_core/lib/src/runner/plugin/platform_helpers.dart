@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
-    show Metadata, RemoteException, SuitePlatform;
+    show Metadata, RemoteException, SuitePlatform, TestLocation;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
@@ -132,17 +132,22 @@ class _Deserializer {
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
     var metadata = Metadata.deserialize(group['metadata'] as Map);
-    return Group(
-        group['name'] as String,
-        (group['entries'] as List).map((entry) {
-          var map = entry as Map;
-          if (map['type'] == 'group') return deserializeGroup(map);
-          return _deserializeTest(map)!;
-        }),
+    var trace =
+        group['trace'] == null ? null : Trace.parse(group['trace'] as String);
+    var location = switch (group['location']) {
+      Map map => TestLocation.deserialize(map),
+      _ => null,
+    };
+    var entries = (group['entries'] as List).map((entry) {
+      var map = entry as Map;
+      if (map['type'] == 'group') return deserializeGroup(map);
+      return _deserializeTest(map)!;
+    }).toList();
+
+    return Group(group['name'] as String, entries,
         metadata: metadata,
-        trace: group['trace'] == null
-            ? null
-            : Trace.parse(group['trace'] as String),
+        trace: trace,
+        location: location,
         setUpAll: _deserializeTest(group['setUpAll'] as Map?),
         tearDownAll: _deserializeTest(group['tearDownAll'] as Map?));
   }
@@ -156,7 +161,12 @@ class _Deserializer {
     var metadata = Metadata.deserialize(test['metadata'] as Map);
     var trace =
         test['trace'] == null ? null : Trace.parse(test['trace'] as String);
+    var location = switch (test['location']) {
+      Map map => TestLocation.deserialize(map),
+      _ => null,
+    };
     var testChannel = _channel.virtualChannel((test['channel'] as num).toInt());
-    return RunnerTest(test['name'] as String, metadata, trace, testChannel);
+    return RunnerTest(
+        test['name'] as String, metadata, trace, location, testChannel);
   }
 }

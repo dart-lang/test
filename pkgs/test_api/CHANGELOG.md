@@ -1,3 +1,9 @@
+## 0.7.5-wip
+
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
 ## 0.7.4
 
 * Allow `analyzer: '>=6.0.0 <8.0.0'`

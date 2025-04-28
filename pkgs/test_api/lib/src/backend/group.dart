@@ -8,6 +8,7 @@ import 'group_entry.dart';
 import 'metadata.dart';
 import 'suite_platform.dart';
 import 'test.dart';
+import 'test_location.dart';
 
 /// A group contains one or more tests and subgroups.
 ///
@@ -17,10 +18,16 @@ class Group implements GroupEntry {
   final String name;
 
   @override
+  Group? parent;
+
+  @override
   final Metadata metadata;
 
   @override
   final Trace? trace;
+
+  @override
+  final TestLocation? location;
 
   /// The children of this group.
   final List<GroupEntry> entries;
@@ -50,9 +57,22 @@ class Group implements GroupEntry {
   int? _testCount;
 
   Group(this.name, Iterable<GroupEntry> entries,
-      {Metadata? metadata, this.trace, this.setUpAll, this.tearDownAll})
+      {Metadata? metadata,
+      this.trace,
+      this.location,
+      this.setUpAll,
+      this.tearDownAll})
       : entries = List<GroupEntry>.unmodifiable(entries),
-        metadata = metadata ?? Metadata();
+        metadata = metadata ?? Metadata() {
+    for (var entry in entries) {
+      assert(entry.parent == null);
+      entry.parent = this;
+    }
+    assert(setUpAll?.parent == null);
+    setUpAll?.parent = this;
+    assert(tearDownAll?.parent == null);
+    tearDownAll?.parent = this;
+  }
 
   @override
   Group? forPlatform(SuitePlatform platform) {
@@ -63,8 +83,9 @@ class Group implements GroupEntry {
     return Group(name, filtered,
         metadata: newMetadata,
         trace: trace,
-        setUpAll: setUpAll,
-        tearDownAll: tearDownAll);
+        location: location,
+        setUpAll: setUpAll?.forPlatform(platform),
+        tearDownAll: tearDownAll?.forPlatform(platform));
   }
 
   @override
@@ -74,6 +95,7 @@ class Group implements GroupEntry {
     return Group(name, filtered,
         metadata: metadata,
         trace: trace,
+        location: location,
         setUpAll: setUpAll,
         tearDownAll: tearDownAll);
   }
