@@ -362,7 +362,7 @@ class Test {
   // Will only be present if `root_url` is different from `url`.
   int? root_line;
 
-  // The (1-based) line on in the original test suite from which the test
+  // The (1-based) line in the original test suite from which the test
   // originated.
   //
   // Will only be present if `root_url` is different from `url`.
