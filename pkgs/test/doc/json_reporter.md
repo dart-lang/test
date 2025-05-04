@@ -319,7 +319,7 @@ class DoneEvent extends Event {
 
   // Whether all tests succeeded (or were skipped).
   //
-  // Will be `null` if the test runner was close before all tests completed
+  // Will be `null` if the test runner was closed before all tests completed
   // running.
   bool? success;
 }
@@ -395,7 +395,7 @@ and may be a `package:` URL.
 
 ```
 class Suite {
-  // An opaque ID for the group.
+  // An opaque ID for the suite.
   int id;
 
   // The platform on which the suite is running.
