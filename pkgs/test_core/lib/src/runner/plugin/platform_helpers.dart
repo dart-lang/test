@@ -43,7 +43,8 @@ RunnerSuiteController deserializeSuite(
     Environment environment,
     StreamChannel<Object?> channel,
     Object /*Map<String, Object?>*/ message,
-    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
+    {Future<Map<String, dynamic>> Function()? gatherCoverage,
+    Future<void> Function()? onDone}) {
   var disconnector = Disconnector<Object?>();
   var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
 
@@ -118,7 +119,10 @@ RunnerSuiteController deserializeSuite(
   return RunnerSuiteController(
       environment, suiteConfig, suiteChannel, completer.future, platform,
       path: path,
-      onClose: () => disconnector.disconnect().onError(handleError),
+      onClose: () => [
+            disconnector.disconnect().onError(handleError),
+            if (onDone != null) onDone(),
+          ].wait,
       gatherCoverage: gatherCoverage);
 }
 
