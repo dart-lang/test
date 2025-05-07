@@ -415,16 +415,16 @@ class _ContainsOnce extends _IterableMatcher {
       mismatchDescription.add(_test(item, matchState)!);
 }
 
-// Matches [Iterable]s which are sorted.
+/// Matches [Iterable]s which are sorted.
 Matcher isSorted<T>(Comparator<T> compare) =>
     _IsSorted<T, T>((t) => t, compare);
 
-// Matches [Iterable]s which are sorted by the given key.
+/// Matches [Iterable]s which are sorted by the given key.
 Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
     _IsSorted<T, K>(keyOf, (a, b) => a.compareTo(b));
 
-// Matches [Iterable]s which are sorted by the given key, using the given
-// comparator.
+/// Matches [Iterable]s which are sorted by the given key, using the given
+/// comparator.
 Matcher isSortedByCompare<T, K>(K Function(T) keyOf, Comparator<K> compare) =>
     _IsSorted(keyOf, compare);
 
