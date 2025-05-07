@@ -416,7 +416,11 @@ class _ContainsOnce extends _IterableMatcher {
 }
 
 /// Matches [Iterable]s which are sorted.
-Matcher isSorted<T>(Comparator<T> compare) =>
+Matcher isSorted<T extends Comparable<T>>() =>
+    _IsSorted<T, T>((t) => t, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are sorted using the given comparator.
+Matcher isSortedUsing<T>(Comparator<T> compare) =>
     _IsSorted<T, T>((t) => t, compare);
 
 /// Matches [Iterable]s which are sorted by the given key.

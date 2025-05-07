@@ -397,13 +397,28 @@ void main() {
     var a = [1, 2, 3];
     var b = [1, 3, 2];
 
-    shouldPass(a, isSorted((int x, int y) => x - y));
+    shouldPass(a, isSorted<num>());
     shouldFail(
         b,
-        isSorted((int x, int y) => x - y),
+        isSorted<num>(),
         'Expected: is sorted '
         'Actual: [1, 3, 2] '
         'Which: found elements out of order: <3> and <2>');
+  });
+
+  test('isSortedUsing', () {
+    var a = [1, 2, 3];
+    var b = [1, 3, 2];
+    var c = [3, 2, 1];
+
+    shouldPass(a, isSortedUsing((int x, int y) => x - y));
+    shouldFail(
+        b,
+        isSortedUsing((int x, int y) => x - y),
+        'Expected: is sorted '
+        'Actual: [1, 3, 2] '
+        'Which: found elements out of order: <3> and <2>');
+    shouldPass(c, isSortedUsing((int x, int y) => y - x));
   });
 
   test('isSortedBy', () {
