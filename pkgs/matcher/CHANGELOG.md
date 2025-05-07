@@ -3,6 +3,7 @@
 * Remove some dynamic invocations.
 * Add explicit casts from `dynamic` values.
 * Require Dart 3.5
+* Add `isSorted` and related matchers for iterables.
 
 ## 0.12.17
 
