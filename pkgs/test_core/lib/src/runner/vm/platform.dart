@@ -111,7 +111,7 @@ class VMPlatform extends PlatformPlugin {
       if (platform.compiler == Compiler.exe) {
         throw UnsupportedError(
             'Unable to debug tests compiled to `exe` (tried to debug $path with '
-            'the `exe` compiler).');
+          'the `exe` compiler).');
       }
       var info =
           await Service.controlWebServer(enable: true, silenceOutput: true);
@@ -123,8 +123,7 @@ class VMPlatform extends PlatformPlugin {
       client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM())
-          .isolates!
-          .firstWhere((isolate) => isolate.number == isolateNumber.toString());
+          .isolates!.firstWhere((isolate) => isolate.number == isolateNumber.toString());
       await client.setName(isolateRef.id!, path);
       var libraryRef = (await client.getIsolate(isolateRef.id!))
           .libraries!
@@ -180,8 +179,8 @@ class VMPlatform extends PlatformPlugin {
   Future<String> _compileToNative(String path, Metadata suiteMetadata) async {
     var bootstrapPath = await _bootstrapNativeTestFile(
         path,
-        suiteMetadata.languageVersionComment ??
-            await rootPackageLanguageVersionComment);
+      suiteMetadata.languageVersionComment ??
+          await rootPackageLanguageVersionComment);
     var output = File(p.setExtension(bootstrapPath, '.exe'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
       'compile',
@@ -221,8 +220,8 @@ stderr: ${processResult.stderr}''');
         Compiler.source => _spawnIsolateWithUri(
             await _bootstrapIsolateTestFile(
                 path,
-                suiteMetadata.languageVersionComment ??
-                    await rootPackageLanguageVersionComment),
+            suiteMetadata.languageVersionComment ??
+                await rootPackageLanguageVersionComment),
             message),
         _ => throw StateError(
             'Unsupported compiler $compiler for the VM platform'),
@@ -246,9 +245,14 @@ stderr: ${processResult.stderr}''');
 
   /// Runs [uri] in an isolate, passing [message].
   Future<Isolate> _spawnIsolateWithUri(Uri uri, SendPort message) async {
-    return await Isolate.spawnUri(uri, [], message,
-        packageConfig: await packageConfigUri, checked: true,
-        debugName: 'test_main');
+    return await Isolate.spawnUri(
+      uri,
+      [],
+      message,
+      packageConfig: await packageConfigUri,
+      checked: true,
+      debugName: 'test_main',
+    );
   }
 
   Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
@@ -285,9 +289,14 @@ stderr: ${processResult.stderr}''');
         packageConfig = null;
       }
     }
-    return await Isolate.spawnUri(testUri, [], message,
-        packageConfig: packageConfig?.uri, checked: true,
-        debugName: 'test_main');
+    return await Isolate.spawnUri(
+      testUri,
+      [],
+      message,
+      packageConfig: packageConfig?.uri,
+      checked: true,
+      debugName: 'test_main',
+    );
   }
 
   /// Bootstraps the test at [testPath] and writes its contents to a temporary
@@ -346,7 +355,7 @@ Uri _wsUriFor(Uri observatoryUrl) =>
 Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
     fragment: Uri(
         path: '/inspect',
-        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
+    queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
 
 var _hasRegistered = false;
 void _setupPauseAfterTests() {
