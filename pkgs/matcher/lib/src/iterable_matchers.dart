@@ -132,7 +132,7 @@ class _UnorderedEquals extends _UnorderedMatches {
 
 /// Iterable matchers match against [Iterable]s. We add this intermediate
 /// class to give better mismatch error messages than the base Matcher class.
-abstract class _IterableMatcher extends FeatureMatcher<Iterable> {
+abstract class _IterableMatcher<T> extends FeatureMatcher<Iterable<T>> {
   const _IterableMatcher();
 }
 
@@ -413,4 +413,61 @@ class _ContainsOnce extends _IterableMatcher {
   Description describeTypedMismatch(Iterable item,
           Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item, matchState)!);
+}
+
+/// Matches [Iterable]s which are sorted.
+Matcher isSorted<T extends Comparable<T>>() =>
+    _IsSorted<T, T>((t) => t, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are sorted using the given comparator.
+Matcher isSortedUsing<T>(Comparator<T> compare) =>
+    _IsSorted<T, T>((t) => t, compare);
+
+/// Matches [Iterable]s which are sorted by the given key.
+Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
+    _IsSorted<T, K>(keyOf, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are sorted by the given key, using the given
+/// comparator.
+Matcher isSortedByCompare<T, K>(K Function(T) keyOf, Comparator<K> compare) =>
+    _IsSorted(keyOf, compare);
+
+class _IsSorted<T, K> extends _IterableMatcher<T> {
+  final K Function(T) _keyOf;
+  final Comparator<K> _compare;
+
+  _IsSorted(K Function(T) keyOf, Comparator<K> compare)
+      : _keyOf = keyOf,
+        _compare = compare;
+
+  @override
+  bool typedMatches(Iterable<T> item, Map matchState) {
+    var iterator = item.iterator;
+    if (!iterator.moveNext()) return true;
+    var previousElement = iterator.current;
+    var previousKey = _keyOf(previousElement);
+    while (iterator.moveNext()) {
+      var element = iterator.current;
+      var key = _keyOf(element);
+      if (_compare(previousKey, key) > 0) {
+        addStateInfo(matchState, {'first': previousElement, 'second': element});
+        return false;
+      }
+      previousElement = element;
+      previousKey = key;
+    }
+    return true;
+  }
+
+  @override
+  Description describe(Description description) => description.add('is sorted');
+
+  @override
+  Description describeTypedMismatch(Iterable<T> item,
+          Description mismatchDescription, Map matchState, bool verbose) =>
+      mismatchDescription
+          .add('found elements out of order: ')
+          .addDescriptionOf(matchState['first'])
+          .add(' and ')
+          .addDescriptionOf(matchState['second']);
 }
