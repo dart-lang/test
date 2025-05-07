@@ -252,7 +252,7 @@ jobs:
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test_core
       - name: "pkgs/test_core; dart format --output=none --set-exit-if-changed ."
-        run: "dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=show --set-exit-if-changed ."
         if: "always() && steps.pkgs_test_core_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_core
       - name: "pkgs/test_core; dart analyze --fatal-infos"
