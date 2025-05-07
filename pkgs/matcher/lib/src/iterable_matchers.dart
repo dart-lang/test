@@ -447,11 +447,8 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
     for (final elem in item.skip(1)) {
       var key = _keyOf(elem);
       if (_comparator(prevKey, key) > 0) {
-        return StringDescription()
-            .add('found elements out of order ')
-            .add(prevElem.toString())
-            .add(' and ')
-            .add(elem.toString())
+        return StringDescription(
+                'found elements out of order: <$prevElem> and <$elem>')
             .toString();
       }
       prevElem = elem;
