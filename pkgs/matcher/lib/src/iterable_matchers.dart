@@ -132,7 +132,7 @@ class _UnorderedEquals extends _UnorderedMatches {
 
 /// Iterable matchers match against [Iterable]s. We add this intermediate
 /// class to give better mismatch error messages than the base Matcher class.
-abstract class _IterableMatcher extends FeatureMatcher<Iterable> {
+abstract class _IterableMatcher<T> extends FeatureMatcher<Iterable<T>> {
   const _IterableMatcher();
 }
 
@@ -416,32 +416,37 @@ class _ContainsOnce extends _IterableMatcher {
 }
 
 // Matches [Iterable]s which are sorted.
-Matcher isSorted() => _IsSorted();
+Matcher isSorted<T>(Comparator<T> comparator) =>
+    _IsSorted<T, T>((t) => t, comparator);
 
 // Matches [Iterable]s which are sorted by the given key.
-Matcher isSortedBy(Function keyOf) => _IsSorted(keyOf);
+Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
+    _IsSorted<T, K>(keyOf, (a, b) => a.compareTo(b));
 
 // Matches [Iterable]s which are sorted by the given key, using the given
 // comparator.
-Matcher isSortedByCompare(Function keyOf, Comparator comparator) =>
+Matcher isSortedByCompare<T, K>(
+        K Function(T) keyOf, Comparator<K> comparator) =>
     _IsSorted(keyOf, comparator);
 
-class _IsSorted extends _IterableMatcher {
-  final Function? _keyOf;
-  final Comparator? _comparator;
+class _IsSorted<T, K> extends _IterableMatcher<T> {
+  final K Function(T) _keyOf;
+  final Comparator<K> _comparator;
 
-  _IsSorted([this._keyOf, this._comparator]);
+  _IsSorted(K Function(T) keyOf, Comparator<K> comparator)
+      : _keyOf = keyOf,
+        _comparator = comparator;
 
-  String? _test(Iterable item, Map matchState) {
+  String? _test(Iterable<T> item, Map matchState) {
     if (item.length < 2) {
       return null;
     }
 
-    dynamic prevElem = item.first;
-    dynamic prevKey = _key(prevElem);
+    var prevElem = item.first;
+    var prevKey = _keyOf(prevElem);
     for (final elem in item.skip(1)) {
-      var key = _key(elem);
-      if (_compare(prevKey, key)! > 0) {
+      var key = _keyOf(elem);
+      if (_comparator(prevKey, key) > 0) {
         return StringDescription()
             .add('found elements out of order ')
             .add(prevElem.toString())
@@ -455,25 +460,15 @@ class _IsSorted extends _IterableMatcher {
     return null;
   }
 
-  Object? _key(elem) => _keyOf != null ? _keyOf(elem) : elem;
-
-  int? _compare(elem1, elem2) => _comparator != null
-      ? _comparator(elem1, elem2)
-      :
-      // Order null before non-null
-      (elem1 == null
-          ? (elem2 == null ? 0 : -1)
-          : (elem2 == null ? 1 : elem1.compareTo(elem2)));
-
   @override
-  bool typedMatches(Iterable item, Map matchState) =>
+  bool typedMatches(Iterable<T> item, Map matchState) =>
       _test(item, matchState) == null;
 
   @override
   Description describe(Description description) => description.add('is sorted');
 
   @override
-  Description describeTypedMismatch(Iterable item,
+  Description describeTypedMismatch(Iterable<T> item,
           Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item, matchState)!);
 }

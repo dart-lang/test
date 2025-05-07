@@ -396,33 +396,24 @@ void main() {
   test('isSorted', () {
     var a = [1, 2, 3];
     var b = [1, 3, 2];
-    var c = [null, 2, 5];
-    var d = [2, null, 5];
 
-    shouldPass(a, isSorted());
+    shouldPass(a, isSorted((int x, int y) => x - y));
     shouldFail(
         b,
-        isSorted(),
+        isSorted((int x, int y) => x - y),
         'Expected: is sorted '
         'Actual: [1, 3, 2] '
         'Which: found elements out of order 3 and 2');
-    shouldPass(c, isSorted());
-    shouldFail(
-        d,
-        isSorted(),
-        'Expected: is sorted '
-        'Actual: [2, null, 5] '
-        'Which: found elements out of order 2 and null');
   });
 
   test('isSortedBy', () {
     var a = ['y', 'zz', 'bbbb', 'aaaa'];
     var b = ['y', 'bbbb', 'aaaa', 'zz'];
 
-    shouldPass(a, isSortedBy((String s) => s.length));
+    shouldPass(a, isSortedBy<String, num>((String s) => s.length));
     shouldFail(
         b,
-        isSortedBy((String s) => s.length),
+        isSortedBy<String, num>((String s) => s.length),
         'Expected: is sorted '
         'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
         'Which: found elements out of order aaaa and zz');
