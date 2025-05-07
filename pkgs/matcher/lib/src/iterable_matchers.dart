@@ -436,29 +436,24 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
       : _keyOf = keyOf,
         _compare = compare;
 
-  String? _test(Iterable<T> item, Map matchState) {
+  @override
+  bool typedMatches(Iterable<T> item, Map matchState) {
     var iterator = item.iterator;
-    if (!iterator.moveNext()) return null;
+    if (!iterator.moveNext()) return true;
     var previousElement = iterator.current;
     var previousKey = _keyOf(previousElement);
     while (iterator.moveNext()) {
       var element = iterator.current;
       var key = _keyOf(element);
       if (_compare(previousKey, key) > 0) {
-        return StringDescription(
-                'found elements out of order: <$previousElement> and '
-                '<$element>')
-            .toString();
+        addStateInfo(matchState, {'first': previousElement, 'second': element});
+        return false;
       }
       previousElement = element;
       previousKey = key;
     }
-    return null;
+    return true;
   }
-
-  @override
-  bool typedMatches(Iterable<T> item, Map matchState) =>
-      _test(item, matchState) == null;
 
   @override
   Description describe(Description description) => description.add('is sorted');
@@ -466,5 +461,9 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
   @override
   Description describeTypedMismatch(Iterable<T> item,
           Description mismatchDescription, Map matchState, bool verbose) =>
-      mismatchDescription.add(_test(item, matchState)!);
+      mismatchDescription
+          .add('found elements out of order: ')
+          .addDescriptionOf(matchState['first'])
+          .add(' and ')
+          .addDescriptionOf(matchState['second']);
 }

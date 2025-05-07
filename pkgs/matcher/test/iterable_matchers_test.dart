@@ -416,7 +416,7 @@ void main() {
         isSortedBy<String, num>((String s) => s.length),
         'Expected: is sorted '
         'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
-        'Which: found elements out of order: <aaaa> and <zz>');
+        'Which: found elements out of order: \'aaaa\' and \'zz\'');
   });
 
   test('isSortedByCompare', () {
@@ -430,6 +430,6 @@ void main() {
         isSortedByCompare((String s) => s.length, (a, b) => b.compareTo(a)),
         'Expected: is sorted '
         'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
-        'Which: found elements out of order: <y> and <bbbb>');
+        'Which: found elements out of order: \'y\' and \'bbbb\'');
   });
 }
