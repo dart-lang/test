@@ -416,8 +416,8 @@ class _ContainsOnce extends _IterableMatcher {
 }
 
 // Matches [Iterable]s which are sorted.
-Matcher isSorted<T>(Comparator<T> comparator) =>
-    _IsSorted<T, T>((t) => t, comparator);
+Matcher isSorted<T>(Comparator<T> compare) =>
+    _IsSorted<T, T>((t) => t, compare);
 
 // Matches [Iterable]s which are sorted by the given key.
 Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
@@ -425,34 +425,33 @@ Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
 
 // Matches [Iterable]s which are sorted by the given key, using the given
 // comparator.
-Matcher isSortedByCompare<T, K>(
-        K Function(T) keyOf, Comparator<K> comparator) =>
-    _IsSorted(keyOf, comparator);
+Matcher isSortedByCompare<T, K>(K Function(T) keyOf, Comparator<K> compare) =>
+    _IsSorted(keyOf, compare);
 
 class _IsSorted<T, K> extends _IterableMatcher<T> {
   final K Function(T) _keyOf;
-  final Comparator<K> _comparator;
+  final Comparator<K> _compare;
 
-  _IsSorted(K Function(T) keyOf, Comparator<K> comparator)
+  _IsSorted(K Function(T) keyOf, Comparator<K> compare)
       : _keyOf = keyOf,
-        _comparator = comparator;
+        _compare = compare;
 
   String? _test(Iterable<T> item, Map matchState) {
-    if (item.length < 2) {
-      return null;
-    }
-
-    var prevElem = item.first;
-    var prevKey = _keyOf(prevElem);
-    for (final elem in item.skip(1)) {
-      var key = _keyOf(elem);
-      if (_comparator(prevKey, key) > 0) {
+    var iterator = item.iterator;
+    if (!iterator.moveNext()) return null;
+    var previousElement = iterator.current;
+    var previousKey = _keyOf(previousElement);
+    while (iterator.moveNext()) {
+      var element = iterator.current;
+      var key = _keyOf(element);
+      if (_compare(previousKey, key) > 0) {
         return StringDescription(
-                'found elements out of order: <$prevElem> and <$elem>')
+                'found elements out of order: <$previousElement> and '
+                '<$element>')
             .toString();
       }
-      prevElem = elem;
-      prevKey = key;
+      previousElement = element;
+      previousKey = key;
     }
     return null;
   }
