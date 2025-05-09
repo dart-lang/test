@@ -1,4 +1,4 @@
-## 0.6.9-wip
+## 0.6.9
 
 * Add support for native assets for `dart test` in pub workspaces.
 * `test()` and `group()` functions now take an optional `TestLocation` that will
