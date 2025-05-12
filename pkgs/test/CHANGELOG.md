@@ -1,4 +1,4 @@
-## 1.26.0-wip
+## 1.26.0
 
 * `test()` and `group()` functions now take an optional `TestLocation` that will
   be used as the location of the test in JSON reporters instead of being parsed
