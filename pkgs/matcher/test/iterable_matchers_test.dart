@@ -403,7 +403,7 @@ void main() {
         isSorted<num>(),
         'Expected: is sorted '
         'Actual: [1, 3, 2] '
-        'Which: found elements out of order: <3> and <2>');
+        'Which: found elements out of order at <1>: <3> and <2>');
   });
 
   test('isSortedUsing', () {
@@ -417,7 +417,7 @@ void main() {
         isSortedUsing((int x, int y) => x - y),
         'Expected: is sorted '
         'Actual: [1, 3, 2] '
-        'Which: found elements out of order: <3> and <2>');
+        'Which: found elements out of order at <1>: <3> and <2>');
     shouldPass(c, isSortedUsing((int x, int y) => y - x));
   });
 
@@ -431,7 +431,7 @@ void main() {
         isSortedBy<String, num>((String s) => s.length),
         'Expected: is sorted '
         'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
-        'Which: found elements out of order: \'aaaa\' and \'zz\'');
+        'Which: found elements out of order at <2>: \'aaaa\' and \'zz\'');
   });
 
   test('isSortedByCompare', () {
@@ -445,6 +445,6 @@ void main() {
         isSortedByCompare((String s) => s.length, (a, b) => b.compareTo(a)),
         'Expected: is sorted '
         'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
-        'Which: found elements out of order: \'y\' and \'bbbb\'');
+        'Which: found elements out of order at <0>: \'y\' and \'bbbb\'');
   });
 }

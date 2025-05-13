@@ -445,15 +445,18 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
     if (!iterator.moveNext()) return true;
     var previousElement = iterator.current;
     var previousKey = _keyOf(previousElement);
+    var index = 0;
     while (iterator.moveNext()) {
       var element = iterator.current;
       var key = _keyOf(element);
       if (_compare(previousKey, key) > 0) {
-        addStateInfo(matchState, {'first': previousElement, 'second': element});
+        addStateInfo(matchState,
+            {'index': index, 'first': previousElement, 'second': element});
         return false;
       }
       previousElement = element;
       previousKey = key;
+      index++;
     }
     return true;
   }
@@ -465,7 +468,9 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
   Description describeTypedMismatch(Iterable<T> item,
           Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription
-          .add('found elements out of order: ')
+          .add('found elements out of order at ')
+          .addDescriptionOf(matchState['index'])
+          .add(': ')
           .addDescriptionOf(matchState['first'])
           .add(' and ')
           .addDescriptionOf(matchState['second']);
