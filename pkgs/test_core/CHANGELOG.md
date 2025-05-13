@@ -1,3 +1,7 @@
+## 0.6.10-wip
+
+* Set a debug name for test isolates.
+
 ## 0.6.9
 
 * Add support for native assets for `dart test` in pub workspaces.
