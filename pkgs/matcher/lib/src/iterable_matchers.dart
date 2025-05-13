@@ -444,12 +444,46 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
     var iterator = item.iterator;
     if (!iterator.moveNext()) return true;
     var previousElement = iterator.current;
-    var previousKey = _keyOf(previousElement);
+    K previousKey;
+    try {
+      previousKey = _keyOf(previousElement);
+    } catch (e) {
+      addStateInfo(matchState, {
+        'index': 0,
+        'element': previousElement,
+        'error': e,
+        'keyError': true
+      });
+      return false;
+    }
+
     var index = 0;
     while (iterator.moveNext()) {
-      var element = iterator.current;
-      var key = _keyOf(element);
-      if (_compare(previousKey, key) > 0) {
+      final element = iterator.current;
+      final K key;
+      try {
+        key = _keyOf(element);
+      } catch (e) {
+        addStateInfo(matchState,
+            {'index': index, 'element': element, 'error': e, 'keyError': true});
+        return false;
+      }
+
+      final int comparison;
+      try {
+        comparison = _compare(previousKey, key);
+      } catch (e) {
+        addStateInfo(matchState, {
+          'index': index,
+          'first': previousElement,
+          'second': element,
+          'error': e,
+          'compareError': true
+        });
+        return false;
+      }
+
+      if (comparison > 0) {
         addStateInfo(matchState,
             {'index': index, 'first': previousElement, 'second': element});
         return false;
@@ -466,12 +500,33 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
 
   @override
   Description describeTypedMismatch(Iterable<T> item,
-          Description mismatchDescription, Map matchState, bool verbose) =>
+      Description mismatchDescription, Map matchState, bool verbose) {
+    if (matchState.containsKey('error')) {
       mismatchDescription
-          .add('found elements out of order at ')
-          .addDescriptionOf(matchState['index'])
-          .add(': ')
-          .addDescriptionOf(matchState['first'])
-          .add(' and ')
-          .addDescriptionOf(matchState['second']);
+          .add('got error ')
+          .addDescriptionOf(matchState['error'])
+          .add(' at ')
+          .addDescriptionOf(matchState['index']);
+
+      if (matchState.containsKey('compareError')) {
+        return mismatchDescription
+            .add(' when comparing ')
+            .addDescriptionOf(matchState['first'])
+            .add(' and ')
+            .addDescriptionOf(matchState['second']);
+      } else {
+        return mismatchDescription
+            .add(' when getting key of ')
+            .addDescriptionOf(matchState['element']);
+      }
+    }
+
+    return mismatchDescription
+        .add('found elements out of order at ')
+        .addDescriptionOf(matchState['index'])
+        .add(': ')
+        .addDescriptionOf(matchState['first'])
+        .add(' and ')
+        .addDescriptionOf(matchState['second']);
+  }
 }
