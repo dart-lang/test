@@ -252,7 +252,7 @@ stderr: ${processResult.stderr}''');
       message,
       packageConfig: await packageConfigUri,
       checked: true,
-      debugName: 'test_main',
+      debugName: 'test_suite:$uri',
     );
   }
 
@@ -296,7 +296,7 @@ stderr: ${processResult.stderr}''');
       message,
       packageConfig: packageConfig?.uri,
       checked: true,
-      debugName: 'test_main',
+      debugName: 'test_suite:$testUri',
     );
   }
 
