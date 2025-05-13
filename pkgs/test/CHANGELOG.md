@@ -1,3 +1,7 @@
+## 1.26.1-wip
+
+* Set a debug name for test isolates.
+
 ## 1.26.0
 
 * `test()` and `group()` functions now take an optional `TestLocation` that will

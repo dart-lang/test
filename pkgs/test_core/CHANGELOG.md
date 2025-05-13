@@ -1,10 +1,13 @@
+## 0.6.10-wip
+
+* Set a debug name for test isolates.
+
 ## 0.6.9
 
 * Add support for native assets for `dart test` in pub workspaces.
 * `test()` and `group()` functions now take an optional `TestLocation` that will
   be used as the location of the test in JSON reporters instead of being parsed
   from the call stack.
-* Set a debug name for test isolates.
 
 ## 0.6.8
 
