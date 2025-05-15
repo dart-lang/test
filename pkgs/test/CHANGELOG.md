@@ -1,6 +1,8 @@
 ## 1.26.1-wip
 
 * Set a debug name for test isolates.
+* Use version `0.7.6` of `packge:test_api` to fix an assertion failure when
+  using `setUpAll` or `tearDownAll` and running with asserts enabled.
 
 ## 1.26.0
 

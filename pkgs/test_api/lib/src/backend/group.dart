@@ -96,8 +96,9 @@ class Group implements GroupEntry {
         metadata: metadata,
         trace: trace,
         location: location,
-        setUpAll: setUpAll,
-        tearDownAll: tearDownAll);
+        // Always clone these because they are being re-parented.
+        setUpAll: setUpAll?.filter((_) => true),
+        tearDownAll: tearDownAll?.filter((_) => true));
   }
 
   /// Returns the entries of this group mapped using [callback].
