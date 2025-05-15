@@ -51,4 +51,8 @@ abstract class GroupEntry {
   /// Returns `null` if this is a test that doesn't match [callback] or a group
   /// where no child tests match [callback].
   GroupEntry? filter(bool Function(Test) callback);
+
+  /// Returns a clone of this object without the internal `parent` reference
+  /// set so that it may be attached to a new tree.
+  GroupEntry? clone();
 }

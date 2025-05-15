@@ -1,6 +1,8 @@
-## 0.6.10-wip
+## 0.6.10
 
 * Set a debug name for test isolates.
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
 
 ## 0.6.9
 

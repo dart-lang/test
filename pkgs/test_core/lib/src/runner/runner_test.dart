@@ -115,9 +115,14 @@ class RunnerTest extends Test {
     if (callback(this)) {
       // filter() always returns new copies because they need to be attached
       // to their new parents.
-      return RunnerTest(name, metadata, trace, location, _channel);
+      return clone();
     }
 
     return null;
+  }
+
+  @override
+  Test clone() {
+    return RunnerTest(name, metadata, trace, location, _channel);
   }
 }

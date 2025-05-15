@@ -42,4 +42,7 @@ abstract class Test implements GroupEntry {
 
   @override
   Test? filter(bool Function(Test) callback);
+
+  @override
+  Test? clone();
 }
