@@ -16,8 +16,10 @@ StreamChannel<Object?> postMessageChannel() {
   dom.window.console.log('Suite starting, sending channel to host'.toJS);
   var controller = StreamChannelController<Object?>(sync: true);
   var channel = dom.createMessageChannel();
-  dom.window.parent
-      .postMessage('port', dom.window.location.origin, [channel.port2]);
+  dom.window.parent.postMessage(
+      {'messageType': 'port', 'href': dom.window.location.href},
+      dom.window.location.origin,
+      [channel.port2]);
   var portSubscription =
       dom.Subscription(channel.port1, 'message', (dom.Event event) {
     controller.local.sink.add((event as dom.MessageEvent).data);
