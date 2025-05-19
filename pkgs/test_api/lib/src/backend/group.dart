@@ -96,8 +96,21 @@ class Group implements GroupEntry {
         metadata: metadata,
         trace: trace,
         location: location,
-        setUpAll: setUpAll,
-        tearDownAll: tearDownAll);
+        // Always clone these because they are being re-parented.
+        setUpAll: setUpAll?.clone(),
+        tearDownAll: tearDownAll?.clone());
+  }
+
+  @override
+  Group? clone() {
+    var entries = _map((entry) => entry.clone());
+    return Group(name, entries,
+        metadata: metadata,
+        trace: trace,
+        location: location,
+        // Always clone these because they are being re-parented.
+        setUpAll: setUpAll?.clone(),
+        tearDownAll: tearDownAll?.clone());
   }
 
   /// Returns the entries of this group mapped using [callback].

@@ -1,3 +1,8 @@
+## 0.7.6
+
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
 ## 0.7.5
 
 * `test()` and `group()` functions now take an optional `TestLocation` that will
