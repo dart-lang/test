@@ -392,4 +392,110 @@ void main() {
         'Actual: SimpleIterable:[3, 2, 1] '
         'Which: does not contain <5>');
   });
+
+  test('isSorted', () {
+    final sorted = [4, 8, 15, 16, 23, 42];
+    final mismatchAtStart = [8, 4, 15, 16, 23, 42];
+    final mismatchInMiddle = [4, 8, 16, 15, 23, 42];
+    final mismatchAtEnd = [4, 8, 15, 16, 42, 23];
+    final singleElement = [42];
+    final twoElementsSorted = [42, 143];
+    final twoElementsUnsorted = [143, 42];
+
+    shouldPass(sorted, isSorted<num>());
+    shouldFail(
+        mismatchAtStart,
+        isSorted<num>(),
+        'Expected: is sorted '
+        'Actual: [8, 4, 15, 16, 23, 42] '
+        'Which: found elements out of order at <0>: <8> and <4>');
+    shouldFail(
+        mismatchInMiddle,
+        isSorted<num>(),
+        'Expected: is sorted '
+        'Actual: [4, 8, 16, 15, 23, 42] '
+        'Which: found elements out of order at <2>: <16> and <15>');
+    shouldFail(
+        mismatchAtEnd,
+        isSorted<num>(),
+        'Expected: is sorted '
+        'Actual: [4, 8, 15, 16, 42, 23] '
+        'Which: found elements out of order at <4>: <42> and <23>');
+    shouldPass(singleElement, isSorted<num>());
+    shouldPass(twoElementsSorted, isSorted<num>());
+    shouldFail(
+        twoElementsUnsorted,
+        isSorted<num>(),
+        'Expected: is sorted '
+        'Actual: [143, 42] '
+        'Which: found elements out of order at <0>: <143> and <42>');
+  });
+
+  test('isSortedUsing', () {
+    final sorted = [1, 2, 3];
+    final unsorted = [1, 3, 2];
+    final reverseSorted = [3, 2, 1];
+
+    int alwaysEqualCompare(int x, int y) => 0;
+    int throwingCompare(int x, int y) => throw Error();
+
+    shouldPass(sorted, isSortedUsing((int x, int y) => x - y));
+    shouldFail(
+        unsorted,
+        isSortedUsing((int x, int y) => x - y),
+        'Expected: is sorted '
+        'Actual: [1, 3, 2] '
+        'Which: found elements out of order at <1>: <3> and <2>');
+    shouldPass(reverseSorted, isSortedUsing((int x, int y) => y - x));
+
+    shouldPass(unsorted, isSortedUsing(alwaysEqualCompare));
+
+    shouldFail(
+        sorted,
+        isSortedUsing(throwingCompare),
+        'Expected: is sorted '
+        'Actual: [1, 2, 3] '
+        'Which: got error <Instance of \'Error\'> at <0> '
+        'when comparing <1> and <2>');
+  });
+
+  test('isSortedBy', () {
+    final sorted = ['y', 'zz', 'bbbb', 'aaaa'];
+    final unsorted = ['y', 'bbbb', 'aaaa', 'zz'];
+    final sortedDueToSameKey = ['zzz', 'abc', 'def', 'aaa'];
+
+    num throwingKey(String s) => throw Error();
+
+    shouldPass(sorted, isSortedBy<String, num>((String s) => s.length));
+    shouldFail(
+        unsorted,
+        isSortedBy<String, num>((String s) => s.length),
+        'Expected: is sorted '
+        'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
+        'Which: found elements out of order at <2>: \'aaaa\' and \'zz\'');
+    shouldPass(
+        sortedDueToSameKey, isSortedBy<String, num>((String s) => s.length));
+
+    shouldFail(
+        sorted,
+        isSortedBy(throwingKey),
+        'Expected: is sorted '
+        'Actual: [\'y\', \'zz\', \'bbbb\', \'aaaa\'] '
+        'Which: got error <Instance of \'Error\'> at <0> '
+        'when getting key of \'y\'');
+  });
+
+  test('isSortedByCompare', () {
+    final sorted = ['aaaa', 'bbbb', 'zz', 'y'];
+    final unsorted = ['y', 'bbbb', 'aaaa', 'zz'];
+
+    shouldPass(sorted,
+        isSortedByCompare((String s) => s.length, (a, b) => b.compareTo(a)));
+    shouldFail(
+        unsorted,
+        isSortedByCompare((String s) => s.length, (a, b) => b.compareTo(a)),
+        'Expected: is sorted '
+        'Actual: [\'y\', \'bbbb\', \'aaaa\', \'zz\'] '
+        'Which: found elements out of order at <0>: \'y\' and \'bbbb\'');
+  });
 }
