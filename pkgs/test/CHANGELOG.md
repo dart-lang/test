@@ -1,3 +1,7 @@
+## 1.26.2
+
+* Graduate native assets from experiment to preview.
+
 ## 1.26.1
 
 * Set a debug name for test isolates.
