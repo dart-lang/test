@@ -57,7 +57,8 @@ final class SuiteConfiguration {
       tags: null,
       onPlatform: null,
       metadata: null,
-      ignoreTimeouts: null);
+      ignoreTimeouts: null,
+      suiteLoadTimeout: null);
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
@@ -149,6 +150,11 @@ final class SuiteConfiguration {
   final bool? _ignoreTimeouts;
   bool get ignoreTimeouts => _ignoreTimeouts ?? false;
 
+  /// The timeout for loading a test suite.
+  final Timeout? _suiteLoadTimeout;
+  Timeout get suiteLoadTimeout =>
+      _suiteLoadTimeout ?? const Timeout(Duration(minutes: 12));
+
   factory SuiteConfiguration(
       {required bool? allowDuplicateTestNames,
       required bool? allowTestRandomization,
@@ -161,7 +167,7 @@ final class SuiteConfiguration {
       required Map<BooleanSelector, SuiteConfiguration>? tags,
       required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       required bool? ignoreTimeouts,
-
+      required Timeout? suiteLoadTimeout,
       // Test-level configuration
       required Timeout? timeout,
       required bool? verboseTrace,
@@ -184,6 +190,7 @@ final class SuiteConfiguration {
         tags: tags,
         onPlatform: onPlatform,
         ignoreTimeouts: ignoreTimeouts,
+        suiteLoadTimeout: suiteLoadTimeout,
         metadata: Metadata(
             timeout: timeout,
             verboseTrace: verboseTrace,
@@ -212,6 +219,7 @@ final class SuiteConfiguration {
           Map<BooleanSelector, SuiteConfiguration>? tags,
           Map<PlatformSelector, SuiteConfiguration>? onPlatform,
           bool? ignoreTimeouts,
+          Timeout? suiteLoadTimeout,
 
           // Test-level configuration
           Timeout? timeout,
@@ -234,6 +242,7 @@ final class SuiteConfiguration {
           tags: tags,
           onPlatform: onPlatform,
           ignoreTimeouts: ignoreTimeouts,
+          suiteLoadTimeout: suiteLoadTimeout,
           timeout: timeout,
           verboseTrace: verboseTrace,
           chainStackTraces: chainStackTraces,
@@ -273,6 +282,7 @@ final class SuiteConfiguration {
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required Metadata? metadata,
     required bool? ignoreTimeouts,
+    required Timeout? suiteLoadTimeout,
   })  : _allowDuplicateTestNames = allowDuplicateTestNames,
         _allowTestRandomization = allowTestRandomization,
         _jsTrace = jsTrace,
@@ -283,6 +293,7 @@ final class SuiteConfiguration {
         tags = _map(tags),
         onPlatform = _map(onPlatform),
         _ignoreTimeouts = ignoreTimeouts,
+        _suiteLoadTimeout = suiteLoadTimeout,
         _metadata = metadata ?? Metadata.empty;
 
   /// Creates a new [SuiteConfiguration] that takes its configuration from
@@ -304,6 +315,7 @@ final class SuiteConfiguration {
         runtimes: null,
         compilerSelections: null,
         ignoreTimeouts: null,
+        suiteLoadTimeout: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -348,7 +360,8 @@ final class SuiteConfiguration {
         tags: _mergeConfigMaps(tags, other.tags),
         onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
         ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
-        metadata: metadata.merge(other.metadata));
+        metadata: metadata.merge(other.metadata),
+        suiteLoadTimeout: other._suiteLoadTimeout ?? _suiteLoadTimeout);
     return config._resolveTags();
   }
 
@@ -368,6 +381,7 @@ final class SuiteConfiguration {
       Map<BooleanSelector, SuiteConfiguration>? tags,
       Map<PlatformSelector, SuiteConfiguration>? onPlatform,
       bool? ignoreTimeouts,
+      Timeout? suiteLoadTimeout,
 
       // Test-level configuration
       Timeout? timeout,
@@ -393,6 +407,7 @@ final class SuiteConfiguration {
         tags: tags ?? this.tags,
         onPlatform: onPlatform ?? this.onPlatform,
         ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
+        suiteLoadTimeout: suiteLoadTimeout ?? _suiteLoadTimeout,
         metadata: _metadata.change(
             timeout: timeout,
             verboseTrace: verboseTrace,
@@ -428,6 +443,7 @@ final class SuiteConfiguration {
         tags: tags,
         onPlatform: onPlatform,
         ignoreTimeouts: _ignoreTimeouts,
+        suiteLoadTimeout: suiteLoadTimeout,
         metadata: _metadata);
   }
 
