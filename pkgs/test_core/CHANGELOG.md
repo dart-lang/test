@@ -29,6 +29,7 @@
 * Fix dart2wasm tests on windows.
 * Increase SDK constraint to ^3.5.0.
 * Allow passing additional arguments to `dart compile wasm`.
+* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 0.6.5
 

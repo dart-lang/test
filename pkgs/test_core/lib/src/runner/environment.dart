@@ -12,8 +12,9 @@ abstract class Environment {
   /// Whether this environment supports interactive debugging.
   bool get supportsDebugging;
 
-  /// The URL of the Dart VM Observatory for this environment, or `null` if this
-  /// environment doesn't run the Dart VM or the URL couldn't be detected.
+  /// The URL of the Dart Dev Tools server for this environment, or `null` if
+  /// this environment doesn't run the Dart VM or the URL couldn't be detected.
+  // TODO(https://github.com/dart-lang/test/issues/2185) rename to `devToolsUrl`
   Uri? get observatoryUrl;
 
   /// The URL of the remote debugger for this environment, or `null` if it isn't
