@@ -132,7 +132,7 @@ class _UnorderedEquals extends _UnorderedMatches {
 
 /// Iterable matchers match against [Iterable]s. We add this intermediate
 /// class to give better mismatch error messages than the base Matcher class.
-abstract class _IterableMatcher extends FeatureMatcher<Iterable> {
+abstract class _IterableMatcher<T> extends FeatureMatcher<Iterable<T>> {
   const _IterableMatcher();
 }
 
@@ -413,4 +413,120 @@ class _ContainsOnce extends _IterableMatcher {
   Description describeTypedMismatch(Iterable item,
           Description mismatchDescription, Map matchState, bool verbose) =>
       mismatchDescription.add(_test(item, matchState)!);
+}
+
+/// Matches [Iterable]s which are sorted.
+Matcher isSorted<T extends Comparable<T>>() =>
+    _IsSorted<T, T>((t) => t, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are [compare]-sorted.
+Matcher isSortedUsing<T>(Comparator<T> compare) =>
+    _IsSorted<T, T>((t) => t, compare);
+
+/// Matches [Iterable]s which are sorted by the [keyOf] property.
+Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
+    _IsSorted<T, K>(keyOf, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are [compare]-sorted by their [keyOf] property.
+Matcher isSortedByCompare<T, K>(K Function(T) keyOf, Comparator<K> compare) =>
+    _IsSorted(keyOf, compare);
+
+class _IsSorted<T, K> extends _IterableMatcher<T> {
+  final K Function(T) _keyOf;
+  final Comparator<K> _compare;
+
+  _IsSorted(K Function(T) keyOf, Comparator<K> compare)
+      : _keyOf = keyOf,
+        _compare = compare;
+
+  @override
+  bool typedMatches(Iterable<T> item, Map matchState) {
+    var iterator = item.iterator;
+    if (!iterator.moveNext()) return true;
+    var previousElement = iterator.current;
+    K previousKey;
+    try {
+      previousKey = _keyOf(previousElement);
+    } catch (e) {
+      addStateInfo(matchState, {
+        'index': 0,
+        'element': previousElement,
+        'error': e,
+        'keyError': true
+      });
+      return false;
+    }
+
+    var index = 0;
+    while (iterator.moveNext()) {
+      final element = iterator.current;
+      final K key;
+      try {
+        key = _keyOf(element);
+      } catch (e) {
+        addStateInfo(matchState,
+            {'index': index, 'element': element, 'error': e, 'keyError': true});
+        return false;
+      }
+
+      final int comparison;
+      try {
+        comparison = _compare(previousKey, key);
+      } catch (e) {
+        addStateInfo(matchState, {
+          'index': index,
+          'first': previousElement,
+          'second': element,
+          'error': e,
+          'compareError': true
+        });
+        return false;
+      }
+
+      if (comparison > 0) {
+        addStateInfo(matchState,
+            {'index': index, 'first': previousElement, 'second': element});
+        return false;
+      }
+      previousElement = element;
+      previousKey = key;
+      index++;
+    }
+    return true;
+  }
+
+  @override
+  Description describe(Description description) => description.add('is sorted');
+
+  @override
+  Description describeTypedMismatch(Iterable<T> item,
+      Description mismatchDescription, Map matchState, bool verbose) {
+    if (matchState.containsKey('error')) {
+      mismatchDescription
+          .add('got error ')
+          .addDescriptionOf(matchState['error'])
+          .add(' at ')
+          .addDescriptionOf(matchState['index']);
+
+      if (matchState.containsKey('compareError')) {
+        return mismatchDescription
+            .add(' when comparing ')
+            .addDescriptionOf(matchState['first'])
+            .add(' and ')
+            .addDescriptionOf(matchState['second']);
+      } else {
+        return mismatchDescription
+            .add(' when getting key of ')
+            .addDescriptionOf(matchState['element']);
+      }
+    }
+
+    return mismatchDescription
+        .add('found elements out of order at ')
+        .addDescriptionOf(matchState['index'])
+        .add(': ')
+        .addDescriptionOf(matchState['first'])
+        .add(' and ')
+        .addDescriptionOf(matchState['second']);
+  }
 }
