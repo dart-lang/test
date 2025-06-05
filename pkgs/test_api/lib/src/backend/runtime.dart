@@ -25,8 +25,8 @@ final class Runtime {
       isBrowser: true);
 
   /// Apple Safari.
-  static const Runtime safari = Runtime(
-      'Safari', 'safari', Compiler.dart2js, [Compiler.dart2js],
+  static const Runtime safari = Runtime('Safari', 'safari', Compiler.dart2js,
+      [Compiler.dart2js, Compiler.dart2wasm],
       isBrowser: true);
 
   /// Microsoft Internet Explorer.
