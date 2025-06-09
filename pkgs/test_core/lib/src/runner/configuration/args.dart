@@ -26,6 +26,7 @@ final ArgParser _parser = (() {
 
   parser.addFlag('help',
       abbr: 'h', negatable: false, help: 'Show this usage information.');
+  parser.addFlag('json-help', negatable: false, hide: true);
   parser.addFlag('version',
       negatable: false, help: 'Show the package:test version.');
 
@@ -183,6 +184,8 @@ final ArgParser _parser = (() {
 /// The usage string for the command-line arguments.
 String get usage => _parser.usage;
 
+Map<String, Object?> get jsonSchema => _parser.jsonSchema;
+
 /// Parses the configuration from [args].
 ///
 /// Throws a [FormatException] if [args] are invalid.
@@ -316,6 +319,7 @@ class _Parser {
 
     return Configuration(
         help: _ifParsed('help'),
+        jsonHelp: _ifParsed('json-help'),
         version: _ifParsed('version'),
         verboseTrace: _ifParsed('verbose-trace'),
         chainStackTraces: _ifParsed('chain-stack-traces'),

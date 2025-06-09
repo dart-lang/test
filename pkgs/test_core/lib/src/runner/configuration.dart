@@ -42,9 +42,15 @@ class Configuration {
   /// The usage string for the command-line arguments.
   static String get usage => args.usage;
 
+  static Map<String, Object?> get jsonSchema => args.jsonSchema;
+
   /// Whether `--help` was passed.
   bool get help => _help ?? false;
   final bool? _help;
+
+  /// Whether `--json-help` was passed.
+  bool get jsonHelp => _jsonHelp ?? false;
+  final bool? _jsonHelp;
 
   /// Custom HTML template file.
   final String? customHtmlTemplatePath;
@@ -248,6 +254,7 @@ class Configuration {
 
   factory Configuration(
       {required bool? help,
+      bool? jsonHelp,
       required String? customHtmlTemplatePath,
       required bool? version,
       required bool? pauseAfterLoad,
@@ -300,6 +307,7 @@ class Configuration {
     var chosenPresetSet = chosenPresets?.toSet();
     var configuration = Configuration._(
         help: help,
+        jsonHelp: jsonHelp,
         customHtmlTemplatePath: customHtmlTemplatePath,
         version: version,
         pauseAfterLoad: pauseAfterLoad,
@@ -731,6 +739,7 @@ class Configuration {
   /// Unlike [Configuration.new], this assumes [presets] is already resolved.
   Configuration._(
       {required bool? help,
+      required bool? jsonHelp,
       required this.customHtmlTemplatePath,
       required bool? version,
       required bool? pauseAfterLoad,
@@ -759,6 +768,7 @@ class Configuration {
       required Iterable<Pattern>? globalPatterns,
       required SuiteConfiguration? suiteDefaults})
       : _help = help,
+        _jsonHelp = jsonHelp,
         _version = version,
         _pauseAfterLoad = pauseAfterLoad,
         _debug = debug,
@@ -814,6 +824,7 @@ class Configuration {
         suiteDefaults: suiteConfig,
         globalPatterns: null,
         help: null,
+        jsonHelp: null,
         customHtmlTemplatePath: null,
         version: null,
         pauseAfterLoad: null,
@@ -911,6 +922,7 @@ class Configuration {
 
     var result = Configuration._(
         help: other._help ?? _help,
+        jsonHelp: other._jsonHelp ?? _jsonHelp,
         customHtmlTemplatePath:
             other.customHtmlTemplatePath ?? customHtmlTemplatePath,
         version: other._version ?? _version,
@@ -1006,6 +1018,7 @@ class Configuration {
       Iterable<String>? addTags}) {
     var config = Configuration._(
         help: help ?? _help,
+        jsonHelp: _jsonHelp,
         customHtmlTemplatePath:
             customHtmlTemplatePath ?? this.customHtmlTemplatePath,
         version: version ?? _version,
