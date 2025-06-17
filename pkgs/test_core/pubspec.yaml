@@ -34,3 +34,10 @@ dependencies:
 
 dev_dependencies:
   test: any
+
+dependency_overrides:
+  args:
+    git:
+      url: https://github.com/dart-lang/core.git
+      path: pkgs/args
+      ref: json-schema

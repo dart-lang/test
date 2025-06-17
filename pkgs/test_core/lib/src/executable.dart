@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
@@ -79,6 +80,10 @@ Future<void> _execute(List<String> args) async {
 
   if (configuration.help) {
     _printUsage();
+    return;
+  }
+  if (configuration.jsonHelp) {
+    stdout.write(jsonEncode(Configuration.jsonSchema));
     return;
   }
 
