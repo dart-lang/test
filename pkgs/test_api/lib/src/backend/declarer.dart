@@ -191,8 +191,8 @@ class Declarer {
   /// Runs [body] with this declarer as [Declarer.current].
   ///
   /// Returns the return value of [body].
-  T declare<T>(T Function() body) =>
-      runZoned(body, zoneValues: {#test.declarer: this});
+  T declare<T>(T Function() body, {Map<Object?, Object?>? zoneValues}) =>
+      runZoned(body, zoneValues: {#test.declarer: this, ...?zoneValues});
 
   /// Defines a test case with the given name and body.
   void test(String name, dynamic Function() body,

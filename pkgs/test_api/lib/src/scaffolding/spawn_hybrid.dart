@@ -170,7 +170,7 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   });
 
   if (!stayAlive) {
-    var disconnector = Disconnector<void>();
+    var disconnector = Disconnector();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }
