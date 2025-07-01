@@ -1,4 +1,4 @@
-## 0.3.1-wip
+## 0.3.1
 
 -   Directly compare keys across actual and expected `Map` instances when
     checking deep collection equality and all the keys can be directly compared
@@ -11,7 +11,7 @@
 -   Fix a bug where printing the result of a failed deep quality check would
     fail with a `TypeError` when comparing large `Map` instances 
 -   Increase SDK constraint to ^3.5.0.
--   Clarify this package is an _experiment_
+-   Clarify this package is experimental.
 
 ## 0.3.0
 
