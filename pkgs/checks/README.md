@@ -7,9 +7,12 @@ a literate API.
 ## package:checks (experimental)
 
 `package:checks` is an experiment. For production use cases, please
-use `package:test` and `package:matcher`. As an experiment published through labs.dart.dev,
-things may radically change in this library and we do not support
-this library. This library may never graduate out of labs.
+use `package:test` and `package:matcher`.
+
+For packages in the labs.dart.dev publisher we generally plan to either graduate the
+package into a supported publisher (dart.dev, tools.dart.dev) after a period of
+feedback and iteration, or discontinue the package. These packages have a much
+higher expected rate of API and breaking changes.
 
 To provide feedback on the API, please file
 [an issue][] with questions, suggestions, feature requests, or general
