@@ -117,7 +117,8 @@ final class RemoteListener {
           await beforeLoad(suiteChannelManager.connectOut);
         }
 
-        await declarer.declare(main);
+        await declarer.declare(main,
+            zoneValues: {#test.platformChannel: controller.foreign});
 
         var suite = Suite(
           declarer.build(),
