@@ -4,13 +4,21 @@
 `package:checks` is a library for expressing test expectations and it features
 a literate API.
 
-## package:checks preview
+## package:checks (experimental)
 
-`package:checks` is in preview; to provide feedback on the API, please file
+`package:checks` is an experiment. For production use cases, please
+use `package:test` and `package:matcher`.
+
+For packages in the labs.dart.dev publisher we generally plan to either graduate the
+package into a supported publisher (dart.dev, tools.dart.dev) after a period of
+feedback and iteration, or discontinue the package. These packages have a much
+higher expected rate of API and breaking changes.
+
+To provide feedback on the API, please file
 [an issue][] with questions, suggestions, feature requests, or general
 feedback.
 
-For documentation about migrating from `package:matcher` to `checks`, see the
+For documentation about converting your usage of `package:matcher` to `checks`, see the
 [migration guide][].
 
 [an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
