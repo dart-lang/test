@@ -113,6 +113,14 @@ final ArgParser _parser = (() {
       help: 'Gather coverage and output it to the specified directory.\n'
           'Implies --debug.',
       valueHelp: 'directory');
+  parser.addOption('coverage-lcov',
+      help: 'Gather coverage and output an lcov report to the specified file.\n'
+          'Implies --debug.',
+      valueHelp: 'file');
+  parser.addFlag('branch-coverage',
+      help: 'Include branch coverage information in the coverage report.\n'
+          'Must be paired with --coverage or --coverage-lcov.',
+      negatable: false);
   parser.addFlag('chain-stack-traces',
       help: 'Use chained stack traces to provide greater exception details\n'
           'especially for asynchronous code. It may be useful to disable\n'
@@ -314,6 +322,18 @@ class _Parser {
           'open an issue at https://github.com/dart-lang/test/issues/new.');
     }
 
+    final coverageDir = _ifParsed('coverage');
+    final coverageLcov = _ifParsed('coverage-lcov');
+    final branchCoverage = _ifParsed('branch-coverage') ?? false;
+    if (coverageDir == null && coverageLcov == null && branchCoverage) {
+      throw ArgumentError(
+          'If you set --branch-coverage you must set either --coverage or '
+          '--coverage-lcov');
+    }
+    if (coverageLcov != null && coverageDir != null) {
+      throw ArgumentError('Cannot set both --coverage and --coverage-lcov');
+    }
+
     return Configuration(
         help: _ifParsed('help'),
         version: _ifParsed('version'),
@@ -328,7 +348,9 @@ class _Parser {
         precompiledPath: _ifParsed<String>('precompiled'),
         reporter: reporter,
         fileReporters: _parseFileReporterOption(),
-        coverage: _ifParsed('coverage'),
+        coverage: coverageDir,
+        coverageLcov: coverageLcov,
+        branchCoverage: branchCoverage,
         concurrency: _parseOption('concurrency', int.parse),
         shardIndex: shardIndex,
         totalShards: totalShards,

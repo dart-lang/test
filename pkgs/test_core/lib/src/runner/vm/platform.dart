@@ -137,7 +137,7 @@ class VMPlatform extends PlatformPlugin {
 
     var controller = deserializeSuite(
         path, platform, suiteConfig, environment, channel.cast(), message,
-        gatherCoverage: () => _gatherCoverage(environment!));
+        gatherCoverage: () => _gatherCoverage(environment!, _config));
 
     if (isolateRef != null) {
       await client!.streamListen('Debug');
@@ -343,11 +343,19 @@ stderr: ${processResult.stderr}''');
   }
 }
 
-Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
+Future<Map<String, dynamic>> _gatherCoverage(
+    Environment environment, Configuration config) async {
   final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
       .queryParameters['isolateId'];
-  return await collect(environment.observatoryUrl!, false, false, false,
-      {await currentPackageName}, isolateIds: {isolateId!});
+  return await collect(
+    environment.observatoryUrl!,
+    false,
+    false,
+    false,
+    {await currentPackageName},
+    isolateIds: {isolateId!},
+    branchCoverage: config.branchCoverage,
+  );
 }
 
 Uri _wsUriFor(Uri observatoryUrl) =>
