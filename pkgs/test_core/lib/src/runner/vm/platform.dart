@@ -346,8 +346,8 @@ stderr: ${processResult.stderr}''');
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
   final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
       .queryParameters['isolateId'];
-  return await collect(environment.observatoryUrl!, false, false, false, {},
-      isolateIds: {isolateId!});
+  return await collect(environment.observatoryUrl!, false, false, false,
+      {await currentPackageName}, isolateIds: {isolateId!});
 }
 
 Uri _wsUriFor(Uri observatoryUrl) =>
