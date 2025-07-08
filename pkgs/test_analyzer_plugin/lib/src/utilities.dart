@@ -23,7 +23,7 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
     final element = this.element;
     if (element == null) return false;
     if (element.name3 != 'test') return false;
-    return element.library2?.uri.path.startsWith('test_core/') ?? false;
+    return element.library?.uri.path.startsWith('test_core/') ?? false;
   }
 
   /// Whether this identifier represents the 'group' function from the
@@ -32,6 +32,33 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
     final element = this.element;
     if (element == null) return false;
     if (element.name3 != 'group') return false;
-    return element.library2?.uri.path.startsWith('test_core/') ?? false;
+    return element.library?.uri.path.startsWith('test_core/') ?? false;
+  }
+
+  /// Whether this identifier represents the 'expect' function from the
+  /// 'matcher' package.
+  bool get isExpect {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name3 != 'expect') return false;
+    return element.library?.uri.path.startsWith('matcher/') ?? false;
+  }
+
+  /// Whether this identifier represents the 'isNotNull' constant from the
+  /// 'matcher' package.
+  bool get isNotNull {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name3 != 'isNotNull') return false;
+    return element.library?.uri.path.startsWith('matcher/') ?? false;
+  }
+
+  /// Whether this identifier represents the 'isNull' constant from the
+  /// 'matcher' package.
+  bool get isNull {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name3 != 'isNull') return false;
+    return element.library?.uri.path.startsWith('matcher/') ?? false;
   }
 }
