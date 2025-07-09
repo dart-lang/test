@@ -352,7 +352,7 @@ Future<Map<String, dynamic>> _gatherCoverage(
     false,
     false,
     false,
-    {await currentPackageName},
+    {(await currentPackage).name},
     isolateIds: {isolateId!},
     branchCoverage: config.branchCoverage,
   );

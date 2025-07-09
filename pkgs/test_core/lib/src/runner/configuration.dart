@@ -61,14 +61,12 @@ class Configuration {
   bool get debug =>
       pauseAfterLoad ||
       (_debug ?? false) ||
-      _coverage != null ||
+      coverage != null ||
       coverageLcov != null;
   final bool? _debug;
 
   /// The output folder for coverage gathering.
-  String? get coverage =>
-      _coverage ?? (coverageLcov != null ? p.dirname(coverageLcov!) : null);
-  final String? _coverage;
+  final String? coverage;
 
   /// The lcov file to output coverage to.
   final String? coverageLcov;
@@ -768,7 +766,7 @@ class Configuration {
       required String? configurationPath,
       required String? reporter,
       required Map<String, String>? fileReporters,
-      required String? coverage,
+      required this.coverage,
       required this.coverageLcov,
       required bool? branchCoverage,
       required int? concurrency,
@@ -797,7 +795,6 @@ class Configuration {
         _configurationPath = configurationPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
-        _coverage = coverage,
         _branchCoverage = branchCoverage,
         _concurrency = concurrency,
         _testSelections = testSelections == null || testSelections.isEmpty
@@ -957,7 +954,7 @@ class Configuration {
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other.coverage ?? coverage,
         coverageLcov: other.coverageLcov ?? coverageLcov,
-        branchCoverage: other.branchCoverage ?? branchCoverage,
+        branchCoverage: other._branchCoverage ?? _branchCoverage,
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
@@ -1056,7 +1053,7 @@ class Configuration {
         fileReporters: fileReporters ?? this.fileReporters,
         coverage: coverage ?? this.coverage,
         coverageLcov: coverageLcov ?? this.coverageLcov,
-        branchCoverage: branchCoverage ?? this.branchCoverage,
+        branchCoverage: branchCoverage ?? _branchCoverage,
         concurrency: concurrency ?? _concurrency,
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,

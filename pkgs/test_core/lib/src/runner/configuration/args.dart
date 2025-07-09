@@ -322,9 +322,9 @@ class _Parser {
           'open an issue at https://github.com/dart-lang/test/issues/new.');
     }
 
-    final coverageDir = _ifParsed('coverage');
-    final coverageLcov = _ifParsed('coverage-lcov');
-    final branchCoverage = _ifParsed('branch-coverage') ?? false;
+    final coverageDir = _ifParsed<String>('coverage');
+    final coverageLcov = _ifParsed<String>('coverage-lcov');
+    final branchCoverage = _ifParsed<bool>('branch-coverage') ?? false;
     if (coverageDir == null && coverageLcov == null && branchCoverage) {
       throw ArgumentError(
           'If you set --branch-coverage you must set either --coverage or '

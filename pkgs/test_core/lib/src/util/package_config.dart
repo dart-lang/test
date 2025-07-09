@@ -38,7 +38,7 @@ Future<Uri> absoluteUri(String path) async {
   }
 }
 
-/// Returns the name of the current package.
-final Future<String> currentPackageName = () async {
-  return (await currentPackageConfig).packageOf(await packageConfigUri)!.name;
+/// Returns the current package.
+final Future<Package> currentPackage = () async {
+  return (await currentPackageConfig).packageOf(await packageConfigUri)!;
 }();
