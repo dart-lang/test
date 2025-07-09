@@ -258,10 +258,10 @@ The available options for the `--reporter` flag are:
 ### Collecting Code Coverage
 
 To collect code coverage, you can run tests with the `--coverage <directory>`
-argument or the `--coverage-lcov <file>` argument. The directory or file
-specified can be an absolute or relative path. The `--coverage` option outputs a
-json formatted report per test suite, whereas the `--coverage-lcov` option
-merges all the test coverage into a single LCOV file.
+argument or the `--coverage-lcov <file>` argument. The `--coverage` option
+outputs a json formatted report per test suite, whereas the `--coverage-lcov`
+option merges all the test coverage into a single LCOV file.
+The directory or file specified can be an absolute or relative path.
 If a directory does not exist at the path specified, a directory will be
 created. If a directory does exist, files may be overwritten with the latest
 coverage data, if they conflict.
