@@ -1,3 +1,7 @@
+## 0.6.12
+
+* Add `--coverage-lcov` and `--branch-cov` options to `dart test`.
+
 ## 0.6.11
 
 * Graduate native assets from experiment to preview.
