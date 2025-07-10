@@ -20,6 +20,7 @@ void main() {
 
   group('with the --coverage flag,', () {
     late Directory coverageDirectory;
+    late d.DirectoryDescriptor packageDirectory;
 
     Future<void> validateCoverage(TestProcess test, String coveragePath) async {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -32,18 +33,44 @@ void main() {
     }
 
     setUp(() async {
-      await d.file('test.dart', '''
-        import 'package:test/test.dart';
-
-        void main() {
-          test("test 1", () {
-            expect(true, isTrue);
-          });
-        }
-      ''').create();
-
       coverageDirectory =
           await Directory.systemTemp.createTemp('test_coverage');
+
+      packageDirectory = d.dir(d.sandbox, [
+        d.dir('lib', [
+          d.file('calculate.dart', '''
+            int calculate(int x) {
+              if (x % 2 == 0) {
+                return x * 2;
+              } else {
+                return x * 3;
+              }
+            }
+          '''),
+        ]),
+        d.dir('test', [
+          d.file('test.dart', '''
+            // import 'package:fake_package/calculate.dart';
+            import '../lib/calculate.dart';
+            import 'package:test/test.dart';
+
+            void main() {
+              test('test 1', () {
+                expect(calculate(6), 12);
+              });
+            }
+          ''')
+        ]),
+        d.file('pubspec.yaml', '''
+name: fake_package
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+dev_dependencies:
+  test: ^1.26.2
+        '''),
+      ]);
+      await packageDirectory.create();
     });
 
     tearDown(() async {
@@ -51,14 +78,23 @@ void main() {
     });
 
     test('gathers coverage for VM tests', () async {
-      var test =
-          await runTest(['--coverage', coverageDirectory.path, 'test.dart']);
+      await runPub(['get']);
+      print(packageDirectory.describe());
+      var test = await runTest(
+          ['--coverage', coverageDirectory.path, 'test/test.dart'],
+          packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
       await validateCoverage(test, 'test.dart.vm.json');
     });
 
     test('gathers coverage for Chrome tests', () async {
-      var test = await runTest(
-          ['--coverage', coverageDirectory.path, 'test.dart', '-p', 'chrome']);
+      await runDart(['pub', 'get']);
+      var test = await runTest([
+        '--coverage',
+        coverageDirectory.path,
+        'test/test.dart',
+        '-p',
+        'chrome'
+      ]);
       await validateCoverage(test, 'test.dart.chrome.json');
     });
 
