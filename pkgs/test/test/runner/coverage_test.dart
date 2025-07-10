@@ -50,8 +50,7 @@ void main() {
         ]),
         d.dir('test', [
           d.file('test.dart', '''
-            // import 'package:fake_package/calculate.dart';
-            import '../lib/calculate.dart';
+            import 'package:fake_package/calculate.dart';
             import 'package:test/test.dart';
 
             void main() {
@@ -78,12 +77,11 @@ dev_dependencies:
     });
 
     test('gathers coverage for VM tests', () async {
-      await runPub(['get']);
-      print(packageDirectory.describe());
+      await (await runPub(['get'])).shouldExit(0);
       var test = await runTest(
           ['--coverage', coverageDirectory.path, 'test/test.dart'],
           packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
-      await validateCoverage(test, 'test.dart.vm.json');
+      await validateCoverage(test, 'test/test.dart.vm.json');
     });
 
     test('gathers coverage for Chrome tests', () async {
