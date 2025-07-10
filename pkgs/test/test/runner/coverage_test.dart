@@ -8,6 +8,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -22,14 +23,21 @@ void main() {
     late Directory coverageDirectory;
     late d.DirectoryDescriptor packageDirectory;
 
-    Future<void> validateCoverage(TestProcess test, String coveragePath) async {
+    Future<void> validateTest(TestProcess test) async {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
+    }
+
+    Future<Map<String, HitMap>> validateCoverage(
+        TestProcess test, String coveragePath) async {
+      await validateTest(test);
 
       final coverageFile = File(p.join(coverageDirectory.path, coveragePath));
       final coverage = await coverageFile.readAsString();
-      final jsonCoverage = json.decode(coverage);
-      expect(jsonCoverage['coverage'], isNotEmpty);
+      final jsonCoverage = json.decode(coverage)['coverage'] as List<dynamic>;
+      expect(jsonCoverage, isNotEmpty);
+
+      return HitMap.parseJson(jsonCoverage.cast<Map<String, dynamic>>());
     }
 
     setUp(() async {
@@ -81,7 +89,46 @@ dev_dependencies:
       var test = await runTest(
           ['--coverage', coverageDirectory.path, 'test/test.dart'],
           packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
-      await validateCoverage(test, 'test/test.dart.vm.json');
+      final coverage = await validateCoverage(test, 'test/test.dart.vm.json');
+      final hitmap = coverage['package:fake_package/calculate.dart']!;
+      expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
+      expect(hitmap.funcHits, isNull);
+      expect(hitmap.branchHits, isNull);
+    });
+
+    test('gathers branch coverage for VM tests', () async {
+      await (await runPub(['get'])).shouldExit(0);
+      var test = await runTest([
+        '--coverage',
+        coverageDirectory.path,
+        '--branch-coverage',
+        'test/test.dart'
+      ], vmArgs: [
+        '--branch-coverage'
+      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      final coverage = await validateCoverage(test, 'test/test.dart.vm.json');
+      final hitmap = coverage['package:fake_package/calculate.dart']!;
+      expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
+      expect(hitmap.funcHits, isNull);
+      expect(hitmap.branchHits, {1: 1, 2: 1, 4: 0});
+    });
+
+    test('gathers lcov coverage for VM tests', () async {
+      await (await runPub(['get'])).shouldExit(0);
+      final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
+      var test = await runTest(['--coverage-lcov', lcovFile, 'test/test.dart'],
+          packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      await validateTest(test);
+      expect(File(lcovFile).readAsStringSync(), '''
+SF:${d.sandbox}/lib/calculate.dart
+DA:1,1
+DA:2,2
+DA:3,1
+DA:5,0
+LF:4
+LH:3
+end_of_record
+''');
     });
 
     test('gathers coverage for Chrome tests', () async {
@@ -93,7 +140,7 @@ dev_dependencies:
         '-p',
         'chrome'
       ]);
-      await validateCoverage(test, 'test.dart.chrome.json');
+      await validateCoverage(test, 'test/test.dart.chrome.json');
     });
 
     test(
