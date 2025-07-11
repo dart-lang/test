@@ -1,6 +1,6 @@
 ## 1.27.0
 
-* Add `--coverage-lcov` and `--branch-cov` options to `dart test`.
+* Add `--coverage-lcov` and `--branch-coverage` options to `dart test`.
 
 ## 1.26.2
 
