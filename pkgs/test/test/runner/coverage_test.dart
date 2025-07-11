@@ -132,14 +132,14 @@ end_of_record
     });
 
     test('gathers coverage for Chrome tests', () async {
-      await runDart(['pub', 'get']);
+      await (await runPub(['get'])).shouldExit(0);
       var test = await runTest([
         '--coverage',
         coverageDirectory.path,
         'test/test.dart',
         '-p',
         'chrome'
-      ]);
+      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
       await validateCoverage(test, 'test/test.dart.chrome.json');
     });
 
