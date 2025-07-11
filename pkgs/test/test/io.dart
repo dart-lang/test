@@ -21,10 +21,6 @@ final Future<String> packageDir =
   return dir;
 });
 
-/// The path to the `pub` executable in the current Dart SDK.
-final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
-    Platform.isWindows ? 'pub.bat' : 'pub'));
-
 /// The platform-specific message emitted when a nonexistent file is loaded.
 final String noSuchFileMessage = Platform.isWindows
     ? 'The system cannot find the file specified.'
@@ -151,7 +147,8 @@ Future<TestProcess> runDart(Iterable<String> args,
 /// Runs Pub.
 Future<TestProcess> runPub(Iterable<String> args,
     {Map<String, String>? environment}) {
-  return TestProcess.start(_pubPath, args,
+  return TestProcess.start(
+      p.absolute(Platform.resolvedExecutable), ['pub', ...args],
       workingDirectory: d.sandbox,
       environment: environment,
       description: 'pub ${args.first}');

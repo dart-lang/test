@@ -58,11 +58,22 @@ class Configuration {
   final bool? _pauseAfterLoad;
 
   /// Whether to run browsers in their respective debug modes
-  bool get debug => pauseAfterLoad || (_debug ?? false) || coverage != null;
+  bool get debug =>
+      pauseAfterLoad ||
+      (_debug ?? false) ||
+      coverage != null ||
+      coverageLcov != null;
   final bool? _debug;
 
-  /// The output folder for coverage gathering
+  /// The output folder for coverage gathering.
   final String? coverage;
+
+  /// The lcov file to output coverage to.
+  final String? coverageLcov;
+
+  /// Whether to collect branch coverage info.
+  bool get branchCoverage => _branchCoverage ?? false;
+  final bool? _branchCoverage;
 
   /// The path to the file from which to load more configuration information.
   ///
@@ -257,6 +268,8 @@ class Configuration {
       required String? reporter,
       required Map<String, String>? fileReporters,
       required String? coverage,
+      required String? coverageLcov,
+      required bool? branchCoverage,
       required int? concurrency,
       required int? shardIndex,
       required int? totalShards,
@@ -309,6 +322,8 @@ class Configuration {
         reporter: reporter,
         fileReporters: fileReporters,
         coverage: coverage,
+        coverageLcov: coverageLcov,
+        branchCoverage: branchCoverage,
         concurrency: concurrency,
         shardIndex: shardIndex,
         totalShards: totalShards,
@@ -366,6 +381,8 @@ class Configuration {
           String? reporter,
           Map<String, String>? fileReporters,
           String? coverage,
+          String? coverageLcov,
+          bool? branchCoverage,
           int? concurrency,
           int? shardIndex,
           int? totalShards,
@@ -417,6 +434,8 @@ class Configuration {
           reporter: reporter,
           fileReporters: fileReporters,
           coverage: coverage,
+          coverageLcov: coverageLcov,
+          branchCoverage: branchCoverage,
           concurrency: concurrency,
           shardIndex: shardIndex,
           totalShards: totalShards,
@@ -485,6 +504,8 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
+        coverageLcov: null,
+        branchCoverage: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -550,6 +571,8 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
+        coverageLcov: null,
+        branchCoverage: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -617,6 +640,8 @@ class Configuration {
         color: null,
         configurationPath: null,
         coverage: null,
+        coverageLcov: null,
+        branchCoverage: null,
         shardIndex: null,
         totalShards: null,
         testSelections: null,
@@ -678,6 +703,8 @@ class Configuration {
           reporter: null,
           fileReporters: null,
           coverage: null,
+          coverageLcov: null,
+          branchCoverage: null,
           concurrency: null,
           shardIndex: null,
           totalShards: null,
@@ -740,6 +767,8 @@ class Configuration {
       required String? reporter,
       required Map<String, String>? fileReporters,
       required this.coverage,
+      required this.coverageLcov,
+      required bool? branchCoverage,
       required int? concurrency,
       required this.shardIndex,
       required this.totalShards,
@@ -766,6 +795,7 @@ class Configuration {
         _configurationPath = configurationPath,
         _reporter = reporter,
         fileReporters = fileReporters ?? {},
+        _branchCoverage = branchCoverage,
         _concurrency = concurrency,
         _testSelections = testSelections == null || testSelections.isEmpty
             ? null
@@ -823,6 +853,8 @@ class Configuration {
         reporter: null,
         fileReporters: null,
         coverage: null,
+        coverageLcov: null,
+        branchCoverage: null,
         concurrency: null,
         shardIndex: null,
         totalShards: null,
@@ -921,6 +953,8 @@ class Configuration {
         reporter: other._reporter ?? _reporter,
         fileReporters: mergeMaps(fileReporters, other.fileReporters),
         coverage: other.coverage ?? coverage,
+        coverageLcov: other.coverageLcov ?? coverageLcov,
+        branchCoverage: other._branchCoverage ?? _branchCoverage,
         concurrency: other._concurrency ?? _concurrency,
         shardIndex: other.shardIndex ?? shardIndex,
         totalShards: other.totalShards ?? totalShards,
@@ -969,6 +1003,8 @@ class Configuration {
       String? reporter,
       Map<String, String>? fileReporters,
       String? coverage,
+      String? coverageLcov,
+      bool? branchCoverage,
       int? concurrency,
       int? shardIndex,
       int? totalShards,
@@ -1016,6 +1052,8 @@ class Configuration {
         reporter: reporter ?? _reporter,
         fileReporters: fileReporters ?? this.fileReporters,
         coverage: coverage ?? this.coverage,
+        coverageLcov: coverageLcov ?? this.coverageLcov,
+        branchCoverage: branchCoverage ?? _branchCoverage,
         concurrency: concurrency ?? _concurrency,
         shardIndex: shardIndex ?? this.shardIndex,
         totalShards: totalShards ?? this.totalShards,

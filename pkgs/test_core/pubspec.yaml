@@ -1,5 +1,5 @@
 name: test_core
-version: 0.6.11
+version: 0.6.12
 description: A basic library for writing tests and running them on the VM.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_core
 issue_tracker: https://github.com/dart-lang/test/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Atest
@@ -14,7 +14,7 @@ dependencies:
   async: ^2.5.0
   boolean_selector: ^2.1.0
   collection: ^1.15.0
-  coverage: ^1.0.0
+  coverage: ^1.15.0
   frontend_server_client: '>=3.2.0 <5.0.0'
   glob: ^2.0.0
   io: ^1.0.0
