@@ -120,7 +120,7 @@ dev_dependencies:
           packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
       await validateTest(test);
       expect(File(lcovFile).readAsStringSync(), '''
-SF:${d.sandbox}/lib/calculate.dart
+SF:${p.join(d.sandbox, 'lib', 'calculate.dart')}
 DA:1,1
 DA:2,2
 DA:3,1
