@@ -214,6 +214,8 @@ class _Parser {
       Object? skip;
       for (var expression in expressions) {
         if (expression is InstanceCreationExpression) {
+          // Replace name2 with name when bumping min analyzer dependency
+          // ignore: deprecated_member_use
           var className = expression.constructorName.type.name2.lexeme;
 
           if (className == 'Timeout') {
@@ -348,6 +350,8 @@ class _Parser {
 
   String? _findConstructorNameFromInstantiation(
       InstanceCreationExpression constructor, String className) {
+    // Replace name2 with name when bumping min analyzer dependency
+    // ignore: deprecated_member_use
     var actualClassName = constructor.constructorName.type.name2.lexeme;
     var constructorName = constructor.constructorName.name?.name;
 

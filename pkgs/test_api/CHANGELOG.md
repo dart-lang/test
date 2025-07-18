@@ -1,3 +1,7 @@
+## 0.7.7
+
+* Expand pub constraint to allow the latest `analyzer`.
+
 ## 0.7.6
 
 * Fix an assertion failure when using `setUpAll` or `tearDownAll` and running

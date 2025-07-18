@@ -1,3 +1,7 @@
+## 1.26.3
+
+* Expand pub constraint to allow the latest `analyzer`.
+
 ## 1.26.2
 
 * Graduate native assets from experiment to preview.
