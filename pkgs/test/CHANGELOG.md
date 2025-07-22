@@ -1,3 +1,7 @@
+## 1.26.4-wip
+
+* Restrict to latest version of analyzer package.
+
 ## 1.26.3
 
 * Expand pub constraint to allow the latest `analyzer`.
