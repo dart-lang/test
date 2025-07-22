@@ -1,4 +1,4 @@
-## 0.7.9-wip
+## 0.7.8-wip
 
 * Restrict to latest version of analyzer package.
 - Require Dart 3.7
