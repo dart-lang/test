@@ -7,7 +7,7 @@ issue_tracker: https://github.com/dart-lang/test/issues?q=is%3Aissue+is%3Aopen+l
 resolution: workspace
 
 environment:
-  sdk: ^3.5.0
+  sdk: ^3.7.0
 
 dependencies:
   async: ^2.5.0
