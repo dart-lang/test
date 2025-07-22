@@ -82,92 +82,128 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// If the the load test is closed before [body] is complete, it will close
   /// the suite returned by [body] once it completes.
-  factory LoadSuite(String name, SuiteConfiguration config,
-      SuitePlatform platform, FutureOr<RunnerSuite?> Function() body,
-      {String? path}) {
+  factory LoadSuite(
+    String name,
+    SuiteConfiguration config,
+    SuitePlatform platform,
+    FutureOr<RunnerSuite?> Function() body, {
+    String? path,
+  }) {
     var completer = Completer<({RunnerSuite suite, Zone zone})?>.sync();
-    return LoadSuite._(name, config, platform, () {
-      var invoker = Invoker.current;
-      invoker!.addOutstandingCallback();
+    return LoadSuite._(
+      name,
+      config,
+      platform,
+      () {
+        var invoker = Invoker.current;
+        invoker!.addOutstandingCallback();
 
-      unawaited(() async {
-        RunnerSuite? suite;
-        try {
-          suite = await body();
-        } catch (_) {
+        unawaited(() async {
+          RunnerSuite? suite;
+          try {
+            suite = await body();
+          } catch (_) {
+            invoker.removeOutstandingCallback();
+            rethrow;
+          }
+          if (completer.isCompleted) {
+            // If the load test has already been closed, close the suite it
+            // generated.
+            await suite?.close();
+            return;
+          }
+
+          completer.complete(
+            suite == null ? null : (suite: suite, zone: Zone.current),
+          );
           invoker.removeOutstandingCallback();
-          rethrow;
-        }
-        if (completer.isCompleted) {
-          // If the load test has already been closed, close the suite it
-          // generated.
-          await suite?.close();
-          return;
-        }
+        }());
 
-        completer.complete(
-            suite == null ? null : (suite: suite, zone: Zone.current));
-        invoker.removeOutstandingCallback();
-      }());
+        // If the test completes before the body callback, either an out-of-band
+        // error occurred or the test was canceled. Either way, we return a `null`
+        // suite.
+        invoker.liveTest.onComplete.then((_) {
+          if (!completer.isCompleted) completer.complete();
+        });
 
-      // If the test completes before the body callback, either an out-of-band
-      // error occurred or the test was canceled. Either way, we return a `null`
-      // suite.
-      invoker.liveTest.onComplete.then((_) {
-        if (!completer.isCompleted) completer.complete();
-      });
-
-      // If the test is forcibly closed, let it complete, since load tests don't
-      // have timeouts.
-      invoker.onClose.then((_) => invoker.removeOutstandingCallback());
-    }, completer.future, path: path, ignoreTimeouts: config.ignoreTimeouts);
+        // If the test is forcibly closed, let it complete, since load tests don't
+        // have timeouts.
+        invoker.onClose.then((_) => invoker.removeOutstandingCallback());
+      },
+      completer.future,
+      path: path,
+      ignoreTimeouts: config.ignoreTimeouts,
+    );
   }
 
   /// A utility constructor for a load suite that just throws [exception].
   ///
   /// The suite's name will be based on [exception]'s path.
   factory LoadSuite.forLoadException(
-      LoadException exception, SuiteConfiguration? config,
-      {SuitePlatform? platform, StackTrace? stackTrace}) {
+    LoadException exception,
+    SuiteConfiguration? config, {
+    SuitePlatform? platform,
+    StackTrace? stackTrace,
+  }) {
     stackTrace ??= Trace.current();
 
     return LoadSuite(
-        'loading ${exception.path}',
-        config ?? SuiteConfiguration.empty,
-        platform ?? currentPlatform(Runtime.vm, null),
-        () => Future.error(exception, stackTrace),
-        path: exception.path);
+      'loading ${exception.path}',
+      config ?? SuiteConfiguration.empty,
+      platform ?? currentPlatform(Runtime.vm, null),
+      () => Future.error(exception, stackTrace),
+      path: exception.path,
+    );
   }
 
   /// A utility constructor for a load suite that just emits [suite].
   factory LoadSuite.forSuite(RunnerSuite suite) {
     return LoadSuite(
-        'loading ${suite.path}', suite.config, suite.platform, () => suite,
-        path: suite.path);
+      'loading ${suite.path}',
+      suite.config,
+      suite.platform,
+      () => suite,
+      path: suite.path,
+    );
   }
 
-  LoadSuite._(String name, this.config, SuitePlatform platform,
-      void Function() body, this._suiteAndZone,
-      {required bool ignoreTimeouts, String? path})
-      : super(
-            Group.root(
-                [LocalTest(name, Metadata(timeout: Timeout(_timeout)), body)]),
-            platform,
-            path: path,
-            ignoreTimeouts: ignoreTimeouts);
+  LoadSuite._(
+    String name,
+    this.config,
+    SuitePlatform platform,
+    void Function() body,
+    this._suiteAndZone, {
+    required bool ignoreTimeouts,
+    String? path,
+  }) : super(
+         Group.root([
+           LocalTest(name, Metadata(timeout: Timeout(_timeout)), body),
+         ]),
+         platform,
+         path: path,
+         ignoreTimeouts: ignoreTimeouts,
+       );
 
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
-      : config = old.config,
-        super(old.group, old.platform,
-            path: old.path, ignoreTimeouts: old.ignoreTimeouts);
+    : config = old.config,
+      super(
+        old.group,
+        old.platform,
+        path: old.path,
+        ignoreTimeouts: old.ignoreTimeouts,
+      );
 
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
-      : config = old.config,
-        _suiteAndZone = old._suiteAndZone,
-        super(old.group, old.platform,
-            path: old.path, ignoreTimeouts: old.ignoreTimeouts);
+    : config = old.config,
+      _suiteAndZone = old._suiteAndZone,
+      super(
+        old.group,
+        old.platform,
+        path: old.path,
+        ignoreTimeouts: old.ignoreTimeouts,
+      );
 
   /// Creates a new [LoadSuite] that's identical to this one, but that
   /// transforms [suite] once it's loaded.
@@ -176,16 +212,19 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// within the load test's zone, so any errors or prints it emits will be
   /// associated with that test.
   LoadSuite changeSuite(RunnerSuite? Function(RunnerSuite) change) {
-    return LoadSuite._changeSuite(this, _suiteAndZone.then((pair) {
-      if (pair == null) return null;
+    return LoadSuite._changeSuite(
+      this,
+      _suiteAndZone.then((pair) {
+        if (pair == null) return null;
 
-      var (:suite, :zone) = pair;
-      RunnerSuite? newSuite;
-      zone.runGuarded(() {
-        newSuite = change(suite);
-      });
-      return newSuite == null ? null : (suite: newSuite!, zone: zone);
-    }));
+        var (:suite, :zone) = pair;
+        RunnerSuite? newSuite;
+        zone.runGuarded(() {
+          newSuite = change(suite);
+        });
+        return newSuite == null ? null : (suite: newSuite!, zone: zone);
+      }),
+    );
   }
 
   /// Runs the test and returns the suite.

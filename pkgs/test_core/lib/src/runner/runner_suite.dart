@@ -46,20 +46,35 @@ class RunnerSuite extends Suite {
 
   /// A shortcut constructor for creating a [RunnerSuite] that never goes into
   /// debugging mode and doesn't support suite channels.
-  factory RunnerSuite(Environment environment, SuiteConfiguration config,
-      Group group, SuitePlatform platform,
-      {String? path, void Function()? onClose}) {
-    var controller =
-        RunnerSuiteController._local(environment, config, onClose: onClose);
+  factory RunnerSuite(
+    Environment environment,
+    SuiteConfiguration config,
+    Group group,
+    SuitePlatform platform, {
+    String? path,
+    void Function()? onClose,
+  }) {
+    var controller = RunnerSuiteController._local(
+      environment,
+      config,
+      onClose: onClose,
+    );
     var suite = RunnerSuite._(controller, group, platform, path: path);
     controller._suite = Future.value(suite);
     return suite;
   }
 
-  RunnerSuite._(this._controller, Group group, SuitePlatform platform,
-      {String? path})
-      : super(group, platform,
-            path: path, ignoreTimeouts: _controller._config.ignoreTimeouts);
+  RunnerSuite._(
+    this._controller,
+    Group group,
+    SuitePlatform platform, {
+    String? path,
+  }) : super(
+         group,
+         platform,
+         path: path,
+         ignoreTimeouts: _controller._config.ignoreTimeouts,
+       );
 
   @override
   RunnerSuite filter(bool Function(Test) callback) {
@@ -109,25 +124,32 @@ class RunnerSuiteController {
   /// Collects a hit-map containing merged coverage.
   final Future<Map<String, dynamic>> Function()? _gatherCoverage;
 
-  RunnerSuiteController(this._environment, this._config, this._suiteChannel,
-      Future<Group> groupFuture, SuitePlatform platform,
-      {String? path,
-      void Function()? onClose,
-      Future<Map<String, dynamic>> Function()? gatherCoverage})
-      : _onClose = onClose,
-        _gatherCoverage = gatherCoverage {
-    _suite = groupFuture
-        .then((group) => RunnerSuite._(this, group, platform, path: path));
+  RunnerSuiteController(
+    this._environment,
+    this._config,
+    this._suiteChannel,
+    Future<Group> groupFuture,
+    SuitePlatform platform, {
+    String? path,
+    void Function()? onClose,
+    Future<Map<String, dynamic>> Function()? gatherCoverage,
+  }) : _onClose = onClose,
+       _gatherCoverage = gatherCoverage {
+    _suite = groupFuture.then(
+      (group) => RunnerSuite._(this, group, platform, path: path),
+    );
   }
 
   /// Used by [RunnerSuite.new] to create a runner suite that's not loaded from
   /// an external source.
-  RunnerSuiteController._local(this._environment, this._config,
-      {void Function()? onClose,
-      Future<Map<String, dynamic>> Function()? gatherCoverage})
-      : _suiteChannel = null,
-        _onClose = onClose,
-        _gatherCoverage = gatherCoverage;
+  RunnerSuiteController._local(
+    this._environment,
+    this._config, {
+    void Function()? onClose,
+    Future<Map<String, dynamic>> Function()? gatherCoverage,
+  }) : _suiteChannel = null,
+       _onClose = onClose,
+       _gatherCoverage = gatherCoverage;
 
   /// Sets whether the suite is paused for debugging.
   ///
@@ -160,16 +182,19 @@ class RunnerSuiteController {
     }
 
     var channel = suiteChannel.virtualChannel();
-    suiteChannel.sink
-        .add({'type': 'suiteChannel', 'name': name, 'id': channel.id});
+    suiteChannel.sink.add({
+      'type': 'suiteChannel',
+      'name': name,
+      'id': channel.id,
+    });
     return channel;
   }
 
   /// The backing function for [suite.close].
   Future _close() => _closeMemo.runOnce(() async {
-        await _onDebuggingController.close();
-        var onClose = _onClose;
-        if (onClose != null) await onClose();
-      });
+    await _onDebuggingController.close();
+    var onClose = _onClose;
+    if (onClose != null) await onClose();
+  });
   final _closeMemo = AsyncMemoizer<void>();
 }

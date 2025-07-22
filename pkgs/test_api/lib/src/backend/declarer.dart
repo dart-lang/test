@@ -161,18 +161,18 @@ class Declarer {
     bool allowDuplicateTestNames = true,
     bool isStandalone = false,
   }) : this._(
-          null,
-          null,
-          metadata ?? Metadata(),
-          platformVariables ?? const UnmodifiableSetView.empty(),
-          collectTraces,
-          null,
-          null,
-          noRetry,
-          fullTestName,
-          allowDuplicateTestNames ? null : <String>{},
-          isStandalone,
-        );
+         null,
+         null,
+         metadata ?? Metadata(),
+         platformVariables ?? const UnmodifiableSetView.empty(),
+         collectTraces,
+         null,
+         null,
+         noRetry,
+         fullTestName,
+         allowDuplicateTestNames ? null : <String>{},
+         isStandalone,
+       );
 
   Declarer._(
     this._parent,
@@ -195,15 +195,18 @@ class Declarer {
       runZoned(body, zoneValues: {#test.declarer: this});
 
   /// Defines a test case with the given name and body.
-  void test(String name, dynamic Function() body,
-      {String? testOn,
-      Timeout? timeout,
-      Object? skip,
-      Map<String, dynamic>? onPlatform,
-      Object? tags,
-      TestLocation? location,
-      int? retry,
-      bool solo = false}) {
+  void test(
+    String name,
+    dynamic Function() body, {
+    String? testOn,
+    Timeout? timeout,
+    Object? skip,
+    Map<String, dynamic>? onPlatform,
+    Object? tags,
+    TestLocation? location,
+    int? retry,
+    bool solo = false,
+  }) {
     _checkNotBuilt('test');
 
     final fullName = _prefix(name);
@@ -212,42 +215,53 @@ class Declarer {
     }
 
     var newMetadata = Metadata.parse(
-        testOn: testOn,
-        timeout: timeout,
-        skip: skip,
-        onPlatform: onPlatform,
-        tags: tags,
-        retry: _noRetry ? 0 : retry);
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      onPlatform: onPlatform,
+      tags: tags,
+      retry: _noRetry ? 0 : retry,
+    );
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
-    _addEntry(LocalTest(fullName, metadata, () async {
-      var parents = <Declarer>[];
-      for (Declarer? declarer = this;
-          declarer != null;
-          declarer = declarer._parent) {
-        parents.add(declarer);
-      }
+    _addEntry(
+      LocalTest(
+        fullName,
+        metadata,
+        () async {
+          var parents = <Declarer>[];
+          for (
+            Declarer? declarer = this;
+            declarer != null;
+            declarer = declarer._parent
+          ) {
+            parents.add(declarer);
+          }
 
-      // Register all tear-down functions in all declarers. Iterate through
-      // parents outside-in so that the Invoker gets the functions in the order
-      // they were declared in source.
-      for (var declarer in parents.reversed) {
-        for (var tearDown in declarer._tearDowns) {
-          Invoker.current!.addTearDown(tearDown);
-        }
-      }
+          // Register all tear-down functions in all declarers. Iterate through
+          // parents outside-in so that the Invoker gets the functions in the order
+          // they were declared in source.
+          for (var declarer in parents.reversed) {
+            for (var tearDown in declarer._tearDowns) {
+              Invoker.current!.addTearDown(tearDown);
+            }
+          }
 
-      await runZoned(() async {
-        await _runSetUps();
-        await body();
-      },
-          // Make the declarer visible to running tests so that they'll throw
-          // useful errors when calling `test()` and `group()` within a test.
-          zoneValues: {#test.declarer: this});
-    },
+          await runZoned(
+            () async {
+              await _runSetUps();
+              await body();
+            },
+            // Make the declarer visible to running tests so that they'll throw
+            // useful errors when calling `test()` and `group()` within a test.
+            zoneValues: {#test.declarer: this},
+          );
+        },
         trace: _collectTraces ? Trace.current(2) : null,
         location: location,
-        guarded: false));
+        guarded: false,
+      ),
+    );
 
     if (solo) {
       _soloEntries.add(_entries.last);
@@ -255,15 +269,18 @@ class Declarer {
   }
 
   /// Creates a group of tests.
-  void group(String name, void Function() body,
-      {String? testOn,
-      Timeout? timeout,
-      Object? skip,
-      Map<String, dynamic>? onPlatform,
-      Object? tags,
-      TestLocation? location,
-      int? retry,
-      bool solo = false}) {
+  void group(
+    String name,
+    void Function() body, {
+    String? testOn,
+    Timeout? timeout,
+    Object? skip,
+    Map<String, dynamic>? onPlatform,
+    Object? tags,
+    TestLocation? location,
+    int? retry,
+    bool solo = false,
+  }) {
     _checkNotBuilt('group');
 
     final fullTestPrefix = _prefix(name);
@@ -272,12 +289,13 @@ class Declarer {
     }
 
     var newMetadata = Metadata.parse(
-        testOn: testOn,
-        timeout: timeout,
-        skip: skip,
-        onPlatform: onPlatform,
-        tags: tags,
-        retry: _noRetry ? 0 : retry);
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      onPlatform: onPlatform,
+      tags: tags,
+      retry: _noRetry ? 0 : retry,
+    );
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
     var trace = _collectTraces ? Trace.current(2) : null;
@@ -353,23 +371,30 @@ class Declarer {
     _checkNotBuilt('build');
 
     _built = true;
-    var entries = _entries.map((entry) {
-      if (_solo && !_soloEntries.contains(entry)) {
-        entry = LocalTest(
-            entry.name,
-            entry.metadata
-                .change(skip: true, skipReason: 'does not have "solo"'),
-            () {});
-      }
-      return entry;
-    }).toList();
+    var entries =
+        _entries.map((entry) {
+          if (_solo && !_soloEntries.contains(entry)) {
+            entry = LocalTest(
+              entry.name,
+              entry.metadata.change(
+                skip: true,
+                skipReason: 'does not have "solo"',
+              ),
+              () {},
+            );
+          }
+          return entry;
+        }).toList();
 
-    return Group(_name ?? '', entries,
-        metadata: _metadata,
-        trace: _trace,
-        location: _location,
-        setUpAll: _setUpAll,
-        tearDownAll: _tearDownAll);
+    return Group(
+      _name ?? '',
+      entries,
+      metadata: _metadata,
+      trace: _trace,
+      location: _location,
+      setUpAll: _setUpAll,
+      tearDownAll: _tearDownAll,
+    );
   }
 
   /// Throws a [StateError] if [build] has been called.
@@ -377,20 +402,23 @@ class Declarer {
   /// [name] should be the name of the method being called.
   void _checkNotBuilt(String name) {
     if (!_built) return;
-    final restrictionMessage = _isStandalone
-        ? 'When running a test as an executable directly '
-            '(not as a suite by the test runner), '
-            'tests must be declared in a synchronous block.\n'
-            'If async work is required before any tests are run '
-            'use a `setUpAll` callback.\n'
-            'If async work cannot be avoided before declaring tests, '
-            'all async events must be complete before declaring the first test.'
-        : 'If async work is required before any tests are run '
-            'use a `setUpAll` callback.\n'
-            'If async work cannot be avoided before declaring tests it must '
-            'all be awaited within the Future returned from `main`.';
-    throw StateError("Can't call $name() once tests have begun running.\n"
-        '$restrictionMessage');
+    final restrictionMessage =
+        _isStandalone
+            ? 'When running a test as an executable directly '
+                '(not as a suite by the test runner), '
+                'tests must be declared in a synchronous block.\n'
+                'If async work is required before any tests are run '
+                'use a `setUpAll` callback.\n'
+                'If async work cannot be avoided before declaring tests, '
+                'all async events must be complete before declaring the first test.'
+            : 'If async work is required before any tests are run '
+                'use a `setUpAll` callback.\n'
+                'If async work cannot be avoided before declaring tests it must '
+                'all be awaited within the Future returned from `main`.';
+    throw StateError(
+      "Can't call $name() once tests have begun running.\n"
+      '$restrictionMessage',
+    );
   }
 
   /// Run the set-up functions for this and any parent groups.
@@ -407,18 +435,22 @@ class Declarer {
   Test? get _setUpAll {
     if (_setUpAlls.isEmpty) return null;
 
-    return LocalTest(_prefix('(setUpAll)'), _metadata.change(timeout: _timeout),
-        () {
-      return runZoned(
+    return LocalTest(
+      _prefix('(setUpAll)'),
+      _metadata.change(timeout: _timeout),
+      () {
+        return runZoned(
           () => Future.forEach<Function>(_setUpAlls, (setUp) => setUp()),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
-          zoneValues: {#test.declarer: this});
-    },
-        trace: _setUpAllTrace,
-        location: _setUpAllLocation,
-        guarded: false,
-        isScaffoldAll: true);
+          zoneValues: {#test.declarer: this},
+        );
+      },
+      trace: _setUpAllTrace,
+      location: _setUpAllLocation,
+      guarded: false,
+      isScaffoldAll: true,
+    );
   }
 
   /// Returns a [Test] that runs the callbacks in [_tearDownAll], or `null`.
@@ -428,16 +460,21 @@ class Declarer {
     if (_setUpAlls.isEmpty && _tearDownAlls.isEmpty) return null;
 
     return LocalTest(
-        _prefix('(tearDownAll)'), _metadata.change(timeout: _timeout), () {
-      return runZoned(() => Invoker.current!.runTearDowns(_tearDownAlls),
+      _prefix('(tearDownAll)'),
+      _metadata.change(timeout: _timeout),
+      () {
+        return runZoned(
+          () => Invoker.current!.runTearDowns(_tearDownAlls),
           // Make the declarer visible to running scaffolds so they can add to
           // the declarer's `tearDownAll()` list.
-          zoneValues: {#test.declarer: this});
-    },
-        trace: _tearDownAllTrace,
-        location: _tearDownAllLocation,
-        guarded: false,
-        isScaffoldAll: true);
+          zoneValues: {#test.declarer: this},
+        );
+      },
+      trace: _tearDownAllTrace,
+      location: _tearDownAllLocation,
+      guarded: false,
+      isScaffoldAll: true,
+    );
   }
 
   void _addEntry(GroupEntry entry) {
@@ -455,7 +492,8 @@ class DuplicateTestNameException implements Exception {
   DuplicateTestNameException(this.name);
 
   @override
-  String toString() => 'A test with the name "$name" was already declared. '
+  String toString() =>
+      'A test with the name "$name" was already declared. '
       'Test cases must have unique names.\n\n'
       'See https://github.com/dart-lang/test/blob/master/pkgs/test/doc/'
       'configuration.md#allow_test_randomization for info on enabling this.';

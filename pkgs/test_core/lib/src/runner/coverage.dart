@@ -11,12 +11,17 @@ import 'live_suite_controller.dart';
 
 /// Collects coverage and outputs to the [coveragePath] path.
 Future<void> writeCoverage(
-    String coveragePath, LiveSuiteController controller) async {
+  String coveragePath,
+  LiveSuiteController controller,
+) async {
   var suite = controller.liveSuite.suite;
   var coverage = await controller.liveSuite.suite.gatherCoverage();
-  final outfile = File(p.join(coveragePath,
-      '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json'))
-    ..createSync(recursive: true);
+  final outfile = File(
+    p.join(
+      coveragePath,
+      '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json',
+    ),
+  )..createSync(recursive: true);
   final out = outfile.openWrite();
   out.write(json.encode(coverage));
   await out.flush();

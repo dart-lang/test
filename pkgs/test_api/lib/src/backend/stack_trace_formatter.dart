@@ -47,8 +47,11 @@ final class StackTraceFormatter {
   /// [except] set indicates packages whose frames should be folded away. If
   /// [only] is non-empty, it indicates packages whose frames should *not* be
   /// folded away.
-  void configure(
-      {StackTraceMapper? mapper, Set<String>? except, Set<String>? only}) {
+  void configure({
+    StackTraceMapper? mapper,
+    Set<String>? except,
+    Set<String>? only,
+  }) {
     if (mapper != null) _mapper = mapper;
     if (except != null) _except = except;
     if (only != null) _only = only;
@@ -63,8 +66,9 @@ final class StackTraceFormatter {
   Chain formatStackTrace(StackTrace stackTrace, {bool? verbose}) {
     verbose ??= Invoker.current?.liveTest.test.metadata.verboseTrace ?? false;
 
-    var chain =
-        Chain.forTrace(_mapper?.mapStackTrace(stackTrace) ?? stackTrace);
+    var chain = Chain.forTrace(
+      _mapper?.mapStackTrace(stackTrace) ?? stackTrace,
+    );
     if (verbose) return chain;
 
     return chain.foldFrames((frame) {

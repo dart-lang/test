@@ -98,9 +98,13 @@ class LiveTestController extends LiveTest {
   ///
   /// If [groups] is passed, it's used to populate the list of groups that
   /// contain this test. Otherwise, `suite.group` is used.
-  LiveTestController(this.suite, this.test, this._onRun, this._onClose,
-      {Iterable<Group>? groups})
-      : groups = groups == null ? [suite.group] : List.unmodifiable(groups);
+  LiveTestController(
+    this.suite,
+    this.test,
+    this._onRun,
+    this._onClose, {
+    Iterable<Group>? groups,
+  }) : groups = groups == null ? [suite.group] : List.unmodifiable(groups);
 
   /// Adds an error to the [LiveTest].
   ///
@@ -111,7 +115,9 @@ class LiveTestController extends LiveTest {
     if (_isClosed) return;
 
     var asyncError = AsyncError(
-        error, Chain.forTrace(stackTrace ?? StackTrace.fromString('')));
+      error,
+      Chain.forTrace(stackTrace ?? StackTrace.fromString('')),
+    );
     _errors.add(asyncError);
     _onError.add(asyncError);
   }
@@ -145,8 +151,10 @@ class LiveTestController extends LiveTest {
     if (_runCalled) {
       throw StateError('LiveTest.run() may not be called more than once.');
     } else if (_isClosed) {
-      throw StateError('LiveTest.run() may not be called for a closed '
-          'test.');
+      throw StateError(
+        'LiveTest.run() may not be called for a closed '
+        'test.',
+      );
     }
     _runCalled = true;
 

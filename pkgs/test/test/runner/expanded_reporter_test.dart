@@ -24,22 +24,27 @@ void main() {
   });
 
   test('runs several successful tests and reports when each completes', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('success 1', () {});
         test('success 2', () {});
-        test('success 3', () {});''', '''
+        test('success 3', () {});''',
+      '''
         +0: loading test.dart
         +0: success 1
         +1: success 2
         +2: success 3
-        +3: All tests passed!''');
+        +3: All tests passed!''',
+    );
   });
 
   test('runs several failing tests and reports when each fails', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
-        test('failure 3', () => throw TestFailure('oh no'));''', '''
+        test('failure 3', () => throw TestFailure('oh no'));''',
+      '''
         +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
@@ -56,7 +61,8 @@ void main() {
           oh no
           test.dart 8:33  main.<fn>
 
-        +0 -3: Some tests failed.''');
+        +0 -3: Some tests failed.''',
+    );
   });
 
   test('includes the full stack trace with --verbose-trace', () async {
@@ -76,11 +82,13 @@ void main() {
   });
 
   test('runs failing tests along with successful tests', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
-        test('success 2', () {});''', '''
+        test('success 2', () {});''',
+      '''
         +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
@@ -94,22 +102,27 @@ void main() {
           test.dart 8:33  main.<fn>
 
         +1 -2: success 2
-        +2 -2: Some tests failed.''');
+        +2 -2: Some tests failed.''',
+    );
   });
 
   test('always prints the full test name', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test(
            'really gosh dang long test name. Even longer than that. No, yet '
                'longer. A little more... okay, that should do it.',
-           () {});''', '''
+           () {});''',
+      '''
         +0: loading test.dart
         +0: really gosh dang long test name. Even longer than that. No, yet longer. A little more... okay, that should do it.
-        +1: All tests passed!''');
+        +1: All tests passed!''',
+    );
   });
 
   test('gracefully handles multiple test failures in a row', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = Completer();
@@ -119,7 +132,8 @@ void main() {
           Future.microtask(() => throw 'third error');
           Future.microtask(completer.complete);
         });
-        test('wait', () => completer.future);''', '''
+        test('wait', () => completer.future);''',
+      '''
         +0: loading test.dart
         +0: failures
         +0 -1: failures [E]
@@ -142,29 +156,34 @@ void main() {
           test.dart 12:18  main.<fn>
 
         +0 -1: wait
-        +1 -1: Some tests failed.''');
+        +1 -1: Some tests failed.''',
+    );
   });
 
   group('print:', () {
     test('handles multiple prints', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         test('test', () {
           print("one");
           print("two");
           print("three");
           print("four");
-        });''', '''
+        });''',
+        '''
         +0: loading test.dart
         +0: test
         one
         two
         three
         four
-        +1: All tests passed!''');
+        +1: All tests passed!''',
+      );
     });
 
     test('handles a print after the test completes', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = Completer();
@@ -182,7 +201,8 @@ void main() {
         test('wait', () {
           waitStarted.complete();
           return testDone.future;
-        });''', '''
+        });''',
+        '''
         +0: loading test.dart
         +0: test
         +1: wait
@@ -191,11 +211,13 @@ void main() {
         two
         three
         four
-        +2: All tests passed!''');
+        +2: All tests passed!''',
+      );
     });
 
     test('interleaves prints and errors', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var completer = Completer();
@@ -217,7 +239,8 @@ void main() {
           throw "first error";
         });
 
-        test('wait', () => completer.future);''', '''
+        test('wait', () => completer.future);''',
+        '''
         +0: loading test.dart
         +0: test
         one
@@ -237,59 +260,71 @@ void main() {
         five
         six
         +0 -1: wait
-        +1 -1: Some tests failed.''');
+        +1 -1: Some tests failed.''',
+      );
     });
   });
 
   group('skip:', () {
     test('displays skipped tests separately', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
-          test('skip 3', () {}, skip: true);''', '''
+          test('skip 3', () {}, skip: true);''',
+        '''
           +0: loading test.dart
           +0: skip 1
           +0 ~1: skip 2
           +0 ~2: skip 3
-          +0 ~3: All tests skipped.''');
+          +0 ~3: All tests skipped.''',
+      );
     });
 
     test('displays a skipped group', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
             test('test 3', () {});
-          }, skip: true);''', '''
+          }, skip: true);''',
+        '''
           +0: loading test.dart
           +0: skip test 1
           +0 ~1: skip test 2
           +0 ~2: skip test 3
-          +0 ~3: All tests skipped.''');
+          +0 ~3: All tests skipped.''',
+      );
     });
 
     test('runs skipped tests along with successful tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
+          test('success 2', () {});''',
+        '''
           +0: loading test.dart
           +0: skip 1
           +0 ~1: success 1
           +1 ~1: skip 2
           +1 ~2: success 2
-          +2 ~2: All tests passed!''');
+          +2 ~2: All tests passed!''',
+      );
     });
 
     test('runs skipped tests along with successful and failing tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('failure 2', () => throw TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
+          test('success 2', () {});''',
+        '''
           +0: loading test.dart
           +0: failure 1
           +0 -1: failure 1 [E]
@@ -305,35 +340,44 @@ void main() {
 
           +1 ~1 -2: skip 2
           +1 ~2 -2: success 2
-          +2 ~2 -2: Some tests failed.''');
+          +2 ~2 -2: Some tests failed.''',
+      );
     });
 
     test('displays the skip reason if available', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: 'some reason');
-          test('skip 2', () {}, skip: 'or another');''', '''
+          test('skip 2', () {}, skip: 'or another');''',
+        '''
           +0: loading test.dart
           +0: skip 1
             Skip: some reason
           +0 ~1: skip 2
             Skip: or another
-          +0 ~2: All tests skipped.''');
+          +0 ~2: All tests skipped.''',
+      );
     });
 
     test('runs skipped tests with --run-skipped', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: 'some reason');
-          test('skip 2', () {}, skip: 'or another');''', '''
+          test('skip 2', () {}, skip: 'or another');''',
+        '''
           +0: loading test.dart
           +0: skip 1
           +1: skip 2
-          +2: All tests passed!''', args: ['--run-skipped']);
+          +2: All tests passed!''',
+        args: ['--run-skipped'],
+      );
     });
   });
 
   test('Directs users to enable stack trace chaining if disabled', () async {
     await _expectReport(
-        '''test('failure 1', () => throw TestFailure('oh no'));''', '''
+      '''test('failure 1', () => throw TestFailure('oh no'));''',
+      '''
         +0: loading test.dart
         +0: failure 1
         +0 -1: failure 1 [E]
@@ -344,12 +388,17 @@ void main() {
 
         Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
         For example, 'dart test --chain-stack-traces'.''',
-        chainStackTraces: false);
+      chainStackTraces: false,
+    );
   });
 }
 
-Future<void> _expectReport(String tests, String expected,
-    {List<String> args = const [], bool chainStackTraces = true}) async {
+Future<void> _expectReport(
+  String tests,
+  String expected, {
+  List<String> args = const [],
+  bool chainStackTraces = true,
+}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -370,17 +419,22 @@ $tests
   var stdoutLines = await test.stdoutStream().toList();
 
   // Remove excess trailing whitespace and trim off timestamps.
-  var actual = stdoutLines.map((line) {
-    if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
-    return line.trim().replaceFirst(RegExp('^[0-9]{2}:[0-9]{2} '), '');
-  }).join('\n');
+  var actual = stdoutLines
+      .map((line) {
+        if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
+        return line.trim().replaceFirst(RegExp('^[0-9]{2}:[0-9]{2} '), '');
+      })
+      .join('\n');
 
   // Un-indent the expected string.
   var indentation = expected.indexOf(RegExp('[^ ]'));
-  expected = expected.split('\n').map((line) {
-    if (line.isEmpty) return line;
-    return line.substring(indentation);
-  }).join('\n');
+  expected = expected
+      .split('\n')
+      .map((line) {
+        if (line.isEmpty) return line;
+        return line.substring(indentation);
+      })
+      .join('\n');
 
   expect(actual, equals(expected));
 }

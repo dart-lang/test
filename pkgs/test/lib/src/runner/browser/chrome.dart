@@ -38,52 +38,63 @@ class Chrome extends Browser {
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
-  factory Chrome(Uri url, Configuration configuration,
-      {ExecutableSettings? settings}) {
+  factory Chrome(
+    Uri url,
+    Configuration configuration, {
+    ExecutableSettings? settings,
+  }) {
     settings ??= defaultSettings[Runtime.chrome]!;
     var remoteDebuggerCompleter = Completer<Uri?>.sync();
     var connectionCompleter = Completer<WipConnection>();
     var idToUrl = <String, String>{};
-    return Chrome._(() async {
-      Future<Process> tryPort([int? port]) async {
-        var process = await ChromiumBasedBrowser.chrome.spawn(
-          url,
-          configuration,
-          settings: settings,
-          additionalArgs: [
-            if (port != null)
-              // Chrome doesn't provide any way of ensuring that this port was
-              // successfully bound. It produces an error if the binding fails,
-              // but without a reliable and fast way to tell if it succeeded
-              // that doesn't provide us much. It's very unlikely that this port
-              // will fail, though.
-              '--remote-debugging-port=$port',
-          ],
-        );
+    return Chrome._(
+      () async {
+        Future<Process> tryPort([int? port]) async {
+          var process = await ChromiumBasedBrowser.chrome.spawn(
+            url,
+            configuration,
+            settings: settings,
+            additionalArgs: [
+              if (port != null)
+                // Chrome doesn't provide any way of ensuring that this port was
+                // successfully bound. It produces an error if the binding fails,
+                // but without a reliable and fast way to tell if it succeeded
+                // that doesn't provide us much. It's very unlikely that this port
+                // will fail, though.
+                '--remote-debugging-port=$port',
+            ],
+          );
 
-        if (port != null) {
-          remoteDebuggerCompleter.complete(
-              getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')));
+          if (port != null) {
+            remoteDebuggerCompleter.complete(
+              getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')),
+            );
 
-          connectionCompleter.complete(_connect(process, port, idToUrl, url));
-        } else {
-          remoteDebuggerCompleter.complete(null);
+            connectionCompleter.complete(_connect(process, port, idToUrl, url));
+          } else {
+            remoteDebuggerCompleter.complete(null);
+          }
+
+          return process;
         }
 
-        return process;
-      }
-
-      if (!configuration.debug) return tryPort();
-      return getUnusedPort<Process>(tryPort);
-    }, remoteDebuggerCompleter.future, connectionCompleter.future, idToUrl);
+        if (!configuration.debug) return tryPort();
+        return getUnusedPort<Process>(tryPort);
+      },
+      remoteDebuggerCompleter.future,
+      connectionCompleter.future,
+      idToUrl,
+    );
   }
 
   /// Returns a Dart based hit-map containing coverage report, suitable for use
   /// with `package:coverage`.
   Future<Map<String, dynamic>> gatherCoverage() async {
     var tabConnection = await _tabConnection;
-    var response = await tabConnection.debugger.connection
-        .sendCommand('Profiler.takePreciseCoverage', {});
+    var response = await tabConnection.debugger.connection.sendCommand(
+      'Profiler.takePreciseCoverage',
+      {},
+    );
     var result =
         (response.result!['result'] as List).cast<Map<String, dynamic>>();
     var httpClient = HttpClient();
@@ -97,8 +108,12 @@ class Chrome extends Browser {
     return coverage;
   }
 
-  Chrome._(super.startBrowser, this.remoteDebuggerUrl, this._tabConnection,
-      this._idToUrl);
+  Chrome._(
+    super.startBrowser,
+    this.remoteDebuggerUrl,
+    this._tabConnection,
+    this._idToUrl,
+  );
 
   Future<Uri?> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
@@ -108,22 +123,27 @@ class Chrome extends Browser {
     // If the provided sourceUrl is relative, determine the package path.
     var uri = Uri.parse(script);
     var path = p.join(
-        p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
-        sourceUrl);
+      p.joinAll(uri.pathSegments.sublist(1, uri.pathSegments.length - 1)),
+      sourceUrl,
+    );
     return path.contains('/packages/')
         ? Uri(scheme: 'package', path: path.split('/packages/').last)
         : null;
   }
 
   Future<String?> _sourceMapProvider(
-      String scriptId, HttpClient httpClient) async {
+    String scriptId,
+    HttpClient httpClient,
+  ) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
     return await httpClient.getString('$script.map');
   }
 
   Future<String?> _sourceProvider(
-      String scriptId, HttpClient httpClient) async {
+    String scriptId,
+    HttpClient httpClient,
+  ) async {
     var script = _idToUrl[scriptId];
     if (script == null) return null;
     return await httpClient.getString(script);
@@ -131,7 +151,11 @@ class Chrome extends Browser {
 }
 
 Future<WipConnection> _connect(
-    Process process, int port, Map<String, String> idToUrl, Uri url) async {
+  Process process,
+  int port,
+  Map<String, String> idToUrl,
+  Uri url,
+) async {
   // Wait for Chrome to be in a ready state.
   await process.stderr
       .transform(utf8.decoder)
@@ -166,7 +190,9 @@ Future<WipConnection> _connect(
   // Enable coverage collection.
   await tabConnection.debugger.connection.sendCommand('Profiler.enable', {});
   await tabConnection.debugger.connection.sendCommand(
-      'Profiler.startPreciseCoverage', {'detailed': true, 'callCount': false});
+    'Profiler.startPreciseCoverage',
+    {'detailed': true, 'callCount': false},
+  );
 
   return tabConnection;
 }

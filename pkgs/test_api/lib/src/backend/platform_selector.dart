@@ -45,9 +45,11 @@ final class PlatformSelector {
   /// If [span] is passed, it indicates the location of the text for [selector]
   /// in a larger document. It's used for error reporting.
   PlatformSelector.parse(String selector, [SourceSpan? span])
-      : _inner =
-            _wrapFormatException(() => BooleanSelector.parse(selector), span),
-        _span = span;
+    : _inner = _wrapFormatException(
+        () => BooleanSelector.parse(selector),
+        span,
+      ),
+      _span = span;
 
   const PlatformSelector._(this._inner) : _span = null;
 
@@ -72,30 +74,34 @@ final class PlatformSelector {
     if (identical(this, all)) return;
 
     _wrapFormatException(
-        () => _inner.validate((name) =>
+      () => _inner.validate(
+        (name) =>
             _universalValidVariables.contains(name) ||
-            validVariables.contains(name)),
-        _span);
+            validVariables.contains(name),
+      ),
+      _span,
+    );
   }
 
   /// Returns whether the selector matches the given [platform].
-  bool evaluate(SuitePlatform platform) =>
-      _inner.evaluate((String variable) => switch (variable) {
-            _
-                when variable == platform.runtime.identifier ||
-                    variable == platform.runtime.parent?.identifier ||
-                    variable == platform.os.identifier ||
-                    variable == platform.compiler.identifier =>
-              true,
-            'dart-vm' => platform.runtime.isDartVM,
-            'browser' => platform.runtime.isBrowser,
-            'js' => platform.compiler.isJS,
-            'blink' => platform.runtime.isBlink,
-            'posix' => platform.os.isPosix,
-            'google' => platform.inGoogle,
-            'wasm' => platform.compiler.isWasm,
-            _ => false,
-          });
+  bool evaluate(SuitePlatform platform) => _inner.evaluate(
+    (String variable) => switch (variable) {
+      _
+          when variable == platform.runtime.identifier ||
+              variable == platform.runtime.parent?.identifier ||
+              variable == platform.os.identifier ||
+              variable == platform.compiler.identifier =>
+        true,
+      'dart-vm' => platform.runtime.isDartVM,
+      'browser' => platform.runtime.isBrowser,
+      'js' => platform.compiler.isJS,
+      'blink' => platform.runtime.isBlink,
+      'posix' => platform.os.isPosix,
+      'google' => platform.inGoogle,
+      'wasm' => platform.compiler.isWasm,
+      _ => false,
+    },
+  );
 
   /// Returns a new [PlatformSelector] that matches only platforms matched by
   /// both [this] and [other].
