@@ -61,7 +61,7 @@ final class RemoteListener {
 
     var printZone = hidePrints ? null : Zone.current;
     var spec = ZoneSpecification(
-      print: (_, __, ___, line) {
+      print: (_, _, _, line) {
         if (printZone != null) printZone.print(line);
         channel.sink.add({'type': 'print', 'line': line});
       },

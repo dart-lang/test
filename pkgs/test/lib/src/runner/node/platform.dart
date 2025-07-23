@@ -167,10 +167,8 @@ class NodePlatform extends PlatformPlugin
       unawaited(
         Future.wait<void>(
           servers.map(
-            (s) => s
-                .close()
-                .then<ServerSocket?>((v) => v)
-                .onError((_, __) => null),
+            (s) =>
+                s.close().then<ServerSocket?>((v) => v).onError((_, _) => null),
           ),
         ),
       );

@@ -482,7 +482,7 @@ class Invoker {
               #runCount: _runCount,
             },
             zoneSpecification: ZoneSpecification(
-              print: (_, __, ___, line) => _print(line),
+              print: (_, _, _, line) => _print(line),
             ),
           );
         });

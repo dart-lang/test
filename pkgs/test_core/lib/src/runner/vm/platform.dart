@@ -444,7 +444,7 @@ var _hasRegistered = false;
 void _setupPauseAfterTests() {
   if (_hasRegistered) return;
   _hasRegistered = true;
-  registerExtension('ext.test.pauseAfterTests', (_, __) async {
+  registerExtension('ext.test.pauseAfterTests', (_, _) async {
     _shouldPauseAfterTests = true;
     return ServiceExtensionResponse.result(jsonEncode({}));
   });

@@ -88,7 +88,7 @@ void listen(Function Function() getMain, List data) {
           }
         },
         zoneSpecification: ZoneSpecification(
-          print: (_, __, ___, line) {
+          print: (_, _, _, line) {
             channel.sink.add({'type': 'print', 'line': line});
           },
         ),

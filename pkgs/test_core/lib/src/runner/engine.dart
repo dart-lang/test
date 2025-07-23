@@ -227,7 +227,7 @@ class Engine {
           _onSuiteStartedController.close();
           _closedBeforeDone ??= false;
         })
-        .onError((_, __) {
+        .onError((_, _) {
           // Don't top-level errors. They'll be thrown via [success] anyway.
         });
   }

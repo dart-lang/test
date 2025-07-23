@@ -258,7 +258,7 @@ class BrowserPlatform extends PlatformPlugin
     // again.
     _browserManagers[(browser, compiler)] = future
         .then<BrowserManager?>((value) => value)
-        .onError((_, __) => null);
+        .onError((_, _) => null);
 
     return future;
   }
