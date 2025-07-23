@@ -209,9 +209,15 @@ class _DeepMatcher extends Matcher {
         }
       });
     } else {
-      // Otherwise, test for equality.
+      // Otherwise, test for equality, or both values NaN
       try {
-        if (expected == actual) return null;
+        if (expected == actual ||
+            (expected is num &&
+                expected.isNaN &&
+                actual is num &&
+                actual.isNaN)) {
+          return null;
+        }
       } catch (e) {
         // TODO(gram): Add a test for this case.
         return _Mismatch(

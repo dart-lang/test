@@ -95,6 +95,32 @@ void main() {
     );
   });
 
+  test('equals with NaN', () {
+    final a = double.nan;
+    final b = 0;
+    shouldPass(a, equals(a));
+    shouldFail(a, equals(b), 'Expected: <0> Actual: <NaN>');
+    shouldFail(b, equals(a), 'Expected: <NaN> Actual: <0>');
+  });
+
+  test('equals with NaN in a collection', () {
+    final a = {double.nan};
+    final b = {0};
+    shouldPass(a, equals(a));
+    shouldFail(
+      a,
+      equals(b),
+      'Expected: Set:[0] Actual: Set:[NaN] '
+      'Which: does not contain <0>',
+    );
+    shouldFail(
+      b,
+      equals(a),
+      'Expected: Set:[NaN] Actual: Set:[0] '
+      'Which: does not contain <NaN>',
+    );
+  });
+
   test('anything', () {
     var a = <Object?, Object?>{};
     shouldPass(0, anything);
