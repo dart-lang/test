@@ -39,7 +39,7 @@ class _Prints extends AsyncMatcher {
     var result = runZoned(
       item,
       zoneSpecification: ZoneSpecification(
-        print: (_, __, ____, line) {
+        print: (_, _, _, line) {
           buffer.writeln(line);
         },
       ),

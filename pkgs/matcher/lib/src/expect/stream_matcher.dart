@@ -143,15 +143,15 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
     return matchQueue(copy)
         .then(
           (result) async {
-            // Accept the transaction if the result is null, indicating that the match
-            // succeeded.
+            // Accept the transaction if the result is null, indicating that the
+            // match succeeded.
             if (result == null) {
               transaction.commit(copy);
               return null;
             }
 
-            // Get a list of events emitted by the stream so we can emit them as part
-            // of the error message.
+            // Get a list of events emitted by the stream so we can emit them as
+            // part of the error message.
             var replay = transaction.newQueue();
             var events = <Result?>[];
             var subscription = Result.captureStreamTransformer
@@ -184,8 +184,9 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
 
             var buffer = StringBuffer();
             buffer.writeln(indent(eventsString, first: 'emitted '));
-            if (result.isNotEmpty)
+            if (result.isNotEmpty) {
               buffer.writeln(indent(result, first: '  which '));
+            }
             return buffer.toString().trimRight();
           },
           onError: (Object error) {
