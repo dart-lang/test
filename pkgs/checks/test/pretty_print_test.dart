@@ -10,8 +10,10 @@ void main() {
   group('literal', () {
     group('truncates large collections', () {
       const maxUntruncatedCollection = 25;
-      final largeList =
-          List<int>.generate(maxUntruncatedCollection + 1, (i) => i);
+      final largeList = List<int>.generate(
+        maxUntruncatedCollection + 1,
+        (i) => i,
+      );
       test('in lists', () {
         check(literal(largeList)).last.equals('...]');
       });

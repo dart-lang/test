@@ -39,25 +39,27 @@ void main() {
       expect(invoker.liveTest, equals(liveTest));
     });
 
-    test('returns the current invoker in a test body after the test completes',
-        () async {
-      Status? status;
-      var completer = Completer<Invoker>();
-      var liveTest = _localTest(() {
-        // Use the event loop to wait longer than a microtask for the test to
-        // complete.
-        Future(() {
-          status = Invoker.current!.liveTest.state.status;
-          completer.complete(Invoker.current);
-        });
-      }).load(suite);
-      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
+    test(
+      'returns the current invoker in a test body after the test completes',
+      () async {
+        Status? status;
+        var completer = Completer<Invoker>();
+        var liveTest = _localTest(() {
+          // Use the event loop to wait longer than a microtask for the test to
+          // complete.
+          Future(() {
+            status = Invoker.current!.liveTest.state.status;
+            completer.complete(Invoker.current);
+          });
+        }).load(suite);
+        liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
-      expect(liveTest.run(), completes);
-      var invoker = await completer.future;
-      expect(invoker.liveTest, equals(liveTest));
-      expect(status, equals(Status.complete));
-    });
+        expect(liveTest.run(), completes);
+        var invoker = await completer.future;
+        expect(invoker.liveTest, equals(liveTest));
+        expect(status, equals(Status.complete));
+      },
+    );
   });
 
   group('in a successful test,', () {
@@ -91,15 +93,21 @@ void main() {
       liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
       var first = true;
-      liveTest.onStateChange.listen(expectAsync1((state) {
-        if (first) {
-          expect(state.status, equals(Status.running));
-          first = false;
-        } else {
-          expect(state.status, equals(Status.complete));
-        }
-        expect(state.result, equals(Result.success));
-      }, count: 2, max: 2));
+      liveTest.onStateChange.listen(
+        expectAsync1(
+          (state) {
+            if (first) {
+              expect(state.status, equals(Status.running));
+              first = false;
+            } else {
+              expect(state.status, equals(Status.complete));
+            }
+            expect(state.result, equals(Result.success));
+          },
+          count: 2,
+          max: 2,
+        ),
+      );
 
       return liveTest.run();
     });
@@ -110,9 +118,12 @@ void main() {
         testRun = true;
       }).load(suite);
 
-      expect(liveTest.onComplete.then((_) {
-        expect(testRun, isTrue);
-      }), completes);
+      expect(
+        liveTest.onComplete.then((_) {
+          expect(testRun, isTrue);
+        }),
+        completes,
+      );
 
       return liveTest.run();
     });
@@ -137,61 +148,77 @@ void main() {
       return liveTest.run();
     });
 
-    test('a failure reported asynchronously during the test causes it to fail',
-        () {
-      var liveTest = _localTest(() {
-        Invoker.current!.addOutstandingCallback();
-        Future(() => registerException(TestFailure('oh no')))
-            .whenComplete(Invoker.current!.removeOutstandingCallback);
-      }).load(suite);
+    test(
+      'a failure reported asynchronously during the test causes it to fail',
+      () {
+        var liveTest = _localTest(() {
+          Invoker.current!.addOutstandingCallback();
+          Future(
+            () => registerException(TestFailure('oh no')),
+          ).whenComplete(Invoker.current!.removeOutstandingCallback);
+        }).load(suite);
 
-      expectSingleFailure(liveTest);
-      return liveTest.run();
-    });
+        expectSingleFailure(liveTest);
+        return liveTest.run();
+      },
+    );
 
-    test('a failure thrown asynchronously during the test causes it to fail',
-        () {
-      var liveTest = _localTest(() {
-        Invoker.current!.addOutstandingCallback();
-        Future(() => throw TestFailure('oh no'))
-            .whenComplete(Invoker.current!.removeOutstandingCallback);
-      }).load(suite);
+    test(
+      'a failure thrown asynchronously during the test causes it to fail',
+      () {
+        var liveTest = _localTest(() {
+          Invoker.current!.addOutstandingCallback();
+          Future(
+            () => throw TestFailure('oh no'),
+          ).whenComplete(Invoker.current!.removeOutstandingCallback);
+        }).load(suite);
 
-      expectSingleFailure(liveTest);
-      return liveTest.run();
-    });
+        expectSingleFailure(liveTest);
+        return liveTest.run();
+      },
+    );
 
-    test('a failure reported asynchronously after the test causes it to error',
-        () {
-      var liveTest = _localTest(() {
-        Future(() => registerException(TestFailure('oh no')));
-      }).load(suite);
+    test(
+      'a failure reported asynchronously after the test causes it to error',
+      () {
+        var liveTest = _localTest(() {
+          Future(() => registerException(TestFailure('oh no')));
+        }).load(suite);
 
-      expectStates(liveTest, [
-        const State(Status.running, Result.success),
-        const State(Status.complete, Result.success),
-        const State(Status.complete, Result.failure),
-        const State(Status.complete, Result.error)
-      ]);
+        expectStates(liveTest, [
+          const State(Status.running, Result.success),
+          const State(Status.complete, Result.success),
+          const State(Status.complete, Result.failure),
+          const State(Status.complete, Result.error),
+        ]);
 
-      expectErrors(liveTest, [
-        (error) {
-          expect(
-              lastState, equals(const State(Status.complete, Result.failure)));
-          expect(error, isTestFailure('oh no'));
-        },
-        (error) {
-          expect(lastState, equals(const State(Status.complete, Result.error)));
-          expect(
+        expectErrors(liveTest, [
+          (error) {
+            expect(
+              lastState,
+              equals(const State(Status.complete, Result.failure)),
+            );
+            expect(error, isTestFailure('oh no'));
+          },
+          (error) {
+            expect(
+              lastState,
+              equals(const State(Status.complete, Result.error)),
+            );
+            expect(
               error,
-              equals('This test failed after it had already completed.\n'
-                  'Make sure to use a matching library which informs the '
-                  'test runner\nof pending async work.'));
-        }
-      ]);
+              equals(
+                'This test failed after it had already completed.\n'
+                'Make sure to use a matching library which informs the '
+                'test runner\nof pending async work.',
+              ),
+            );
+          },
+        ]);
 
-      return liveTest.run();
-    });
+        return liveTest.run();
+      },
+    );
 
     test('multiple asynchronous failures are reported', () {
       var liveTest = _localTest(() {
@@ -199,13 +226,14 @@ void main() {
         Future(() => throw TestFailure('one'));
         Future(() => throw TestFailure('two'));
         Future(() => throw TestFailure('three'));
-        Future(() => throw TestFailure('four'))
-            .whenComplete(Invoker.current!.removeOutstandingCallback);
+        Future(
+          () => throw TestFailure('four'),
+        ).whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.failure)
+        const State(Status.complete, Result.failure),
       ]);
 
       expectErrors(liveTest, [
@@ -221,7 +249,7 @@ void main() {
         },
         (error) {
           expect(error, isTestFailure('four'));
-        }
+        },
       ]);
 
       return liveTest.run();
@@ -235,7 +263,7 @@ void main() {
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.error)
+        const State(Status.complete, Result.error),
       ]);
 
       expectErrors(liveTest, [
@@ -245,7 +273,7 @@ void main() {
         },
         (error) {
           expect(error, isTestFailure('fail'));
-        }
+        },
       ]);
 
       return liveTest.run();
@@ -271,58 +299,72 @@ void main() {
       return liveTest.run();
     });
 
-    test('an error reported asynchronously during the test causes it to error',
-        () {
-      var liveTest = _localTest(() {
-        Invoker.current!.addOutstandingCallback();
-        Future(() => registerException('oh no'))
-            .whenComplete(Invoker.current!.removeOutstandingCallback);
-      }).load(suite);
+    test(
+      'an error reported asynchronously during the test causes it to error',
+      () {
+        var liveTest = _localTest(() {
+          Invoker.current!.addOutstandingCallback();
+          Future(
+            () => registerException('oh no'),
+          ).whenComplete(Invoker.current!.removeOutstandingCallback);
+        }).load(suite);
 
-      expectSingleError(liveTest);
-      return liveTest.run();
-    });
+        expectSingleError(liveTest);
+        return liveTest.run();
+      },
+    );
 
-    test('an error thrown asynchronously during the test causes it to error',
-        () {
-      var liveTest = _localTest(() {
-        Invoker.current!.addOutstandingCallback();
-        Future(() => throw 'oh no')
-            .whenComplete(Invoker.current!.removeOutstandingCallback);
-      }).load(suite);
+    test(
+      'an error thrown asynchronously during the test causes it to error',
+      () {
+        var liveTest = _localTest(() {
+          Invoker.current!.addOutstandingCallback();
+          Future(
+            () => throw 'oh no',
+          ).whenComplete(Invoker.current!.removeOutstandingCallback);
+        }).load(suite);
 
-      expectSingleError(liveTest);
-      return liveTest.run();
-    });
+        expectSingleError(liveTest);
+        return liveTest.run();
+      },
+    );
 
-    test('an error reported asynchronously after the test causes it to error',
-        () {
-      var liveTest = _localTest(() {
-        Future(() => registerException('oh no'));
-      }).load(suite);
+    test(
+      'an error reported asynchronously after the test causes it to error',
+      () {
+        var liveTest = _localTest(() {
+          Future(() => registerException('oh no'));
+        }).load(suite);
 
-      expectStates(liveTest, [
-        const State(Status.running, Result.success),
-        const State(Status.complete, Result.success),
-        const State(Status.complete, Result.error)
-      ]);
+        expectStates(liveTest, [
+          const State(Status.running, Result.success),
+          const State(Status.complete, Result.success),
+          const State(Status.complete, Result.error),
+        ]);
 
-      expectErrors(liveTest, [
-        (error) {
-          expect(lastState, equals(const State(Status.complete, Result.error)));
-          expect(error, equals('oh no'));
-        },
-        (error) {
-          expect(
+        expectErrors(liveTest, [
+          (error) {
+            expect(
+              lastState,
+              equals(const State(Status.complete, Result.error)),
+            );
+            expect(error, equals('oh no'));
+          },
+          (error) {
+            expect(
               error,
-              equals('This test failed after it had already completed.\n'
-                  'Make sure to use a matching library which informs the '
-                  'test runner\nof pending async work.'));
-        }
-      ]);
+              equals(
+                'This test failed after it had already completed.\n'
+                'Make sure to use a matching library which informs the '
+                'test runner\nof pending async work.',
+              ),
+            );
+          },
+        ]);
 
-      return liveTest.run();
-    });
+        return liveTest.run();
+      },
+    );
 
     test('multiple asynchronous errors are reported', () {
       var liveTest = _localTest(() {
@@ -330,13 +372,14 @@ void main() {
         Future(() => throw 'one');
         Future(() => throw 'two');
         Future(() => throw 'three');
-        Future(() => throw 'four')
-            .whenComplete(Invoker.current!.removeOutstandingCallback);
+        Future(
+          () => throw 'four',
+        ).whenComplete(Invoker.current!.removeOutstandingCallback);
       }).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.error)
+        const State(Status.complete, Result.error),
       ]);
 
       expectErrors(liveTest, [
@@ -352,7 +395,7 @@ void main() {
         },
         (error) {
           expect(error, equals('four'));
-        }
+        },
       ]);
 
       return liveTest.run();
@@ -367,44 +410,48 @@ void main() {
       expectStates(liveTest, [
         const State(Status.running, Result.success),
         const State(Status.complete, Result.failure),
-        const State(Status.complete, Result.error)
+        const State(Status.complete, Result.error),
       ]);
 
       expectErrors(liveTest, [
         (error) {
           expect(
-              lastState, equals(const State(Status.complete, Result.failure)));
+            lastState,
+            equals(const State(Status.complete, Result.failure)),
+          );
           expect(error, isTestFailure('fail'));
         },
         (error) {
           expect(lastState, equals(const State(Status.complete, Result.error)));
           expect(error, equals('error'));
-        }
+        },
       ]);
 
       return liveTest.run();
     });
   });
 
-  test("a test doesn't complete until there are no outstanding callbacks",
-      () async {
-    var outstandingCallbackRemoved = false;
-    var liveTest = _localTest(() {
-      Invoker.current!.addOutstandingCallback();
+  test(
+    "a test doesn't complete until there are no outstanding callbacks",
+    () async {
+      var outstandingCallbackRemoved = false;
+      var liveTest = _localTest(() {
+        Invoker.current!.addOutstandingCallback();
 
-      // Pump the event queue to make sure the test isn't coincidentally
-      // completing after the outstanding callback is removed.
-      pumpEventQueue().then((_) {
-        outstandingCallbackRemoved = true;
-        Invoker.current!.removeOutstandingCallback();
-      });
-    }).load(suite);
+        // Pump the event queue to make sure the test isn't coincidentally
+        // completing after the outstanding callback is removed.
+        pumpEventQueue().then((_) {
+          outstandingCallbackRemoved = true;
+          Invoker.current!.removeOutstandingCallback();
+        });
+      }).load(suite);
 
-    liveTest.onError.listen(expectAsync1((_) {}, count: 0));
+      liveTest.onError.listen(expectAsync1((_) {}, count: 0));
 
-    await liveTest.run();
-    expect(outstandingCallbackRemoved, isTrue);
-  });
+      await liveTest.run();
+      expect(outstandingCallbackRemoved, isTrue);
+    },
+  );
 
   test("a test's prints are captured and reported", () {
     expect(() {
@@ -414,13 +461,14 @@ void main() {
       }).load(suite);
 
       expect(
-          liveTest.onMessage.take(2).toList().then((messages) {
-            expect(messages[0].type, equals(MessageType.print));
-            expect(messages[0].text, equals('Hello,'));
-            expect(messages[1].type, equals(MessageType.print));
-            expect(messages[1].text, equals('world!'));
-          }),
-          completes);
+        liveTest.onMessage.take(2).toList().then((messages) {
+          expect(messages[0].type, equals(MessageType.print));
+          expect(messages[0].text, equals('Hello,'));
+          expect(messages[1].type, equals(MessageType.print));
+          expect(messages[1].text, equals('world!'));
+        }),
+        completes,
+      );
 
       return liveTest.run();
     }, prints(isEmpty));
@@ -428,24 +476,26 @@ void main() {
 
   group('timeout:', () {
     test('A test can be timed out', () {
-      var liveTest = _localTest(() {
-        Invoker.current!.addOutstandingCallback();
-      },
-              metadata: Metadata(
-                  chainStackTraces: true,
-                  timeout: const Timeout(Duration.zero)))
-          .load(suite);
+      var liveTest = _localTest(
+        () {
+          Invoker.current!.addOutstandingCallback();
+        },
+        metadata: Metadata(
+          chainStackTraces: true,
+          timeout: const Timeout(Duration.zero),
+        ),
+      ).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.error)
+        const State(Status.complete, Result.error),
       ]);
 
       expectErrors(liveTest, [
         (error) {
           expect(lastState!.status, equals(Status.complete));
           expect(error, const TypeMatcher<TimeoutException>());
-        }
+        },
       ]);
 
       liveTest.run();
@@ -453,17 +503,19 @@ void main() {
 
     test('can be ignored', () {
       suite = Suite(Group.root([]), suitePlatform, ignoreTimeouts: true);
-      var liveTest = _localTest(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-      },
-              metadata: Metadata(
-                  chainStackTraces: true,
-                  timeout: const Timeout(Duration.zero)))
-          .load(suite);
+      var liveTest = _localTest(
+        () async {
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+        },
+        metadata: Metadata(
+          chainStackTraces: true,
+          timeout: const Timeout(Duration.zero),
+        ),
+      ).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.success)
+        const State(Status.complete, Result.success),
       ]);
 
       liveTest.run();
@@ -480,7 +532,7 @@ void main() {
         },
         () {
           secondTearDownStarted = true;
-        }
+        },
       ]);
       expect(secondTearDownStarted, isTrue);
       expect(firstTearDownStarted, isTrue);
@@ -504,24 +556,29 @@ void main() {
       expect(secondTearDownStarted, isTrue);
     });
 
-    test('allows next tear down to run while there are still prior callbacks',
-        () async {
-      var firstTearDownAsyncWork = Completer<void>();
-      var secondTearDownStarted = false;
-      unawaited(Invoker.current!.runTearDowns([
-        () {
-          secondTearDownStarted = true;
-        },
-        () {
-          Invoker.current!.addOutstandingCallback();
-          firstTearDownAsyncWork.future
-              .whenComplete(Invoker.current!.removeOutstandingCallback);
-        },
-      ]));
-      await pumpEventQueue();
-      expect(secondTearDownStarted, isTrue);
-      firstTearDownAsyncWork.complete();
-    });
+    test(
+      'allows next tear down to run while there are still prior callbacks',
+      () async {
+        var firstTearDownAsyncWork = Completer<void>();
+        var secondTearDownStarted = false;
+        unawaited(
+          Invoker.current!.runTearDowns([
+            () {
+              secondTearDownStarted = true;
+            },
+            () {
+              Invoker.current!.addOutstandingCallback();
+              firstTearDownAsyncWork.future.whenComplete(
+                Invoker.current!.removeOutstandingCallback,
+              );
+            },
+          ]),
+        );
+        await pumpEventQueue();
+        expect(secondTearDownStarted, isTrue);
+        firstTearDownAsyncWork.complete();
+      },
+    );
 
     test('forwards errors to the enclosing test but does not end it', () async {
       var liveTest = _localTest(() async {
@@ -529,13 +586,13 @@ void main() {
         await Invoker.current!.runTearDowns([
           () {
             throw 'oh no';
-          }
+          },
         ]);
       }).load(suite);
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.error)
+        const State(Status.complete, Result.error),
       ]);
 
       var isComplete = false;
@@ -565,10 +622,12 @@ void main() {
       }).load(suite);
       liveTest.onError.listen(expectAsync1((_) {}, count: 1));
 
-      liveTest.onMessage.listen(expectAsync1((message) {
-        expect(message.type, equals(MessageType.print));
-        expect(message.text, equals('only on failure'));
-      }, count: 1));
+      liveTest.onMessage.listen(
+        expectAsync1((message) {
+          expect(message.type, equals(MessageType.print));
+          expect(message.text, equals('only on failure'));
+        }, count: 1),
+      );
 
       await liveTest.run();
     });

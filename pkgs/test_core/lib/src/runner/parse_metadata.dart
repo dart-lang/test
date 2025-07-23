@@ -22,8 +22,10 @@ import '../util/dart.dart';
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
 /// test annotations are incorrect.
 Metadata parseMetadata(
-        String path, String contents, Set<String> platformVariables) =>
-    _Parser(path, contents, platformVariables).parse();
+  String path,
+  String contents,
+  Set<String> platformVariables,
+) => _Parser(path, contents, platformVariables).parse();
 
 /// A parser for test suite metadata.
 class _Parser {
@@ -47,24 +49,28 @@ class _Parser {
   String? _languageVersionComment;
 
   _Parser(this._path, this._contents, this._platformVariables) {
-    var result =
-        parseString(content: _contents, path: _path, throwIfDiagnostics: false);
+    var result = parseString(
+      content: _contents,
+      path: _path,
+      throwIfDiagnostics: false,
+    );
     var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
-    _prefixes = directives
-        .map((directive) {
-          if (directive is ImportDirective) {
-            return directive.prefix?.name;
-          } else {
-            return null;
-          }
-        })
-        .whereType<String>()
-        .toSet();
+    _prefixes =
+        directives
+            .map((directive) {
+              if (directive is ImportDirective) {
+                return directive.prefix?.name;
+              } else {
+                return null;
+              }
+            })
+            .whereType<String>()
+            .toSet();
   }
 
   /// Parses the metadata.
@@ -77,8 +83,10 @@ class _Parser {
     int? retry;
 
     for (var annotation in _annotations) {
-      var pair =
-          _resolveConstructor(annotation.name, annotation.constructorName);
+      var pair = _resolveConstructor(
+        annotation.name,
+        annotation.constructorName,
+      );
       var (name, constructorName) = pair;
 
       if (name == 'TestOn') {
@@ -102,14 +110,15 @@ class _Parser {
     }
 
     return Metadata(
-        testOn: testOn,
-        timeout: timeout,
-        skip: skip == null ? null : true,
-        skipReason: skip is String ? skip : null,
-        onPlatform: onPlatform,
-        tags: tags,
-        retry: retry,
-        languageVersionComment: _languageVersionComment);
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip == null ? null : true,
+      skipReason: skip is String ? skip : null,
+      onPlatform: onPlatform,
+      tags: tags,
+      retry: retry,
+      languageVersionComment: _languageVersionComment,
+    );
   }
 
   /// Parses a `@TestOn` annotation.
@@ -123,9 +132,11 @@ class _Parser {
   PlatformSelector _parsePlatformSelector(Expression expression) {
     var literal = _parseString(expression);
     return _contextualize(
-        literal,
-        () => PlatformSelector.parse(literal.stringValue!)
-          ..validate(_platformVariables));
+      literal,
+      () =>
+          PlatformSelector.parse(literal.stringValue!)
+            ..validate(_platformVariables),
+    );
   }
 
   /// Parses a `@Retry` annotation.
@@ -180,15 +191,17 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   Set<String> _parseTags(Annotation annotation) {
-    return _parseList(annotation.arguments!.arguments.first)
-        .map((tagExpression) {
+    return _parseList(annotation.arguments!.arguments.first).map((
+      tagExpression,
+    ) {
       var name = _parseString(tagExpression).stringValue!;
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
       throw SourceSpanFormatException(
-          'Invalid tag name. Tags must be (optionally hyphenated) Dart '
-          'identifiers.',
-          _spanFor(tagExpression));
+        'Invalid tag name. Tags must be (optionally hyphenated) Dart '
+        'identifiers.',
+        _spanFor(tagExpression),
+      );
     }).toSet();
   }
 
@@ -196,67 +209,76 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
-    return _parseMap(annotation.arguments!.arguments.first,
-        key: _parsePlatformSelector, value: (value) {
-      var expressions = <AstNode>[];
-      if (value is ListLiteral) {
-        expressions = _parseList(value);
-      } else if (value is InstanceCreationExpression ||
-          value is PrefixedIdentifier ||
-          value is MethodInvocation) {
-        expressions = [value];
-      } else {
-        throw SourceSpanFormatException(
-            'Expected a Timeout, Skip, or List of those.', _spanFor(value));
-      }
-
-      Timeout? timeout;
-      Object? skip;
-      for (var expression in expressions) {
-        if (expression is InstanceCreationExpression) {
-          // Replace name2 with name when bumping min analyzer dependency
-          // ignore: deprecated_member_use
-          var className = expression.constructorName.type.name2.lexeme;
-
-          if (className == 'Timeout') {
-            _assertSingle(timeout, 'Timeout', expression);
-            timeout = _parseTimeoutConstructor(expression);
-            continue;
-          } else if (className == 'Skip') {
-            _assertSingle(skip, 'Skip', expression);
-            skip = _parseSkipConstructor(expression);
-            continue;
-          }
-        } else if (expression is PrefixedIdentifier &&
-            expression.prefix.name == 'Timeout') {
-          if (expression.identifier.name != 'none') {
-            throw SourceSpanFormatException(
-                'Undefined value.', _spanFor(expression));
-          }
-
-          _assertSingle(timeout, 'Timeout', expression);
-          timeout = Timeout.none;
-          continue;
-        } else if (expression is MethodInvocation) {
-          var className =
-              _typeNameFromMethodInvocation(expression, ['Timeout', 'Skip']);
-          if (className == 'Timeout') {
-            _assertSingle(timeout, 'Timeout', expression);
-            timeout = _parseTimeoutConstructor(expression);
-            continue;
-          } else if (className == 'Skip') {
-            _assertSingle(skip, 'Skip', expression);
-            skip = _parseSkipConstructor(expression);
-            continue;
-          }
+    return _parseMap(
+      annotation.arguments!.arguments.first,
+      key: _parsePlatformSelector,
+      value: (value) {
+        var expressions = <AstNode>[];
+        if (value is ListLiteral) {
+          expressions = _parseList(value);
+        } else if (value is InstanceCreationExpression ||
+            value is PrefixedIdentifier ||
+            value is MethodInvocation) {
+          expressions = [value];
+        } else {
+          throw SourceSpanFormatException(
+            'Expected a Timeout, Skip, or List of those.',
+            _spanFor(value),
+          );
         }
 
-        throw SourceSpanFormatException(
-            'Expected a Timeout or Skip.', _spanFor(expression));
-      }
+        Timeout? timeout;
+        Object? skip;
+        for (var expression in expressions) {
+          if (expression is InstanceCreationExpression) {
+            var className = expression.constructorName.type.name.lexeme;
 
-      return Metadata.parse(timeout: timeout, skip: skip);
-    });
+            if (className == 'Timeout') {
+              _assertSingle(timeout, 'Timeout', expression);
+              timeout = _parseTimeoutConstructor(expression);
+              continue;
+            } else if (className == 'Skip') {
+              _assertSingle(skip, 'Skip', expression);
+              skip = _parseSkipConstructor(expression);
+              continue;
+            }
+          } else if (expression is PrefixedIdentifier &&
+              expression.prefix.name == 'Timeout') {
+            if (expression.identifier.name != 'none') {
+              throw SourceSpanFormatException(
+                'Undefined value.',
+                _spanFor(expression),
+              );
+            }
+
+            _assertSingle(timeout, 'Timeout', expression);
+            timeout = Timeout.none;
+            continue;
+          } else if (expression is MethodInvocation) {
+            var className = _typeNameFromMethodInvocation(expression, [
+              'Timeout',
+              'Skip',
+            ]);
+            if (className == 'Timeout') {
+              _assertSingle(timeout, 'Timeout', expression);
+              timeout = _parseTimeoutConstructor(expression);
+              continue;
+            } else if (className == 'Skip') {
+              _assertSingle(skip, 'Skip', expression);
+              skip = _parseSkipConstructor(expression);
+              continue;
+            }
+          }
+
+          throw SourceSpanFormatException(
+            'Expected a Timeout or Skip.',
+            _spanFor(expression),
+          );
+        }
+
+        return Metadata.parse(timeout: timeout, skip: skip);
+      },
+    );
   }
 
   /// Parses a `const Duration` expression.
@@ -264,24 +286,26 @@ class _Parser {
     _findConstructorName(expression, 'Duration');
 
     var arguments = _parseArguments(expression);
-    var values = _parseNamedArguments(arguments)
-        .map((key, value) => MapEntry(key, _parseInt(value)));
+    var values = _parseNamedArguments(
+      arguments,
+    ).map((key, value) => MapEntry(key, _parseInt(value)));
 
     return Duration(
-        days: values['days'] ?? 0,
-        hours: values['hours'] ?? 0,
-        minutes: values['minutes'] ?? 0,
-        seconds: values['seconds'] ?? 0,
-        milliseconds: values['milliseconds'] ?? 0,
-        microseconds: values['microseconds'] ?? 0);
+      days: values['days'] ?? 0,
+      hours: values['hours'] ?? 0,
+      minutes: values['minutes'] ?? 0,
+      seconds: values['seconds'] ?? 0,
+      milliseconds: values['milliseconds'] ?? 0,
+      microseconds: values['microseconds'] ?? 0,
+    );
   }
 
   Map<String, Expression> _parseNamedArguments(
-          NodeList<Expression> arguments) =>
-      {
-        for (var a in arguments.whereType<NamedExpression>())
-          a.name.label.name: a.expression
-      };
+    NodeList<Expression> arguments,
+  ) => {
+    for (var a in arguments.whereType<NamedExpression>())
+      a.name.label.name: a.expression,
+  };
 
   /// Asserts that [existing] is null.
   ///
@@ -290,7 +314,9 @@ class _Parser {
   void _assertSingle(Object? existing, String name, AstNode node) {
     if (existing == null) return;
     throw SourceSpanFormatException(
-        'Only a single $name may be used.', _spanFor(node));
+      'Only a single $name may be used.',
+      _spanFor(node),
+    );
   }
 
   NodeList<Expression> _parseArguments(Expression expression) {
@@ -301,7 +327,9 @@ class _Parser {
       return expression.argumentList.arguments;
     }
     throw SourceSpanFormatException(
-        'Expected an instantiation', _spanFor(expression));
+      'Expected an instantiation',
+      _spanFor(expression),
+    );
   }
 
   /// Resolves a constructor name from its type [identifier] and its
@@ -310,7 +338,9 @@ class _Parser {
   /// Since the parsed file isn't fully resolved, this is necessary to
   /// disambiguate between prefixed names and named constructors.
   (String, String?) _resolveConstructor(
-      Identifier identifier, SimpleIdentifier? constructorName) {
+    Identifier identifier,
+    SimpleIdentifier? constructorName,
+  ) {
     // The syntax is ambiguous between named constructors and prefixed
     // annotations, so we need to resolve that ambiguity using the known
     // prefixes. The analyzer parses "new x.y()" as prefix "x", annotation "y",
@@ -324,9 +354,10 @@ class _Parser {
       className = identifier.prefix.name;
       namedConstructor = identifier.identifier.name;
     } else {
-      className = identifier is PrefixedIdentifier
-          ? identifier.identifier.name
-          : identifier.name;
+      className =
+          identifier is PrefixedIdentifier
+              ? identifier.identifier.name
+              : identifier.name;
       if (constructorName != null) namedConstructor = constructorName.name;
     }
     return (className, namedConstructor);
@@ -345,26 +376,32 @@ class _Parser {
       return _findConstructorNameFromMethod(expression, className);
     }
     throw SourceSpanFormatException(
-        'Expected a $className.', _spanFor(expression));
+      'Expected a $className.',
+      _spanFor(expression),
+    );
   }
 
   String? _findConstructorNameFromInstantiation(
-      InstanceCreationExpression constructor, String className) {
-    // Replace name2 with name when bumping min analyzer dependency
-    // ignore: deprecated_member_use
-    var actualClassName = constructor.constructorName.type.name2.lexeme;
+    InstanceCreationExpression constructor,
+    String className,
+  ) {
+    var actualClassName = constructor.constructorName.type.name.lexeme;
     var constructorName = constructor.constructorName.name?.name;
 
     if (actualClassName != className) {
       throw SourceSpanFormatException(
-          'Expected a $className.', _spanFor(constructor));
+        'Expected a $className.',
+        _spanFor(constructor),
+      );
     }
 
     return constructorName;
   }
 
   String? _findConstructorNameFromMethod(
-      MethodInvocation constructor, String className) {
+    MethodInvocation constructor,
+    String className,
+  ) {
     var target = constructor.target;
     if (target != null) {
       // target could be an import prefix or a different class. Assume that
@@ -379,7 +416,9 @@ class _Parser {
       if (target is PrefixedIdentifier) parsedName = target.identifier.name;
       if (parsedName != className) {
         throw SourceSpanFormatException(
-            'Expected a $className.', _spanFor(constructor));
+          'Expected a $className.',
+          _spanFor(constructor),
+        );
       }
       return constructor.methodName.name;
     }
@@ -387,7 +426,9 @@ class _Parser {
     // Example `Timeout()`
     if (constructor.methodName.name != className) {
       throw SourceSpanFormatException(
-          'Expected a $className.', _spanFor(constructor));
+        'Expected a $className.',
+        _spanFor(constructor),
+      );
     }
     return null;
   }
@@ -404,7 +445,9 @@ class _Parser {
   /// a `Baz`even though it is a prefixed instantiation of an `another`, or a
   /// method invocation on a variable `Baz`, or ...
   String? _typeNameFromMethodInvocation(
-      MethodInvocation constructor, List<String> candidates) {
+    MethodInvocation constructor,
+    List<String> candidates,
+  ) {
     var methodName = constructor.methodName.name;
     // Examples: `Timeout()`, `test.Timeout()`
     if (candidates.contains(methodName)) return methodName;
@@ -430,8 +473,11 @@ class _Parser {
   ///
   /// By default, returns [Expression] keys and values. These can be overridden
   /// with the [key] and [value] parameters.
-  Map<K, V> _parseMap<K, V>(Expression expression,
-      {K Function(Expression)? key, V Function(Expression)? value}) {
+  Map<K, V> _parseMap<K, V>(
+    Expression expression, {
+    K Function(Expression)? key,
+    V Function(Expression)? value,
+  }) {
     key ??= (expression) => expression as K;
     value ??= (expression) => expression as V;
 
@@ -445,7 +491,9 @@ class _Parser {
         map[key(element.key)] = value(element.value);
       } else {
         throw SourceSpanFormatException(
-            'Expected a map entry.', _spanFor(element));
+          'Expected a map entry.',
+          _spanFor(element),
+        );
       }
     }
     return map;
@@ -462,7 +510,9 @@ class _Parser {
     return list.elements.map((e) {
       if (e is! Expression) {
         throw SourceSpanFormatException(
-            'Expected only literal elements.', _spanFor(e));
+          'Expected only literal elements.',
+          _spanFor(e),
+        );
       }
       return e;
     }).toList();
@@ -483,7 +533,9 @@ class _Parser {
       return expression.value!;
     }
     throw SourceSpanFormatException(
-        'Expected an integer.', _spanFor(expression));
+      'Expected an integer.',
+      _spanFor(expression),
+    );
   }
 
   /// Parses a constant String literal.
@@ -492,15 +544,19 @@ class _Parser {
       return expression;
     }
     throw SourceSpanFormatException(
-        'Expected a String literal.', _spanFor(expression));
+      'Expected a String literal.',
+      _spanFor(expression),
+    );
   }
 
   /// Creates a [SourceSpan] for [node].
   SourceSpan _spanFor(AstNode node) {
     // Load a SourceFile from scratch here since we're only ever going to emit
     // one error per file anyway.
-    return SourceFile.fromString(_contents, url: p.toUri(_path))
-        .span(node.offset, node.end);
+    return SourceFile.fromString(
+      _contents,
+      url: p.toUri(_path),
+    ).span(node.offset, node.end);
   }
 
   /// Runs [fn] and contextualizes any [SourceSpanFormatException]s that occur

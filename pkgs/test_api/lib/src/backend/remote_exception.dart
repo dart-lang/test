@@ -48,7 +48,7 @@ final class RemoteException implements Exception {
       'type': error.runtimeType.toString(),
       'supertype': supertype,
       'toString': error.toString(),
-      'stackChain': Chain.forTrace(stackTrace).toString()
+      'stackChain': Chain.forTrace(stackTrace).toString(),
     };
   }
 
@@ -57,8 +57,10 @@ final class RemoteException implements Exception {
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
   static AsyncError deserialize(Map serialized) {
-    return AsyncError(_deserializeException(serialized),
-        Chain.parse(serialized['stackChain'] as String));
+    return AsyncError(
+      _deserializeException(serialized),
+      Chain.parse(serialized['stackChain'] as String),
+    );
   }
 
   /// Deserializes the exception portion of [serialized].

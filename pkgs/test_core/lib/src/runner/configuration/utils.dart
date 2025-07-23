@@ -8,8 +8,11 @@ import 'package:collection/collection.dart';
 /// creating a new map unnecessarily.
 ///
 /// The return value *may or may not* be unmodifiable.
-Map<K, V> mergeUnmodifiableMaps<K, V>(Map<K, V> map1, Map<K, V> map2,
-    {V Function(V, V)? value}) {
+Map<K, V> mergeUnmodifiableMaps<K, V>(
+  Map<K, V> map1,
+  Map<K, V> map2, {
+  V Function(V, V)? value,
+}) {
   if (map1.isEmpty) return map2;
   if (map2.isEmpty) return map1;
   return mergeMaps(map1, map2, value: value);

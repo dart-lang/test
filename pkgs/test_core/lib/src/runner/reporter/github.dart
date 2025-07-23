@@ -50,11 +50,14 @@ class GithubReporter implements Reporter {
     StringSink sink, {
     required bool printPath,
     required bool printPlatform,
-  }) =>
-      GithubReporter._(engine, sink, printPath, printPlatform);
+  }) => GithubReporter._(engine, sink, printPath, printPlatform);
 
   GithubReporter._(
-      this._engine, this._sink, this._printPath, this._printPlatform) {
+    this._engine,
+    this._sink,
+    this._printPath,
+    this._printPlatform,
+  ) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
@@ -94,21 +97,27 @@ class GithubReporter implements Reporter {
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
     _subscriptions.add(
-        liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)));
+      liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)),
+    );
 
-    _subscriptions.add(liveTest.onError
-        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(
+      liveTest.onError.listen(
+        (error) => _onError(liveTest, error.error, error.stackTrace),
+      ),
+    );
 
     // Collect messages from tests as they are emitted.
-    _subscriptions.add(liveTest.onMessage.listen((message) {
-      if (_completedTests.contains(liveTest)) {
-        // The test has already completed and it's previous messages were
-        // written out; ensure this post-completion output is not lost.
-        _sink.writeln(message.text);
-      } else {
-        _testMessages.putIfAbsent(liveTest, () => []).add(message);
-      }
-    }));
+    _subscriptions.add(
+      liveTest.onMessage.listen((message) {
+        if (_completedTests.contains(liveTest)) {
+          // The test has already completed and it's previous messages were
+          // written out; ensure this post-completion output is not lost.
+          _sink.writeln(message.text);
+        } else {
+          _testMessages.putIfAbsent(liveTest, () => []).add(message);
+        }
+      }),
+    );
   }
 
   /// A callback called when [liveTest] finishes running.
@@ -118,7 +127,8 @@ class GithubReporter implements Reporter {
     final skipped = test.state.result == Result.skipped;
     final failed = errors.isNotEmpty;
     final loadSuite = test.suite is LoadSuite;
-    final synthetic = loadSuite ||
+    final synthetic =
+        loadSuite ||
         test.individualName == '(setUpAll)' ||
         test.individualName == '(tearDownAll)';
 
@@ -134,14 +144,16 @@ class GithubReporter implements Reporter {
     // For now, we use the same icon for both tests and test-like structures
     // (loadSuite, setUpAll, tearDownAll).
     var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
-    final prefix = failed
-        ? _GithubMarkup.failed
-        : skipped
+    final prefix =
+        failed
+            ? _GithubMarkup.failed
+            : skipped
             ? _GithubMarkup.skipped
             : defaultIcon;
-    final statusSuffix = failed
-        ? ' (failed)'
-        : skipped
+    final statusSuffix =
+        failed
+            ? ' (failed)'
+            : skipped
             ? ' (skipped)'
             : '';
 
@@ -152,7 +164,8 @@ class GithubReporter implements Reporter {
       }
     }
     if (_printPlatform) {
-      name = '[${test.suite.platform.runtime.name}, '
+      name =
+          '[${test.suite.platform.runtime.name}, '
           '${test.suite.platform.compiler.name}] $name';
     }
     if (messages.isEmpty && errors.isEmpty) {
@@ -185,7 +198,8 @@ class GithubReporter implements Reporter {
         }
       }
       if (_printPlatform) {
-        name = '[${test.suite.platform.runtime.name}, '
+        name =
+            '[${test.suite.platform.runtime.name}, '
             '${test.suite.platform.compiler.name}] $name';
       }
 
@@ -202,8 +216,10 @@ class GithubReporter implements Reporter {
     _sink.writeln();
 
     final hadFailures = _engine.failed.isNotEmpty;
-    final message = StringBuffer('${_engine.passed.length} '
-        '${pluralize('test', _engine.passed.length)} passed');
+    final message = StringBuffer(
+      '${_engine.passed.length} '
+      '${pluralize('test', _engine.passed.length)} passed',
+    );
     if (_engine.failed.isNotEmpty) {
       message.write(', ${_engine.failed.length} failed');
     }

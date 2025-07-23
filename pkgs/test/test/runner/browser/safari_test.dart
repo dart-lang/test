@@ -18,23 +18,26 @@ import 'code_server.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('starts Safari with the given URL',
-      skip: 'https://github.com/dart-lang/test/issues/1253', () async {
-    var server = await CodeServer.start();
+  test(
+    'starts Safari with the given URL',
+    skip: 'https://github.com/dart-lang/test/issues/1253',
+    () async {
+      var server = await CodeServer.start();
 
-    server.handleJavaScript('''
+      server.handleJavaScript('''
 var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
 webSocket.addEventListener("open", function() {
   webSocket.send("loaded!");
 });
 ''');
-    var webSocket = server.handleWebSocket();
+      var webSocket = server.handleWebSocket();
 
-    var safari = Safari(server.url);
-    addTearDown(() => safari.close());
+      var safari = Safari(server.url);
+      addTearDown(() => safari.close());
 
-    expect(await (await webSocket).stream.first, equals('loaded!'));
-  });
+      expect(await (await webSocket).stream.first, equals('loaded!'));
+    },
+  );
 
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
@@ -44,20 +47,29 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var safari = Safari(Uri.https('dart.dev'),
-        settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+    var safari = Safari(
+      Uri.https('dart.dev'),
+      settings: ExecutableSettings(
+        linuxExecutable: '_does_not_exist',
+        macOSExecutable: '_does_not_exist',
+        windowsExecutable: '_does_not_exist',
+      ),
+    );
     expect(
-        safari.onExit,
-        throwsA(isApplicationException(
-            startsWith('Failed to run Safari: $noSuchFileMessage'))));
+      safari.onExit,
+      throwsA(
+        isApplicationException(
+          startsWith('Failed to run Safari: $noSuchFileMessage'),
+        ),
+      ),
+    );
   });
 
-  test('can run successful tests',
-      skip: 'https://github.com/dart-lang/test/issues/1253', () async {
-    await d.file('test.dart', '''
+  test(
+    'can run successful tests',
+    skip: 'https://github.com/dart-lang/test/issues/1253',
+    () async {
+      await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -65,10 +77,11 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(['-p', 'safari', 'test.dart']);
-    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-    await test.shouldExit(0);
-  });
+      var test = await runTest(['-p', 'safari', 'test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    },
+  );
 
   test('can run failing tests', () async {
     await d.file('test.dart', '''
@@ -92,8 +105,10 @@ void main() {
   test("success", () {});
 }
 ''').create();
-    var test = await runTest(['-p', 'safari', 'test.dart'],
-        environment: {'SAFARI_EXECUTABLE': '/some/bad/path'});
+    var test = await runTest(
+      ['-p', 'safari', 'test.dart'],
+      environment: {'SAFARI_EXECUTABLE': '/some/bad/path'},
+    );
     expect(test.stdout, emitsThrough(contains('Failed to run Safari:')));
     await test.shouldExit(1);
   });

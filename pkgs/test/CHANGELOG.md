@@ -1,3 +1,8 @@
+## 1.26.4-wip
+
+* Restrict to latest version of analyzer package.
+* Require Dart 3.7
+
 ## 1.26.3
 
 * Expand pub constraint to allow the latest `analyzer`.

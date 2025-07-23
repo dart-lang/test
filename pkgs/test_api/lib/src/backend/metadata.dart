@@ -74,7 +74,8 @@ final class Metadata {
 
   /// Parses a user-provided map into the value for [onPlatform].
   static Map<PlatformSelector, Metadata> _parseOnPlatform(
-      Map<String, dynamic>? onPlatform) {
+    Map<String, dynamic>? onPlatform,
+  ) {
     if (onPlatform == null) return {};
 
     var result = <PlatformSelector, Metadata>{};
@@ -85,35 +86,45 @@ final class Metadata {
       } else if (metadata is List) {
         result[selector] = _parsePlatformOptions(platform, metadata);
       } else {
-        throw ArgumentError('Metadata for platform "$platform" must be a '
-            'Timeout, Skip, or List of those; was "$metadata".');
+        throw ArgumentError(
+          'Metadata for platform "$platform" must be a '
+          'Timeout, Skip, or List of those; was "$metadata".',
+        );
       }
     });
     return result;
   }
 
   static Metadata _parsePlatformOptions(
-      String platform, List<dynamic> metadata) {
+    String platform,
+    List<dynamic> metadata,
+  ) {
     Timeout? timeout;
     dynamic skip;
     for (var metadatum in metadata) {
       if (metadatum is Timeout) {
         if (timeout != null) {
-          throw ArgumentError('Only a single Timeout may be declared for '
-              '"$platform".');
+          throw ArgumentError(
+            'Only a single Timeout may be declared for '
+            '"$platform".',
+          );
         }
 
         timeout = metadatum;
       } else if (metadatum is Skip) {
         if (skip != null) {
-          throw ArgumentError('Only a single Skip may be declared for '
-              '"$platform".');
+          throw ArgumentError(
+            'Only a single Skip may be declared for '
+            '"$platform".',
+          );
         }
 
         skip = metadatum.reason ?? true;
       } else {
-        throw ArgumentError('Metadata for platform "$platform" must be a '
-            'Timeout, Skip, or List of those; was "$metadata".');
+        throw ArgumentError(
+          'Metadata for platform "$platform" must be a '
+          'Timeout, Skip, or List of those; was "$metadata".',
+        );
       }
     }
 
@@ -128,7 +139,10 @@ final class Metadata {
     if (tags is String) return {tags};
     if (tags is! Iterable) {
       throw ArgumentError.value(
-          tags, 'tags', 'must be either a String or an Iterable.');
+        tags,
+        'tags',
+        'must be either a String or an Iterable.',
+      );
     }
 
     if (tags.any((tag) => tag is! String)) {
@@ -145,31 +159,33 @@ final class Metadata {
   /// If [forTag] contains metadata that applies to [tags], that metadata is
   /// included inline in the returned value. The values directly passed to the
   /// constructor take precedence over tag-specific metadata.
-  factory Metadata(
-      {PlatformSelector? testOn,
-      Timeout? timeout,
-      bool? skip,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      int? retry,
-      String? skipReason,
-      Iterable<String>? tags,
-      Map<PlatformSelector, Metadata>? onPlatform,
-      Map<BooleanSelector, Metadata>? forTag,
-      String? languageVersionComment}) {
+  factory Metadata({
+    PlatformSelector? testOn,
+    Timeout? timeout,
+    bool? skip,
+    bool? verboseTrace,
+    bool? chainStackTraces,
+    int? retry,
+    String? skipReason,
+    Iterable<String>? tags,
+    Map<PlatformSelector, Metadata>? onPlatform,
+    Map<BooleanSelector, Metadata>? forTag,
+    String? languageVersionComment,
+  }) {
     // Returns metadata without forTag resolved at all.
     Metadata unresolved() => Metadata._(
-        testOn: testOn,
-        timeout: timeout,
-        skip: skip,
-        verboseTrace: verboseTrace,
-        chainStackTraces: chainStackTraces,
-        retry: retry,
-        skipReason: skipReason,
-        tags: tags,
-        onPlatform: onPlatform,
-        forTag: forTag,
-        languageVersionComment: languageVersionComment);
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      verboseTrace: verboseTrace,
+      chainStackTraces: chainStackTraces,
+      retry: retry,
+      skipReason: skipReason,
+      tags: tags,
+      onPlatform: onPlatform,
+      forTag: forTag,
+      languageVersionComment: languageVersionComment,
+    );
 
     // If there's no tag-specific metadata, or if none of it applies, just
     // return the metadata as-is.
@@ -205,16 +221,16 @@ final class Metadata {
     Map<PlatformSelector, Metadata>? onPlatform,
     Map<BooleanSelector, Metadata>? forTag,
     this.languageVersionComment,
-  })  : testOn = testOn ?? PlatformSelector.all,
-        timeout = timeout ?? const Timeout.factor(1),
-        _skip = skip,
-        _verboseTrace = verboseTrace,
-        _chainStackTraces = chainStackTraces,
-        _retry = retry,
-        tags = UnmodifiableSetView(tags == null ? {} : tags.toSet()),
-        onPlatform =
-            onPlatform == null ? const {} : UnmodifiableMapView(onPlatform),
-        forTag = forTag == null ? const {} : UnmodifiableMapView(forTag) {
+  }) : testOn = testOn ?? PlatformSelector.all,
+       timeout = timeout ?? const Timeout.factor(1),
+       _skip = skip,
+       _verboseTrace = verboseTrace,
+       _chainStackTraces = chainStackTraces,
+       _retry = retry,
+       tags = UnmodifiableSetView(tags == null ? {} : tags.toSet()),
+       onPlatform =
+           onPlatform == null ? const {} : UnmodifiableMapView(onPlatform),
+       forTag = forTag == null ? const {} : UnmodifiableMapView(forTag) {
     if (retry != null) RangeError.checkNotNegative(retry, 'retry');
     _validateTags();
   }
@@ -223,28 +239,29 @@ final class Metadata {
   /// where applicable.
   ///
   /// Throws a [FormatException] if any field is invalid.
-  Metadata.parse(
-      {String? testOn,
-      Timeout? timeout,
-      dynamic skip,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      int? retry,
-      Map<String, dynamic>? onPlatform,
-      Object? /* String|Iterable<String> */ tags,
-      this.languageVersionComment})
-      : testOn = testOn == null
-            ? PlatformSelector.all
-            : PlatformSelector.parse(testOn),
-        timeout = timeout ?? const Timeout.factor(1),
-        _skip = skip == null ? null : skip != false,
-        _verboseTrace = verboseTrace,
-        _chainStackTraces = chainStackTraces,
-        _retry = retry,
-        skipReason = skip is String ? skip : null,
-        onPlatform = _parseOnPlatform(onPlatform),
-        tags = _parseTags(tags),
-        forTag = const {} {
+  Metadata.parse({
+    String? testOn,
+    Timeout? timeout,
+    dynamic skip,
+    bool? verboseTrace,
+    bool? chainStackTraces,
+    int? retry,
+    Map<String, dynamic>? onPlatform,
+    Object? /* String|Iterable<String> */ tags,
+    this.languageVersionComment,
+  }) : testOn =
+           testOn == null
+               ? PlatformSelector.all
+               : PlatformSelector.parse(testOn),
+       timeout = timeout ?? const Timeout.factor(1),
+       _skip = skip == null ? null : skip != false,
+       _verboseTrace = verboseTrace,
+       _chainStackTraces = chainStackTraces,
+       _retry = retry,
+       skipReason = skip is String ? skip : null,
+       onPlatform = _parseOnPlatform(onPlatform),
+       tags = _parseTags(tags),
+       forTag = const {} {
     if (skip != null && skip is! String && skip is! bool) {
       throw ArgumentError('"skip" must be a String or a bool, was "$skip".');
     }
@@ -256,26 +273,30 @@ final class Metadata {
 
   /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
   Metadata.deserialize(Map serialized)
-      : testOn = serialized['testOn'] == null
-            ? PlatformSelector.all
-            : PlatformSelector.parse(serialized['testOn'] as String),
-        timeout = _deserializeTimeout(serialized['timeout']),
-        _skip = serialized['skip'] as bool?,
-        skipReason = serialized['skipReason'] as String?,
-        _verboseTrace = serialized['verboseTrace'] as bool?,
-        _chainStackTraces = serialized['chainStackTraces'] as bool?,
-        _retry = (serialized['retry'] as num?)?.toInt(),
-        tags = Set.from(serialized['tags'] as Iterable),
-        onPlatform = {
-          for (var pair in serialized['onPlatform'] as List)
-            PlatformSelector.parse(pair.first as String):
-                Metadata.deserialize(pair.last as Map)
-        },
-        forTag = (serialized['forTag'] as Map).map((key, nested) => MapEntry(
-            BooleanSelector.parse(key as String),
-            Metadata.deserialize(nested as Map))),
-        languageVersionComment =
-            serialized['languageVersionComment'] as String?;
+    : testOn =
+          serialized['testOn'] == null
+              ? PlatformSelector.all
+              : PlatformSelector.parse(serialized['testOn'] as String),
+      timeout = _deserializeTimeout(serialized['timeout']),
+      _skip = serialized['skip'] as bool?,
+      skipReason = serialized['skipReason'] as String?,
+      _verboseTrace = serialized['verboseTrace'] as bool?,
+      _chainStackTraces = serialized['chainStackTraces'] as bool?,
+      _retry = (serialized['retry'] as num?)?.toInt(),
+      tags = Set.from(serialized['tags'] as Iterable),
+      onPlatform = {
+        for (var pair in serialized['onPlatform'] as List)
+          PlatformSelector.parse(pair.first as String): Metadata.deserialize(
+            pair.last as Map,
+          ),
+      },
+      forTag = (serialized['forTag'] as Map).map(
+        (key, nested) => MapEntry(
+          BooleanSelector.parse(key as String),
+          Metadata.deserialize(nested as Map),
+        ),
+      ),
+      languageVersionComment = serialized['languageVersionComment'] as String?;
 
   /// Deserializes timeout from the format returned by [_serializeTimeout].
   static Timeout _deserializeTimeout(Object? serialized) {
@@ -283,22 +304,26 @@ final class Metadata {
     var scaleFactor = (serialized as Map)['scaleFactor'];
     if (scaleFactor != null) return Timeout.factor(scaleFactor as num);
     return Timeout(
-        Duration(microseconds: (serialized['duration'] as num).toInt()));
+      Duration(microseconds: (serialized['duration'] as num).toInt()),
+    );
   }
 
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
   /// identifiers.
   void _validateTags() {
-    var invalidTags = tags
-        .where((tag) => !tag.contains(anchoredHyphenatedIdentifier))
-        .map((tag) => '"$tag"')
-        .toList();
+    var invalidTags =
+        tags
+            .where((tag) => !tag.contains(anchoredHyphenatedIdentifier))
+            .map((tag) => '"$tag"')
+            .toList();
 
     if (invalidTags.isEmpty) return;
 
-    throw ArgumentError("Invalid ${pluralize('tag', invalidTags.length)} "
-        '${toSentence(invalidTags)}. Tags must be (optionally hyphenated) '
-        'Dart identifiers.');
+    throw ArgumentError(
+      "Invalid ${pluralize('tag', invalidTags.length)} "
+      '${toSentence(invalidTags)}. Tags must be (optionally hyphenated) '
+      'Dart identifiers.',
+    );
   }
 
   /// Throws a [FormatException] if any [PlatformSelector]s use any variables
@@ -318,34 +343,42 @@ final class Metadata {
   /// either has a [forTag] metadata for one of the other's tags, that metadata
   /// is merged as well.
   Metadata merge(Metadata other) => Metadata(
-      testOn: testOn.intersection(other.testOn),
-      timeout: timeout.merge(other.timeout),
-      skip: other._skip ?? _skip,
-      skipReason: other.skipReason ?? skipReason,
-      verboseTrace: other._verboseTrace ?? _verboseTrace,
-      chainStackTraces: other._chainStackTraces ?? _chainStackTraces,
-      retry: other._retry ?? _retry,
-      tags: tags.union(other.tags),
-      onPlatform: mergeMaps(onPlatform, other.onPlatform,
-          value: (metadata1, metadata2) => metadata1.merge(metadata2)),
-      forTag: mergeMaps(forTag, other.forTag,
-          value: (metadata1, metadata2) => metadata1.merge(metadata2)),
-      languageVersionComment:
-          other.languageVersionComment ?? languageVersionComment);
+    testOn: testOn.intersection(other.testOn),
+    timeout: timeout.merge(other.timeout),
+    skip: other._skip ?? _skip,
+    skipReason: other.skipReason ?? skipReason,
+    verboseTrace: other._verboseTrace ?? _verboseTrace,
+    chainStackTraces: other._chainStackTraces ?? _chainStackTraces,
+    retry: other._retry ?? _retry,
+    tags: tags.union(other.tags),
+    onPlatform: mergeMaps(
+      onPlatform,
+      other.onPlatform,
+      value: (metadata1, metadata2) => metadata1.merge(metadata2),
+    ),
+    forTag: mergeMaps(
+      forTag,
+      other.forTag,
+      value: (metadata1, metadata2) => metadata1.merge(metadata2),
+    ),
+    languageVersionComment:
+        other.languageVersionComment ?? languageVersionComment,
+  );
 
   /// Returns a copy of [this] with the given fields changed.
-  Metadata change(
-      {PlatformSelector? testOn,
-      Timeout? timeout,
-      bool? skip,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      int? retry,
-      String? skipReason,
-      Map<PlatformSelector, Metadata>? onPlatform,
-      Set<String>? tags,
-      Map<BooleanSelector, Metadata>? forTag,
-      String? languageVersionComment}) {
+  Metadata change({
+    PlatformSelector? testOn,
+    Timeout? timeout,
+    bool? skip,
+    bool? verboseTrace,
+    bool? chainStackTraces,
+    int? retry,
+    String? skipReason,
+    Map<PlatformSelector, Metadata>? onPlatform,
+    Set<String>? tags,
+    Map<BooleanSelector, Metadata>? forTag,
+    String? languageVersionComment,
+  }) {
     testOn ??= this.testOn;
     timeout ??= this.timeout;
     skip ??= _skip;
@@ -358,17 +391,18 @@ final class Metadata {
     forTag ??= this.forTag;
     languageVersionComment ??= this.languageVersionComment;
     return Metadata(
-        testOn: testOn,
-        timeout: timeout,
-        skip: skip,
-        verboseTrace: verboseTrace,
-        chainStackTraces: chainStackTraces,
-        skipReason: skipReason,
-        onPlatform: onPlatform,
-        tags: tags,
-        forTag: forTag,
-        retry: retry,
-        languageVersionComment: languageVersionComment);
+      testOn: testOn,
+      timeout: timeout,
+      skip: skip,
+      verboseTrace: verboseTrace,
+      chainStackTraces: chainStackTraces,
+      skipReason: skipReason,
+      onPlatform: onPlatform,
+      tags: tags,
+      forTag: forTag,
+      retry: retry,
+      languageVersionComment: languageVersionComment,
+    );
   }
 
   /// Returns a copy of [this] with all platform-specific metadata from
@@ -403,8 +437,10 @@ final class Metadata {
       'retry': _retry,
       'tags': tags.toList(),
       'onPlatform': serializedOnPlatform,
-      'forTag': forTag.map((selector, metadata) =>
-          MapEntry(selector.toString(), metadata.serialize())),
+      'forTag': forTag.map(
+        (selector, metadata) =>
+            MapEntry(selector.toString(), metadata.serialize()),
+      ),
       'languageVersionComment': languageVersionComment,
     };
   }
@@ -414,7 +450,7 @@ final class Metadata {
     if (timeout == Timeout.none) return 'none';
     return {
       'duration': timeout.duration?.inMicroseconds,
-      'scaleFactor': timeout.scaleFactor
+      'scaleFactor': timeout.scaleFactor,
     };
   }
 }

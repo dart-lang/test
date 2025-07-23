@@ -36,10 +36,14 @@ class _Prints extends AsyncMatcher {
     if (item is! Object? Function()) return 'was not a unary Function';
 
     var buffer = StringBuffer();
-    var result = runZoned(item,
-        zoneSpecification: ZoneSpecification(print: (_, __, ____, line) {
-      buffer.writeln(line);
-    }));
+    var result = runZoned(
+      item,
+      zoneSpecification: ZoneSpecification(
+        print: (_, _, _, line) {
+          buffer.writeln(line);
+        },
+      ),
+    );
 
     return result is Future
         ? result.then((_) => _check(buffer.toString()))
@@ -56,9 +60,10 @@ class _Prints extends AsyncMatcher {
     var matchState = <Object?, Object?>{};
     if (_matcher.matches(actual, matchState)) return null;
 
-    var result = _matcher
-        .describeMismatch(actual, StringDescription(), matchState, false)
-        .toString();
+    var result =
+        _matcher
+            .describeMismatch(actual, StringDescription(), matchState, false)
+            .toString();
 
     var buffer = StringBuffer();
     if (actual.isEmpty) {

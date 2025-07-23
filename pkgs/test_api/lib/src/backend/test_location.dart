@@ -16,15 +16,14 @@ class TestLocation {
   /// This method is also used to provide the location in the JSON reporter when
   /// a custom location is provided for the test.
   Map<String, dynamic> serialize() {
-    return {
-      'url': uri.toString(),
-      'line': line,
-      'column': column,
-    };
+    return {'url': uri.toString(), 'line': line, 'column': column};
   }
 
   /// Deserializes the result of [TestLocation.serialize] into a new [TestLocation].
   TestLocation.deserialize(Map serialized)
-      : this(Uri.parse(serialized['url'] as String), serialized['line'] as int,
-            serialized['column'] as int);
+    : this(
+        Uri.parse(serialized['url'] as String),
+        serialized['line'] as int,
+        serialized['column'] as int,
+      );
 }

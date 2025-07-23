@@ -74,8 +74,13 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
   @override
   Uri get serverUrl => _server.url.resolve('$_secret/');
 
-  Dart2JsSupport._(super.config, super.defaultTemplatePath, this._server,
-      this._root, String faviconPath) {
+  Dart2JsSupport._(
+    super.config,
+    super.defaultTemplatePath,
+    this._server,
+    this._root,
+    String faviconPath,
+  ) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
         .add(packagesDirHandler())
@@ -87,10 +92,9 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
-    _server.mount(shelf.Cascade()
-        .add(createFileHandler(faviconPath))
-        .add(pipeline)
-        .handler);
+    _server.mount(
+      shelf.Cascade().add(createFileHandler(faviconPath)).add(pipeline).handler,
+    );
   }
 
   static Future<Dart2JsSupport> start({
@@ -101,12 +105,20 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
   }) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
     return Dart2JsSupport._(
-        config, defaultTemplatePath, server, root, faviconPath);
+      config,
+      defaultTemplatePath,
+      server,
+      root,
+      faviconPath,
+    );
   }
 
   @override
   Future<void> compileSuite(
-      String dartPath, SuiteConfiguration suiteConfig, SuitePlatform platform) {
+    String dartPath,
+    SuiteConfiguration suiteConfig,
+    SuitePlatform platform,
+  ) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
@@ -127,33 +139,44 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
       await _compilerPool.compile(bootstrapContent, jsPath, suiteConfig);
       if (_closed) return;
 
-      var bootstrapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+      var bootstrapUrl =
+          '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart';
       _pathHandler.add(bootstrapUrl, (request) {
-        return shelf.Response.ok(bootstrapContent,
-            headers: {'Content-Type': 'application/dart'});
+        return shelf.Response.ok(
+          bootstrapContent,
+          headers: {'Content-Type': 'application/dart'},
+        );
       });
 
-      var jsUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+      var jsUrl =
+          '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart.js';
       _pathHandler.add(jsUrl, (request) {
-        return shelf.Response.ok(File(jsPath).readAsStringSync(),
-            headers: {'Content-Type': 'application/javascript'});
+        return shelf.Response.ok(
+          File(jsPath).readAsStringSync(),
+          headers: {'Content-Type': 'application/javascript'},
+        );
       });
 
-      var mapUrl = '${p.toUri(p.relative(dartPath, from: _root)).path}'
+      var mapUrl =
+          '${p.toUri(p.relative(dartPath, from: _root)).path}'
           '.browser_test.dart.js.map';
       _pathHandler.add(mapUrl, (request) {
-        return shelf.Response.ok(File('$jsPath.map').readAsStringSync(),
-            headers: {'Content-Type': 'application/json'});
+        return shelf.Response.ok(
+          File('$jsPath.map').readAsStringSync(),
+          headers: {'Content-Type': 'application/json'},
+        );
       });
 
       if (suiteConfig.jsTrace) return;
       var mapPath = '$jsPath.map';
-      _mappers[dartPath] = JSStackTraceMapper(File(mapPath).readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
+      _mappers[dartPath] = JSStackTraceMapper(
+        File(mapPath).readAsStringSync(),
+        mapUrl: p.toUri(mapPath),
+        sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
+        packageMap: (await currentPackageConfig).toPackageMap(),
+      );
     });
   }
 
@@ -177,10 +200,11 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
     var completer = Completer<WebSocketChannel>.sync();
     // Note: the WebSocketChannel type below is needed for compatibility with
     // package:shelf_web_socket v2.
-    var path =
-        _webSocketHandler.create(webSocketHandler((WebSocketChannel ws, _) {
-      completer.complete(ws);
-    }));
+    var path = _webSocketHandler.create(
+      webSocketHandler((WebSocketChannel ws, _) {
+        completer.complete(ws);
+      }),
+    );
     var webSocketUrl = serverUrl.replace(scheme: 'ws').resolve(path);
     return (webSocketUrl, completer.future);
   }

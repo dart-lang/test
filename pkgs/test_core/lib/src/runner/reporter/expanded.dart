@@ -97,26 +97,35 @@ class ExpandedReporter implements Reporter {
   /// won't. If [printPath] is `true`, this will print the path name as part of
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
-  static ExpandedReporter watch(Engine engine, StringSink sink,
-          {required bool color,
-          required bool printPath,
-          required bool printPlatform}) =>
-      ExpandedReporter._(engine, sink,
-          color: color, printPath: printPath, printPlatform: printPlatform);
+  static ExpandedReporter watch(
+    Engine engine,
+    StringSink sink, {
+    required bool color,
+    required bool printPath,
+    required bool printPlatform,
+  }) => ExpandedReporter._(
+    engine,
+    sink,
+    color: color,
+    printPath: printPath,
+    printPlatform: printPlatform,
+  );
 
-  ExpandedReporter._(this._engine, this._sink,
-      {required bool color,
-      required bool printPath,
-      required bool printPlatform})
-      : _printPath = printPath,
-        _printPlatform = printPlatform,
-        _color = color,
-        _green = color ? '\u001b[32m' : '',
-        _red = color ? '\u001b[31m' : '',
-        _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[90m' : '',
-        _bold = color ? '\u001b[1m' : '',
-        _noColor = color ? '\u001b[0m' : '' {
+  ExpandedReporter._(
+    this._engine,
+    this._sink, {
+    required bool color,
+    required bool printPath,
+    required bool printPlatform,
+  }) : _printPath = printPath,
+       _printPlatform = printPlatform,
+       _color = color,
+       _green = color ? '\u001b[32m' : '',
+       _red = color ? '\u001b[31m' : '',
+       _yellow = color ? '\u001b[33m' : '',
+       _gray = color ? '\u001b[90m' : '',
+       _bold = color ? '\u001b[1m' : '',
+       _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
@@ -166,8 +175,11 @@ class ExpandedReporter implements Reporter {
       // The engine surfaces load tests when there are no other tests running,
       // but because the expanded reporter's output is always visible, we don't
       // emit information about them unless they fail.
-      _subscriptions.add(liveTest.onStateChange
-          .listen((state) => _onStateChange(liveTest, state)));
+      _subscriptions.add(
+        liveTest.onStateChange.listen(
+          (state) => _onStateChange(liveTest, state),
+        ),
+      );
     } else if (_engine.active.isEmpty &&
         _engine.activeSuiteLoads.length == 1 &&
         _engine.activeSuiteLoads.first == liveTest &&
@@ -177,15 +189,20 @@ class ExpandedReporter implements Reporter {
       _progressLine(_description(liveTest));
     }
 
-    _subscriptions.add(liveTest.onError
-        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(
+      liveTest.onError.listen(
+        (error) => _onError(liveTest, error.error, error.stackTrace),
+      ),
+    );
 
-    _subscriptions.add(liveTest.onMessage.listen((message) {
-      _progressLine(_description(liveTest));
-      var text = message.text;
-      if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-      _sink.writeln(text);
-    }));
+    _subscriptions.add(
+      liveTest.onMessage.listen((message) {
+        _progressLine(_description(liveTest));
+        var text = message.text;
+        if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
+        _sink.writeln(text);
+      }),
+    );
   }
 
   /// A callback called when [liveTest]'s state becomes [state].
@@ -241,8 +258,10 @@ class ExpandedReporter implements Reporter {
       _sink.writeln('No tests ran.');
     } else if (!success) {
       for (var liveTest in _engine.active) {
-        _progressLine(_description(liveTest),
-            suffix: ' - did not complete $_bold$_red[E]$_noColor');
+        _progressLine(
+          _description(liveTest),
+          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+        );
       }
       _progressLine('Some tests failed.', color: _red);
     } else if (_engine.passed.isEmpty) {
@@ -254,9 +273,11 @@ class ExpandedReporter implements Reporter {
     if (_shouldPrintStackTraceChainingNotice) {
       _sink
         ..writeln('')
-        ..writeln('Consider enabling the flag chain-stack-traces to '
-            'receive more detailed exceptions.\n'
-            "For example, 'dart test --chain-stack-traces'.");
+        ..writeln(
+          'Consider enabling the flag chain-stack-traces to '
+          'receive more detailed exceptions.\n'
+          "For example, 'dart test --chain-stack-traces'.",
+        );
     }
   }
 
@@ -336,7 +357,8 @@ class ExpandedReporter implements Reporter {
     }
 
     if (_printPlatform) {
-      name = '[${liveTest.suite.platform.runtime.name}, '
+      name =
+          '[${liveTest.suite.platform.runtime.name}, '
           '${liveTest.suite.platform.compiler.name}] $name';
     }
 

@@ -7,10 +7,7 @@ import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
 
-const _testMap = {
-  'a': 1,
-  'b': 2,
-};
+const _testMap = {'a': 1, 'b': 2};
 
 void main() {
   test('length', () {
@@ -18,10 +15,11 @@ void main() {
   });
   test('entries', () {
     check(_testMap).entries.any(
-          (it) => it
+      (it) =>
+          it
             ..has((p0) => p0.key, 'key').equals('a')
             ..has((p0) => p0.value, 'value').equals(1),
-        );
+    );
   });
   test('keys', () {
     check(_testMap).keys.contains('a');
@@ -35,19 +33,17 @@ void main() {
       check(_testMap)['a'].equals(1);
     });
     test('fails for a missing key', () {
-      check(_testMap).isRejectedBy((it) => it['z'],
-          which: ["does not contain the key 'z'"]);
+      check(
+        _testMap,
+      ).isRejectedBy((it) => it['z'], which: ["does not contain the key 'z'"]);
     });
     test('can be described', () {
       check((Subject<Map<String, Object>> it) => it['some\nlong\nkey'])
           .description
-          .deepEquals([
-        "  contains a value for 'some",
-        '  long',
-        "  key'",
-      ]);
-      check((Subject<Map<String, Object>> it) =>
-          it['some\nlong\nkey'].equals(1)).description.deepEquals([
+          .deepEquals(["  contains a value for 'some", '  long', "  key'"]);
+      check(
+        (Subject<Map<String, Object>> it) => it['some\nlong\nkey'].equals(1),
+      ).description.deepEquals([
         "  contains a value for 'some",
         '  long',
         "  key' that:",
@@ -61,8 +57,9 @@ void main() {
   });
   test('isNotEmpty', () {
     check(_testMap).isNotEmpty();
-    check(<Object, Object>{})
-        .isRejectedBy((it) => it.isNotEmpty(), which: ['is not empty']);
+    check(
+      <Object, Object>{},
+    ).isRejectedBy((it) => it.isNotEmpty(), which: ['is not empty']);
   });
   group('containsKey', () {
     test('succeeds for a key that exists', () {
@@ -75,12 +72,9 @@ void main() {
       );
     });
     test('can be described', () {
-      check((Subject<Map<String, Object>> it) =>
-          it.containsKey('some\nlong\nkey')).description.deepEquals([
-        "  contains key 'some",
-        '  long',
-        "  key'",
-      ]);
+      check(
+        (Subject<Map<String, Object>> it) => it.containsKey('some\nlong\nkey'),
+      ).description.deepEquals(["  contains key 'some", '  long', "  key'"]);
     });
   });
   test('containsKeyThat', () {
@@ -101,12 +95,10 @@ void main() {
       );
     });
     test('can be described', () {
-      check((Subject<Map<String, String>> it) =>
-          it.containsValue('some\nlong\nkey')).description.deepEquals([
-        "  contains value 'some",
-        '  long',
-        "  key'",
-      ]);
+      check(
+        (Subject<Map<String, String>> it) =>
+            it.containsValue('some\nlong\nkey'),
+      ).description.deepEquals(["  contains value 'some", '  long', "  key'"]);
     });
   });
   test('containsValueThat', () {

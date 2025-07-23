@@ -17,7 +17,11 @@ import 'util.dart';
 /// [maxItems] members or key/value pairs, respectively.
 String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
   String prettyPrintImpl(
-      Object? object, int indent, Set<Object?> seen, bool top) {
+    Object? object,
+    int indent,
+    Set<Object?> seen,
+    bool top,
+  ) {
     // If the object is a matcher, use its description.
     if (object is Matcher) {
       var description = StringDescription();
@@ -55,9 +59,10 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
       }).join(',\n')}\n${_indent(indent)}]';
     } else if (object is Map) {
       // Convert the contents of the map to string representations.
-      var strings = object.keys.map((key) {
-        return '${pp(key)}: ${pp(object[key])}';
-      }).toList();
+      var strings =
+          object.keys.map((key) {
+            return '${pp(key)}: ${pp(object[key])}';
+          }).toList();
 
       // Truncate the list of strings if it's longer than [maxItems].
       if (maxItems != null && strings.length > maxItems) {

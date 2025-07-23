@@ -33,7 +33,10 @@ abstract class CompilerSupport {
   /// [dartPath] is the path to the original `.dart` test suite, relative to the
   /// package root.
   Future<void> compileSuite(
-      String dartPath, SuiteConfiguration suiteConfig, SuitePlatform platform);
+    String dartPath,
+    SuiteConfiguration suiteConfig,
+    SuitePlatform platform,
+  );
 
   /// Retrieves a stack trace mapper for [dartPath] if available.
   ///
@@ -68,8 +71,10 @@ mixin JsHtmlWrapper on CompilerSupport {
           // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', link)
           .replaceAll('{{testName}}', testName);
-      return shelf.Response.ok(processedContents,
-          headers: {'Content-Type': 'text/html'});
+      return shelf.Response.ok(
+        processedContents,
+        headers: {'Content-Type': 'text/html'},
+      );
     }
 
     return shelf.Response.notFound('Not found.');
@@ -89,15 +94,18 @@ mixin WasmHtmlWrapper on CompilerSupport {
       var template = config.customHtmlTemplatePath ?? defaultTemplatePath;
       var contents = File(template).readAsStringSync();
       var jsRuntime = p.basename('$test.browser_test.dart.mjs');
-      var wasmData = '<data id="WasmBootstrapInfo" '
+      var wasmData =
+          '<data id="WasmBootstrapInfo" '
           'data-wasmurl="${p.basename('$test.browser_test.dart.wasm')}" '
           'data-jsruntimeurl="$jsRuntime"></data>';
       var processedContents = contents
           // Checked during loading phase that there is only one {{testScript}} placeholder.
           .replaceFirst('{{testScript}}', '$link\n$wasmData')
           .replaceAll('{{testName}}', testName);
-      return shelf.Response.ok(processedContents,
-          headers: {'Content-Type': 'text/html'});
+      return shelf.Response.ok(
+        processedContents,
+        headers: {'Content-Type': 'text/html'},
+      );
     }
 
     return shelf.Response.notFound('Not found.');

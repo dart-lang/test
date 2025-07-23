@@ -76,8 +76,14 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
   @override
   Uri get serverUrl => _server.url.resolve('$_secret/');
 
-  Dart2WasmSupport._(super.config, super.defaultTemplatePath,
-      this._jsRuntimeWrapper, this._server, this._root, String faviconPath) {
+  Dart2WasmSupport._(
+    super.config,
+    super.defaultTemplatePath,
+    this._jsRuntimeWrapper,
+    this._server,
+    this._root,
+    String faviconPath,
+  ) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
         .add(packagesDirHandler())
@@ -89,10 +95,9 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
-    _server.mount(shelf.Cascade()
-        .add(createFileHandler(faviconPath))
-        .add(pipeline)
-        .handler);
+    _server.mount(
+      shelf.Cascade().add(createFileHandler(faviconPath)).add(pipeline).handler,
+    );
   }
 
   static Future<Dart2WasmSupport> start({
@@ -103,18 +108,29 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
     required String faviconPath,
   }) async {
     var server = shelf_io.IOServer(await HttpMultiServer.loopback(0));
-    return Dart2WasmSupport._(config, defaultTemplatePath, jsRuntimeWrapper,
-        server, root, faviconPath);
+    return Dart2WasmSupport._(
+      config,
+      defaultTemplatePath,
+      jsRuntimeWrapper,
+      server,
+      root,
+      faviconPath,
+    );
   }
 
   @override
   Future<void> compileSuite(
-      String dartPath, SuiteConfiguration suiteConfig, SuitePlatform platform) {
+    String dartPath,
+    SuiteConfiguration suiteConfig,
+    SuitePlatform platform,
+  ) {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
 
-      var baseCompiledPath =
-          p.join(dir, '${p.basename(dartPath)}.browser_test.dart');
+      var baseCompiledPath = p.join(
+        dir,
+        '${p.basename(dartPath)}.browser_test.dart',
+      );
       var baseUrl =
           '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
       var wasmUrl = '$baseUrl.wasm';
@@ -134,30 +150,41 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       ''';
 
       await _compilerPool.compile(
-          bootstrapContent, baseCompiledPath, suiteConfig);
+        bootstrapContent,
+        baseCompiledPath,
+        suiteConfig,
+      );
       if (_closed) return;
 
       var wasmPath = '$baseCompiledPath.wasm';
       _pathHandler.add(wasmUrl, (request) {
-        return shelf.Response.ok(File(wasmPath).readAsBytesSync(),
-            headers: {'Content-Type': 'application/wasm'});
+        return shelf.Response.ok(
+          File(wasmPath).readAsBytesSync(),
+          headers: {'Content-Type': 'application/wasm'},
+        );
       });
 
       _pathHandler.add(jsRuntimeWrapperUrl, (request) {
-        return shelf.Response.ok(File(_jsRuntimeWrapper).readAsBytesSync(),
-            headers: {'Content-Type': 'application/javascript'});
+        return shelf.Response.ok(
+          File(_jsRuntimeWrapper).readAsBytesSync(),
+          headers: {'Content-Type': 'application/javascript'},
+        );
       });
 
       var jsRuntimePath = '$baseCompiledPath.mjs';
       _pathHandler.add(jsRuntimeUrl, (request) {
-        return shelf.Response.ok(File(jsRuntimePath).readAsBytesSync(),
-            headers: {'Content-Type': 'application/javascript'});
+        return shelf.Response.ok(
+          File(jsRuntimePath).readAsBytesSync(),
+          headers: {'Content-Type': 'application/javascript'},
+        );
       });
 
       var htmlPath = '$baseCompiledPath.html';
       _pathHandler.add(htmlUrl, (request) {
-        return shelf.Response.ok(File(htmlPath).readAsBytesSync(),
-            headers: {'Content-Type': 'text/html'});
+        return shelf.Response.ok(
+          File(htmlPath).readAsBytesSync(),
+          headers: {'Content-Type': 'text/html'},
+        );
       });
     });
   }
@@ -182,10 +209,11 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
     var completer = Completer<WebSocketChannel>.sync();
     // Note: the WebSocketChannel type below is needed for compatibility with
     // package:shelf_web_socket v2.
-    var path =
-        _webSocketHandler.create(webSocketHandler((WebSocketChannel ws, _) {
-      completer.complete(ws);
-    }));
+    var path = _webSocketHandler.create(
+      webSocketHandler((WebSocketChannel ws, _) {
+        completer.complete(ws);
+      }),
+    );
     var webSocketUrl = serverUrl.replace(scheme: 'ws').resolve(path);
     return (webSocketUrl, completer.future);
   }

@@ -42,8 +42,9 @@ void main() {
         }
       ''').create();
 
-      coverageDirectory =
-          await Directory.systemTemp.createTemp('test_coverage');
+      coverageDirectory = await Directory.systemTemp.createTemp(
+        'test_coverage',
+      );
     });
 
     tearDown(() async {
@@ -51,23 +52,31 @@ void main() {
     });
 
     test('gathers coverage for VM tests', () async {
-      var test =
-          await runTest(['--coverage', coverageDirectory.path, 'test.dart']);
+      var test = await runTest([
+        '--coverage',
+        coverageDirectory.path,
+        'test.dart',
+      ]);
       await validateCoverage(test, 'test.dart.vm.json');
     });
 
     test('gathers coverage for Chrome tests', () async {
-      var test = await runTest(
-          ['--coverage', coverageDirectory.path, 'test.dart', '-p', 'chrome']);
+      var test = await runTest([
+        '--coverage',
+        coverageDirectory.path,
+        'test.dart',
+        '-p',
+        'chrome',
+      ]);
       await validateCoverage(test, 'test.dart.chrome.json');
     });
 
     test(
-        'gathers coverage for Chrome tests when JS files contain unicode characters',
-        () async {
-      final sourceMapFileContent =
-          '{"version":3,"file":"","sources":[],"names":[],"mappings":""}';
-      final jsContent = '''
+      'gathers coverage for Chrome tests when JS files contain unicode characters',
+      () async {
+        final sourceMapFileContent =
+            '{"version":3,"file":"","sources":[],"names":[],"mappings":""}';
+        final jsContent = '''
         (function() {
           '© '
           window.foo = function foo() {
@@ -78,10 +87,10 @@ void main() {
           '© ': ''
           });
       ''';
-      await d.file('file_with_unicode.js', jsContent).create();
-      await d.file('file_with_unicode.js.map', sourceMapFileContent).create();
+        await d.file('file_with_unicode.js', jsContent).create();
+        await d.file('file_with_unicode.js.map', sourceMapFileContent).create();
 
-      await d.file('js_with_unicode_test.dart', '''
+        await d.file('js_with_unicode_test.dart', '''
         import 'dart:async';
         import 'dart:js_interop';
         import 'dart:js_interop_unsafe';
@@ -111,27 +120,33 @@ void main() {
         }
       ''').create();
 
-      final jsBytes = utf8.encode(jsContent);
-      final jsLatin1 = latin1.decode(jsBytes);
-      final jsUtf8 = utf8.decode(jsBytes);
-      expect(jsLatin1, isNot(jsUtf8),
-          reason: 'test setup: should have decoded differently');
+        final jsBytes = utf8.encode(jsContent);
+        final jsLatin1 = latin1.decode(jsBytes);
+        final jsUtf8 = utf8.decode(jsBytes);
+        expect(
+          jsLatin1,
+          isNot(jsUtf8),
+          reason: 'test setup: should have decoded differently',
+        );
 
-      const functionPattern = 'function foo';
-      expect([jsLatin1, jsUtf8], everyElement(contains(functionPattern)));
-      expect(jsLatin1.indexOf(functionPattern),
+        const functionPattern = 'function foo';
+        expect([jsLatin1, jsUtf8], everyElement(contains(functionPattern)));
+        expect(
+          jsLatin1.indexOf(functionPattern),
           isNot(jsUtf8.indexOf(functionPattern)),
           reason:
-              'test setup: decoding should have shifted the position of the function');
+              'test setup: decoding should have shifted the position of the function',
+        );
 
-      var test = await runTest([
-        '--coverage',
-        coverageDirectory.path,
-        'js_with_unicode_test.dart',
-        '-p',
-        'chrome'
-      ]);
-      await validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
-    });
+        var test = await runTest([
+          '--coverage',
+          coverageDirectory.path,
+          'js_with_unicode_test.dart',
+          '-p',
+          'chrome',
+        ]);
+        await validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
+      },
+    );
   });
 }

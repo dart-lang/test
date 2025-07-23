@@ -41,22 +41,23 @@ class OperatingSystem {
   /// Finds an operating system by its name.
   ///
   /// If no operating system is found, returns [none].
-  static OperatingSystem find(String identifier) =>
-      all.firstWhere((platform) => platform.identifier == identifier,
-          orElse: () => none);
+  static OperatingSystem find(String identifier) => all.firstWhere(
+    (platform) => platform.identifier == identifier,
+    orElse: () => none,
+  );
 
   /// Finds an operating system by the return value from `dart:io`'s
   /// `Platform.operatingSystem`.
   ///
   /// If no operating system is found, returns [none].
   static OperatingSystem findByIoName(String name) => switch (name) {
-        'windows' => windows,
-        'macos' => macOS,
-        'linux' => linux,
-        'android' => android,
-        'ios' => iOS,
-        _ => none,
-      };
+    'windows' => windows,
+    'macos' => macOS,
+    'linux' => linux,
+    'android' => android,
+    'ios' => iOS,
+    _ => none,
+  };
 
   /// The human-friendly of the operating system.
   final String name;

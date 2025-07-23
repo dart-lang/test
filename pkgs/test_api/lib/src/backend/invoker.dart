@@ -50,15 +50,25 @@ class LocalTest extends Test {
   /// errors that escape that zone cause the test to fail. If it's `false`, it's
   /// the caller's responsibility to invoke [LiveTest.run] in the context of a
   /// call to [Invoker.guard].
-  LocalTest(this.name, this.metadata, this._body,
-      {this.trace,
-      this.location,
-      bool guarded = true,
-      this.isScaffoldAll = false})
-      : _guarded = guarded;
+  LocalTest(
+    this.name,
+    this.metadata,
+    this._body, {
+    this.trace,
+    this.location,
+    bool guarded = true,
+    this.isScaffoldAll = false,
+  }) : _guarded = guarded;
 
-  LocalTest._(this.name, this.metadata, this._body, this.trace, this.location,
-      this._guarded, this.isScaffoldAll);
+  LocalTest._(
+    this.name,
+    this.metadata,
+    this._body,
+    this.trace,
+    this.location,
+    this._guarded,
+    this.isScaffoldAll,
+  );
 
   /// Loads a single runnable instance of this test.
   @override
@@ -70,8 +80,15 @@ class LocalTest extends Test {
   @override
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
-    return LocalTest._(name, metadata.forPlatform(platform), _body, trace,
-        location, _guarded, isScaffoldAll);
+    return LocalTest._(
+      name,
+      metadata.forPlatform(platform),
+      _body,
+      trace,
+      location,
+      _guarded,
+      isScaffoldAll,
+    );
   }
 
   @override
@@ -88,7 +105,14 @@ class LocalTest extends Test {
   @override
   Test clone() {
     return LocalTest._(
-        name, metadata, _body, trace, location, _guarded, isScaffoldAll);
+      name,
+      metadata,
+      _body,
+      trace,
+      location,
+      _guarded,
+      isScaffoldAll,
+    );
   }
 }
 
@@ -144,8 +168,10 @@ class Invoker {
   _AsyncCounter get _outstandingCallbacks {
     var counter = Zone.current[_counterKey] as _AsyncCounter?;
     if (counter != null) return counter;
-    throw StateError("Can't add or remove outstanding callbacks outside "
-        'of a test body.');
+    throw StateError(
+      "Can't add or remove outstanding callbacks outside "
+      'of a test body.',
+    );
   }
 
   /// All the zones created by [_waitForOutstandingCallbacks], in the order they
@@ -174,19 +200,22 @@ class Invoker {
 
   /// Runs [callback] in a zone where unhandled errors from [LiveTest]s are
   /// caught and dispatched to the appropriate [Invoker].
-  static T? guard<T>(T Function() callback) =>
-      runZoned<T?>(callback, zoneSpecification: ZoneSpecification(
-          // Use [handleUncaughtError] rather than [onError] so we can
-          // capture [zone] and with it the outstanding callback counter for
-          // the zone in which [error] was thrown.
-          handleUncaughtError: (self, _, zone, error, stackTrace) {
+  static T? guard<T>(T Function() callback) => runZoned<T?>(
+    callback,
+    zoneSpecification: ZoneSpecification(
+      // Use [handleUncaughtError] rather than [onError] so we can
+      // capture [zone] and with it the outstanding callback counter for
+      // the zone in which [error] was thrown.
+      handleUncaughtError: (self, _, zone, error, stackTrace) {
         var invoker = zone[#test.invoker] as Invoker?;
         if (invoker != null) {
           self.parent!.run(() => invoker._handleError(zone, error, stackTrace));
         } else {
           self.parent!.handleUncaughtError(error, stackTrace);
         }
-      }));
+      },
+    ),
+  );
 
   /// The timer for tracking timeouts.
   ///
@@ -199,12 +228,19 @@ class Invoker {
   /// Messages to print if and when this test fails.
   final _printsOnFailure = <String>[];
 
-  Invoker._(Suite suite, LocalTest test,
-      {Iterable<Group>? groups, bool guarded = true})
-      : _guarded = guarded {
+  Invoker._(
+    Suite suite,
+    LocalTest test, {
+    Iterable<Group>? groups,
+    bool guarded = true,
+  }) : _guarded = guarded {
     _controller = LiveTestController(
-        suite, test, _onRun, _onCloseCompleter.complete,
-        groups: groups);
+      suite,
+      test,
+      _onRun,
+      _onCloseCompleter.complete,
+      groups: groups,
+    );
   }
 
   /// Runs [callback] after this test completes.
@@ -390,11 +426,12 @@ class Invoker {
     if (liveTest.suite.isLoadSuite) return;
 
     _handleError(
-        zone,
-        'This test failed after it had already completed.\n'
-        'Make sure to use a matching library which informs the test runner\n'
-        'of pending async work.',
-        stackTrace);
+      zone,
+      'This test failed after it had already completed.\n'
+      'Make sure to use a matching library which informs the test runner\n'
+      'of pending async work.',
+      stackTrace,
+    );
   }
 
   /// The method that's run when the test is started.
@@ -402,44 +439,57 @@ class Invoker {
     _controller.setState(const State(Status.running, Result.success));
 
     _runCount++;
-    Chain.capture(() {
-      _guardIfGuarded(() {
-        runZoned(() async {
-          // Run the test asynchronously so that the "running" state change
-          // has a chance to hit its event handler(s) before the test produces
-          // an error. If an error is emitted before the first state change is
-          // handled, we can end up with [onError] callbacks firing before the
-          // corresponding [onStateChange], which violates the timing
-          // guarantees.
-          //
-          // Use the event loop over the microtask queue to avoid starvation.
-          await Future(() {});
+    Chain.capture(
+      () {
+        _guardIfGuarded(() {
+          runZoned(
+            () async {
+              // Run the test asynchronously so that the "running" state change
+              // has a chance to hit its event handler(s) before the test produces
+              // an error. If an error is emitted before the first state change is
+              // handled, we can end up with [onError] callbacks firing before the
+              // corresponding [onStateChange], which violates the timing
+              // guarantees.
+              //
+              // Use the event loop over the microtask queue to avoid starvation.
+              await Future(() {});
 
-          await _waitForOutstandingCallbacks(_test._body);
-          await _waitForOutstandingCallbacks(() => runTearDowns(_tearDowns));
+              await _waitForOutstandingCallbacks(_test._body);
+              await _waitForOutstandingCallbacks(
+                () => runTearDowns(_tearDowns),
+              );
 
-          if (_timeoutTimer != null) _timeoutTimer!.cancel();
+              if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
-          if (liveTest.state.result != Result.success &&
-              _runCount < liveTest.test.metadata.retry + 1) {
-            _controller.message(Message.print('Retry: ${liveTest.test.name}'));
-            _onRun();
-            return;
-          }
+              if (liveTest.state.result != Result.success &&
+                  _runCount < liveTest.test.metadata.retry + 1) {
+                _controller.message(
+                  Message.print('Retry: ${liveTest.test.name}'),
+                );
+                _onRun();
+                return;
+              }
 
-          _controller.setState(State(Status.complete, liveTest.state.result));
+              _controller.setState(
+                State(Status.complete, liveTest.state.result),
+              );
 
-          _controller.completer.complete();
-        },
+              _controller.completer.complete();
+            },
             zoneValues: {
               #test.invoker: this,
               _forceOpenForTearDownKey: false,
               #runCount: _runCount,
             },
-            zoneSpecification:
-                ZoneSpecification(print: (_, __, ___, line) => _print(line)));
-      });
-    }, when: liveTest.test.metadata.chainStackTraces, errorZone: false);
+            zoneSpecification: ZoneSpecification(
+              print: (_, _, _, line) => _print(line),
+            ),
+          );
+        });
+      },
+      when: liveTest.test.metadata.chainStackTraces,
+      errorZone: false,
+    );
   }
 
   /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.

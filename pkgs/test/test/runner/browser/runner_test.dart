@@ -37,12 +37,13 @@ void main() {
       var test = await runTest(['-p', 'chrome', 'test.dart']);
 
       expect(
-          test.stdout,
-          containsInOrder([
-            'Error: Compilation failed.',
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": dart2js failed.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          'Error: Compilation failed.',
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": dart2js failed.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -51,50 +52,64 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": oh no'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": oh no',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
-    test("a test file doesn't have a main defined", () async {
-      await d.file('test.dart', 'void foo() {}').create();
+    test(
+      "a test file doesn't have a main defined",
+      () async {
+        await d.file('test.dart', 'void foo() {}').create();
 
-      var test = await runTest(['-p', 'chrome', 'test.dart']);
-      expect(
+        var test = await runTest(['-p', 'chrome', 'test.dart']);
+        expect(
           test.stdout,
           containsInOrder([
             '-1: loading test.dart [E]',
-            'Failed to load "test.dart": No top-level main() function defined.'
-          ]));
-      await test.shouldExit(1);
-    }, tags: 'chrome', skip: 'https://github.com/dart-lang/test/issues/894');
+            'Failed to load "test.dart": No top-level main() function defined.',
+          ]),
+        );
+        await test.shouldExit(1);
+      },
+      tags: 'chrome',
+      skip: 'https://github.com/dart-lang/test/issues/894',
+    );
 
-    test('a test file has a non-function main', () async {
-      await d.file('test.dart', 'int main;').create();
+    test(
+      'a test file has a non-function main',
+      () async {
+        await d.file('test.dart', 'int main;').create();
 
-      var test = await runTest(['-p', 'chrome', 'test.dart']);
-      expect(
+        var test = await runTest(['-p', 'chrome', 'test.dart']);
+        expect(
           test.stdout,
           containsInOrder([
             '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Top-level main getter is not a function.'
-          ]));
-      await test.shouldExit(1);
-    }, tags: 'chrome', skip: 'https://github.com/dart-lang/test/issues/894');
+            'Failed to load "test.dart": Top-level main getter is not a function.',
+          ]),
+        );
+        await test.shouldExit(1);
+      },
+      tags: 'chrome',
+      skip: 'https://github.com/dart-lang/test/issues/894',
+    );
 
     test('a test file has a main with arguments', () async {
       await d.file('test.dart', 'void main(arg) {}').create();
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Top-level main() function takes arguments.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Top-level main() function takes arguments.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -111,12 +126,13 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": "test.html" must contain '
-                '<script src="packages/test/dart.js"></script>.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": "test.html" must contain '
+              '<script src="packages/test/dart.js"></script>.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -133,12 +149,13 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Expected exactly 1 '
-                '<link rel="x-dart-test"> in test.html, found 0.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Expected exactly 1 '
+              '<link rel="x-dart-test"> in test.html, found 0.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -157,12 +174,13 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Expected exactly 1 '
-                '<link rel="x-dart-test"> in test.html, found 2.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Expected exactly 1 '
+              '<link rel="x-dart-test"> in test.html, found 2.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -180,12 +198,13 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Expected <link rel="x-dart-test"> in '
-                'test.html to have an "href" attribute.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Expected <link rel="x-dart-test"> in '
+              'test.html to have an "href" attribute.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -203,20 +222,21 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Failed to load script at '
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Failed to load script at ',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
     test(
-        'still errors even with a custom HTML template set since it will take precedence',
-        () async {
-      await d.file('test.dart', 'void main() {}').create();
+      'still errors even with a custom HTML template set since it will take precedence',
+      () async {
+        await d.file('test.dart', 'void main() {}').create();
 
-      await d.file('test.html', '''
+        await d.file('test.html', '''
 <html>
 <head>
   <link rel="x-dart-test" href="test.dart">
@@ -224,14 +244,16 @@ void main() {
 </html>
 ''').create();
 
-      await d
-          .file(
+        await d
+            .file(
               'global_test.yaml',
-              jsonEncode(
-                  {'custom_html_template_path': 'html_template.html.tpl'}))
-          .create();
+              jsonEncode({
+                'custom_html_template_path': 'html_template.html.tpl',
+              }),
+            )
+            .create();
 
-      await d.file('html_template.html.tpl', '''
+        await d.file('html_template.html.tpl', '''
 <html>
 <head>
   {{testScript}}
@@ -243,38 +265,48 @@ void main() {
 </html>
 ''').create();
 
-      var test = await runTest(['-p', 'chrome', 'test.dart'],
-          environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
-      expect(
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
+        expect(
           test.stdout,
           containsInOrder([
             '-1: loading test.dart [E]',
             'Failed to load "test.dart": "test.html" must contain '
-                '<script src="packages/test/dart.js"></script>.'
-          ]));
-      await test.shouldExit(1);
-    }, tags: 'chrome');
+                '<script src="packages/test/dart.js"></script>.',
+          ]),
+        );
+        await test.shouldExit(1);
+      },
+      tags: 'chrome',
+    );
 
     group('with a custom HTML template', () {
       setUp(() async {
         await d.file('test.dart', _success).create();
         await d
             .file(
-                'global_test.yaml',
-                jsonEncode(
-                    {'custom_html_template_path': 'html_template.html.tpl'}))
+              'global_test.yaml',
+              jsonEncode({
+                'custom_html_template_path': 'html_template.html.tpl',
+              }),
+            )
             .create();
       });
 
       test('that does not exist', () async {
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: loading test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" does not exist or is not readable'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": "html_template.html.tpl" does not exist or is not readable',
+          ]),
+        );
         await test.shouldExit(1);
       }, tags: 'chrome');
 
@@ -290,14 +322,17 @@ void main() {
 </html>
 ''').create();
 
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: loading test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder',
+          ]),
+        );
         await test.shouldExit(1);
       }, tags: 'chrome');
 
@@ -315,14 +350,17 @@ void main() {
 </html>
 ''').create();
 
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: loading test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": "html_template.html.tpl" must contain exactly one {{testScript}} placeholder',
+          ]),
+        );
         await test.shouldExit(1);
       }, tags: 'chrome');
 
@@ -335,15 +373,18 @@ void main() {
 </html>
 ''').create();
 
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: loading test.dart [E]',
-              'Failed to load "test.dart": "html_template.html.tpl" must contain '
-                  '<script src="packages/test/dart.js"></script>.'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": "html_template.html.tpl" must contain '
+                '<script src="packages/test/dart.js"></script>.',
+          ]),
+        );
         await test.shouldExit(1);
       }, tags: 'chrome');
 
@@ -358,18 +399,23 @@ void main() {
 ''').create();
 
         await d
-            .file('global_test_2.yaml',
-                jsonEncode({'custom_html_template_path': 'test.html'}))
+            .file(
+              'global_test_2.yaml',
+              jsonEncode({'custom_html_template_path': 'test.html'}),
+            )
             .create();
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test_2.yaml'});
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test_2.yaml'},
+        );
         expect(
-            test.stdout,
-            containsInOrder([
-              '-1: loading test.dart [E]',
-              'Failed to load "test.dart": template file "test.html" cannot be named '
-                  'like the test file.'
-            ]));
+          test.stdout,
+          containsInOrder([
+            '-1: loading test.dart [E]',
+            'Failed to load "test.dart": template file "test.html" cannot be named '
+                'like the test file.',
+          ]),
+        );
         await test.shouldExit(1);
       });
     });
@@ -432,9 +478,11 @@ void main() {
         setUp(() async {
           await d
               .file(
-                  'global_test.yaml',
-                  jsonEncode(
-                      {'custom_html_template_path': 'html_template.html.tpl'}))
+                'global_test.yaml',
+                jsonEncode({
+                  'custom_html_template_path': 'html_template.html.tpl',
+                }),
+              )
               .create();
           await d.file('html_template.html.tpl', '''
   <html>
@@ -461,8 +509,10 @@ void main() {
         });
 
         test('on Chrome', () async {
-          var test = await runTest(['-p', 'chrome', 'test.dart'],
-              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          var test = await runTest(
+            ['-p', 'chrome', 'test.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+          );
           expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
           await test.shouldExit(0);
         }, tags: 'chrome');
@@ -472,9 +522,11 @@ void main() {
         setUp(() async {
           await d
               .file(
-                  'global_test.yaml',
-                  jsonEncode(
-                      {'custom_html_template_path': 'html_template.html.tpl'}))
+                'global_test.yaml',
+                jsonEncode({
+                  'custom_html_template_path': 'html_template.html.tpl',
+                }),
+              )
               .create();
           await d.file('html_template.html.tpl', '''
   <html>
@@ -505,8 +557,10 @@ void main() {
         });
 
         test('on Chrome', () async {
-          var test = await runTest(['-p', 'chrome', 'test-with-title.dart'],
-              environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+          var test = await runTest(
+            ['-p', 'chrome', 'test-with-title.dart'],
+            environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+          );
           expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
           await test.shouldExit(0);
         }, tags: 'chrome');
@@ -569,9 +623,11 @@ void main() {
       test('takes precedence over provided HTML template', () async {
         await d
             .file(
-                'global_test.yaml',
-                jsonEncode(
-                    {'custom_html_template_path': 'html_template.html.tpl'}))
+              'global_test.yaml',
+              jsonEncode({
+                'custom_html_template_path': 'html_template.html.tpl',
+              }),
+            )
             .create();
         await d.file('html_template.html.tpl', '''
 <html>
@@ -585,8 +641,10 @@ void main() {
 </html>
 ''').create();
 
-        var test = await runTest(['-p', 'chrome', 'test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
         await test.shouldExit(0);
       }, tags: 'chrome');
@@ -697,24 +755,34 @@ void main() {
     await d.file('test.dart', _failure).create();
 
     var test = await runTest(['-p', 'chrome', '--verbose-trace', 'test.dart']);
-    expect(test.stdout,
-        containsInOrder([' main.<fn>', 'package:test', 'dart:async/zone.dart']),
-        skip: 'https://github.com/dart-lang/sdk/issues/41949');
+    expect(
+      test.stdout,
+      containsInOrder([' main.<fn>', 'package:test', 'dart:async/zone.dart']),
+      skip: 'https://github.com/dart-lang/sdk/issues/41949',
+    );
     await test.shouldExit(1);
   }, tags: 'chrome');
 
-  test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
-      () async {
-    await d.file('test.dart', _failure).create();
+  test(
+    "doesn't dartify stack traces for JS-compiled tests with --js-trace",
+    () async {
+      await d.file('test.dart', _failure).create();
 
-    var test = await runTest(
-        ['-p', 'chrome', '--verbose-trace', '--js-trace', 'test.dart']);
-    expect(test.stdoutStream(), neverEmits(endsWith(' main.<fn>')));
-    expect(test.stdoutStream(), neverEmits(contains('package:test')));
-    expect(test.stdoutStream(), neverEmits(contains('dart:async/zone.dart')));
-    expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
-    await test.shouldExit(1);
-  }, tags: 'chrome');
+      var test = await runTest([
+        '-p',
+        'chrome',
+        '--verbose-trace',
+        '--js-trace',
+        'test.dart',
+      ]);
+      expect(test.stdoutStream(), neverEmits(endsWith(' main.<fn>')));
+      expect(test.stdoutStream(), neverEmits(contains('package:test')));
+      expect(test.stdoutStream(), neverEmits(contains('dart:async/zone.dart')));
+      expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
+      await test.shouldExit(1);
+    },
+    tags: 'chrome',
+  );
 
   test('respects top-level @Timeout declarations', () async {
     await d.file('test.dart', '''
@@ -731,9 +799,12 @@ void main() {
 
     var test = await runTest(['-p', 'chrome', 'test.dart']);
     expect(
-        test.stdout,
-        containsInOrder(
-            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
     await test.shouldExit(1);
   }, tags: 'chrome');
 
@@ -788,9 +859,12 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder(
-              ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+        test.stdout,
+        containsInOrder([
+          'Test timed out after 0 seconds.',
+          '-1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -896,9 +970,12 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder(
-              ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+        test.stdout,
+        containsInOrder([
+          'Test timed out after 0 seconds.',
+          '-1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
 
@@ -966,12 +1043,9 @@ void main() {
 
       var test = await runTest(['-p', 'chrome', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            'Oh no!',
-            'deferred.dart',
-            'test.dart',
-          ]));
+        test.stdout,
+        containsInOrder(['Oh no!', 'deferred.dart', 'test.dart']),
+      );
       await test.shouldExit(1);
     }, tags: 'chrome');
   });
