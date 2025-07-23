@@ -5,20 +5,39 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 
+import '../util/package_config.dart';
 import 'live_suite_controller.dart';
 
 /// Collects coverage and outputs to the [coveragePath] path.
-Future<void> writeCoverage(
-    String coveragePath, LiveSuiteController controller) async {
-  var suite = controller.liveSuite.suite;
-  var coverage = await controller.liveSuite.suite.gatherCoverage();
-  final outfile = File(p.join(coveragePath,
-      '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json'))
-    ..createSync(recursive: true);
+Future<Map<String, HitMap>> writeCoverage(
+    String? coveragePath, LiveSuiteController controller) async {
+  final suite = controller.liveSuite.suite;
+  final coverage = await controller.liveSuite.suite.gatherCoverage();
+  if (coveragePath != null) {
+    final outfile = File(p.join(coveragePath,
+        '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json'))
+      ..createSync(recursive: true);
+    final out = outfile.openWrite();
+    out.write(json.encode(coverage));
+    await out.flush();
+    await out.close();
+  }
+  return HitMap.parseJson(coverage['coverage'] as List<Map<String, dynamic>>);
+}
+
+Future<void> writeCoverageLcov(
+    String coverageLcov, Map<String, HitMap> allCoverageData) async {
+  final resolver = await Resolver.create(
+      packagePath: (await currentPackage).root.toFilePath());
+  final filteredCoverageData = allCoverageData
+      .filterIgnored(ignoredLinesInFilesCache: {}, resolver: resolver);
+  final lcovData = filteredCoverageData.formatLcov(resolver);
+  final outfile = File(coverageLcov)..createSync(recursive: true);
   final out = outfile.openWrite();
-  out.write(json.encode(coverage));
+  out.write(lcovData);
   await out.flush();
   await out.close();
 }

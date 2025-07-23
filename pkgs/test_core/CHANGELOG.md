@@ -1,3 +1,7 @@
+## 0.6.13
+
+* Add `--coverage-lcov` and `--branch-coverage` options to `dart test`.
+
 ## 0.6.12
 
 * Expand pub constraint to allow the latest `analyzer`.
