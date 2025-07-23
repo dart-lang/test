@@ -20,13 +20,14 @@ void main() {
     _testEscaping('delete', '\x7F', r'\x7F');
     _testEscaping('escape combos', r'\n', r'\\n');
     _testEscaping(
-        'All characters',
-        'A new line\nA charriage return\rA form feed\fA backspace\b'
-            'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
-            'A delete\x7F',
-        r'A new line\nA charriage return\rA form feed\fA backspace\b'
-            r'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
-            r'A delete\x7F');
+      'All characters',
+      'A new line\nA charriage return\rA form feed\fA backspace\b'
+          'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
+          'A delete\x7F',
+      r'A new line\nA charriage return\rA form feed\fA backspace\b'
+          r'A tab\tA vertical tab\vA slash\\A null byte\x00A control char\x1D'
+          r'A delete\x7F',
+    );
   });
 
   group('unequal strings remain unequal when escaped', () {
@@ -40,9 +41,13 @@ void main() {
 void _testEscaping(String name, String source, String target) {
   test(name, () {
     var escaped = escape(source);
-    expect(escaped == target, isTrue,
-        reason: 'Expected escaped value: $target\n'
-            '  Actual escaped value: $escaped');
+    expect(
+      escaped == target,
+      isTrue,
+      reason:
+          'Expected escaped value: $target\n'
+          '  Actual escaped value: $escaped',
+    );
   });
 }
 
@@ -57,7 +62,10 @@ void _testUnequalStrings(String name, String s1, String s2) {
     var escapedS2 = escape(s2);
 
     // Explicitly not using the equals matcher
-    expect(escapedS1 != escapedS2, isTrue,
-        reason: 'Unequal strings, when escaped, should remain unequal.');
+    expect(
+      escapedS1 != escapedS2,
+      isTrue,
+      reason: 'Unequal strings, when escaped, should remain unequal.',
+    );
   });
 }

@@ -27,13 +27,18 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith('Expected: throws\n'
-                  '  Actual: <'),
-              endsWith('>\n'
-                  '   Which: returned <null>\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              'Expected: throws\n'
+              '  Actual: <',
+            ),
+            endsWith(
+              '>\n'
+              '   Which: returned <null>\n',
+            ),
+          ]),
+        );
       });
 
       test('with a non-function', () async {
@@ -43,10 +48,11 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            'Expected: throws\n'
-            '  Actual: <10>\n'
-            '   Which: was not a Function or Future\n');
+          monitor,
+          'Expected: throws\n'
+          '  Actual: <10>\n'
+          '   Which: was not a Function or Future\n',
+        );
       });
     });
 
@@ -56,8 +62,10 @@ void main() {
       });
 
       test('with a function that throws a matching error', () {
-        expect(() => throw const FormatException('bad'),
-            throwsA(isFormatException));
+        expect(
+          () => throw const FormatException('bad'),
+          throwsA(isFormatException),
+        );
       });
 
       test("with a function that doesn't throw", () async {
@@ -67,13 +75,18 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith("Expected: throws 'oh no'\n"
-                  '  Actual: <'),
-              endsWith('>\n'
-                  '   Which: returned <null>\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              "Expected: throws 'oh no'\n"
+              '  Actual: <',
+            ),
+            endsWith(
+              '>\n'
+              '   Which: returned <null>\n',
+            ),
+          ]),
+        );
       });
 
       test('with a non-function', () async {
@@ -82,10 +95,11 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            "Expected: throws 'oh no'\n"
-            '  Actual: <10>\n'
-            '   Which: was not a Function or Future\n');
+          monitor,
+          "Expected: throws 'oh no'\n"
+          '  Actual: <10>\n'
+          '   Which: was not a Function or Future\n',
+        );
       });
 
       test('with a function that throws the wrong error', () async {
@@ -94,19 +108,26 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith("Expected: throws 'oh no'\n"
-                  '  Actual: <'),
-              contains('>\n'
-                  "   Which: threw 'aw dang'\n"
-                  '          stack'),
-              endsWith('          which is different.\n'
-                  '                Expected: oh no\n'
-                  '                  Actual: aw dang\n'
-                  '                          ^\n'
-                  '                 Differ at offset 0\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              "Expected: throws 'oh no'\n"
+              '  Actual: <',
+            ),
+            contains(
+              '>\n'
+              "   Which: threw 'aw dang'\n"
+              '          stack',
+            ),
+            endsWith(
+              '          which is different.\n'
+              '                Expected: oh no\n'
+              '                  Actual: aw dang\n'
+              '                          ^\n'
+              '                 Differ at offset 0\n',
+            ),
+          ]),
+        );
       });
     });
   });
@@ -125,13 +146,18 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith('Expected: throws\n'
-                  '  Actual: <'),
-              endsWith('>\n'
-                  '   Which: emitted <null>\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              'Expected: throws\n'
+              '  Actual: <',
+            ),
+            endsWith(
+              '>\n'
+              '   Which: emitted <null>\n',
+            ),
+          ]),
+        );
       });
 
       test('with a closure that returns a Future that throws an error', () {
@@ -146,13 +172,18 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith('Expected: throws\n'
-                  '  Actual: <'),
-              endsWith('>\n'
-                  '   Which: returned a Future that emitted <null>\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              'Expected: throws\n'
+              '  Actual: <',
+            ),
+            endsWith(
+              '>\n'
+              '   Which: returned a Future that emitted <null>\n',
+            ),
+          ]),
+        );
       });
 
       test("won't let the test end until the Future completes", () async {
@@ -177,8 +208,10 @@ void main() {
       });
 
       test('with a Future that throws a matching error', () {
-        expect(Future<Never>.error(const FormatException('bad')),
-            throwsA(isFormatException));
+        expect(
+          Future<Never>.error(const FormatException('bad')),
+          throwsA(isFormatException),
+        );
       });
 
       test("with a Future that doesn't throw", () async {
@@ -187,13 +220,18 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith("Expected: throws 'oh no'\n"
-                  '  Actual: <'),
-              endsWith('>\n'
-                  '   Which: emitted <null>\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              "Expected: throws 'oh no'\n"
+              '  Actual: <',
+            ),
+            endsWith(
+              '>\n'
+              '   Which: emitted <null>\n',
+            ),
+          ]),
+        );
       });
 
       test('with a Future that throws the wrong error', () async {
@@ -202,20 +240,29 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith("Expected: throws 'oh no'\n"
-                  '  Actual: <'),
-              contains('>\n'
-                  "   Which: threw 'aw dang'\n")
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              "Expected: throws 'oh no'\n"
+              '  Actual: <',
+            ),
+            contains(
+              '>\n'
+              "   Which: threw 'aw dang'\n",
+            ),
+          ]),
+        );
       });
 
-      test('with a closure that returns a Future that throws a matching error',
-          () {
-        expect(() => Future<Never>.error(const FormatException('bad')),
-            throwsA(isFormatException));
-      });
+      test(
+        'with a closure that returns a Future that throws a matching error',
+        () {
+          expect(
+            () => Future<Never>.error(const FormatException('bad')),
+            throwsA(isFormatException),
+          );
+        },
+      );
 
       test("with a closure that returns a Future that doesn't throw", () async {
         var monitor = await TestCaseMonitor.run(() {
@@ -223,30 +270,42 @@ void main() {
         });
 
         expectTestFailed(
-            monitor,
-            allOf([
-              startsWith("Expected: throws 'oh no'\n"
-                  '  Actual: <'),
-              endsWith('>\n'
-                  '   Which: returned a Future that emitted <null>\n')
-            ]));
+          monitor,
+          allOf([
+            startsWith(
+              "Expected: throws 'oh no'\n"
+              '  Actual: <',
+            ),
+            endsWith(
+              '>\n'
+              '   Which: returned a Future that emitted <null>\n',
+            ),
+          ]),
+        );
       });
 
-      test('with closure that returns a Future that throws the wrong error',
-          () async {
-        var monitor = await TestCaseMonitor.run(() {
-          expect(() => Future<Never>.error('aw dang'), throwsA('oh no'));
-        });
+      test(
+        'with closure that returns a Future that throws the wrong error',
+        () async {
+          var monitor = await TestCaseMonitor.run(() {
+            expect(() => Future<Never>.error('aw dang'), throwsA('oh no'));
+          });
 
-        expectTestFailed(
+          expectTestFailed(
             monitor,
             allOf([
-              startsWith("Expected: throws 'oh no'\n"
-                  '  Actual: <'),
-              contains('>\n'
-                  "   Which: threw 'aw dang'\n")
-            ]));
-      });
+              startsWith(
+                "Expected: throws 'oh no'\n"
+                '  Actual: <',
+              ),
+              contains(
+                '>\n'
+                "   Which: threw 'aw dang'\n",
+              ),
+            ]),
+          );
+        },
+      );
 
       test("won't let the test end until the Future completes", () async {
         late void Function() callback;
@@ -266,9 +325,11 @@ void main() {
       test("blocks expectLater's Future", () async {
         var completer = Completer<Never>();
         var fired = false;
-        unawaited(expectLater(completer.future, throwsArgumentError).then((_) {
-          fired = true;
-        }));
+        unawaited(
+          expectLater(completer.future, throwsArgumentError).then((_) {
+            fired = true;
+          }),
+        );
 
         await pumpEventQueue();
         expect(fired, isFalse);

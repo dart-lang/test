@@ -12,7 +12,12 @@ Matcher greaterThan(Object value) =>
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to the given [value].
 Matcher greaterThanOrEqualTo(Object value) => _OrderingMatcher(
-    value, true, false, true, 'a value greater than or equal to');
+  value,
+  true,
+  false,
+  true,
+  'a value greater than or equal to',
+);
 
 /// Returns a matcher which matches if the match argument is less
 /// than the given [value].
@@ -25,28 +30,62 @@ Matcher lessThanOrEqualTo(Object value) =>
     _OrderingMatcher(value, true, true, false, 'a value less than or equal to');
 
 /// A matcher which matches if the match argument is zero.
-const Matcher isZero =
-    _OrderingMatcher(0, true, false, false, 'a value equal to');
+const Matcher isZero = _OrderingMatcher(
+  0,
+  true,
+  false,
+  false,
+  'a value equal to',
+);
 
 /// A matcher which matches if the match argument is non-zero.
-const Matcher isNonZero =
-    _OrderingMatcher(0, false, true, true, 'a value not equal to');
+const Matcher isNonZero = _OrderingMatcher(
+  0,
+  false,
+  true,
+  true,
+  'a value not equal to',
+);
 
 /// A matcher which matches if the match argument is positive.
-const Matcher isPositive =
-    _OrderingMatcher(0, false, false, true, 'a positive value', false);
+const Matcher isPositive = _OrderingMatcher(
+  0,
+  false,
+  false,
+  true,
+  'a positive value',
+  false,
+);
 
 /// A matcher which matches if the match argument is zero or negative.
-const Matcher isNonPositive =
-    _OrderingMatcher(0, true, true, false, 'a non-positive value', false);
+const Matcher isNonPositive = _OrderingMatcher(
+  0,
+  true,
+  true,
+  false,
+  'a non-positive value',
+  false,
+);
 
 /// A matcher which matches if the match argument is negative.
-const Matcher isNegative =
-    _OrderingMatcher(0, false, true, false, 'a negative value', false);
+const Matcher isNegative = _OrderingMatcher(
+  0,
+  false,
+  true,
+  false,
+  'a negative value',
+  false,
+);
 
 /// A matcher which matches if the match argument is zero or positive.
-const Matcher isNonNegative =
-    _OrderingMatcher(0, true, false, true, 'a non-negative value', false);
+const Matcher isNonNegative = _OrderingMatcher(
+  0,
+  true,
+  false,
+  true,
+  'a non-negative value',
+  false,
+);
 
 // TODO(kevmoo) Note that matchers that use _OrderingComparison only use
 // `==` and `<` operators to evaluate the match. Or change the matcher.
@@ -69,10 +108,14 @@ class _OrderingMatcher extends Matcher {
   /// Whether to include the expected value in the description
   final bool _valueInDescription;
 
-  const _OrderingMatcher(this._value, this._equalValue, this._lessThanValue,
-      this._greaterThanValue, this._comparisonDescription,
-      [bool valueInDescription = true])
-      : _valueInDescription = valueInDescription;
+  const _OrderingMatcher(
+    this._value,
+    this._equalValue,
+    this._lessThanValue,
+    this._greaterThanValue,
+    this._comparisonDescription, [
+    bool valueInDescription = true,
+  ]) : _valueInDescription = valueInDescription;
 
   @override
   bool matches(Object? item, Map matchState) {
@@ -100,8 +143,12 @@ class _OrderingMatcher extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     mismatchDescription.add('is not ');
     return describe(mismatchDescription);
   }

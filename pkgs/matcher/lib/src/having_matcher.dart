@@ -13,28 +13,36 @@ class HavingMatcher<T> implements TypeMatcher<T> {
   final TypeMatcher<T> _parent;
   final List<_FunctionMatcher<T>> _functionMatchers;
 
-  HavingMatcher(this._parent, String description, Object? Function(T) feature,
-      dynamic matcher)
-      : _functionMatchers = [
-          _FunctionMatcher<T>(description, feature, matcher)
-        ];
+  HavingMatcher(
+    this._parent,
+    String description,
+    Object? Function(T) feature,
+    dynamic matcher,
+  ) : _functionMatchers = [_FunctionMatcher<T>(description, feature, matcher)];
 
   HavingMatcher._fromExisting(
-      this._parent,
-      String description,
-      Object? Function(T) feature,
-      dynamic matcher,
-      Iterable<_FunctionMatcher<T>>? existing)
-      : _functionMatchers = [
-          ...?existing,
-          _FunctionMatcher<T>(description, feature, matcher)
-        ];
+    this._parent,
+    String description,
+    Object? Function(T) feature,
+    dynamic matcher,
+    Iterable<_FunctionMatcher<T>>? existing,
+  ) : _functionMatchers = [
+        ...?existing,
+        _FunctionMatcher<T>(description, feature, matcher),
+      ];
 
   @override
   TypeMatcher<T> having(
-          Object? Function(T) feature, String description, dynamic matcher) =>
-      HavingMatcher._fromExisting(
-          _parent, description, feature, matcher, _functionMatchers);
+    Object? Function(T) feature,
+    String description,
+    dynamic matcher,
+  ) => HavingMatcher._fromExisting(
+    _parent,
+    description,
+    feature,
+    matcher,
+    _functionMatchers,
+  );
 
   @override
   bool matches(dynamic item, Map matchState) {
@@ -48,11 +56,19 @@ class HavingMatcher<T> implements TypeMatcher<T> {
   }
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     var matcher = matchState['matcher'] as Matcher;
     matcher.describeMismatch(
-        item, mismatchDescription, matchState['state'] as Map, verbose);
+      item,
+      mismatchDescription,
+      matchState['state'] as Map,
+      verbose,
+    );
     return mismatchDescription;
   }
 
@@ -68,7 +84,7 @@ class _FunctionMatcher<T> extends CustomMatcher {
   final Object? Function(T value) _feature;
 
   _FunctionMatcher(String name, this._feature, Object? matcher)
-      : super('`$name`:', '`$name`', matcher);
+    : super('`$name`:', '`$name`', matcher);
 
   @override
   Object? featureValueOf(covariant T actual) => _feature(actual);

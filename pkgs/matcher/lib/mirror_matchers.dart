@@ -39,7 +39,7 @@ class _HasProperty extends Matcher {
     if (!(isInstanceField || isInstanceGetter)) {
       addStateInfo(matchState, {
         'reason':
-            'has a member named "$_name", but it is not an instance property'
+            'has a member named "$_name", but it is not an instance property',
       });
       return false;
     }
@@ -63,8 +63,12 @@ class _HasProperty extends Matcher {
   }
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     var reason = matchState['reason'];
     if (reason != null) {
       mismatchDescription.add(reason as String);
@@ -74,8 +78,12 @@ class _HasProperty extends Matcher {
           .addDescriptionOf(matchState['value']);
       var innerDescription = StringDescription();
       matchState['state'] ??= <Object?, Object?>{};
-      _matcher?.describeMismatch(matchState['value'], innerDescription,
-          matchState['state'] as Map, verbose);
+      _matcher?.describeMismatch(
+        matchState['value'],
+        innerDescription,
+        matchState['state'] as Map,
+        verbose,
+      );
       if (innerDescription.length > 0) {
         mismatchDescription.add(' which ').add(innerDescription.toString());
       }
