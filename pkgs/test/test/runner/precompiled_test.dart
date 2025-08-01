@@ -272,7 +272,6 @@ Future<void> _precompileBrowserTest(String testPath) async {
   var dart2js = await TestProcess.start(Platform.resolvedExecutable, [
     'compile',
     'js',
-    ...Platform.executableArguments,
     '--packages=${(await Isolate.packageConfig)!.toFilePath()}',
     file.path,
     '--out=precompiled/$testPath.browser_test.dart.js',
