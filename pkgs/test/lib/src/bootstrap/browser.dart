@@ -9,13 +9,18 @@ import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implemen
 import '../runner/browser/post_message_channel.dart';
 
 /// Bootstraps a browser test to communicate with the test runner.
-void internalBootstrapBrowserTest(Function Function() getMain,
-    {StreamChannel<Object?>? testChannel}) {
-  var channel = serializeSuite(getMain, hidePrints: false,
-      beforeLoad: (suiteChannel) async {
-    var serialized = await suiteChannel('test.browser.mapper').stream.first;
-    if (serialized is! Map) return;
-    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
-  });
+void internalBootstrapBrowserTest(
+  Function Function() getMain, {
+  StreamChannel<Object?>? testChannel,
+}) {
+  var channel = serializeSuite(
+    getMain,
+    hidePrints: false,
+    beforeLoad: (suiteChannel) async {
+      var serialized = await suiteChannel('test.browser.mapper').stream.first;
+      if (serialized is! Map) return;
+      setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
+    },
+  );
   (testChannel ?? postMessageChannel()).pipe(channel);
 }

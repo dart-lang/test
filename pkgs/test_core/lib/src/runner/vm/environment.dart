@@ -30,12 +30,19 @@ class VMEnvironment implements Environment {
 
   @override
   CancelableOperation<void> displayPause() {
-    var completer =
-        CancelableCompleter<void>(onCancel: () => _client.resume(_isolate.id!));
+    var completer = CancelableCompleter<void>(
+      onCancel: () => _client.resume(_isolate.id!),
+    );
 
-    completer.complete(_client.pause(_isolate.id!).then((_) => _client
-        .onDebugEvent
-        .firstWhere((event) => event.kind == EventKind.kResume)));
+    completer.complete(
+      _client
+          .pause(_isolate.id!)
+          .then(
+            (_) => _client.onDebugEvent.firstWhere(
+              (event) => event.kind == EventKind.kResume,
+            ),
+          ),
+    );
 
     return completer.operation;
   }

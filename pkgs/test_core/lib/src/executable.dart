@@ -61,12 +61,16 @@ Future<void> _execute(List<String> args) async {
   /// Signals will only be captured as long as this has an active subscription.
   /// Otherwise, they'll be handled by Dart's default signal handler, which
   /// terminates the program immediately.
-  final signals = Platform.isWindows
-      ? ProcessSignal.sigint.watch()
-      : Platform.isFuchsia // Signals don't exist on Fuchsia.
+  final signals =
+      Platform.isWindows
+          ? ProcessSignal.sigint.watch()
+          : Platform
+              .isFuchsia // Signals don't exist on Fuchsia.
           ? const Stream<Never>.empty()
-          : StreamGroup.merge(
-              [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+          : StreamGroup.merge([
+            ProcessSignal.sigterm.watch(),
+            ProcessSignal.sigint.watch(),
+          ]);
 
   Configuration configuration;
   try {
@@ -96,13 +100,15 @@ Future<void> _execute(List<String> args) async {
   try {
     var fileConfiguration = Configuration.empty;
     if (File(_globalConfigPath).existsSync()) {
-      fileConfiguration = fileConfiguration
-          .merge(Configuration.load(_globalConfigPath, global: true));
+      fileConfiguration = fileConfiguration.merge(
+        Configuration.load(_globalConfigPath, global: true),
+      );
     }
 
     if (File(configuration.configurationPath).existsSync()) {
-      fileConfiguration = fileConfiguration
-          .merge(Configuration.load(configuration.configurationPath));
+      fileConfiguration = fileConfiguration.merge(
+        Configuration.load(configuration.configurationPath),
+      );
     }
 
     configuration = fileConfiguration.merge(configuration);
@@ -120,20 +126,25 @@ Future<void> _execute(List<String> args) async {
     return;
   }
 
-  var undefinedPresets = configuration.chosenPresets
-      .where((preset) => !configuration.knownPresets.contains(preset))
-      .toList();
+  var undefinedPresets =
+      configuration.chosenPresets
+          .where((preset) => !configuration.knownPresets.contains(preset))
+          .toList();
   if (undefinedPresets.isNotEmpty) {
-    _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
-        "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
+    _printUsage(
+      "Undefined ${pluralize('preset', undefinedPresets.length)} "
+      "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.",
+    );
     exitCode = exit_codes.usage;
     return;
   }
 
   if (!configuration.explicitPaths &&
       !Directory(configuration.testSelections.keys.single).existsSync()) {
-    _printUsage('No test files were passed and the default "test/" '
-        "directory doesn't exist.");
+    _printUsage(
+      'No test files were passed and the default "test/" '
+      "directory doesn't exist.",
+    );
     exitCode = exit_codes.data;
     return;
   }
@@ -163,9 +174,11 @@ Future<void> _execute(List<String> args) async {
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(Trace.from(stackTrace).terse);
-    stderr.writeln('This is an unexpected error. Please file an issue at '
-        'http://github.com/dart-lang/test\n'
-        'with the stack trace and instructions for reproducing the error.');
+    stderr.writeln(
+      'This is an unexpected error. Please file an issue at '
+      'http://github.com/dart-lang/test\n'
+      'with the stack trace and instructions for reproducing the error.',
+    );
     exitCode = exit_codes.software;
   } finally {
     await runner?.close();

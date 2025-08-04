@@ -116,7 +116,8 @@ class StringLiteralIterator implements Iterator<int> {
       var start = string.contentsOffset - string.offset;
 
       // Compensate for the opening and closing quotes.
-      var end = start +
+      var end =
+          start +
           string.literal.lexeme.length -
           2 * (string.isMultiline ? 3 : 1) -
           (string.isRaw ? 1 : 0);

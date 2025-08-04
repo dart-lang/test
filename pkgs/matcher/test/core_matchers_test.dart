@@ -60,7 +60,10 @@ void main() {
     var b = <Object?, Object?>{};
     shouldPass(a, equals(a));
     shouldFail(
-        a, equals(b), 'Expected: {} Actual: <null> Which: expected a map');
+      a,
+      equals(b),
+      'Expected: {} Actual: <null> Which: expected a map',
+    );
     shouldFail(b, equals(a), 'Expected: <null> Actual: {}');
   });
 
@@ -73,17 +76,49 @@ void main() {
     shouldPass(set2, equals(set1));
     shouldPass(numbers, equals(set1));
     shouldFail(
-        [1, 2, 3, 4, 5, 6, 7, 8, 9],
-        equals(set1),
-        matches(r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
-            r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9\]'
-            r'   Which: does not contain <10>'));
+      [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      equals(set1),
+      matches(
+        r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
+        r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9\]'
+        r'   Which: does not contain <10>',
+      ),
+    );
     shouldFail(
-        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        equals(set1),
-        matches(r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
-            r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11\]'
-            r'   Which: larger than expected'));
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      equals(set1),
+      matches(
+        r'Expected: .*:\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\]'
+        r'  Actual: \[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11\]'
+        r'   Which: larger than expected',
+      ),
+    );
+  });
+
+  test('equals with NaN', () {
+    final a = double.nan;
+    final b = 0;
+    shouldPass(a, equals(a));
+    shouldFail(a, equals(b), 'Expected: <0> Actual: <NaN>');
+    shouldFail(b, equals(a), 'Expected: <NaN> Actual: <0>');
+  });
+
+  test('equals with NaN in a collection', () {
+    final a = {double.nan};
+    final b = {0};
+    shouldPass(a, equals(a));
+    shouldFail(
+      a,
+      equals(b),
+      'Expected: Set:[0] Actual: Set:[NaN] '
+      'Which: does not contain <0>',
+    );
+    shouldFail(
+      b,
+      equals(a),
+      'Expected: Set:[NaN] Actual: Set:[0] '
+      'Which: does not contain <NaN>',
+    );
   });
 
   test('anything', () {
@@ -97,13 +132,19 @@ void main() {
   test('returnsNormally', () {
     shouldPass(doesNotThrow, returnsNormally);
     shouldFail(
-        doesThrow,
-        returnsNormally,
-        matches(r'Expected: return normally'
-            r'  Actual: <Closure.*>'
-            r'   Which: threw StateError:<Bad state: X>'));
-    shouldFail('not a function', returnsNormally,
-        contains('not an <Instance of \'Function\'>'));
+      doesThrow,
+      returnsNormally,
+      matches(
+        r'Expected: return normally'
+        r'  Actual: <Closure.*>'
+        r'   Which: threw StateError:<Bad state: X>',
+      ),
+    );
+    shouldFail(
+      'not a function',
+      returnsNormally,
+      contains('not an <Instance of \'Function\'>'),
+    );
   });
 
   test('hasLength', () {
@@ -113,59 +154,65 @@ void main() {
     shouldPass(b, hasLength(0));
     shouldPass('a', hasLength(1));
     shouldFail(
-        0,
-        hasLength(0),
-        'Expected: an object with length of <0> '
-        'Actual: <0> '
-        'Which: has no length property');
+      0,
+      hasLength(0),
+      'Expected: an object with length of <0> '
+      'Actual: <0> '
+      'Which: has no length property',
+    );
 
     b.add(0);
     shouldPass(b, hasLength(1));
     shouldFail(
-        b,
-        hasLength(2),
-        'Expected: an object with length of <2> '
-        'Actual: [0] '
-        'Which: has length of <1>');
+      b,
+      hasLength(2),
+      'Expected: an object with length of <2> '
+      'Actual: [0] '
+      'Which: has length of <1>',
+    );
 
     b.add(0);
     shouldFail(
-        b,
-        hasLength(1),
-        'Expected: an object with length of <1> '
-        'Actual: [0, 0] '
-        'Which: has length of <2>');
+      b,
+      hasLength(1),
+      'Expected: an object with length of <1> '
+      'Actual: [0, 0] '
+      'Which: has length of <2>',
+    );
     shouldPass(b, hasLength(2));
   });
 
   test('scalar type mismatch', () {
     shouldFail(
-        'error',
-        equals(5.1),
-        'Expected: <5.1> '
-            "Actual: 'error'");
+      'error',
+      equals(5.1),
+      'Expected: <5.1> '
+          "Actual: 'error'",
+    );
   });
 
   test('nested type mismatch', () {
     shouldFail(
-        ['error'],
-        equals([5.1]),
-        'Expected: [5.1] '
-        "Actual: ['error'] "
-        "Which: at location [0] is 'error' instead of <5.1>");
+      ['error'],
+      equals([5.1]),
+      'Expected: [5.1] '
+      "Actual: ['error'] "
+      "Which: at location [0] is 'error' instead of <5.1>",
+    );
   });
 
   test('doubly-nested type mismatch', () {
     shouldFail(
-        [
-          ['error']
-        ],
-        equals([
-          [5.1]
-        ]),
-        'Expected: [[5.1]] '
-        "Actual: [['error']] "
-        "Which: at location [0][0] is 'error' instead of <5.1>");
+      [
+        ['error'],
+      ],
+      equals([
+        [5.1],
+      ]),
+      'Expected: [[5.1]] '
+      "Actual: [['error']] "
+      "Which: at location [0][0] is 'error' instead of <5.1>",
+    );
   });
 
   test('doubly nested inequality', () {
@@ -173,15 +220,16 @@ void main() {
       ['foo', 'bar'],
       ['foo'],
       3,
-      <Object?>[]
+      <Object?>[],
     ];
     var expected1 = [
       ['foo', 'bar'],
       ['foo'],
       4,
-      <Object?>[]
+      <Object?>[],
     ];
-    var reason1 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
+    var reason1 =
+        "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'bar'], ['foo'], 3, []] "
         'Which: at location [2] is <3> instead of <4>';
 
@@ -189,15 +237,16 @@ void main() {
       ['foo', 'barry'],
       ['foo'],
       4,
-      <Object?>[]
+      <Object?>[],
     ];
     var expected2 = [
       ['foo', 'bar'],
       ['foo'],
       4,
-      <Object?>[]
+      <Object?>[],
     ];
-    var reason2 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
+    var reason2 =
+        "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'barry'], ['foo'], 4, []] "
         "Which: at location [0][1] is 'barry' instead of 'bar'";
 
@@ -205,15 +254,16 @@ void main() {
       ['foo', 'bar'],
       ['foo'],
       4,
-      {'foo': 'bar'}
+      {'foo': 'bar'},
     ];
     var expected3 = [
       ['foo', 'bar'],
       ['foo'],
       4,
-      {'foo': 'barry'}
+      {'foo': 'barry'},
     ];
-    var reason3 = "Expected: [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}] "
+    var reason3 =
+        "Expected: [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}] "
         "Actual: [['foo', 'bar'], ['foo'], 4, {'foo': 'bar'}] "
         "Which: at location [3]['foo'] is 'bar' instead of 'barry'";
 
@@ -224,12 +274,18 @@ void main() {
 
   group('Predicate Matchers', () {
     test('isInstanceOf', () {
-      shouldFail(0, predicate((x) => x is String, 'an instance of String'),
-          'Expected: an instance of String Actual: <0>');
+      shouldFail(
+        0,
+        predicate((x) => x is String, 'an instance of String'),
+        'Expected: an instance of String Actual: <0>',
+      );
       shouldPass('cow', predicate((x) => x is String, 'an instance of String'));
 
-      shouldFail(0, predicate((bool x) => x, 'bool value is true'),
-          endsWith("not an <Instance of 'bool'>"));
+      shouldFail(
+        0,
+        predicate((bool x) => x, 'bool value is true'),
+        endsWith("not an <Instance of 'bool'>"),
+      );
     });
   });
 

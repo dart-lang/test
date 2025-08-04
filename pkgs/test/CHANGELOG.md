@@ -1,5 +1,7 @@
-## 1.27.0
+## 1.27.0-wip
 
+* Restrict to latest version of analyzer package.
+* Require Dart 3.7
 * Add `--coverage-lcov` and `--branch-coverage` options to `dart test`.
 
 ## 1.26.3

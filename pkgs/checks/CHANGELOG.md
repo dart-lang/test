@@ -1,3 +1,7 @@
+## 0.3.2-wip
+
+- Require Dart 3.7
+
 ## 0.3.1
 
 -   Directly compare keys across actual and expected `Map` instances when

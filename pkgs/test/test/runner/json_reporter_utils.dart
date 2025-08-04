@@ -15,20 +15,23 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 /// Verifies that [outputLines] matches each set of matchers in [expected],
 /// includes the [testPid] from the test process, and ends with [done].
 Future<void> expectJsonReport(
-    List<String> outputLines,
-    int testPid,
-    List<List<Object /*Map|Matcher*/ >> expected,
-    Map<Object, Object> done) async {
+  List<String> outputLines,
+  int testPid,
+  List<List<Object /*Map|Matcher*/>> expected,
+  Map<Object, Object> done,
+) async {
   // Ensure the output is of the same length, including start, done and all
   // suites messages.
-  expect(outputLines,
-      hasLength(expected.fold<int>(3, (int a, m) => a + m.length)));
+  expect(
+    outputLines,
+    hasLength(expected.fold<int>(3, (int a, m) => a + m.length)),
+  );
 
   final decoded = [
     for (final line in outputLines)
       (jsonDecode(line) as Map)
         ..remove('time')
-        ..remove('stackTrace')
+        ..remove('stackTrace'),
   ];
 
   // Should contain all suites message.
@@ -55,24 +58,24 @@ Future<void> expectJsonReport(
 /// all suites.
 ///
 /// The [count] defaults to 1.
-Map<String, Object> _allSuitesJson({int count = 1}) =>
-    {'type': 'allSuites', 'count': count};
+Map<String, Object> _allSuitesJson({int count = 1}) => {
+  'type': 'allSuites',
+  'count': count,
+};
 
 /// Returns the event emitted by the JSON reporter indicating that a suite has
 /// begun running.
 ///
 /// The [platform] defaults to `'vm'`.
 /// The [path] defaults to `equals('test.dart')`.
-Map<String, Object> suiteJson(int id,
-        {String platform = 'vm', Matcher? path}) =>
-    {
-      'type': 'suite',
-      'suite': {
-        'id': id,
-        'platform': platform,
-        'path': path ?? 'test.dart',
-      }
-    };
+Map<String, Object> suiteJson(
+  int id, {
+  String platform = 'vm',
+  Matcher? path,
+}) => {
+  'type': 'suite',
+  'suite': {'id': id, 'platform': platform, 'path': path ?? 'test.dart'},
+};
 
 /// Returns the event emitted by the JSON reporter indicating that a group has
 /// begun running.
@@ -83,18 +86,21 @@ Map<String, Object> suiteJson(int id,
 ///
 /// The [testCount] parameter indicates the number of tests in the group. It
 /// defaults to 1.
-Map<String, Object> groupJson(int id,
-    {String? name,
-    int? suiteID,
-    int? parentID,
-    Object? skip,
-    int? testCount,
-    String? url,
-    int? line,
-    int? column}) {
+Map<String, Object> groupJson(
+  int id, {
+  String? name,
+  int? suiteID,
+  int? parentID,
+  Object? skip,
+  int? testCount,
+  String? url,
+  int? line,
+  int? column,
+}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(
-        'line and column must either both be null or both be passed');
+      'line and column must either both be null or both be passed',
+    );
   }
 
   url ??=
@@ -110,8 +116,8 @@ Map<String, Object> groupJson(int id,
       'testCount': testCount ?? 1,
       'line': line,
       'column': column,
-      'url': url
-    }
+      'url': url,
+    },
   };
 }
 
@@ -122,19 +128,23 @@ Map<String, Object> groupJson(int id,
 /// [skip] is `true`, the test is expected to be marked as skipped without a
 /// reason. If it's a [String], the test is expected to be marked as skipped
 /// with that reason.
-Map<String, Object> testStartJson(int id, Object /*String|Matcher*/ name,
-    {int? suiteID,
-    Iterable<int>? groupIDs,
-    int? line,
-    int? column,
-    String? url,
-    Object? skip,
-    int? rootLine,
-    int? rootColumn,
-    String? rootUrl}) {
+Map<String, Object> testStartJson(
+  int id,
+  Object /*String|Matcher*/ name, {
+  int? suiteID,
+  Iterable<int>? groupIDs,
+  int? line,
+  int? column,
+  String? url,
+  Object? skip,
+  int? rootLine,
+  int? rootColumn,
+  String? rootUrl,
+}) {
   if ((line == null) != (column == null)) {
     throw ArgumentError(
-        'line and column must either both be null or both be passed');
+      'line and column must either both be null or both be passed',
+    );
   }
 
   url ??=
@@ -153,21 +163,23 @@ Map<String, Object> testStartJson(int id, Object /*String|Matcher*/ name,
       if (rootLine != null) 'root_line': rootLine,
       if (rootColumn != null) 'root_column': rootColumn,
       if (rootUrl != null) 'root_url': rootUrl,
-    }
+    },
   };
 }
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// printed [message].
-Matcher printJson(int id, dynamic /*String|Matcher*/ message,
-        {String type = 'print'}) =>
-    allOf(
-      hasLength(4),
-      containsPair('type', 'print'),
-      containsPair('testID', id),
-      containsPair('message', message),
-      containsPair('messageType', type),
-    );
+Matcher printJson(
+  int id,
+  dynamic /*String|Matcher*/ message, {
+  String type = 'print',
+}) => allOf(
+  hasLength(4),
+  containsPair('type', 'print'),
+  containsPair('testID', id),
+  containsPair('message', message),
+  containsPair('messageType', type),
+);
 
 /// Returns the event emitted by the JSON reporter indicating that a test
 /// emitted [error].
@@ -186,25 +198,28 @@ Map<String, Object> errorJson(int id, String error, {bool isFailure = false}) =>
 /// The [hidden] parameter indicates whether the test should not be displayed
 /// after finishing. The [skipped] parameter indicates whether the test was
 /// skipped.
-Map<String, Object> testDoneJson(int id,
-        {String result = 'success',
-        bool hidden = false,
-        bool skipped = false}) =>
-    {
-      'type': 'testDone',
-      'testID': id,
-      'result': result,
-      'hidden': hidden,
-      'skipped': skipped
-    };
+Map<String, Object> testDoneJson(
+  int id, {
+  String result = 'success',
+  bool hidden = false,
+  bool skipped = false,
+}) => {
+  'type': 'testDone',
+  'testID': id,
+  'result': result,
+  'hidden': hidden,
+  'skipped': skipped,
+};
 
 /// Returns the event emitted by the JSON reporter indicating that the entire
 /// run finished.
-Map<String, Object> doneJson({bool success = true}) =>
-    {'type': 'done', 'success': success};
+Map<String, Object> doneJson({bool success = true}) => {
+  'type': 'done',
+  'success': success,
+};
 
 /// Returns the serialized metadata corresponding to [skip].
 Map<String, Object?> _metadataJson({Object? skip}) => {
-      'skip': skip == true || skip is String,
-      'skipReason': skip is String ? skip : null
-    };
+  'skip': skip == true || skip is String,
+  'skipReason': skip is String ? skip : null,
+};

@@ -15,19 +15,22 @@ extension type Window(EventTarget _) implements EventTarget {
 
   CSSStyleDeclaration? getComputedStyle(Element elt, [String? pseudoElt]) =>
       callMethodVarArgs('getComputedStyle'.toJS, <JSAny?>[
-        elt,
-        if (pseudoElt != null) pseudoElt.toJS
-      ]) as CSSStyleDeclaration?;
+            elt,
+            if (pseudoElt != null) pseudoElt.toJS,
+          ])
+          as CSSStyleDeclaration?;
 
   external Navigator get navigator;
 
-  void postMessage(Object message, String targetOrigin,
-          [List<MessagePort>? messagePorts]) =>
-      callMethodVarArgs('postMessage'.toJS, <JSAny?>[
-        message.jsify(),
-        targetOrigin.toJS,
-        if (messagePorts != null) messagePorts.toJS
-      ]);
+  void postMessage(
+    Object message,
+    String targetOrigin, [
+    List<MessagePort>? messagePorts,
+  ]) => callMethodVarArgs('postMessage'.toJS, <JSAny?>[
+    message.jsify(),
+    targetOrigin.toJS,
+    if (messagePorts != null) messagePorts.toJS,
+  ]);
 }
 
 @JS('window')
@@ -41,9 +44,12 @@ extension type Console(JSObject _) implements JSObject {
 extension type Document(Node _) implements Node {
   external Element? querySelector(String selectors);
 
-  Element createElement(String name, [Object? options]) => callMethodVarArgs(
-      'createElement'.toJS,
-      <JSAny?>[name.toJS, if (options != null) options.jsify()]) as Element;
+  Element createElement(String name, [Object? options]) =>
+      callMethodVarArgs('createElement'.toJS, <JSAny?>[
+            name.toJS,
+            if (options != null) options.jsify(),
+          ])
+          as Element;
 }
 
 extension type HTMLDocument(Document _) implements Document {
@@ -80,24 +86,30 @@ extension type Node(EventTarget _) implements EventTarget {
 }
 
 extension type EventTarget(JSObject _) implements JSObject {
-  void addEventListener(String type, EventListener? listener,
-      [bool? useCapture]) {
+  void addEventListener(
+    String type,
+    EventListener? listener, [
+    bool? useCapture,
+  ]) {
     if (listener != null) {
       callMethodVarArgs('addEventListener'.toJS, <JSAny?>[
         type.toJS,
         listener.toJS,
-        if (useCapture != null) useCapture.toJS
+        if (useCapture != null) useCapture.toJS,
       ]);
     }
   }
 
-  void removeEventListener(String type, EventListener? listener,
-      [bool? useCapture]) {
+  void removeEventListener(
+    String type,
+    EventListener? listener, [
+    bool? useCapture,
+  ]) {
     if (listener != null) {
       callMethodVarArgs('removeEventListener'.toJS, <JSAny?>[
         type.toJS,
         listener.toJS,
-        if (useCapture != null) useCapture.toJS
+        if (useCapture != null) useCapture.toJS,
       ]);
     }
   }
@@ -143,7 +155,9 @@ extension type Location(JSObject _) implements JSObject {
 
 extension type MessagePort(EventTarget _) implements EventTarget {
   void postMessage(Object? message) => callMethodVarArgs(
-      'postMessage'.toJS, <JSAny?>[if (message != null) message.jsify()]);
+    'postMessage'.toJS,
+    <JSAny?>[if (message != null) message.jsify()],
+  );
 
   external void start();
 }

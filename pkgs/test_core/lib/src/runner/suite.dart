@@ -45,19 +45,20 @@ final class SuiteConfiguration {
   /// Using this is slightly more efficient than manually constructing a new
   /// configuration with no arguments.
   static final empty = SuiteConfiguration._(
-      allowDuplicateTestNames: null,
-      allowTestRandomization: null,
-      jsTrace: null,
-      runSkipped: null,
-      dart2jsArgs: null,
-      testSelections: const {},
-      precompiledPath: null,
-      runtimes: null,
-      compilerSelections: null,
-      tags: null,
-      onPlatform: null,
-      metadata: null,
-      ignoreTimeouts: null);
+    allowDuplicateTestNames: null,
+    allowTestRandomization: null,
+    jsTrace: null,
+    runSkipped: null,
+    dart2jsArgs: null,
+    testSelections: const {},
+    precompiledPath: null,
+    runtimes: null,
+    compilerSelections: null,
+    tags: null,
+    onPlatform: null,
+    metadata: null,
+    ignoreTimeouts: null,
+  );
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
@@ -108,9 +109,10 @@ final class SuiteConfiguration {
   final List<CompilerSelection>? compilerSelections;
 
   /// The set of runtimes on which to run tests.
-  List<String> get runtimes => _runtimes == null
-      ? const ['vm']
-      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
+  List<String> get runtimes =>
+      _runtimes == null
+          ? const ['vm']
+          : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
   /// Configuration for particular tags.
@@ -130,9 +132,11 @@ final class SuiteConfiguration {
   Metadata get metadata {
     if (tags.isEmpty && onPlatform.isEmpty) return _metadata;
     return _metadata.change(
-        forTag: tags.map((key, config) => MapEntry(key, config.metadata)),
-        onPlatform:
-            onPlatform.map((key, config) => MapEntry(key, config.metadata)));
+      forTag: tags.map((key, config) => MapEntry(key, config.metadata)),
+      onPlatform: onPlatform.map(
+        (key, config) => MapEntry(key, config.metadata),
+      ),
+    );
   }
 
   final Metadata _metadata;
@@ -149,50 +153,53 @@ final class SuiteConfiguration {
   final bool? _ignoreTimeouts;
   bool get ignoreTimeouts => _ignoreTimeouts ?? false;
 
-  factory SuiteConfiguration(
-      {required bool? allowDuplicateTestNames,
-      required bool? allowTestRandomization,
-      required bool? jsTrace,
-      required bool? runSkipped,
-      required Iterable<String>? dart2jsArgs,
-      required String? precompiledPath,
-      required Iterable<CompilerSelection>? compilerSelections,
-      required Iterable<RuntimeSelection>? runtimes,
-      required Map<BooleanSelector, SuiteConfiguration>? tags,
-      required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      required bool? ignoreTimeouts,
+  factory SuiteConfiguration({
+    required bool? allowDuplicateTestNames,
+    required bool? allowTestRandomization,
+    required bool? jsTrace,
+    required bool? runSkipped,
+    required Iterable<String>? dart2jsArgs,
+    required String? precompiledPath,
+    required Iterable<CompilerSelection>? compilerSelections,
+    required Iterable<RuntimeSelection>? runtimes,
+    required Map<BooleanSelector, SuiteConfiguration>? tags,
+    required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+    required bool? ignoreTimeouts,
 
-      // Test-level configuration
-      required Timeout? timeout,
-      required bool? verboseTrace,
-      required bool? chainStackTraces,
-      required bool? skip,
-      required int? retry,
-      required String? skipReason,
-      required PlatformSelector? testOn,
-      required Iterable<String>? addTags}) {
+    // Test-level configuration
+    required Timeout? timeout,
+    required bool? verboseTrace,
+    required bool? chainStackTraces,
+    required bool? skip,
+    required int? retry,
+    required String? skipReason,
+    required PlatformSelector? testOn,
+    required Iterable<String>? addTags,
+  }) {
     var config = SuiteConfiguration._(
-        allowDuplicateTestNames: allowDuplicateTestNames,
-        allowTestRandomization: allowTestRandomization,
-        jsTrace: jsTrace,
-        runSkipped: runSkipped,
-        dart2jsArgs: dart2jsArgs,
-        testSelections: const {},
-        precompiledPath: precompiledPath,
-        compilerSelections: compilerSelections,
-        runtimes: runtimes,
-        tags: tags,
-        onPlatform: onPlatform,
-        ignoreTimeouts: ignoreTimeouts,
-        metadata: Metadata(
-            timeout: timeout,
-            verboseTrace: verboseTrace,
-            chainStackTraces: chainStackTraces,
-            skip: skip,
-            retry: retry,
-            skipReason: skipReason,
-            testOn: testOn,
-            tags: addTags));
+      allowDuplicateTestNames: allowDuplicateTestNames,
+      allowTestRandomization: allowTestRandomization,
+      jsTrace: jsTrace,
+      runSkipped: runSkipped,
+      dart2jsArgs: dart2jsArgs,
+      testSelections: const {},
+      precompiledPath: precompiledPath,
+      compilerSelections: compilerSelections,
+      runtimes: runtimes,
+      tags: tags,
+      onPlatform: onPlatform,
+      ignoreTimeouts: ignoreTimeouts,
+      metadata: Metadata(
+        timeout: timeout,
+        verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
+        skip: skip,
+        retry: retry,
+        skipReason: skipReason,
+        testOn: testOn,
+        tags: addTags,
+      ),
+    );
     return config._resolveTags();
   }
 
@@ -200,48 +207,49 @@ final class SuiteConfiguration {
   ///
   /// This should only be used in situations where you really only want to
   /// configure a specific restricted set of options.
-  factory SuiteConfiguration._unsafe(
-          {bool? allowDuplicateTestNames,
-          bool? allowTestRandomization,
-          bool? jsTrace,
-          bool? runSkipped,
-          Iterable<String>? dart2jsArgs,
-          String? precompiledPath,
-          Iterable<CompilerSelection>? compilerSelections,
-          Iterable<RuntimeSelection>? runtimes,
-          Map<BooleanSelector, SuiteConfiguration>? tags,
-          Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-          bool? ignoreTimeouts,
+  factory SuiteConfiguration._unsafe({
+    bool? allowDuplicateTestNames,
+    bool? allowTestRandomization,
+    bool? jsTrace,
+    bool? runSkipped,
+    Iterable<String>? dart2jsArgs,
+    String? precompiledPath,
+    Iterable<CompilerSelection>? compilerSelections,
+    Iterable<RuntimeSelection>? runtimes,
+    Map<BooleanSelector, SuiteConfiguration>? tags,
+    Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+    bool? ignoreTimeouts,
 
-          // Test-level configuration
-          Timeout? timeout,
-          bool? verboseTrace,
-          bool? chainStackTraces,
-          bool? skip,
-          int? retry,
-          String? skipReason,
-          PlatformSelector? testOn,
-          Iterable<String>? addTags}) =>
-      SuiteConfiguration(
-          allowDuplicateTestNames: allowDuplicateTestNames,
-          allowTestRandomization: allowTestRandomization,
-          jsTrace: jsTrace,
-          runSkipped: runSkipped,
-          dart2jsArgs: dart2jsArgs,
-          precompiledPath: precompiledPath,
-          compilerSelections: compilerSelections,
-          runtimes: runtimes,
-          tags: tags,
-          onPlatform: onPlatform,
-          ignoreTimeouts: ignoreTimeouts,
-          timeout: timeout,
-          verboseTrace: verboseTrace,
-          chainStackTraces: chainStackTraces,
-          skip: skip,
-          retry: retry,
-          skipReason: skipReason,
-          testOn: testOn,
-          addTags: addTags);
+    // Test-level configuration
+    Timeout? timeout,
+    bool? verboseTrace,
+    bool? chainStackTraces,
+    bool? skip,
+    int? retry,
+    String? skipReason,
+    PlatformSelector? testOn,
+    Iterable<String>? addTags,
+  }) => SuiteConfiguration(
+    allowDuplicateTestNames: allowDuplicateTestNames,
+    allowTestRandomization: allowTestRandomization,
+    jsTrace: jsTrace,
+    runSkipped: runSkipped,
+    dart2jsArgs: dart2jsArgs,
+    precompiledPath: precompiledPath,
+    compilerSelections: compilerSelections,
+    runtimes: runtimes,
+    tags: tags,
+    onPlatform: onPlatform,
+    ignoreTimeouts: ignoreTimeouts,
+    timeout: timeout,
+    verboseTrace: verboseTrace,
+    chainStackTraces: chainStackTraces,
+    skip: skip,
+    retry: retry,
+    skipReason: skipReason,
+    testOn: testOn,
+    addTags: addTags,
+  );
 
   /// A specialized constructor for only configuring the runtimes.
   factory SuiteConfiguration.runtimes(Iterable<RuntimeSelection> runtimes) =>
@@ -273,26 +281,28 @@ final class SuiteConfiguration {
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required Metadata? metadata,
     required bool? ignoreTimeouts,
-  })  : _allowDuplicateTestNames = allowDuplicateTestNames,
-        _allowTestRandomization = allowTestRandomization,
-        _jsTrace = jsTrace,
-        _runSkipped = runSkipped,
-        dart2jsArgs = _list(dart2jsArgs) ?? const [],
-        _runtimes = _list(runtimes),
-        compilerSelections = _list(compilerSelections),
-        tags = _map(tags),
-        onPlatform = _map(onPlatform),
-        _ignoreTimeouts = ignoreTimeouts,
-        _metadata = metadata ?? Metadata.empty;
+  }) : _allowDuplicateTestNames = allowDuplicateTestNames,
+       _allowTestRandomization = allowTestRandomization,
+       _jsTrace = jsTrace,
+       _runSkipped = runSkipped,
+       dart2jsArgs = _list(dart2jsArgs) ?? const [],
+       _runtimes = _list(runtimes),
+       compilerSelections = _list(compilerSelections),
+       tags = _map(tags),
+       onPlatform = _map(onPlatform),
+       _ignoreTimeouts = ignoreTimeouts,
+       _metadata = metadata ?? Metadata.empty;
 
   /// Creates a new [SuiteConfiguration] that takes its configuration from
   /// [metadata].
   factory SuiteConfiguration.fromMetadata(Metadata metadata) =>
       SuiteConfiguration._(
-        tags: metadata.forTag.map((key, child) =>
-            MapEntry(key, SuiteConfiguration.fromMetadata(child))),
-        onPlatform: metadata.onPlatform.map((key, child) =>
-            MapEntry(key, SuiteConfiguration.fromMetadata(child))),
+        tags: metadata.forTag.map(
+          (key, child) => MapEntry(key, SuiteConfiguration.fromMetadata(child)),
+        ),
+        onPlatform: metadata.onPlatform.map(
+          (key, child) => MapEntry(key, SuiteConfiguration.fromMetadata(child)),
+        ),
         metadata: metadata.change(forTag: {}, onPlatform: {}),
         allowDuplicateTestNames: null,
         allowTestRandomization: null,
@@ -333,22 +343,23 @@ final class SuiteConfiguration {
     assert(testSelections.isEmpty || other.testSelections.isEmpty);
 
     var config = SuiteConfiguration._(
-        allowDuplicateTestNames:
-            other._allowDuplicateTestNames ?? _allowDuplicateTestNames,
-        allowTestRandomization:
-            other._allowTestRandomization ?? _allowTestRandomization,
-        jsTrace: other._jsTrace ?? _jsTrace,
-        runSkipped: other._runSkipped ?? _runSkipped,
-        dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
-        testSelections:
-            testSelections.isEmpty ? other.testSelections : testSelections,
-        precompiledPath: other.precompiledPath ?? precompiledPath,
-        compilerSelections: other.compilerSelections ?? compilerSelections,
-        runtimes: other._runtimes ?? _runtimes,
-        tags: _mergeConfigMaps(tags, other.tags),
-        onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
-        ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
-        metadata: metadata.merge(other.metadata));
+      allowDuplicateTestNames:
+          other._allowDuplicateTestNames ?? _allowDuplicateTestNames,
+      allowTestRandomization:
+          other._allowTestRandomization ?? _allowTestRandomization,
+      jsTrace: other._jsTrace ?? _jsTrace,
+      runSkipped: other._runSkipped ?? _runSkipped,
+      dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
+      testSelections:
+          testSelections.isEmpty ? other.testSelections : testSelections,
+      precompiledPath: other.precompiledPath ?? precompiledPath,
+      compilerSelections: other.compilerSelections ?? compilerSelections,
+      runtimes: other._runtimes ?? _runtimes,
+      tags: _mergeConfigMaps(tags, other.tags),
+      onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
+      ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
+      metadata: metadata.merge(other.metadata),
+    );
     return config._resolveTags();
   }
 
@@ -356,52 +367,54 @@ final class SuiteConfiguration {
   ///
   /// Note that unlike [merge], this has no merging behavior—the old value is
   /// always replaced by the new one.
-  SuiteConfiguration change(
-      {bool? allowDuplicateTestNames,
-      bool? allowTestRandomization,
-      bool? jsTrace,
-      bool? runSkipped,
-      Iterable<String>? dart2jsArgs,
-      String? precompiledPath,
-      Iterable<CompilerSelection>? compilerSelections,
-      Iterable<RuntimeSelection>? runtimes,
-      Map<BooleanSelector, SuiteConfiguration>? tags,
-      Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-      bool? ignoreTimeouts,
+  SuiteConfiguration change({
+    bool? allowDuplicateTestNames,
+    bool? allowTestRandomization,
+    bool? jsTrace,
+    bool? runSkipped,
+    Iterable<String>? dart2jsArgs,
+    String? precompiledPath,
+    Iterable<CompilerSelection>? compilerSelections,
+    Iterable<RuntimeSelection>? runtimes,
+    Map<BooleanSelector, SuiteConfiguration>? tags,
+    Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+    bool? ignoreTimeouts,
 
-      // Test-level configuration
-      Timeout? timeout,
-      bool? verboseTrace,
-      bool? chainStackTraces,
-      bool? skip,
-      int? retry,
-      String? skipReason,
-      PlatformSelector? testOn,
-      Iterable<String>? addTags}) {
+    // Test-level configuration
+    Timeout? timeout,
+    bool? verboseTrace,
+    bool? chainStackTraces,
+    bool? skip,
+    int? retry,
+    String? skipReason,
+    PlatformSelector? testOn,
+    Iterable<String>? addTags,
+  }) {
     var config = SuiteConfiguration._(
-        allowDuplicateTestNames:
-            allowDuplicateTestNames ?? _allowDuplicateTestNames,
-        allowTestRandomization:
-            allowTestRandomization ?? _allowTestRandomization,
-        jsTrace: jsTrace ?? _jsTrace,
-        runSkipped: runSkipped ?? _runSkipped,
-        dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
-        testSelections: testSelections,
-        precompiledPath: precompiledPath ?? this.precompiledPath,
-        compilerSelections: compilerSelections ?? this.compilerSelections,
-        runtimes: runtimes ?? _runtimes,
-        tags: tags ?? this.tags,
-        onPlatform: onPlatform ?? this.onPlatform,
-        ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
-        metadata: _metadata.change(
-            timeout: timeout,
-            verboseTrace: verboseTrace,
-            chainStackTraces: chainStackTraces,
-            skip: skip,
-            retry: retry,
-            skipReason: skipReason,
-            testOn: testOn,
-            tags: addTags?.toSet()));
+      allowDuplicateTestNames:
+          allowDuplicateTestNames ?? _allowDuplicateTestNames,
+      allowTestRandomization: allowTestRandomization ?? _allowTestRandomization,
+      jsTrace: jsTrace ?? _jsTrace,
+      runSkipped: runSkipped ?? _runSkipped,
+      dart2jsArgs: dart2jsArgs?.toList() ?? this.dart2jsArgs,
+      testSelections: testSelections,
+      precompiledPath: precompiledPath ?? this.precompiledPath,
+      compilerSelections: compilerSelections ?? this.compilerSelections,
+      runtimes: runtimes ?? _runtimes,
+      tags: tags ?? this.tags,
+      onPlatform: onPlatform ?? this.onPlatform,
+      ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
+      metadata: _metadata.change(
+        timeout: timeout,
+        verboseTrace: verboseTrace,
+        chainStackTraces: chainStackTraces,
+        skip: skip,
+        retry: retry,
+        skipReason: skipReason,
+        testOn: testOn,
+        tags: addTags?.toSet(),
+      ),
+    );
     return config._resolveTags();
   }
 
@@ -416,19 +429,20 @@ final class SuiteConfiguration {
     assert(this.testSelections.isEmpty);
     assert(testSelections.isNotEmpty);
     return SuiteConfiguration._(
-        testSelections: testSelections,
-        allowDuplicateTestNames: _allowDuplicateTestNames,
-        allowTestRandomization: _allowTestRandomization,
-        jsTrace: _jsTrace,
-        runSkipped: _runSkipped,
-        dart2jsArgs: dart2jsArgs,
-        precompiledPath: precompiledPath,
-        compilerSelections: compilerSelections,
-        runtimes: _runtimes,
-        tags: tags,
-        onPlatform: onPlatform,
-        ignoreTimeouts: _ignoreTimeouts,
-        metadata: _metadata);
+      testSelections: testSelections,
+      allowDuplicateTestNames: _allowDuplicateTestNames,
+      allowTestRandomization: _allowTestRandomization,
+      jsTrace: _jsTrace,
+      runSkipped: _runSkipped,
+      dart2jsArgs: dart2jsArgs,
+      precompiledPath: precompiledPath,
+      compilerSelections: compilerSelections,
+      runtimes: _runtimes,
+      tags: tags,
+      onPlatform: onPlatform,
+      ignoreTimeouts: _ignoreTimeouts,
+      metadata: _metadata,
+    );
   }
 
   /// Throws a [FormatException] if this refers to any undefined runtimes.
@@ -440,11 +454,14 @@ final class SuiteConfiguration {
     var runtimes = _runtimes;
     if (runtimes != null) {
       for (var selection in runtimes) {
-        if (!allRuntimes
-            .any((runtime) => runtime.identifier == selection.name)) {
+        if (!allRuntimes.any(
+          (runtime) => runtime.identifier == selection.name,
+        )) {
           if (selection.span != null) {
             throw SourceSpanFormatException(
-                'Unknown platform "${selection.name}".', selection.span);
+              'Unknown platform "${selection.name}".',
+              selection.span,
+            );
           } else {
             throw FormatException('Unknown platform "${selection.name}".');
           }
@@ -476,9 +493,13 @@ final class SuiteConfiguration {
   /// Any overlapping keys in the maps have their configurations merged in the
   /// returned map.
   Map<T, SuiteConfiguration> _mergeConfigMaps<T>(
-          Map<T, SuiteConfiguration> map1, Map<T, SuiteConfiguration> map2) =>
-      mergeMaps(map1, map2,
-          value: (config1, config2) => config1.merge(config2));
+    Map<T, SuiteConfiguration> map1,
+    Map<T, SuiteConfiguration> map2,
+  ) => mergeMaps(
+    map1,
+    map2,
+    value: (config1, config2) => config1.merge(config2),
+  );
 
   SuiteConfiguration _resolveTags() {
     // If there's no tag-specific configuration, or if none of it applies, just

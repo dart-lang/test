@@ -29,7 +29,9 @@ void main() {
     }
 
     Future<Map<String, HitMap>> validateCoverage(
-        TestProcess test, String coveragePath) async {
+      TestProcess test,
+      String coveragePath,
+    ) async {
       await validateTest(test);
 
       final coverageFile = File(p.join(coverageDirectory.path, coveragePath));
@@ -41,8 +43,9 @@ void main() {
     }
 
     setUp(() async {
-      coverageDirectory =
-          await Directory.systemTemp.createTemp('test_coverage');
+      coverageDirectory = await Directory.systemTemp.createTemp(
+        'test_coverage',
+      );
 
       packageDirectory = d.dir(d.sandbox, [
         d.dir('lib', [
@@ -66,7 +69,7 @@ void main() {
                 expect(calculate(6), 12);
               });
             }
-          ''')
+          '''),
         ]),
         d.file('pubspec.yaml', '''
 name: fake_package
@@ -86,9 +89,11 @@ dev_dependencies:
 
     test('gathers coverage for VM tests', () async {
       await (await runPub(['get'])).shouldExit(0);
-      var test = await runTest(
-          ['--coverage', coverageDirectory.path, 'test/test.dart'],
-          packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      var test = await runTest([
+        '--coverage',
+        coverageDirectory.path,
+        'test/test.dart',
+      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
       final coverage = await validateCoverage(test, 'test/test.dart.vm.json');
       final hitmap = coverage['package:fake_package/calculate.dart']!;
       expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
@@ -98,14 +103,16 @@ dev_dependencies:
 
     test('gathers branch coverage for VM tests', () async {
       await (await runPub(['get'])).shouldExit(0);
-      var test = await runTest([
-        '--coverage',
-        coverageDirectory.path,
-        '--branch-coverage',
-        'test/test.dart'
-      ], vmArgs: [
-        '--branch-coverage'
-      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      var test = await runTest(
+        [
+          '--coverage',
+          coverageDirectory.path,
+          '--branch-coverage',
+          'test/test.dart',
+        ],
+        vmArgs: ['--branch-coverage'],
+        packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'),
+      );
       final coverage = await validateCoverage(test, 'test/test.dart.vm.json');
       final hitmap = coverage['package:fake_package/calculate.dart']!;
       expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
@@ -116,8 +123,11 @@ dev_dependencies:
     test('gathers lcov coverage for VM tests', () async {
       await (await runPub(['get'])).shouldExit(0);
       final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
-      var test = await runTest(['--coverage-lcov', lcovFile, 'test/test.dart'],
-          packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      var test = await runTest([
+        '--coverage-lcov',
+        lcovFile,
+        'test/test.dart',
+      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
       await validateTest(test);
       expect(File(lcovFile).readAsStringSync(), '''
 SF:${p.join(d.sandbox, 'lib', 'calculate.dart')}
@@ -138,17 +148,17 @@ end_of_record
         coverageDirectory.path,
         'test/test.dart',
         '-p',
-        'chrome'
+        'chrome',
       ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
       await validateCoverage(test, 'test/test.dart.chrome.json');
     });
 
     test(
-        'gathers coverage for Chrome tests when JS files contain unicode characters',
-        () async {
-      final sourceMapFileContent =
-          '{"version":3,"file":"","sources":[],"names":[],"mappings":""}';
-      final jsContent = '''
+      'gathers coverage for Chrome tests when JS files contain unicode characters',
+      () async {
+        final sourceMapFileContent =
+            '{"version":3,"file":"","sources":[],"names":[],"mappings":""}';
+        final jsContent = '''
         (function() {
           '© '
           window.foo = function foo() {
@@ -159,10 +169,10 @@ end_of_record
           '© ': ''
           });
       ''';
-      await d.file('file_with_unicode.js', jsContent).create();
-      await d.file('file_with_unicode.js.map', sourceMapFileContent).create();
+        await d.file('file_with_unicode.js', jsContent).create();
+        await d.file('file_with_unicode.js.map', sourceMapFileContent).create();
 
-      await d.file('js_with_unicode_test.dart', '''
+        await d.file('js_with_unicode_test.dart', '''
         import 'dart:async';
         import 'dart:js_interop';
         import 'dart:js_interop_unsafe';
@@ -192,27 +202,33 @@ end_of_record
         }
       ''').create();
 
-      final jsBytes = utf8.encode(jsContent);
-      final jsLatin1 = latin1.decode(jsBytes);
-      final jsUtf8 = utf8.decode(jsBytes);
-      expect(jsLatin1, isNot(jsUtf8),
-          reason: 'test setup: should have decoded differently');
+        final jsBytes = utf8.encode(jsContent);
+        final jsLatin1 = latin1.decode(jsBytes);
+        final jsUtf8 = utf8.decode(jsBytes);
+        expect(
+          jsLatin1,
+          isNot(jsUtf8),
+          reason: 'test setup: should have decoded differently',
+        );
 
-      const functionPattern = 'function foo';
-      expect([jsLatin1, jsUtf8], everyElement(contains(functionPattern)));
-      expect(jsLatin1.indexOf(functionPattern),
+        const functionPattern = 'function foo';
+        expect([jsLatin1, jsUtf8], everyElement(contains(functionPattern)));
+        expect(
+          jsLatin1.indexOf(functionPattern),
           isNot(jsUtf8.indexOf(functionPattern)),
           reason:
-              'test setup: decoding should have shifted the position of the function');
+              'test setup: decoding should have shifted the position of the function',
+        );
 
-      var test = await runTest([
-        '--coverage',
-        coverageDirectory.path,
-        'js_with_unicode_test.dart',
-        '-p',
-        'chrome'
-      ]);
-      await validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
-    });
+        var test = await runTest([
+          '--coverage',
+          coverageDirectory.path,
+          'js_with_unicode_test.dart',
+          '-p',
+          'chrome',
+        ]);
+        await validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
+      },
+    );
   });
 }

@@ -18,10 +18,7 @@ import 'package:test/src/runner/browser/dom.dart' as dom;
 /// These are exposed so that tools like IDEs can interact with them via remote
 /// debugging.
 extension type _JSApi._(JSObject _) implements JSObject {
-  external factory _JSApi({
-    JSFunction resume,
-    JSFunction restartCurrent,
-  });
+  external factory _JSApi({JSFunction resume, JSFunction restartCurrent});
 }
 
 /// Sets the top-level `dartTest` object so that it's visible to JS.
@@ -95,57 +92,66 @@ void main() {
     dom.document.body!.classList.add('debug');
   }
 
-  runZonedGuarded(() {
-    var serverChannel = _connectToServer();
-    serverChannel.stream.listen((message) {
-      switch (message) {
-        case {
+  runZonedGuarded(
+    () {
+      var serverChannel = _connectToServer();
+      serverChannel.stream.listen((message) {
+        switch (message) {
+          case {
             'command': 'loadSuite',
             'channel': final num channel,
             'url': final String url,
-            'id': final num id
+            'id': final num id,
           }:
-          var suiteChannel = serverChannel.virtualChannel(channel.toInt());
-          var iframeChannel = _connectToIframe(url, id.toInt());
-          suiteChannel.pipe(iframeChannel);
-        case {'command': 'displayPause'}:
-          dom.document.body!.classList.add('paused');
-        case {'command': 'resume'}:
-          dom.document.body!.classList.remove('paused');
-        case {'command': 'closeSuite', 'id': final id}:
-          _iframes.remove(id)!.remove();
-          _subscriptions.remove(id)?.cancel();
-          _domSubscriptions.remove(id)?.cancel();
-        default:
-          dom.window.console
-              .warn('Unhandled message from test runner: $message'.toJS);
-      }
-    });
+            var suiteChannel = serverChannel.virtualChannel(channel.toInt());
+            var iframeChannel = _connectToIframe(url, id.toInt());
+            suiteChannel.pipe(iframeChannel);
+          case {'command': 'displayPause'}:
+            dom.document.body!.classList.add('paused');
+          case {'command': 'resume'}:
+            dom.document.body!.classList.remove('paused');
+          case {'command': 'closeSuite', 'id': final id}:
+            _iframes.remove(id)!.remove();
+            _subscriptions.remove(id)?.cancel();
+            _domSubscriptions.remove(id)?.cancel();
+          default:
+            dom.window.console.warn(
+              'Unhandled message from test runner: $message'.toJS,
+            );
+        }
+      });
 
-    // Send periodic pings to the test runner so it can know when the browser is
-    // paused for debugging.
-    Timer.periodic(const Duration(seconds: 1),
-        (_) => serverChannel.sink.add({'command': 'ping'}));
+      // Send periodic pings to the test runner so it can know when the browser is
+      // paused for debugging.
+      Timer.periodic(
+        const Duration(seconds: 1),
+        (_) => serverChannel.sink.add({'command': 'ping'}),
+      );
 
-    var play = dom.document.querySelector('#play');
-    play!.addEventListener('click', (_) {
-      if (!dom.document.body!.classList.contains('paused')) return;
-      dom.document.body!.classList.remove('paused');
-      serverChannel.sink.add({'command': 'resume'});
-    });
+      var play = dom.document.querySelector('#play');
+      play!.addEventListener('click', (_) {
+        if (!dom.document.body!.classList.contains('paused')) return;
+        dom.document.body!.classList.remove('paused');
+        serverChannel.sink.add({'command': 'resume'});
+      });
 
-    _jsApi = _JSApi(
-        resume: () {
-          if (!dom.document.body!.classList.contains('paused')) return;
-          dom.document.body!.classList.remove('paused');
-          serverChannel.sink.add({'command': 'resume'});
-        }.toJS,
-        restartCurrent: () {
-          serverChannel.sink.add({'command': 'restart'});
-        }.toJS);
-  }, (error, stackTrace) {
-    dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}'.toJS);
-  });
+      _jsApi = _JSApi(
+        resume:
+            () {
+              if (!dom.document.body!.classList.contains('paused')) return;
+              dom.document.body!.classList.remove('paused');
+              serverChannel.sink.add({'command': 'resume'});
+            }.toJS,
+        restartCurrent:
+            () {
+              serverChannel.sink.add({'command': 'restart'});
+            }.toJS,
+      );
+    },
+    (error, stackTrace) {
+      dom.window.console.warn('$error\n${Trace.from(stackTrace).terse}'.toJS);
+    },
+  );
 }
 
 /// Creates a [MultiChannel] connection to the server, using a [WebSocket] as
@@ -153,17 +159,20 @@ void main() {
 MultiChannel<dynamic> _connectToServer() {
   // The `managerUrl` query parameter contains the WebSocket URL of the remote
   // [BrowserManager] with which this communicates.
-  var webSocket =
-      dom.createWebSocket(_currentUrl.queryParameters['managerUrl']!);
+  var webSocket = dom.createWebSocket(
+    _currentUrl.queryParameters['managerUrl']!,
+  );
 
   var controller = StreamChannelController<Object?>(sync: true);
   webSocket.addEventListener('message', (message) {
-    controller.local.sink
-        .add(jsonDecode((message as dom.MessageEvent).data as String));
+    controller.local.sink.add(
+      jsonDecode((message as dom.MessageEvent).data as String),
+    );
   });
 
-  controller.local.stream
-      .listen((message) => webSocket.send(jsonEncode(message).toJS));
+  controller.local.stream.listen(
+    (message) => webSocket.send(jsonEncode(message).toJS),
+  );
 
   return MultiChannel(controller.foreign);
 }
@@ -193,8 +202,9 @@ StreamChannel<dynamic> _connectToIframe(String url, int id) {
   var controller = StreamChannelController<Object?>(sync: true);
 
   late dom.Subscription windowSubscription;
-  windowSubscription =
-      dom.Subscription(dom.window, 'message', (dom.Event event) {
+  windowSubscription = dom.Subscription(dom.window, 'message', (
+    dom.Event event,
+  ) {
     // A message on the Window can theoretically come from any website. It's
     // very unlikely that a malicious site would care about hacking someone's
     // unit tests, let alone be able to find the test server while it's

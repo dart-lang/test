@@ -32,9 +32,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Future was not expected to complete but completed with a value of'
-          ' null');
+        monitor,
+        'Future was not expected to complete but completed with a value of'
+        ' null',
+      );
     });
 
     test('fails when a future completes after the expect', () async {
@@ -45,9 +46,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Future was not expected to complete but completed with a value of'
-          ' null');
+        monitor,
+        'Future was not expected to complete but completed with a value of'
+        ' null',
+      );
     });
 
     test('fails when a future eventually completes', () async {
@@ -60,9 +62,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Future was not expected to complete but completed with a value of'
-          ' null');
+        monitor,
+        'Future was not expected to complete but completed with a value of'
+        ' null',
+      );
     });
   });
   group('[completes]', () {
@@ -101,10 +104,11 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Expected: completes successfully\n'
-          '  Actual: <10>\n'
-          '   Which: was not a Future\n');
+        monitor,
+        'Expected: completes successfully\n'
+        '  Actual: <10>\n'
+        '   Which: was not a Future\n',
+      );
     });
 
     test('with a successful future', () {
@@ -148,10 +152,11 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Expected: completes to a value that <10>\n'
-          '  Actual: <10>\n'
-          '   Which: was not a Future\n');
+        monitor,
+        'Expected: completes to a value that <10>\n'
+        '  Actual: <10>\n'
+        '   Which: was not a Future\n',
+      );
     });
 
     test('with an incorrect value', () async {
@@ -160,26 +165,33 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          allOf([
-            startsWith("Expected: completes to a value that 'b'\n"
-                '  Actual: <'),
-            endsWith('>\n'
-                "   Which: emitted 'a'\n"
-                '            which is different.\n'
-                '                  Expected: b\n'
-                '                    Actual: a\n'
-                '                            ^\n'
-                '                   Differ at offset 0\n')
-          ]));
+        monitor,
+        allOf([
+          startsWith(
+            "Expected: completes to a value that 'b'\n"
+            '  Actual: <',
+          ),
+          endsWith(
+            '>\n'
+            "   Which: emitted 'a'\n"
+            '            which is different.\n'
+            '                  Expected: b\n'
+            '                    Actual: a\n'
+            '                            ^\n'
+            '                   Differ at offset 0\n',
+          ),
+        ]),
+      );
     });
 
     test("blocks expectLater's Future", () async {
       var completer = Completer<int>();
       var fired = false;
-      unawaited(expectLater(completer.future, completion(equals(1))).then((_) {
-        fired = true;
-      }));
+      unawaited(
+        expectLater(completer.future, completion(equals(1))).then((_) {
+          fired = true;
+        }),
+      );
 
       await pumpEventQueue();
       expect(fired, isFalse);
