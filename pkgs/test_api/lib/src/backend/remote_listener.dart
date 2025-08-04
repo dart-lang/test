@@ -133,7 +133,12 @@ final class RemoteListener {
             await beforeLoad(suiteChannelManager.connectOut);
           }
 
-          await declarer.declare(main);
+          await declarer.declare(
+            main,
+            zoneValues: {
+              #test.openChannelCallback: suiteChannelManager.connectOut,
+            },
+          );
 
           var suite = Suite(
             declarer.build(),
