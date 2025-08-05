@@ -1,7 +1,9 @@
 ## 0.7.8-wip
 
+* Add a zone function available from the test suite `main` that allows creating
+  channels to the test runner.
 * Restrict to latest version of analyzer package.
-- Require Dart 3.7
+* Require Dart 3.7
 
 ## 0.7.7
 
