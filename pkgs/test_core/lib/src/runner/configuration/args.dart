@@ -167,7 +167,7 @@ final ArgParser _parser =
         valueHelp: 'directory',
       );
       parser.addOption(
-        'coverage-lcov',
+        'coverage-path',
         help:
             'Gather coverage and output an lcov report to the specified file.\n'
             'Implies --debug.',
@@ -177,7 +177,7 @@ final ArgParser _parser =
         'branch-coverage',
         help:
             'Include branch coverage information in the coverage report.\n'
-            'Must be paired with --coverage or --coverage-lcov.',
+            'Must be paired with --coverage or --coverage-path.',
         negatable: false,
       );
       parser.addFlag(
@@ -433,16 +433,16 @@ class _Parser {
     }
 
     final coverageDir = _ifParsed<String>('coverage');
-    final coverageLcov = _ifParsed<String>('coverage-lcov');
+    final coverageLcov = _ifParsed<String>('coverage-path');
     final branchCoverage = _ifParsed<bool>('branch-coverage') ?? false;
     if (coverageDir == null && coverageLcov == null && branchCoverage) {
       throw ArgumentError(
         'If you set --branch-coverage you must set either --coverage or '
-        '--coverage-lcov',
+        '--coverage-path',
       );
     }
     if (coverageLcov != null && coverageDir != null) {
-      throw ArgumentError('Cannot set both --coverage and --coverage-lcov');
+      throw ArgumentError('Cannot set both --coverage and --coverage-path');
     }
 
     return Configuration(

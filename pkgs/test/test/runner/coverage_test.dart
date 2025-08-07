@@ -124,7 +124,7 @@ dev_dependencies:
       await (await runPub(['get'])).shouldExit(0);
       final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
       var test = await runTest([
-        '--coverage-lcov',
+        '--coverage-path',
         lcovFile,
         'test/test.dart',
       ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));

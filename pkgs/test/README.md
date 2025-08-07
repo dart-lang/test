@@ -257,23 +257,20 @@ The available options for the `--reporter` flag are:
 
 ### Collecting Code Coverage
 
-To collect code coverage, you can run tests with the `--coverage <directory>`
-argument or the `--coverage-lcov <file>` argument. The `--coverage` option
-outputs a json formatted report per test suite, whereas the `--coverage-lcov`
-option merges all the test coverage into a single LCOV file.
-The directory or file specified can be an absolute or relative path.
-If a directory does not exist at the path specified, a directory will be
-created. If a directory does exist, files may be overwritten with the latest
-coverage data, if they conflict.
+To collect code coverage, you can run tests with the `--coverage-path <file>`
+argument, which outputs a LCOV report to the given file path. The file
+specified can be an absolute or relative path. If a directory does not exist at
+the path specified, a directory will be created. If a directory does exist,
+files may be overwritten with the latest coverage data, if they conflict.
 
 Coverage gathering is currently only implemented for tests run on the Dart VM or
 Chrome.
 
-Here's an example of how to run tests and format the collected coverage to LCOV:
+Here's an example of how to run tests and collect coverage:
 
 ```shell
 ## Run Dart tests and output coverage info to `./coverage/lcov.info`:
-dart run test --coverage-lcov=./coverage/lcov.info
+dart run test --coverage-path=./coverage/lcov.info
 
 ## Generate a human readable report:
 genhtml -o ./coverage/report ./coverage/lcov.info

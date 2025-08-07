@@ -92,10 +92,10 @@ $_runtimeCompilers
     --debug                           Run the VM and Chrome tests in debug mode.
     --coverage=<directory>            Gather coverage and output it to the specified directory.
                                       Implies --debug.
-    --coverage-lcov=<file>            Gather coverage and output an lcov report to the specified file.
+    --coverage-path=<file>            Gather coverage and output an lcov report to the specified file.
                                       Implies --debug.
     --branch-coverage                 Include branch coverage information in the coverage report.
-                                      Must be paired with --coverage or --coverage-lcov.
+                                      Must be paired with --coverage or --coverage-path.
     --[no-]chain-stack-traces         Use chained stack traces to provide greater exception details
                                       especially for asynchronous code. It may be useful to disable
                                       to provide improved test performance but at the cost of
