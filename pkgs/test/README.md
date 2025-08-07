@@ -257,36 +257,25 @@ The available options for the `--reporter` flag are:
 
 ### Collecting Code Coverage
 
-To collect code coverage, you can run tests with the `--coverage <directory>`
-argument. The directory specified can be an absolute or relative path.
-If a directory does not exist at the path specified, a directory will be
-created. If a directory does exist, files may be overwritten with the latest
-coverage data, if they conflict.
-
-This option will enable code coverage collection on a suite-by-suite basis,
-and the resulting coverage files will be outputted in the directory specified.
-The files can then be formatted using the `package:coverage`
-`format_coverage` executable.
+To collect code coverage, you can run tests with the `--coverage-path <file>`
+argument, which outputs a LCOV report to the given file path. The file
+specified can be an absolute or relative path. If a directory does not exist at
+the path specified, a directory will be created. If a directory does exist,
+files may be overwritten with the latest coverage data, if they conflict.
 
 Coverage gathering is currently only implemented for tests run on the Dart VM or
 Chrome.
 
-Here's an example of how to run tests and format the collected coverage to LCOV:
+Here's an example of how to run tests and collect coverage:
 
 ```shell
-## Run Dart tests and output them at directory `./coverage`:
-dart run test --coverage=./coverage
+## Run Dart tests and output coverage info to `./coverage/lcov.info`:
+dart run test --coverage-path=./coverage/lcov.info
 
-## Activate package `coverage` (if needed):
-dart pub global activate coverage
-
-## Format collected coverage to LCOV (only for directory "lib")
-dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
-
-## Generate LCOV report:
+## Generate a human readable report:
 genhtml -o ./coverage/report ./coverage/lcov.info
 
-## Open the HTML coverage report:
+## Open the coverage report:
 open ./coverage/report/index.html
 ```
 

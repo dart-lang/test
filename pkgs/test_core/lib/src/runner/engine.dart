@@ -7,6 +7,7 @@ import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
+import 'package:coverage/coverage.dart';
 import 'package:pool/pool.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -61,7 +62,13 @@ class Engine {
   bool? _closedBeforeDone;
 
   /// The coverage output directory.
-  String? _coverage;
+  final String? _coverage;
+
+  /// The coverage output lcov file.
+  final String? _coverageLcov;
+
+  /// The merged coverage data from all tests.
+  final Map<String, HitMap> _allCoverageData = {};
 
   /// The seed used to generate randomness for test case shuffling.
   ///
@@ -92,8 +99,7 @@ class Engine {
   /// This will be `null` if [close] was called before all the tests finished
   /// running.
   Future<bool?> get success async {
-    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
-    if (_closedBeforeDone!) return null;
+    if (!await _done) return null;
     return liveTests.every(
       (liveTest) =>
           liveTest.state.result.isPassing &&
@@ -216,11 +222,13 @@ class Engine {
   Engine({
     int? concurrency,
     String? coverage,
+    String? coverageLcov,
     this.testRandomizeOrderingSeed,
     bool stopOnFirstFailure = false,
   }) : _runPool = Pool(concurrency ?? 1),
        _stopOnFirstFailure = stopOnFirstFailure,
-       _coverage = coverage {
+       _coverage = coverage,
+       _coverageLcov = coverageLcov {
     _group.future
         .then((_) {
           _onTestStartedGroup.close();
@@ -243,11 +251,13 @@ class Engine {
     List<RunnerSuite> suites, {
     int? concurrency,
     String? coverage,
+    String? coverageLcov,
     bool stopOnFirstFailure = false,
   }) {
     var engine = Engine(
       concurrency: concurrency,
       coverage: coverage,
+      coverageLcov: coverageLcov,
       stopOnFirstFailure: stopOnFirstFailure,
     );
     for (var suite in suites) {
@@ -293,17 +303,25 @@ class Engine {
             if (_closed) return;
             await _runGroup(controller, controller.liveSuite.suite.group, []);
             controller.noMoreLiveTests();
-            if (_coverage != null) await writeCoverage(_coverage!, controller);
+            if (_coverage != null || _coverageLcov != null) {
+              _allCoverageData.merge(
+                await writeCoverage(_coverage, controller),
+              );
+            }
           } finally {
             resource.allowRelease(() => controller?.close());
           }
         }());
       })
-      ..onDone(() {
+      ..onDone(() async {
         _subscriptions.remove(subscription);
         _onSuiteAddedController.close();
         _group.close();
         _runPool.close();
+
+        if (_coverageLcov != null && await _done) {
+          await writeCoverageLcov(_coverageLcov, _allCoverageData);
+        }
       });
     _subscriptions.add(subscription);
 
@@ -594,5 +612,10 @@ class Engine {
     // to wait for tearDowns or tearDownAlls to run.
     futures.add(_runPool.close());
     await Future.wait(futures, eagerError: true);
+  }
+
+  Future<bool> get _done async {
+    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
+    return !_closedBeforeDone!;
   }
 }

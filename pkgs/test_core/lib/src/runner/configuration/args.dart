@@ -166,6 +166,20 @@ final ArgParser _parser =
             'Implies --debug.',
         valueHelp: 'directory',
       );
+      parser.addOption(
+        'coverage-path',
+        help:
+            'Gather coverage and output an lcov report to the specified file.\n'
+            'Implies --debug.',
+        valueHelp: 'file',
+      );
+      parser.addFlag(
+        'branch-coverage',
+        help:
+            'Include branch coverage information in the coverage report.\n'
+            'Must be paired with --coverage or --coverage-path.',
+        negatable: false,
+      );
       parser.addFlag(
         'chain-stack-traces',
         help:
@@ -418,6 +432,19 @@ class _Parser {
       );
     }
 
+    final coverageDir = _ifParsed<String>('coverage');
+    final coverageLcov = _ifParsed<String>('coverage-path');
+    final branchCoverage = _ifParsed<bool>('branch-coverage') ?? false;
+    if (coverageDir == null && coverageLcov == null && branchCoverage) {
+      throw ArgumentError(
+        'If you set --branch-coverage you must set either --coverage or '
+        '--coverage-path',
+      );
+    }
+    if (coverageLcov != null && coverageDir != null) {
+      throw ArgumentError('Cannot set both --coverage and --coverage-path');
+    }
+
     return Configuration(
       help: _ifParsed('help'),
       version: _ifParsed('version'),
@@ -432,7 +459,9 @@ class _Parser {
       precompiledPath: _ifParsed<String>('precompiled'),
       reporter: reporter,
       fileReporters: _parseFileReporterOption(),
-      coverage: _ifParsed('coverage'),
+      coverage: coverageDir,
+      coverageLcov: coverageLcov,
+      branchCoverage: branchCoverage,
       concurrency: _parseOption('concurrency', int.parse),
       shardIndex: shardIndex,
       totalShards: totalShards,

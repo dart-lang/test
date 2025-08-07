@@ -138,6 +138,7 @@ Engine declareEngine(
   void Function() body, {
   bool runSkipped = false,
   String? coverage,
+  String? coverageLcov,
   bool stopOnFirstFailure = false,
 }) {
   var declarer = Declarer()..declare(body);
@@ -151,6 +152,7 @@ Engine declareEngine(
       ),
     ],
     coverage: coverage,
+    coverageLcov: coverageLcov,
     stopOnFirstFailure: stopOnFirstFailure,
   );
 }
@@ -222,6 +224,8 @@ Configuration configuration({
   String? reporter,
   Map<String, String>? fileReporters,
   String? coverage,
+  String? coverageLcov,
+  bool? branchCoverage,
   int? concurrency,
   int? shardIndex,
   int? totalShards,
@@ -272,6 +276,8 @@ Configuration configuration({
   reporter: reporter,
   fileReporters: fileReporters,
   coverage: coverage,
+  coverageLcov: coverageLcov,
+  branchCoverage: branchCoverage,
   concurrency: concurrency,
   shardIndex: shardIndex,
   totalShards: totalShards,

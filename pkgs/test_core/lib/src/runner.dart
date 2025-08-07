@@ -77,6 +77,7 @@ class Runner {
     var engine = Engine(
       concurrency: config.concurrency,
       coverage: config.coverage,
+      coverageLcov: config.coverageLcov,
       testRandomizeOrderingSeed: config.testRandomizeOrderingSeed,
       stopOnFirstFailure: config.stopOnFirstFailure,
     );

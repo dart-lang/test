@@ -162,7 +162,7 @@ class VMPlatform extends PlatformPlugin {
       environment,
       channel.cast(),
       message,
-      gatherCoverage: () => _gatherCoverage(environment!),
+      gatherCoverage: () => _gatherCoverage(environment!, _config),
     );
 
     if (isolateRef != null) {
@@ -414,7 +414,10 @@ stderr: ${processResult.stderr}''');
   }
 }
 
-Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
+Future<Map<String, dynamic>> _gatherCoverage(
+  Environment environment,
+  Configuration config,
+) async {
   final isolateId =
       Uri.parse(
         environment.observatoryUrl!.fragment,
@@ -424,8 +427,9 @@ Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
     false,
     false,
     false,
-    {},
+    {(await currentPackage).name},
     isolateIds: {isolateId!},
+    branchCoverage: config.branchCoverage,
   );
 }
 
