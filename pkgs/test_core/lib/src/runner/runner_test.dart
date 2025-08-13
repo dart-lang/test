@@ -33,73 +33,100 @@ class RunnerTest extends Test {
   final MultiChannel _channel;
 
   RunnerTest(
-      this.name, this.metadata, this.trace, this.location, this._channel);
+    this.name,
+    this.metadata,
+    this.trace,
+    this.location,
+    this._channel,
+  );
 
   @override
   LiveTest load(Suite suite, {Iterable<Group>? groups}) {
     late final LiveTestController controller;
     late final VirtualChannel testChannel;
-    controller = LiveTestController(suite, this, () {
-      controller.setState(const State(Status.running, Result.success));
+    controller = LiveTestController(
+      suite,
+      this,
+      () {
+        controller.setState(const State(Status.running, Result.success));
 
-      testChannel = _channel.virtualChannel();
-      _channel.sink.add({'command': 'run', 'channel': testChannel.id});
+        testChannel = _channel.virtualChannel();
+        _channel.sink.add({'command': 'run', 'channel': testChannel.id});
 
-      testChannel.stream.listen((message) {
-        final msg = message as Map;
-        switch (msg['type'] as String) {
-          case 'error':
-            var asyncError = RemoteException.deserialize(
-                msg['error'] as Map<String, dynamic>);
-            var stackTrace = asyncError.stackTrace;
-            controller.addError(asyncError.error, stackTrace);
-            break;
+        testChannel.stream.listen(
+          (message) {
+            final msg = message as Map;
+            switch (msg['type'] as String) {
+              case 'error':
+                var asyncError = RemoteException.deserialize(
+                  msg['error'] as Map<String, dynamic>,
+                );
+                var stackTrace = asyncError.stackTrace;
+                controller.addError(asyncError.error, stackTrace);
+                break;
 
-          case 'state-change':
-            controller.setState(State(Status.parse(msg['status'] as String),
-                Result.parse(msg['result'] as String)));
-            break;
+              case 'state-change':
+                controller.setState(
+                  State(
+                    Status.parse(msg['status'] as String),
+                    Result.parse(msg['result'] as String),
+                  ),
+                );
+                break;
 
-          case 'message':
-            controller.message(Message(
-                MessageType.parse(msg['message-type'] as String),
-                msg['text'] as String));
-            break;
+              case 'message':
+                controller.message(
+                  Message(
+                    MessageType.parse(msg['message-type'] as String),
+                    msg['text'] as String,
+                  ),
+                );
+                break;
 
-          case 'complete':
+              case 'complete':
+                controller.completer.complete();
+                break;
+
+              case 'spawn-hybrid-uri':
+                // When we kill the isolate that the test lives in, that will close
+                // this virtual channel and cause the spawned isolate to close as
+                // well.
+                spawnHybridUri(
+                  msg['url'] as String,
+                  msg['message'],
+                  suite,
+                ).pipe(
+                  testChannel.virtualChannel((msg['channel'] as num).toInt()),
+                );
+                break;
+            }
+          },
+          onDone: () {
+            // When the test channel closes—presumably because the browser
+            // closed—mark the test as complete no matter what.
+            if (controller.completer.isCompleted) return;
             controller.completer.complete();
-            break;
-
-          case 'spawn-hybrid-uri':
-            // When we kill the isolate that the test lives in, that will close
-            // this virtual channel and cause the spawned isolate to close as
-            // well.
-            spawnHybridUri(msg['url'] as String, msg['message'], suite).pipe(
-                testChannel.virtualChannel((msg['channel'] as num).toInt()));
-            break;
+          },
+        );
+      },
+      () {
+        // If the test has finished running, just disconnect the channel.
+        if (controller.completer.isCompleted) {
+          testChannel.sink.close();
+          return;
         }
-      }, onDone: () {
-        // When the test channel closes—presumably because the browser
-        // closed—mark the test as complete no matter what.
-        if (controller.completer.isCompleted) return;
-        controller.completer.complete();
-      });
-    }, () {
-      // If the test has finished running, just disconnect the channel.
-      if (controller.completer.isCompleted) {
-        testChannel.sink.close();
-        return;
-      }
 
-      unawaited(() async {
-        // If the test is still running, send it a message telling it to shut
-        // down ASAP. This causes the [Invoker] to eagerly throw exceptions
-        // whenever the test touches it.
-        testChannel.sink.add({'command': 'close'});
-        await controller.completer.future;
-        await testChannel.sink.close();
-      }());
-    }, groups: groups);
+        unawaited(() async {
+          // If the test is still running, send it a message telling it to shut
+          // down ASAP. This causes the [Invoker] to eagerly throw exceptions
+          // whenever the test touches it.
+          testChannel.sink.add({'command': 'close'});
+          await controller.completer.future;
+          await testChannel.sink.close();
+        }());
+      },
+      groups: groups,
+    );
     return controller;
   }
 
@@ -107,7 +134,12 @@ class RunnerTest extends Test {
   Test? forPlatform(SuitePlatform platform) {
     if (!metadata.testOn.evaluate(platform)) return null;
     return RunnerTest(
-        name, metadata.forPlatform(platform), trace, location, _channel);
+      name,
+      metadata.forPlatform(platform),
+      trace,
+      location,
+      _channel,
+    );
   }
 
   @override

@@ -15,7 +15,7 @@ class _BadCustomMatcher extends CustomMatcher {
 
 class _HasPrice extends CustomMatcher {
   _HasPrice(Object? matcher)
-      : super('Widget with a price that is', 'price', matcher);
+    : super('Widget with a price that is', 'price', matcher);
   @override
   Object? featureValueOf(Object? actual) => (actual as Widget).price;
 }
@@ -27,22 +27,24 @@ void main() {
     shouldPass(w, _HasPrice(10));
     shouldPass(w, _HasPrice(greaterThan(0)));
     shouldFail(
-        w,
-        _HasPrice(greaterThan(10)),
-        'Expected: Widget with a price that is a value greater than <10> '
-        "Actual: <Instance of 'Widget'> "
-        'Which: has price with value <10> which is not '
-        'a value greater than <10>');
+      w,
+      _HasPrice(greaterThan(10)),
+      'Expected: Widget with a price that is a value greater than <10> '
+      "Actual: <Instance of 'Widget'> "
+      'Which: has price with value <10> which is not '
+      'a value greater than <10>',
+    );
   });
 
   test('Custom Matcher Exception', () {
     shouldFail(
-        'a',
-        _BadCustomMatcher(),
-        allOf([
-          contains("Expected: feature {1: 'a'} "),
-          contains("Actual: 'a' "),
-          contains("Which: threw 'Exception: bang' "),
-        ]));
+      'a',
+      _BadCustomMatcher(),
+      allOf([
+        contains("Expected: feature {1: 'a'} "),
+        contains("Actual: 'a' "),
+        contains("Which: threw 'Exception: bang' "),
+      ]),
+    );
   });
 }

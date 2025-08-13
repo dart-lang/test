@@ -38,8 +38,10 @@ class CustomMatcher extends Matcher {
   final Matcher _matcher;
 
   CustomMatcher(
-      this._featureDescription, this._featureName, Object? valueOrMatcher)
-      : _matcher = wrapMatcher(valueOrMatcher);
+    this._featureDescription,
+    this._featureName,
+    Object? valueOrMatcher,
+  ) : _matcher = wrapMatcher(valueOrMatcher);
 
   /// Override this to extract the interesting feature.
   Object? featureValueOf(dynamic actual) => actual;
@@ -53,14 +55,16 @@ class CustomMatcher extends Matcher {
     } catch (exception, stack) {
       addStateInfo(matchState, {
         'custom.exception': exception.toString(),
-        'custom.stack': Chain.forTrace(stack)
-            .foldFrames(
-                (frame) =>
-                    frame.package == 'test' ||
-                    frame.package == 'stream_channel' ||
-                    frame.package == 'matcher',
-                terse: true)
-            .toString()
+        'custom.stack':
+            Chain.forTrace(stack)
+                .foldFrames(
+                  (frame) =>
+                      frame.package == 'test' ||
+                      frame.package == 'stream_channel' ||
+                      frame.package == 'matcher',
+                  terse: true,
+                )
+                .toString(),
       });
     }
     return false;
@@ -71,8 +75,12 @@ class CustomMatcher extends Matcher {
       description.add(_featureDescription).add(' ').addDescriptionOf(_matcher);
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (matchState['custom.exception'] != null) {
       mismatchDescription
           .add('threw ')
@@ -89,8 +97,12 @@ class CustomMatcher extends Matcher {
         .addDescriptionOf(matchState['custom.feature']);
     var innerDescription = StringDescription();
 
-    _matcher.describeMismatch(matchState['custom.feature'], innerDescription,
-        matchState['state'] as Map, verbose);
+    _matcher.describeMismatch(
+      matchState['custom.feature'],
+      innerDescription,
+      matchState['state'] as Map,
+      verbose,
+    );
 
     if (innerDescription.length > 0) {
       mismatchDescription.add(' which ').add(innerDescription.toString());

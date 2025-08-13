@@ -96,7 +96,9 @@ class Throws extends AsyncMatcher {
   /// Matches [future], using try/catch since `onError` doesn't seem to work
   /// properly in nnbd.
   Future<String?> _matchFuture(
-      Future<dynamic> future, String messagePrefix) async {
+    Future<dynamic> future,
+    String messagePrefix,
+  ) async {
     try {
       var value = await future;
       return indent(prettyPrint(value), first: messagePrefix);
@@ -122,16 +124,20 @@ class Throws extends AsyncMatcher {
     var matchState = <Object?, Object?>{};
     if (_matcher.matches(error, matchState)) return null;
 
-    var result = _matcher
-        .describeMismatch(error, StringDescription(), matchState, false)
-        .toString();
+    var result =
+        _matcher
+            .describeMismatch(error, StringDescription(), matchState, false)
+            .toString();
 
     var buffer = StringBuffer();
     buffer.writeln(indent(prettyPrint(error), first: 'threw '));
     if (trace != null) {
-      buffer.writeln(indent(
+      buffer.writeln(
+        indent(
           TestHandle.current.formatStackTrace(trace).toString(),
-          first: 'stack '));
+          first: 'stack ',
+        ),
+      );
     }
     if (result.isNotEmpty) buffer.writeln(indent(result, first: 'which '));
     return buffer.toString().trimRight();

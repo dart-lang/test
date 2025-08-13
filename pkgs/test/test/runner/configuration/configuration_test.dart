@@ -34,20 +34,21 @@ void main() {
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = configuration(
-            help: true,
-            version: true,
-            pauseAfterLoad: true,
-            debug: true,
-            color: true,
-            configurationPath: 'special_test.yaml',
-            reporter: 'json',
-            fileReporters: {'json': 'out.json'},
-            shardIndex: 3,
-            totalShards: 10,
-            testRandomizeOrderingSeed: 123,
-            testSelections: const {
-              'bar': {TestSelection()}
-            }).merge(configuration());
+          help: true,
+          version: true,
+          pauseAfterLoad: true,
+          debug: true,
+          color: true,
+          configurationPath: 'special_test.yaml',
+          reporter: 'json',
+          fileReporters: {'json': 'out.json'},
+          shardIndex: 3,
+          totalShards: 10,
+          testRandomizeOrderingSeed: 123,
+          testSelections: const {
+            'bar': {TestSelection()},
+          },
+        ).merge(configuration());
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -64,7 +65,8 @@ void main() {
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = configuration().merge(configuration(
+        var merged = configuration().merge(
+          configuration(
             help: true,
             version: true,
             pauseAfterLoad: true,
@@ -77,8 +79,10 @@ void main() {
             totalShards: 10,
             testRandomizeOrderingSeed: 123,
             testSelections: const {
-              'bar': {TestSelection()}
-            }));
+              'bar': {TestSelection()},
+            },
+          ),
+        );
 
         expect(merged.help, isTrue);
         expect(merged.version, isTrue);
@@ -94,39 +98,40 @@ void main() {
         expect(merged.testSelections.keys.single, 'bar');
       });
 
-      test(
-          "if the two configurations conflict, uses the new configuration's "
+      test("if the two configurations conflict, uses the new configuration's "
           'values', () {
         var older = configuration(
-            help: true,
-            version: false,
-            pauseAfterLoad: true,
-            debug: true,
-            color: false,
-            configurationPath: 'special_test.yaml',
-            reporter: 'json',
-            fileReporters: {'json': 'old.json'},
-            shardIndex: 2,
-            totalShards: 4,
-            testRandomizeOrderingSeed: 0,
-            testSelections: const {
-              'bar': {TestSelection()}
-            });
+          help: true,
+          version: false,
+          pauseAfterLoad: true,
+          debug: true,
+          color: false,
+          configurationPath: 'special_test.yaml',
+          reporter: 'json',
+          fileReporters: {'json': 'old.json'},
+          shardIndex: 2,
+          totalShards: 4,
+          testRandomizeOrderingSeed: 0,
+          testSelections: const {
+            'bar': {TestSelection()},
+          },
+        );
         var newer = configuration(
-            help: false,
-            version: true,
-            pauseAfterLoad: false,
-            debug: false,
-            color: true,
-            configurationPath: 'test_special.yaml',
-            reporter: 'compact',
-            fileReporters: {'json': 'new.json'},
-            shardIndex: 3,
-            totalShards: 10,
-            testRandomizeOrderingSeed: 123,
-            testSelections: const {
-              'blech': {TestSelection()}
-            });
+          help: false,
+          version: true,
+          pauseAfterLoad: false,
+          debug: false,
+          color: true,
+          configurationPath: 'test_special.yaml',
+          reporter: 'compact',
+          fileReporters: {'json': 'new.json'},
+          shardIndex: 3,
+          totalShards: 10,
+          testRandomizeOrderingSeed: 123,
+          testSelections: const {
+            'blech': {TestSelection()},
+          },
+        );
         var merged = older.merge(newer);
 
         expect(merged.help, isFalse);
@@ -151,33 +156,42 @@ void main() {
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = configuration(chosenPresets: ['baz', 'bang'])
-            .merge(configuration());
+        var merged = configuration(
+          chosenPresets: ['baz', 'bang'],
+        ).merge(configuration());
         expect(merged.chosenPresets, equals(['baz', 'bang']));
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = configuration()
-            .merge(configuration(chosenPresets: ['baz', 'bang']));
+        var merged = configuration().merge(
+          configuration(chosenPresets: ['baz', 'bang']),
+        );
         expect(merged.chosenPresets, equals(['baz', 'bang']));
       });
 
       test('if both are defined, unions them', () {
-        var merged = configuration(chosenPresets: ['baz', 'bang'])
-            .merge(configuration(chosenPresets: ['qux']));
+        var merged = configuration(
+          chosenPresets: ['baz', 'bang'],
+        ).merge(configuration(chosenPresets: ['qux']));
         expect(merged.chosenPresets, equals(['baz', 'bang', 'qux']));
       });
     });
 
     group('for presets', () {
       test('merges each nested configuration', () {
-        var merged = configuration(presets: {
-          'bang': configuration(pauseAfterLoad: true),
-          'qux': configuration(color: true)
-        }).merge(configuration(presets: {
-          'qux': configuration(color: false),
-          'zap': configuration(help: true)
-        }));
+        var merged = configuration(
+          presets: {
+            'bang': configuration(pauseAfterLoad: true),
+            'qux': configuration(color: true),
+          },
+        ).merge(
+          configuration(
+            presets: {
+              'qux': configuration(color: false),
+              'zap': configuration(help: true),
+            },
+          ),
+        );
 
         expect(merged.presets['bang']!.pauseAfterLoad, isTrue);
         expect(merged.presets['qux']!.color, isFalse);
@@ -186,8 +200,9 @@ void main() {
 
       test('automatically resolves a matching chosen preset', () {
         var config = configuration(
-            presets: {'foo': configuration(color: true)},
-            chosenPresets: ['foo']);
+          presets: {'foo': configuration(color: true)},
+          chosenPresets: ['foo'],
+        );
         expect(config.presets, isEmpty);
         expect(config.chosenPresets, equals(['foo']));
         expect(config.knownPresets, equals(['foo']));
@@ -195,25 +210,25 @@ void main() {
       });
 
       test('resolves a chosen presets in order', () {
-        var config = configuration(presets: {
-          'foo': configuration(color: true),
-          'bar': configuration(color: false)
-        }, chosenPresets: [
-          'foo',
-          'bar'
-        ]);
+        var config = configuration(
+          presets: {
+            'foo': configuration(color: true),
+            'bar': configuration(color: false),
+          },
+          chosenPresets: ['foo', 'bar'],
+        );
         expect(config.presets, isEmpty);
         expect(config.chosenPresets, equals(['foo', 'bar']));
         expect(config.knownPresets, unorderedEquals(['foo', 'bar']));
         expect(config.color, isFalse);
 
-        config = configuration(presets: {
-          'foo': configuration(color: true),
-          'bar': configuration(color: false)
-        }, chosenPresets: [
-          'bar',
-          'foo'
-        ]);
+        config = configuration(
+          presets: {
+            'foo': configuration(color: true),
+            'bar': configuration(color: false),
+          },
+          chosenPresets: ['bar', 'foo'],
+        );
         expect(config.presets, isEmpty);
         expect(config.chosenPresets, equals(['bar', 'foo']));
         expect(config.knownPresets, unorderedEquals(['foo', 'bar']));
@@ -228,8 +243,9 @@ void main() {
       });
 
       test('resolves presets through merging', () {
-        var config = configuration(presets: {'foo': configuration(color: true)})
-            .merge(configuration(chosenPresets: ['foo']));
+        var config = configuration(
+          presets: {'foo': configuration(color: true)},
+        ).merge(configuration(chosenPresets: ['foo']));
 
         expect(config.presets, isEmpty);
         expect(config.chosenPresets, equals(['foo']));
@@ -239,8 +255,9 @@ void main() {
 
       test('preserves known presets through merging', () {
         var config = configuration(
-            presets: {'foo': configuration(color: true)},
-            chosenPresets: ['foo']).merge(configuration());
+          presets: {'foo': configuration(color: true)},
+          chosenPresets: ['foo'],
+        ).merge(configuration());
 
         expect(config.presets, isEmpty);
         expect(config.chosenPresets, equals(['foo']));
@@ -258,38 +275,51 @@ void main() {
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = configuration(
-                includeTags: BooleanSelector.parse('foo || bar'),
-                excludeTags: BooleanSelector.parse('baz || bang'))
-            .merge(configuration());
+          includeTags: BooleanSelector.parse('foo || bar'),
+          excludeTags: BooleanSelector.parse('baz || bang'),
+        ).merge(configuration());
 
         expect(merged.includeTags, equals(BooleanSelector.parse('foo || bar')));
         expect(
-            merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
+          merged.excludeTags,
+          equals(BooleanSelector.parse('baz || bang')),
+        );
       });
 
       test("if only the configuration's is defined, uses it", () {
-        var merged = configuration().merge(configuration(
+        var merged = configuration().merge(
+          configuration(
             includeTags: BooleanSelector.parse('foo || bar'),
-            excludeTags: BooleanSelector.parse('baz || bang')));
+            excludeTags: BooleanSelector.parse('baz || bang'),
+          ),
+        );
 
         expect(merged.includeTags, equals(BooleanSelector.parse('foo || bar')));
         expect(
-            merged.excludeTags, equals(BooleanSelector.parse('baz || bang')));
+          merged.excludeTags,
+          equals(BooleanSelector.parse('baz || bang')),
+        );
       });
 
       test('if both are defined, unions or intersects them', () {
         var older = configuration(
-            includeTags: BooleanSelector.parse('foo || bar'),
-            excludeTags: BooleanSelector.parse('baz || bang'));
+          includeTags: BooleanSelector.parse('foo || bar'),
+          excludeTags: BooleanSelector.parse('baz || bang'),
+        );
         var newer = configuration(
-            includeTags: BooleanSelector.parse('blip'),
-            excludeTags: BooleanSelector.parse('qux'));
+          includeTags: BooleanSelector.parse('blip'),
+          excludeTags: BooleanSelector.parse('qux'),
+        );
         var merged = older.merge(newer);
 
-        expect(merged.includeTags,
-            equals(BooleanSelector.parse('(foo || bar) && blip')));
-        expect(merged.excludeTags,
-            equals(BooleanSelector.parse('(baz || bang) || qux')));
+        expect(
+          merged.includeTags,
+          equals(BooleanSelector.parse('(foo || bar) && blip')),
+        );
+        expect(
+          merged.excludeTags,
+          equals(BooleanSelector.parse('(baz || bang) || qux')),
+        );
       });
     });
 
@@ -300,15 +330,17 @@ void main() {
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = configuration(globalPatterns: ['beep', 'boop'])
-            .merge(configuration());
+        var merged = configuration(
+          globalPatterns: ['beep', 'boop'],
+        ).merge(configuration());
 
         expect(merged.globalPatterns, equals(['beep', 'boop']));
       });
 
       test("if only the new configuration's is defined, uses it", () {
-        var merged = configuration()
-            .merge(configuration(globalPatterns: ['beep', 'boop']));
+        var merged = configuration().merge(
+          configuration(globalPatterns: ['beep', 'boop']),
+        );
 
         expect(merged.globalPatterns, equals(['beep', 'boop']));
       });
@@ -319,7 +351,9 @@ void main() {
         var merged = older.merge(newer);
 
         expect(
-            merged.globalPatterns, unorderedEquals(['beep', 'boop', 'bonk']));
+          merged.globalPatterns,
+          unorderedEquals(['beep', 'boop', 'bonk']),
+        );
       });
     });
   });

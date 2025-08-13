@@ -56,7 +56,11 @@ class StringDescription implements Description {
   /// and [end].
   @override
   Description addAll(
-      String start, String separator, String end, Iterable list) {
+    String start,
+    String separator,
+    String end,
+    Iterable list,
+  ) {
     var separate = false;
     add(start);
     for (var item in list) {

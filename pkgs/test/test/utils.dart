@@ -39,34 +39,48 @@ State? _lastState;
 /// The most recent emitted state is stored in [_lastState].
 void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
   var states = Queue.of(statesIter);
-  liveTest.onStateChange.listen(expectAsync1((state) {
-    _lastState = state;
-    expect(state, equals(states.removeFirst()));
-  }, count: states.length, max: states.length));
+  liveTest.onStateChange.listen(
+    expectAsync1(
+      (state) {
+        _lastState = state;
+        expect(state, equals(states.removeFirst()));
+      },
+      count: states.length,
+      max: states.length,
+    ),
+  );
 }
 
 /// Asserts that errors will be emitted via [liveTest.onError] that match
 /// [validators], in order.
 void expectErrors(
-    LiveTest liveTest, Iterable<void Function(Object)> validatorsIter) {
+  LiveTest liveTest,
+  Iterable<void Function(Object)> validatorsIter,
+) {
   var validators = Queue.of(validatorsIter);
-  liveTest.onError.listen(expectAsync1((error) {
-    validators.removeFirst()(error.error);
-  }, count: validators.length, max: validators.length));
+  liveTest.onError.listen(
+    expectAsync1(
+      (error) {
+        validators.removeFirst()(error.error);
+      },
+      count: validators.length,
+      max: validators.length,
+    ),
+  );
 }
 
 /// Asserts that [liveTest] will have a single failure with message `"oh no"`.
 void expectSingleFailure(LiveTest liveTest) {
   expectStates(liveTest, [
     const State(Status.running, Result.success),
-    const State(Status.complete, Result.failure)
+    const State(Status.complete, Result.failure),
   ]);
 
   expectErrors(liveTest, [
     (error) {
       expect(_lastState!.status, equals(Status.complete));
       expect(error, _isTestFailure('oh no'));
-    }
+    },
   ]);
 }
 
@@ -81,8 +95,11 @@ Matcher _isTestFailure(Object message) => const TypeMatcher<TestFailure>()
 ///
 /// [message] can be a string or a [Matcher].
 Matcher isApplicationException(Object message) =>
-    const TypeMatcher<ApplicationException>()
-        .having((e) => e.message, 'message', message);
+    const TypeMatcher<ApplicationException>().having(
+      (e) => e.message,
+      'message',
+      message,
+    );
 
 /// Asserts that [liveTest] has completed and passed.
 ///
@@ -127,10 +144,11 @@ Engine declareEngine(
   return Engine.withSuites(
     [
       RunnerSuite(
-          const PluginEnvironment(),
-          SuiteConfiguration.runSkipped(runSkipped),
-          declarer.build(),
-          suitePlatform)
+        const PluginEnvironment(),
+        SuiteConfiguration.runSkipped(runSkipped),
+        declarer.build(),
+        suitePlatform,
+      ),
     ],
     coverage: coverage,
     stopOnFirstFailure: stopOnFirstFailure,
@@ -139,149 +157,155 @@ Engine declareEngine(
 
 /// Returns a [RunnerSuite] with a default environment and configuration.
 RunnerSuite runnerSuite(Group root) => RunnerSuite(
-    const PluginEnvironment(), SuiteConfiguration.empty, root, suitePlatform);
+  const PluginEnvironment(),
+  SuiteConfiguration.empty,
+  root,
+  suitePlatform,
+);
 
 /// Returns a [LoadSuite] with a default configuration.
 LoadSuite loadSuite(String name, FutureOr<RunnerSuite> Function() body) =>
     LoadSuite(name, SuiteConfiguration.empty, suitePlatform, body);
 
-SuiteConfiguration suiteConfiguration(
-        {bool? allowDuplicateTestNames,
-        bool? allowTestRandomization,
-        bool? jsTrace,
-        bool? runSkipped,
-        Iterable<String>? dart2jsArgs,
-        String? precompiledPath,
-        Iterable<CompilerSelection>? compilerSelections,
-        Iterable<RuntimeSelection>? runtimes,
-        Map<BooleanSelector, SuiteConfiguration>? tags,
-        Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-        bool? ignoreTimeouts,
+SuiteConfiguration suiteConfiguration({
+  bool? allowDuplicateTestNames,
+  bool? allowTestRandomization,
+  bool? jsTrace,
+  bool? runSkipped,
+  Iterable<String>? dart2jsArgs,
+  String? precompiledPath,
+  Iterable<CompilerSelection>? compilerSelections,
+  Iterable<RuntimeSelection>? runtimes,
+  Map<BooleanSelector, SuiteConfiguration>? tags,
+  Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+  bool? ignoreTimeouts,
 
-        // Test-level configuration
-        Timeout? timeout,
-        bool? verboseTrace,
-        bool? chainStackTraces,
-        bool? skip,
-        int? retry,
-        String? skipReason,
-        PlatformSelector? testOn,
-        Iterable<String>? addTags}) =>
-    SuiteConfiguration(
-        allowDuplicateTestNames: allowDuplicateTestNames,
-        allowTestRandomization: allowTestRandomization,
-        jsTrace: jsTrace,
-        runSkipped: runSkipped,
-        dart2jsArgs: dart2jsArgs,
-        precompiledPath: precompiledPath,
-        compilerSelections: compilerSelections,
-        runtimes: runtimes,
-        tags: tags,
-        onPlatform: onPlatform,
-        ignoreTimeouts: ignoreTimeouts,
-        timeout: timeout,
-        verboseTrace: verboseTrace,
-        chainStackTraces: chainStackTraces,
-        skip: skip,
-        retry: retry,
-        skipReason: skipReason,
-        testOn: testOn,
-        addTags: addTags);
+  // Test-level configuration
+  Timeout? timeout,
+  bool? verboseTrace,
+  bool? chainStackTraces,
+  bool? skip,
+  int? retry,
+  String? skipReason,
+  PlatformSelector? testOn,
+  Iterable<String>? addTags,
+}) => SuiteConfiguration(
+  allowDuplicateTestNames: allowDuplicateTestNames,
+  allowTestRandomization: allowTestRandomization,
+  jsTrace: jsTrace,
+  runSkipped: runSkipped,
+  dart2jsArgs: dart2jsArgs,
+  precompiledPath: precompiledPath,
+  compilerSelections: compilerSelections,
+  runtimes: runtimes,
+  tags: tags,
+  onPlatform: onPlatform,
+  ignoreTimeouts: ignoreTimeouts,
+  timeout: timeout,
+  verboseTrace: verboseTrace,
+  chainStackTraces: chainStackTraces,
+  skip: skip,
+  retry: retry,
+  skipReason: skipReason,
+  testOn: testOn,
+  addTags: addTags,
+);
 
-Configuration configuration(
-        {bool? help,
-        String? customHtmlTemplatePath,
-        bool? version,
-        bool? pauseAfterLoad,
-        bool? debug,
-        bool? color,
-        String? configurationPath,
-        String? reporter,
-        Map<String, String>? fileReporters,
-        String? coverage,
-        int? concurrency,
-        int? shardIndex,
-        int? totalShards,
-        Map<String, Set<TestSelection>>? testSelections,
-        Iterable<String>? foldTraceExcept,
-        Iterable<String>? foldTraceOnly,
-        Glob? filename,
-        Iterable<String>? chosenPresets,
-        Map<String, Configuration>? presets,
-        Map<String, RuntimeSettings>? overrideRuntimes,
-        Map<String, CustomRuntime>? defineRuntimes,
-        bool? noRetry,
-        bool? ignoreTimeouts,
+Configuration configuration({
+  bool? help,
+  String? customHtmlTemplatePath,
+  bool? version,
+  bool? pauseAfterLoad,
+  bool? debug,
+  bool? color,
+  String? configurationPath,
+  String? reporter,
+  Map<String, String>? fileReporters,
+  String? coverage,
+  int? concurrency,
+  int? shardIndex,
+  int? totalShards,
+  Map<String, Set<TestSelection>>? testSelections,
+  Iterable<String>? foldTraceExcept,
+  Iterable<String>? foldTraceOnly,
+  Glob? filename,
+  Iterable<String>? chosenPresets,
+  Map<String, Configuration>? presets,
+  Map<String, RuntimeSettings>? overrideRuntimes,
+  Map<String, CustomRuntime>? defineRuntimes,
+  bool? noRetry,
+  bool? ignoreTimeouts,
 
-        // Suite-level configuration
-        bool? allowDuplicateTestNames,
-        bool? allowTestRandomization,
-        bool? jsTrace,
-        bool? runSkipped,
-        Iterable<String>? dart2jsArgs,
-        String? precompiledPath,
-        Iterable<Pattern>? globalPatterns,
-        Iterable<CompilerSelection>? compilerSelections,
-        Iterable<RuntimeSelection>? runtimes,
-        BooleanSelector? includeTags,
-        BooleanSelector? excludeTags,
-        Map<BooleanSelector, SuiteConfiguration>? tags,
-        Map<PlatformSelector, SuiteConfiguration>? onPlatform,
-        int? testRandomizeOrderingSeed,
+  // Suite-level configuration
+  bool? allowDuplicateTestNames,
+  bool? allowTestRandomization,
+  bool? jsTrace,
+  bool? runSkipped,
+  Iterable<String>? dart2jsArgs,
+  String? precompiledPath,
+  Iterable<Pattern>? globalPatterns,
+  Iterable<CompilerSelection>? compilerSelections,
+  Iterable<RuntimeSelection>? runtimes,
+  BooleanSelector? includeTags,
+  BooleanSelector? excludeTags,
+  Map<BooleanSelector, SuiteConfiguration>? tags,
+  Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+  int? testRandomizeOrderingSeed,
 
-        // Test-level configuration
-        Timeout? timeout,
-        bool? verboseTrace,
-        bool? chainStackTraces,
-        bool? skip,
-        int? retry,
-        String? skipReason,
-        PlatformSelector? testOn,
-        Iterable<String>? addTags}) =>
-    Configuration(
-        help: help,
-        customHtmlTemplatePath: customHtmlTemplatePath,
-        version: version,
-        pauseAfterLoad: pauseAfterLoad,
-        debug: debug,
-        color: color,
-        configurationPath: configurationPath,
-        reporter: reporter,
-        fileReporters: fileReporters,
-        coverage: coverage,
-        concurrency: concurrency,
-        shardIndex: shardIndex,
-        totalShards: totalShards,
-        testSelections: testSelections,
-        foldTraceExcept: foldTraceExcept,
-        foldTraceOnly: foldTraceOnly,
-        filename: filename,
-        chosenPresets: chosenPresets,
-        presets: presets,
-        overrideRuntimes: overrideRuntimes,
-        defineRuntimes: defineRuntimes,
-        noRetry: noRetry,
-        ignoreTimeouts: ignoreTimeouts,
-        allowDuplicateTestNames: allowDuplicateTestNames,
-        allowTestRandomization: allowTestRandomization,
-        jsTrace: jsTrace,
-        runSkipped: runSkipped,
-        dart2jsArgs: dart2jsArgs,
-        precompiledPath: precompiledPath,
-        globalPatterns: globalPatterns,
-        compilerSelections: compilerSelections,
-        runtimes: runtimes,
-        includeTags: includeTags,
-        excludeTags: excludeTags,
-        tags: tags,
-        onPlatform: onPlatform,
-        testRandomizeOrderingSeed: testRandomizeOrderingSeed,
-        stopOnFirstFailure: false,
-        timeout: timeout,
-        verboseTrace: verboseTrace,
-        chainStackTraces: chainStackTraces,
-        skip: skip,
-        retry: retry,
-        skipReason: skipReason,
-        testOn: testOn,
-        addTags: addTags);
+  // Test-level configuration
+  Timeout? timeout,
+  bool? verboseTrace,
+  bool? chainStackTraces,
+  bool? skip,
+  int? retry,
+  String? skipReason,
+  PlatformSelector? testOn,
+  Iterable<String>? addTags,
+}) => Configuration(
+  help: help,
+  customHtmlTemplatePath: customHtmlTemplatePath,
+  version: version,
+  pauseAfterLoad: pauseAfterLoad,
+  debug: debug,
+  color: color,
+  configurationPath: configurationPath,
+  reporter: reporter,
+  fileReporters: fileReporters,
+  coverage: coverage,
+  concurrency: concurrency,
+  shardIndex: shardIndex,
+  totalShards: totalShards,
+  testSelections: testSelections,
+  foldTraceExcept: foldTraceExcept,
+  foldTraceOnly: foldTraceOnly,
+  filename: filename,
+  chosenPresets: chosenPresets,
+  presets: presets,
+  overrideRuntimes: overrideRuntimes,
+  defineRuntimes: defineRuntimes,
+  noRetry: noRetry,
+  ignoreTimeouts: ignoreTimeouts,
+  allowDuplicateTestNames: allowDuplicateTestNames,
+  allowTestRandomization: allowTestRandomization,
+  jsTrace: jsTrace,
+  runSkipped: runSkipped,
+  dart2jsArgs: dart2jsArgs,
+  precompiledPath: precompiledPath,
+  globalPatterns: globalPatterns,
+  compilerSelections: compilerSelections,
+  runtimes: runtimes,
+  includeTags: includeTags,
+  excludeTags: excludeTags,
+  tags: tags,
+  onPlatform: onPlatform,
+  testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+  stopOnFirstFailure: false,
+  timeout: timeout,
+  verboseTrace: verboseTrace,
+  chainStackTraces: chainStackTraces,
+  skip: skip,
+  retry: retry,
+  skipReason: skipReason,
+  testOn: testOn,
+  addTags: addTags,
+);

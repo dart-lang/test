@@ -118,27 +118,36 @@ class CompactReporter implements Reporter {
   /// won't. If [printPath] is `true`, this will print the path name as part of
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
-  static CompactReporter watch(Engine engine, StringSink sink,
-          {required bool color,
-          required bool printPath,
-          required bool printPlatform}) =>
-      CompactReporter._(engine, sink,
-          color: color, printPath: printPath, printPlatform: printPlatform);
+  static CompactReporter watch(
+    Engine engine,
+    StringSink sink, {
+    required bool color,
+    required bool printPath,
+    required bool printPlatform,
+  }) => CompactReporter._(
+    engine,
+    sink,
+    color: color,
+    printPath: printPath,
+    printPlatform: printPlatform,
+  );
 
-  CompactReporter._(this._engine, this._sink,
-      {required bool color,
-      required bool printPath,
-      required bool printPlatform})
-      : _printPath = printPath,
-        _printPlatform = printPlatform,
-        _color = color,
-        _green = color ? '\u001b[32m' : '',
-        _red = color ? '\u001b[31m' : '',
-        _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[90m' : '',
-        _cyan = color ? '\u001b[36m' : '',
-        _bold = color ? '\u001b[1m' : '',
-        _noColor = color ? '\u001b[0m' : '' {
+  CompactReporter._(
+    this._engine,
+    this._sink, {
+    required bool color,
+    required bool printPath,
+    required bool printPlatform,
+  }) : _printPath = printPath,
+       _printPlatform = printPlatform,
+       _color = color,
+       _green = color ? '\u001b[32m' : '',
+       _red = color ? '\u001b[31m' : '',
+       _yellow = color ? '\u001b[33m' : '',
+       _gray = color ? '\u001b[90m' : '',
+       _cyan = color ? '\u001b[36m' : '',
+       _bold = color ? '\u001b[1m' : '',
+       _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
@@ -191,8 +200,11 @@ class CompactReporter implements Reporter {
       _stopwatch.start();
 
       // Keep updating the time even when nothing else is happening.
-      _subscriptions.add(Stream<void>.periodic(const Duration(seconds: 1))
-          .listen((_) => _progressLine(_lastProgressMessage ?? '')));
+      _subscriptions.add(
+        Stream<void>.periodic(
+          const Duration(seconds: 1),
+        ).listen((_) => _progressLine(_lastProgressMessage ?? '')),
+      );
     }
 
     // If this is the first test or suite load to start, print a progress line
@@ -204,33 +216,42 @@ class CompactReporter implements Reporter {
       _progressLine(_description(liveTest));
     }
 
-    _subscriptions.add(liveTest.onStateChange
-        .listen((state) => _onStateChange(liveTest, state)));
+    _subscriptions.add(
+      liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state)),
+    );
 
-    _subscriptions.add(liveTest.onError
-        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(
+      liveTest.onError.listen(
+        (error) => _onError(liveTest, error.error, error.stackTrace),
+      ),
+    );
 
-    _subscriptions.add(liveTest.onMessage.listen((message) {
-      _progressLine(_description(liveTest), truncate: false);
-      if (!_printedNewline) _sink.writeln('');
-      _printedNewline = true;
+    _subscriptions.add(
+      liveTest.onMessage.listen((message) {
+        _progressLine(_description(liveTest), truncate: false);
+        if (!_printedNewline) _sink.writeln('');
+        _printedNewline = true;
 
-      var text = message.text;
-      if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-      _sink.writeln(text);
-    }));
+        var text = message.text;
+        if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
+        _sink.writeln(text);
+      }),
+    );
 
     liveTest.onComplete.then((_) {
       var result = liveTest.state.result;
       if (result != Result.error && result != Result.failure) return;
-      var quotedName = Platform.isWindows
-          ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
-          : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
+      var quotedName =
+          Platform.isWindows
+              ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
+              : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
       _sink.writeln('');
-      _sink.writeln('$_bold${_cyan}To run this test again:$_noColor '
-          '${Platform.executable} test ${liveTest.suite.path} '
-          '-p ${liveTest.suite.platform.runtime.identifier} '
-          '--plain-name $quotedName');
+      _sink.writeln(
+        '$_bold${_cyan}To run this test again:$_noColor '
+        '${Platform.executable} test ${liveTest.suite.path} '
+        '-p ${liveTest.suite.platform.runtime.identifier} '
+        '--plain-name $quotedName',
+      );
     });
   }
 
@@ -260,8 +281,11 @@ class CompactReporter implements Reporter {
 
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest),
-        truncate: false, suffix: ' $_bold$_red[E]$_noColor');
+    _progressLine(
+      _description(liveTest),
+      truncate: false,
+      suffix: ' $_bold$_red[E]$_noColor',
+    );
     if (!_printedNewline) _sink.writeln('');
     _printedNewline = true;
 
@@ -311,9 +335,11 @@ class CompactReporter implements Reporter {
       _sink.writeln('');
     } else if (!success) {
       for (var liveTest in _engine.active) {
-        _progressLine(_description(liveTest),
-            truncate: false,
-            suffix: ' - did not complete $_bold$_red[E]$_noColor');
+        _progressLine(
+          _description(liveTest),
+          truncate: false,
+          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+        );
         _sink.writeln('');
       }
       _progressLine('Some tests failed.', color: _red);
@@ -329,9 +355,11 @@ class CompactReporter implements Reporter {
     if (_shouldPrintStackTraceChainingNotice) {
       _sink
         ..writeln('')
-        ..writeln('Consider enabling the flag chain-stack-traces to '
-            'receive more detailed exceptions.\n'
-            "For example, 'dart test --chain-stack-traces'.");
+        ..writeln(
+          'Consider enabling the flag chain-stack-traces to '
+          'receive more detailed exceptions.\n'
+          "For example, 'dart test --chain-stack-traces'.",
+        );
     }
   }
 
@@ -341,8 +369,12 @@ class CompactReporter implements Reporter {
   /// entire line within [lineLength]. If [color] is passed, it's used as the
   /// color for [message]. If [suffix] is passed, it's added to the end of
   /// [message].
-  bool _progressLine(String message,
-      {String? color, bool truncate = true, String? suffix}) {
+  bool _progressLine(
+    String message, {
+    String? color,
+    bool truncate = true,
+    String? suffix,
+  }) {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.
@@ -435,7 +467,8 @@ class CompactReporter implements Reporter {
     }
 
     if (_printPlatform) {
-      name = '[${liveTest.suite.platform.runtime.name}, '
+      name =
+          '[${liveTest.suite.platform.runtime.name}, '
           '${liveTest.suite.platform.compiler.name}] $name';
     }
 

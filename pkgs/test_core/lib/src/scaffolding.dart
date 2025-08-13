@@ -50,20 +50,28 @@ Declarer get _declarer {
     await pumpEventQueue();
 
     var suite = RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.empty,
-        _globalDeclarer!.build(),
-        SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
-        path: p.prettyUri(Uri.base));
+      const PluginEnvironment(),
+      SuiteConfiguration.empty,
+      _globalDeclarer!.build(),
+      SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
+      path: p.prettyUri(Uri.base),
+    );
 
     var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(engine, PrintSink(),
-        color: true, printPath: false, printPlatform: false);
+    ExpandedReporter.watch(
+      engine,
+      PrintSink(),
+      color: true,
+      printPath: false,
+      printPlatform: false,
+    );
 
-    var success = await runZoned(() => Invoker.guard(engine.run),
-        zoneValues: {#test.declarer: _globalDeclarer});
+    var success = await runZoned(
+      () => Invoker.guard(engine.run),
+      zoneValues: {#test.declarer: _globalDeclarer},
+    );
     if (success == true) return null;
     print('');
     unawaited(Future.error('Dummy exception to set exit code.'));
@@ -133,25 +141,31 @@ Declarer get _declarer {
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(Object? description, dynamic Function() body,
-    {String? testOn,
-    Timeout? timeout,
-    Object? skip,
-    Object? tags,
-    Map<String, dynamic>? onPlatform,
-    int? retry,
-    TestLocation? location,
-    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
-  _declarer.test(description.toString(), body,
-      testOn: testOn,
-      timeout: timeout,
-      skip: skip,
-      onPlatform: onPlatform,
-      tags: tags,
-      retry: retry,
-      location: location,
-      solo: solo);
+void test(
+  Object? description,
+  dynamic Function() body, {
+  String? testOn,
+  Timeout? timeout,
+  Object? skip,
+  Object? tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+  TestLocation? location,
+  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+}) {
+  _declarer.test(
+    description.toString(),
+    body,
+    testOn: testOn,
+    timeout: timeout,
+    skip: skip,
+    onPlatform: onPlatform,
+    tags: tags,
+    retry: retry,
+    location: location,
+    solo: solo,
+  );
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and
@@ -214,25 +228,31 @@ void test(Object? description, dynamic Function() body,
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(Object? description, dynamic Function() body,
-    {String? testOn,
-    Timeout? timeout,
-    Object? skip,
-    Object? tags,
-    Map<String, dynamic>? onPlatform,
-    int? retry,
-    TestLocation? location,
-    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
-  _declarer.group(description.toString(), body,
-      testOn: testOn,
-      timeout: timeout,
-      skip: skip,
-      tags: tags,
-      onPlatform: onPlatform,
-      retry: retry,
-      location: location,
-      solo: solo);
+void group(
+  Object? description,
+  dynamic Function() body, {
+  String? testOn,
+  Timeout? timeout,
+  Object? skip,
+  Object? tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+  TestLocation? location,
+  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+}) {
+  _declarer.group(
+    description.toString(),
+    body,
+    testOn: testOn,
+    timeout: timeout,
+    skip: skip,
+    tags: tags,
+    onPlatform: onPlatform,
+    retry: retry,
+    location: location,
+    solo: solo,
+  );
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and

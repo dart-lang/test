@@ -34,7 +34,7 @@ class Group implements GroupEntry {
 
   /// Returns a new root-level group.
   Group.root(Iterable<GroupEntry> entries, {Metadata? metadata})
-      : this('', entries, metadata: metadata);
+    : this('', entries, metadata: metadata);
 
   /// A test to run before all tests in the group.
   ///
@@ -50,20 +50,24 @@ class Group implements GroupEntry {
   int get testCount {
     if (_testCount != null) return _testCount!;
     _testCount = entries.fold<int>(
-        0, (count, entry) => count + (entry is Group ? entry.testCount : 1));
+      0,
+      (count, entry) => count + (entry is Group ? entry.testCount : 1),
+    );
     return _testCount!;
   }
 
   int? _testCount;
 
-  Group(this.name, Iterable<GroupEntry> entries,
-      {Metadata? metadata,
-      this.trace,
-      this.location,
-      this.setUpAll,
-      this.tearDownAll})
-      : entries = List<GroupEntry>.unmodifiable(entries),
-        metadata = metadata ?? Metadata() {
+  Group(
+    this.name,
+    Iterable<GroupEntry> entries, {
+    Metadata? metadata,
+    this.trace,
+    this.location,
+    this.setUpAll,
+    this.tearDownAll,
+  }) : entries = List<GroupEntry>.unmodifiable(entries),
+       metadata = metadata ?? Metadata() {
     for (var entry in entries) {
       assert(entry.parent == null);
       entry.parent = this;
@@ -80,37 +84,46 @@ class Group implements GroupEntry {
     var newMetadata = metadata.forPlatform(platform);
     var filtered = _map((entry) => entry.forPlatform(platform));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
-    return Group(name, filtered,
-        metadata: newMetadata,
-        trace: trace,
-        location: location,
-        setUpAll: setUpAll?.forPlatform(platform),
-        tearDownAll: tearDownAll?.forPlatform(platform));
+    return Group(
+      name,
+      filtered,
+      metadata: newMetadata,
+      trace: trace,
+      location: location,
+      setUpAll: setUpAll?.forPlatform(platform),
+      tearDownAll: tearDownAll?.forPlatform(platform),
+    );
   }
 
   @override
   Group? filter(bool Function(Test) callback) {
     var filtered = _map((entry) => entry.filter(callback));
     if (filtered.isEmpty && entries.isNotEmpty) return null;
-    return Group(name, filtered,
-        metadata: metadata,
-        trace: trace,
-        location: location,
-        // Always clone these because they are being re-parented.
-        setUpAll: setUpAll?.clone(),
-        tearDownAll: tearDownAll?.clone());
+    return Group(
+      name,
+      filtered,
+      metadata: metadata,
+      trace: trace,
+      location: location,
+      // Always clone these because they are being re-parented.
+      setUpAll: setUpAll?.clone(),
+      tearDownAll: tearDownAll?.clone(),
+    );
   }
 
   @override
   Group? clone() {
     var entries = _map((entry) => entry.clone());
-    return Group(name, entries,
-        metadata: metadata,
-        trace: trace,
-        location: location,
-        // Always clone these because they are being re-parented.
-        setUpAll: setUpAll?.clone(),
-        tearDownAll: tearDownAll?.clone());
+    return Group(
+      name,
+      entries,
+      metadata: metadata,
+      trace: trace,
+      location: location,
+      // Always clone these because they are being re-parented.
+      setUpAll: setUpAll?.clone(),
+      tearDownAll: tearDownAll?.clone(),
+    );
   }
 
   /// Returns the entries of this group mapped using [callback].

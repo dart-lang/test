@@ -32,55 +32,82 @@ final UnmodifiableMapView<String, ReporterDetails> allReporters =
 
 final _allReporters = <String, ReporterDetails>{
   'compact': ReporterDetails(
-      'A single line, updated continuously.',
-      (config, engine, sink) => CompactReporter.watch(engine, sink,
-          color: config.color,
-          printPath: config.testSelections.length > 1 ||
-              Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
-              config.suiteDefaults.compilerSelections != null)),
+    'A single line, updated continuously.',
+    (config, engine, sink) => CompactReporter.watch(
+      engine,
+      sink,
+      color: config.color,
+      printPath:
+          config.testSelections.length > 1 ||
+          Directory(config.testSelections.keys.single).existsSync(),
+      printPlatform:
+          config.suiteDefaults.runtimes.length > 1 ||
+          config.suiteDefaults.compilerSelections != null,
+    ),
+  ),
   'expanded': ReporterDetails(
-      'A separate line for each update.',
-      (config, engine, sink) => ExpandedReporter.watch(engine, sink,
-          color: config.color,
-          printPath: config.testSelections.length > 1 ||
-              Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
-              config.suiteDefaults.compilerSelections != null)),
+    'A separate line for each update.',
+    (config, engine, sink) => ExpandedReporter.watch(
+      engine,
+      sink,
+      color: config.color,
+      printPath:
+          config.testSelections.length > 1 ||
+          Directory(config.testSelections.keys.single).existsSync(),
+      printPlatform:
+          config.suiteDefaults.runtimes.length > 1 ||
+          config.suiteDefaults.compilerSelections != null,
+    ),
+  ),
   'failures-only': ReporterDetails(
-      'A separate line for failing tests with no output for passing tests',
-      (config, engine, sink) => FailuresOnlyReporter.watch(engine, sink,
-          color: config.color,
-          printPath: config.testSelections.length > 1 ||
-              Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
-              config.suiteDefaults.compilerSelections != null)),
+    'A separate line for failing tests with no output for passing tests',
+    (config, engine, sink) => FailuresOnlyReporter.watch(
+      engine,
+      sink,
+      color: config.color,
+      printPath:
+          config.testSelections.length > 1 ||
+          Directory(config.testSelections.keys.single).existsSync(),
+      printPlatform:
+          config.suiteDefaults.runtimes.length > 1 ||
+          config.suiteDefaults.compilerSelections != null,
+    ),
+  ),
   'github': ReporterDetails(
-      'A custom reporter for GitHub Actions '
-      '(the default reporter when running on GitHub Actions).',
-      (config, engine, sink) => GithubReporter.watch(engine, sink,
-          printPath: config.testSelections.length > 1 ||
-              Directory(config.testSelections.keys.single).existsSync(),
-          printPlatform: config.suiteDefaults.runtimes.length > 1 ||
-              config.suiteDefaults.compilerSelections != null)),
+    'A custom reporter for GitHub Actions '
+    '(the default reporter when running on GitHub Actions).',
+    (config, engine, sink) => GithubReporter.watch(
+      engine,
+      sink,
+      printPath:
+          config.testSelections.length > 1 ||
+          Directory(config.testSelections.keys.single).existsSync(),
+      printPlatform:
+          config.suiteDefaults.runtimes.length > 1 ||
+          config.suiteDefaults.compilerSelections != null,
+    ),
+  ),
   'json': ReporterDetails(
-      'A machine-readable format (see '
-      'https://dart.dev/go/test-docs/json_reporter.md).',
-      (config, engine, sink) =>
-          JsonReporter.watch(engine, sink, isDebugRun: config.debug)),
+    'A machine-readable format (see '
+    'https://dart.dev/go/test-docs/json_reporter.md).',
+    (config, engine, sink) =>
+        JsonReporter.watch(engine, sink, isDebugRun: config.debug),
+  ),
   'silent': ReporterDetails(
-      'A reporter with no output. '
-      'May be useful when only the exit code is meaningful.',
-      (config, engine, sink) => SilentReporter()),
+    'A reporter with no output. '
+    'May be useful when only the exit code is meaningful.',
+    (config, engine, sink) => SilentReporter(),
+  ),
 };
 
-final defaultReporter = inTestTests
-    ? 'expanded'
-    : inGithubContext
+final defaultReporter =
+    inTestTests
+        ? 'expanded'
+        : inGithubContext
         ? 'github'
         : canUseSpecialChars
-            ? 'compact'
-            : 'expanded';
+        ? 'compact'
+        : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.

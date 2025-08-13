@@ -34,17 +34,22 @@ abstract class CompilerPool {
   ///
   /// Should not be overridden.
   Future<void> compile(
-          String code, String path, SuiteConfiguration suiteConfig) =>
-      _pool.withResource(() {
-        if (closed) return null;
-        return compileInternal(code, path, suiteConfig);
-      });
+    String code,
+    String path,
+    SuiteConfiguration suiteConfig,
+  ) => _pool.withResource(() {
+    if (closed) return null;
+    return compileInternal(code, path, suiteConfig);
+  });
 
   /// The actual function a given compiler pool should implement to compile a
   /// suite.
   @protected
   Future<void> compileInternal(
-      String code, String path, SuiteConfiguration suiteConfig);
+    String code,
+    String path,
+    SuiteConfiguration suiteConfig,
+  );
 
   /// Shuts down the compiler pool, invoking `closeInternal` exactly once.
   ///

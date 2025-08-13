@@ -38,13 +38,18 @@ class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
   final _compiler = TestCompiler(
-      p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'));
+    p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
+  );
   final _closeMemo = AsyncMemoizer<void>();
   final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
 
   @override
-  Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
+  Future<RunnerSuite?> load(
+    String path,
+    SuitePlatform platform,
+    SuiteConfiguration suiteConfig,
+    Map<String, Object?> message,
+  ) async {
     assert(platform.runtime == Runtime.vm);
 
     _setupPauseAfterTests();
@@ -56,8 +61,11 @@ class VMPlatform extends PlatformPlugin {
       var serverSocket = await ServerSocket.bind('localhost', 0);
       Process process;
       try {
-        process =
-            await _spawnExecutable(path, suiteConfig.metadata, serverSocket);
+        process = await _spawnExecutable(
+          path,
+          suiteConfig.metadata,
+          serverSocket,
+        );
       } catch (error) {
         unawaited(serverSocket.close());
         rethrow;
@@ -72,8 +80,12 @@ class VMPlatform extends PlatformPlugin {
     } else {
       var receivePort = ReceivePort();
       try {
-        isolate = await _spawnIsolate(path, receivePort.sendPort,
-            suiteConfig.metadata, platform.compiler);
+        isolate = await _spawnIsolate(
+          path,
+          receivePort.sendPort,
+          suiteConfig.metadata,
+          platform.compiler,
+        );
         if (isolate == null) return null;
       } catch (error) {
         receivePort.close();
@@ -91,30 +103,38 @@ class VMPlatform extends PlatformPlugin {
     // platform to enable pausing after tests for debugging.
     var outerQueue = StreamQueue(outerChannel.stream);
     var channelId = (await outerQueue.next) as int;
-    var channel = outerChannel.virtualChannel(channelId).transformStream(
-        StreamTransformer.fromHandlers(handleDone: (sink) async {
-      if (_shouldPauseAfterTests) {
-        outerChannel.sink.add('debug');
-        await outerQueue.next;
-      }
-      for (var fn in cleanupCallbacks) {
-        fn();
-      }
-      unawaited(eventSub?.cancel());
-      unawaited(client?.dispose());
-      sink.close();
-    }));
+    var channel = outerChannel
+        .virtualChannel(channelId)
+        .transformStream(
+          StreamTransformer.fromHandlers(
+            handleDone: (sink) async {
+              if (_shouldPauseAfterTests) {
+                outerChannel.sink.add('debug');
+                await outerQueue.next;
+              }
+              for (var fn in cleanupCallbacks) {
+                fn();
+              }
+              unawaited(eventSub?.cancel());
+              unawaited(client?.dispose());
+              sink.close();
+            },
+          ),
+        );
 
     Environment? environment;
     IsolateRef? isolateRef;
     if (_config.debug) {
       if (platform.compiler == Compiler.exe) {
         throw UnsupportedError(
-            'Unable to debug tests compiled to `exe` (tried to debug $path with '
-            'the `exe` compiler).');
+          'Unable to debug tests compiled to `exe` (tried to debug $path with '
+          'the `exe` compiler).',
+        );
       }
-      var info =
-          await Service.controlWebServer(enable: true, silenceOutput: true);
+      var info = await Service.controlWebServer(
+        enable: true,
+        silenceOutput: true,
+      );
       // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
       var isolateID = Service.getIsolateID(isolate!)!;
 
@@ -122,13 +142,13 @@ class VMPlatform extends PlatformPlugin {
       var serverUri = info.serverUri!;
       client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
-      isolateRef = (await client.getVM())
-          .isolates!
-          .firstWhere((isolate) => isolate.number == isolateNumber.toString());
+      isolateRef = (await client.getVM()).isolates!.firstWhere(
+        (isolate) => isolate.number == isolateNumber.toString(),
+      );
       await client.setName(isolateRef.id!, path);
-      var libraryRef = (await client.getIsolate(isolateRef.id!))
-          .libraries!
-          .firstWhere((library) => library.uri == libraryPath);
+      var libraryRef = (await client.getIsolate(
+        isolateRef.id!,
+      )).libraries!.firstWhere((library) => library.uri == libraryPath);
       var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
       environment = VMEnvironment(url, isolateRef, client);
     }
@@ -136,8 +156,14 @@ class VMPlatform extends PlatformPlugin {
     environment ??= const PluginEnvironment();
 
     var controller = deserializeSuite(
-        path, platform, suiteConfig, environment, channel.cast(), message,
-        gatherCoverage: () => _gatherCoverage(environment!));
+      path,
+      platform,
+      suiteConfig,
+      environment,
+      channel.cast(),
+      message,
+      gatherCoverage: () => _gatherCoverage(environment!),
+    );
 
     if (isolateRef != null) {
       await client!.streamListen('Debug');
@@ -156,32 +182,38 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(() => Future.wait([
-        _compiler.dispose(),
-        _tempDir.deleteWithRetry(),
-      ]));
+  Future close() => _closeMemo.runOnce(
+    () => Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]),
+  );
 
   /// Compiles [path] to a native executable and spawns it as a process.
   ///
   /// Sets up a communication channel as well by passing command line arguments
   /// for the host and port of [socket].
   Future<Process> _spawnExecutable(
-      String path, Metadata suiteMetadata, ServerSocket socket) async {
+    String path,
+    Metadata suiteMetadata,
+    ServerSocket socket,
+  ) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       throw UnsupportedError(
-          'Precompiled native executable tests are not supported at this time');
+        'Precompiled native executable tests are not supported at this time',
+      );
     }
     var executable = await _compileToNative(path, suiteMetadata);
-    return await Process.start(
-        executable, [socket.address.host, socket.port.toString()]);
+    return await Process.start(executable, [
+      socket.address.host,
+      socket.port.toString(),
+    ]);
   }
 
   /// Compiles [path] to a native executable using `dart compile exe`.
   Future<String> _compileToNative(String path, Metadata suiteMetadata) async {
     var bootstrapPath = await _bootstrapNativeTestFile(
-        path,
-        suiteMetadata.languageVersionComment ??
-            await rootPackageLanguageVersionComment);
+      path,
+      suiteMetadata.languageVersionComment ??
+          await rootPackageLanguageVersionComment,
+    );
     var output = File(p.setExtension(bootstrapPath, '.exe'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
       'compile',
@@ -207,25 +239,39 @@ stderr: ${processResult.stderr}''');
   /// serialized tests over that channel.
   ///
   /// Returns `null` if an exception occurs but [close] has already been called.
-  Future<Isolate?> _spawnIsolate(String path, SendPort message,
-      Metadata suiteMetadata, Compiler compiler) async {
+  Future<Isolate?> _spawnIsolate(
+    String path,
+    SendPort message,
+    Metadata suiteMetadata,
+    Compiler compiler,
+  ) async {
     try {
       var precompiledPath = _config.suiteDefaults.precompiledPath;
       if (precompiledPath != null) {
         return _spawnPrecompiledIsolate(
-            path, message, precompiledPath, compiler);
+          path,
+          message,
+          precompiledPath,
+          compiler,
+        );
       }
       return switch (compiler) {
         Compiler.kernel => _spawnIsolateWithUri(
-            await _compileToKernel(path, suiteMetadata), message),
+          await _compileToKernel(path, suiteMetadata),
+          message,
+        ),
         Compiler.source => _spawnIsolateWithUri(
-            await _bootstrapIsolateTestFile(
-                path,
-                suiteMetadata.languageVersionComment ??
-                    await rootPackageLanguageVersionComment),
-            message),
-        _ => throw StateError(
-            'Unsupported compiler $compiler for the VM platform'),
+          await _bootstrapIsolateTestFile(
+            path,
+            suiteMetadata.languageVersionComment ??
+                await rootPackageLanguageVersionComment,
+          ),
+          message,
+        ),
+        _ =>
+          throw StateError(
+            'Unsupported compiler $compiler for the VM platform',
+          ),
       };
     } catch (_) {
       if (_closeMemo.hasRun) return null;
@@ -235,8 +281,10 @@ stderr: ${processResult.stderr}''');
 
   /// Compiles [path] to kernel and returns the uri to the compiled dill.
   Future<Uri> _compileToKernel(String path, Metadata suiteMetadata) async {
-    final response =
-        await _compiler.compile(await absoluteUri(path), suiteMetadata);
+    final response = await _compiler.compile(
+      await absoluteUri(path),
+      suiteMetadata,
+    );
     var compiledDill = response.kernelOutputUri?.toFilePath();
     if (compiledDill == null || response.errorCount > 0) {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
@@ -256,19 +304,28 @@ stderr: ${processResult.stderr}''');
     );
   }
 
-  Future<Isolate> _spawnPrecompiledIsolate(String testPath, SendPort message,
-      String precompiledPath, Compiler compiler) async {
-    var testUri =
-        await absoluteUri('${p.join(precompiledPath, testPath)}.vm_test.dart');
+  Future<Isolate> _spawnPrecompiledIsolate(
+    String testPath,
+    SendPort message,
+    String precompiledPath,
+    Compiler compiler,
+  ) async {
+    var testUri = await absoluteUri(
+      '${p.join(precompiledPath, testPath)}.vm_test.dart',
+    );
     testUri = testUri.replace(path: testUri.path.stripDriveLetterLeadingSlash);
 
     switch (compiler) {
       case Compiler.kernel:
         // Load `.dill` files from their absolute file path.
-        var dillUri = (await Isolate.resolvePackageUri(testUri.replace(
-            path:
-                '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
-                '.vm.app.dill')))!;
+        var dillUri =
+            (await Isolate.resolvePackageUri(
+              testUri.replace(
+                path:
+                    '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
+                    '.vm.app.dill',
+              ),
+            ))!;
         if (await File.fromUri(dillUri).exists()) {
           testUri = dillUri;
         }
@@ -282,8 +339,9 @@ stderr: ${processResult.stderr}''');
       default:
         throw StateError('Unsupported compiler for the VM platform $compiler.');
     }
-    File? packageConfig =
-        File(p.join(precompiledPath, '.dart_tool/package_config.json'));
+    File? packageConfig = File(
+      p.join(precompiledPath, '.dart_tool/package_config.json'),
+    );
     if (!(await packageConfig.exists())) {
       packageConfig = File(p.join(precompiledPath, '.packages'));
       if (!(await packageConfig.exists())) {
@@ -305,18 +363,26 @@ stderr: ${processResult.stderr}''');
   ///
   /// Returns the [Uri] to the created file.
   Future<Uri> _bootstrapIsolateTestFile(
-      String testPath, String languageVersionComment) async {
-    var file = File(p.join(
-        _tempDir.path, p.setExtension(testPath, '.bootstrap.isolate.dart')));
+    String testPath,
+    String languageVersionComment,
+  ) async {
+    var file = File(
+      p.join(
+        _tempDir.path,
+        p.setExtension(testPath, '.bootstrap.isolate.dart'),
+      ),
+    );
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(testBootstrapContents(
-          testUri: await absoluteUri(testPath),
-          languageVersionComment: languageVersionComment,
-          packageConfigUri: await packageConfigUri,
-          testType: VmTestType.isolate,
-        ));
+        ..writeAsStringSync(
+          testBootstrapContents(
+            testUri: await absoluteUri(testPath),
+            languageVersionComment: languageVersionComment,
+            packageConfigUri: await packageConfigUri,
+            testType: VmTestType.isolate,
+          ),
+        );
     }
     return file.uri;
   }
@@ -326,37 +392,53 @@ stderr: ${processResult.stderr}''');
   ///
   /// Returns the path to the created file.
   Future<String> _bootstrapNativeTestFile(
-      String testPath, String languageVersionComment) async {
-    var file = File(p.join(
-        _tempDir.path, p.setExtension(testPath, '.bootstrap.native.dart')));
+    String testPath,
+    String languageVersionComment,
+  ) async {
+    var file = File(
+      p.join(_tempDir.path, p.setExtension(testPath, '.bootstrap.native.dart')),
+    );
     if (!file.existsSync()) {
       file
         ..createSync(recursive: true)
-        ..writeAsStringSync(testBootstrapContents(
-          testUri: await absoluteUri(testPath),
-          languageVersionComment: languageVersionComment,
-          packageConfigUri: await packageConfigUri,
-          testType: VmTestType.process,
-        ));
+        ..writeAsStringSync(
+          testBootstrapContents(
+            testUri: await absoluteUri(testPath),
+            languageVersionComment: languageVersionComment,
+            packageConfigUri: await packageConfigUri,
+            testType: VmTestType.process,
+          ),
+        );
     }
     return file.path;
   }
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(Environment environment) async {
-  final isolateId = Uri.parse(environment.observatoryUrl!.fragment)
-      .queryParameters['isolateId'];
-  return await collect(environment.observatoryUrl!, false, false, false, {},
-      isolateIds: {isolateId!});
+  final isolateId =
+      Uri.parse(
+        environment.observatoryUrl!.fragment,
+      ).queryParameters['isolateId'];
+  return await collect(
+    environment.observatoryUrl!,
+    false,
+    false,
+    false,
+    {},
+    isolateIds: {isolateId!},
+  );
 }
 
 Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
 Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-    fragment: Uri(
+  fragment:
+      Uri(
         path: '/inspect',
-        queryParameters: {'isolateId': isolateId, 'objectId': id}).toString());
+        queryParameters: {'isolateId': isolateId, 'objectId': id},
+      ).toString(),
+);
 
 var _hasRegistered = false;
 void _setupPauseAfterTests() {

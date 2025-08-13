@@ -37,13 +37,14 @@ abstract class AsyncMatcher extends Matcher {
   bool matches(dynamic item, Map matchState) {
     final result = matchAsync(item);
     expect(
-        result,
-        anyOf([
-          equals(null),
-          const TypeMatcher<Future>(),
-          const TypeMatcher<String>()
-        ]),
-        reason: 'matchAsync() may only return a String, a Future, or null.');
+      result,
+      anyOf([
+        equals(null),
+        const TypeMatcher<Future>(),
+        const TypeMatcher<String>(),
+      ]),
+      reason: 'matchAsync() may only return a String, a Future, or null.',
+    );
 
     if (result is Future) {
       final outstandingWork = TestHandle.current.markPending();
@@ -62,7 +63,10 @@ abstract class AsyncMatcher extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-          Map matchState, bool verbose) =>
-      StringDescription(matchState[this] as String);
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) => StringDescription(matchState[this] as String);
 }

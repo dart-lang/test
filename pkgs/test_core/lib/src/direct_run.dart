@@ -28,13 +28,16 @@ import 'util/print_sink.dart';
 /// Test suite level metadata defined in annotations is not read. No filtering
 /// is applied except for the filtering defined by `solo` or `skip` arguments to
 /// `group` and `test`. Returns [true] if all tests passed.
-Future<bool> directRunTests(FutureOr<void> Function() testMain,
-        {Reporter Function(Engine)? reporterFactory,
-        // TODO: Change the default https://github.com/dart-lang/test/issues/1571
-        bool allowDuplicateTestNames = true}) =>
-    _directRunTests(testMain,
-        reporterFactory: reporterFactory,
-        allowDuplicateTestNames: allowDuplicateTestNames);
+Future<bool> directRunTests(
+  FutureOr<void> Function() testMain, {
+  Reporter Function(Engine)? reporterFactory,
+  // TODO: Change the default https://github.com/dart-lang/test/issues/1571
+  bool allowDuplicateTestNames = true,
+}) => _directRunTests(
+  testMain,
+  reporterFactory: reporterFactory,
+  allowDuplicateTestNames: allowDuplicateTestNames,
+);
 
 /// Runs a single test declared in [testMain] matched by it's full test name.
 ///
@@ -50,39 +53,56 @@ Future<bool> directRunTests(FutureOr<void> Function() testMain,
 /// thrown. If there is more than one test with the name [fullTestName] they
 /// will both be run, then a [DuplicateTestnameException] will be thrown.
 Future<bool> directRunSingleTest(
-        FutureOr<void> Function() testMain, String fullTestName,
-        {Reporter Function(Engine)? reporterFactory}) =>
-    _directRunTests(testMain,
-        reporterFactory: reporterFactory,
-        fullTestName: fullTestName,
-        allowDuplicateTestNames: false);
+  FutureOr<void> Function() testMain,
+  String fullTestName, {
+  Reporter Function(Engine)? reporterFactory,
+}) => _directRunTests(
+  testMain,
+  reporterFactory: reporterFactory,
+  fullTestName: fullTestName,
+  allowDuplicateTestNames: false,
+);
 
-Future<bool> _directRunTests(FutureOr<void> Function() testMain,
-    {Reporter Function(Engine)? reporterFactory,
-    String? fullTestName,
-    required bool allowDuplicateTestNames}) async {
-  reporterFactory ??= (engine) => ExpandedReporter.watch(engine, PrintSink(),
-      color: Configuration.empty.color, printPath: false, printPlatform: false);
+Future<bool> _directRunTests(
+  FutureOr<void> Function() testMain, {
+  Reporter Function(Engine)? reporterFactory,
+  String? fullTestName,
+  required bool allowDuplicateTestNames,
+}) async {
+  reporterFactory ??=
+      (engine) => ExpandedReporter.watch(
+        engine,
+        PrintSink(),
+        color: Configuration.empty.color,
+        printPath: false,
+        printPlatform: false,
+      );
   final declarer = Declarer(
-      fullTestName: fullTestName,
-      allowDuplicateTestNames: allowDuplicateTestNames);
+    fullTestName: fullTestName,
+    allowDuplicateTestNames: allowDuplicateTestNames,
+  );
   await declarer.declare(testMain);
 
   final suite = RunnerSuite(
-      const PluginEnvironment(),
-      SuiteConfiguration.empty,
-      declarer.build(),
-      SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
-      path: p.prettyUri(Uri.base));
+    const PluginEnvironment(),
+    SuiteConfiguration.empty,
+    declarer.build(),
+    SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
+    path: p.prettyUri(Uri.base),
+  );
 
-  final engine = Engine()
-    ..suiteSink.add(suite)
-    ..suiteSink.close();
+  final engine =
+      Engine()
+        ..suiteSink.add(suite)
+        ..suiteSink.close();
 
   reporterFactory(engine);
 
-  final success = await runZoned(() => Invoker.guard(engine.run),
-          zoneValues: {#test.declarer: declarer}) ??
+  final success =
+      await runZoned(
+        () => Invoker.guard(engine.run),
+        zoneValues: {#test.declarer: declarer},
+      ) ??
       false;
 
   if (fullTestName != null) {
@@ -102,7 +122,8 @@ Future<bool> _directRunTests(FutureOr<void> Function() testMain,
 ///
 /// Skipped tests are ignored.
 Future<Set<String>> enumerateTestCases(
-    FutureOr<void> Function() testMain) async {
+  FutureOr<void> Function() testMain,
+) async {
   final declarer = Declarer();
   await declarer.declare(testMain);
 

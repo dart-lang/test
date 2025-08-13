@@ -31,19 +31,20 @@ final class SuitePlatform {
   ///
   /// If [compiler] is `null`, then the default compiler for [runtime] will be
   /// used.
-  SuitePlatform(this.runtime,
-      {
-      // TODO(https://github.com/dart-lang/test/issues/1935): make required
-      Compiler? compiler,
-      this.os = OperatingSystem.none,
-      this.inGoogle = false})
-      : compiler = compiler ?? runtime.defaultCompiler {
+  SuitePlatform(
+    this.runtime, {
+    // TODO(https://github.com/dart-lang/test/issues/1935): make required
+    Compiler? compiler,
+    this.os = OperatingSystem.none,
+    this.inGoogle = false,
+  }) : compiler = compiler ?? runtime.defaultCompiler {
     if (runtime.isBrowser && os != OperatingSystem.none) {
       throw ArgumentError('No OS should be passed for runtime "$runtime".');
     }
     if (!runtime.supportedCompilers.contains(this.compiler)) {
       throw ArgumentError(
-          'The platform $runtime does not support the compiler ${this.compiler}');
+        'The platform $runtime does not support the compiler ${this.compiler}',
+      );
     }
   }
 
@@ -51,20 +52,23 @@ final class SuitePlatform {
   /// [SuitePlatform].
   factory SuitePlatform.deserialize(Object serialized) {
     var map = serialized as Map;
-    return SuitePlatform(Runtime.deserialize(map['runtime'] as Object),
-        compiler: map.containsKey('compiler')
-            ? Compiler.deserialize(map['compiler'] as Object)
-            : null,
-        os: OperatingSystem.find(map['os'] as String),
-        inGoogle: map['inGoogle'] as bool);
+    return SuitePlatform(
+      Runtime.deserialize(map['runtime'] as Object),
+      compiler:
+          map.containsKey('compiler')
+              ? Compiler.deserialize(map['compiler'] as Object)
+              : null,
+      os: OperatingSystem.find(map['os'] as String),
+      inGoogle: map['inGoogle'] as bool,
+    );
   }
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
   /// [SuitePlatform] using [SuitePlatform.deserialize].
   Object serialize() => {
-        'runtime': runtime.serialize(),
-        'compiler': compiler.serialize(),
-        'os': os.identifier,
-        'inGoogle': inGoogle
-      };
+    'runtime': runtime.serialize(),
+    'compiler': compiler.serialize(),
+    'os': os.identifier,
+    'inGoogle': inGoogle,
+  };
 }
