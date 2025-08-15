@@ -22,7 +22,7 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
   bool get isTest {
     final element = this.element;
     if (element == null) return false;
-    if (element.name3 != 'test') return false;
+    if (element.name != 'test') return false;
     return element.library?.uri.path.startsWith('test_core/') ?? false;
   }
 
@@ -31,7 +31,7 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
   bool get isGroup {
     final element = this.element;
     if (element == null) return false;
-    if (element.name3 != 'group') return false;
+    if (element.name != 'group') return false;
     return element.library?.uri.path.startsWith('test_core/') ?? false;
   }
 
@@ -40,7 +40,7 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
   bool get isExpect {
     final element = this.element;
     if (element == null) return false;
-    if (element.name3 != 'expect') return false;
+    if (element.name != 'expect') return false;
     return element.library?.uri.path.startsWith('matcher/') ?? false;
   }
 
@@ -49,7 +49,7 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
   bool get isNotNull {
     final element = this.element;
     if (element == null) return false;
-    if (element.name3 != 'isNotNull') return false;
+    if (element.name != 'isNotNull') return false;
     return element.library?.uri.path.startsWith('matcher/') ?? false;
   }
 
@@ -58,7 +58,7 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
   bool get isNull {
     final element = this.element;
     if (element == null) return false;
-    if (element.name3 != 'isNull') return false;
+    if (element.name != 'isNull') return false;
     return element.library?.uri.path.startsWith('matcher/') ?? false;
   }
 }
