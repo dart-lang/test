@@ -52,7 +52,7 @@ class MoveBelowEnclosingTestCall extends ResolvedCorrectionProducer {
       // Move the source for `methodCall` wholsale to be just after `enclosingTestCall`.
       builder.addDeletion(range.deletionRange(methodCall));
       builder.addSimpleInsertion(
-          enclosingTestCall.end, '$eol$eol$indent$source');
+          enclosingTestCall.end, '$defaultEol$defaultEol$indent$source');
     });
   }
 }
