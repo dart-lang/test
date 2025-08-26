@@ -134,6 +134,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       var baseUrl =
           '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
       var wasmUrl = '$baseUrl.wasm';
+      var sourceMapUrl = '$wasmUrl.map';
       var jsRuntimeWrapperUrl = '$baseUrl.js';
       var jsRuntimeUrl = '$baseUrl.mjs';
       var htmlUrl = '$baseUrl.html';
@@ -184,6 +185,14 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         return shelf.Response.ok(
           File(htmlPath).readAsBytesSync(),
           headers: {'Content-Type': 'text/html'},
+        );
+      });
+
+      var sourceMapPath = '$wasmPath.map';
+      _pathHandler.add(sourceMapUrl, (request) {
+        return shelf.Response.ok(
+          File(sourceMapPath).readAsBytesSync(),
+          headers: {'Content-Type': 'application/json'},
         );
       });
     });
