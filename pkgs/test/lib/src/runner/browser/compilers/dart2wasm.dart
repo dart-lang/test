@@ -125,20 +125,21 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
     SuitePlatform platform,
   ) {
     return _compileFutures.putIfAbsent(dartPath, () async {
-      var dir = Directory(_compiledDir).createTempSync('test_').path;
+      final dir = Directory(_compiledDir).createTempSync('test_').path;
 
-      var baseCompiledPath = p.join(
+      final baseCompiledPath = p.join(
         dir,
         '${p.basename(dartPath)}.browser_test.dart',
       );
-      var baseUrl =
+      final baseUrl =
           '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
-      var wasmUrl = '$baseUrl.wasm';
-      var jsRuntimeWrapperUrl = '$baseUrl.js';
-      var jsRuntimeUrl = '$baseUrl.mjs';
-      var htmlUrl = '$baseUrl.html';
+      final wasmUrl = '$baseUrl.wasm';
+      final sourceMapUrl = '$wasmUrl.map';
+      final jsRuntimeWrapperUrl = '$baseUrl.js';
+      final jsRuntimeUrl = '$baseUrl.mjs';
+      final htmlUrl = '$baseUrl.html';
 
-      var bootstrapContent = '''
+      final bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'package:test/src/bootstrap/browser.dart';
 
@@ -156,7 +157,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       );
       if (_closed) return;
 
-      var wasmPath = '$baseCompiledPath.wasm';
+      final wasmPath = '$baseCompiledPath.wasm';
       _pathHandler.add(wasmUrl, (request) {
         return shelf.Response.ok(
           File(wasmPath).readAsBytesSync(),
@@ -171,7 +172,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         );
       });
 
-      var jsRuntimePath = '$baseCompiledPath.mjs';
+      final jsRuntimePath = '$baseCompiledPath.mjs';
       _pathHandler.add(jsRuntimeUrl, (request) {
         return shelf.Response.ok(
           File(jsRuntimePath).readAsBytesSync(),
@@ -179,11 +180,19 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         );
       });
 
-      var htmlPath = '$baseCompiledPath.html';
+      final htmlPath = '$baseCompiledPath.html';
       _pathHandler.add(htmlUrl, (request) {
         return shelf.Response.ok(
           File(htmlPath).readAsBytesSync(),
           headers: {'Content-Type': 'text/html'},
+        );
+      });
+
+      final sourceMapPath = '$wasmPath.map';
+      _pathHandler.add(sourceMapUrl, (request) {
+        return shelf.Response.ok(
+          File(sourceMapPath).readAsBytesSync(),
+          headers: {'Content-Type': 'application/json'},
         );
       });
     });
