@@ -125,21 +125,21 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
     SuitePlatform platform,
   ) {
     return _compileFutures.putIfAbsent(dartPath, () async {
-      final dir = Directory(_compiledDir).createTempSync('test_').path;
+      var dir = Directory(_compiledDir).createTempSync('test_').path;
 
-      final baseCompiledPath = p.join(
+      var baseCompiledPath = p.join(
         dir,
         '${p.basename(dartPath)}.browser_test.dart',
       );
-      final baseUrl =
+      var baseUrl =
           '${p.toUri(p.relative(dartPath, from: _root)).path}.browser_test.dart';
-      final wasmUrl = '$baseUrl.wasm';
-      final sourceMapUrl = '$wasmUrl.map';
-      final jsRuntimeWrapperUrl = '$baseUrl.js';
-      final jsRuntimeUrl = '$baseUrl.mjs';
-      final htmlUrl = '$baseUrl.html';
+      var wasmUrl = '$baseUrl.wasm';
+      var sourceMapUrl = '$wasmUrl.map';
+      var jsRuntimeWrapperUrl = '$baseUrl.js';
+      var jsRuntimeUrl = '$baseUrl.mjs';
+      var htmlUrl = '$baseUrl.html';
 
-      final bootstrapContent = '''
+      var bootstrapContent = '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'package:test/src/bootstrap/browser.dart';
 
@@ -157,7 +157,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       );
       if (_closed) return;
 
-      final wasmPath = '$baseCompiledPath.wasm';
+      var wasmPath = '$baseCompiledPath.wasm';
       _pathHandler.add(wasmUrl, (request) {
         return shelf.Response.ok(
           File(wasmPath).readAsBytesSync(),
@@ -172,7 +172,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         );
       });
 
-      final jsRuntimePath = '$baseCompiledPath.mjs';
+      var jsRuntimePath = '$baseCompiledPath.mjs';
       _pathHandler.add(jsRuntimeUrl, (request) {
         return shelf.Response.ok(
           File(jsRuntimePath).readAsBytesSync(),
@@ -180,7 +180,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         );
       });
 
-      final htmlPath = '$baseCompiledPath.html';
+      var htmlPath = '$baseCompiledPath.html';
       _pathHandler.add(htmlUrl, (request) {
         return shelf.Response.ok(
           File(htmlPath).readAsBytesSync(),
@@ -188,7 +188,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         );
       });
 
-      final sourceMapPath = '$wasmPath.map';
+      var sourceMapPath = '$wasmPath.map';
       _pathHandler.add(sourceMapUrl, (request) {
         return shelf.Response.ok(
           File(sourceMapPath).readAsBytesSync(),
