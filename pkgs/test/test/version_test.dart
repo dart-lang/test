@@ -13,10 +13,8 @@ import 'package:test/test.dart';
 
 void main() {
   test('testVersion is up to date', () {
-    final pubspec = Pubspec.parse(
-      File('pkgs/test/pubspec.yaml').readAsStringSync(),
-      sourceUrl: Uri.file('pkgs/test/pubspec.yaml'),
-    );
+    final file = File('pubspec.yaml');
+    final pubspec = Pubspec.parse(file.readAsStringSync(), sourceUrl: file.uri);
     expect(pubspec.version.toString(), testVersion);
   });
 }
