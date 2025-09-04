@@ -4,6 +4,8 @@
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
 * Serve dart2wasm source map files.
+* Change `--version` to use a hard coded value instead of reading it from the
+  pubspec.lock, this is more efficient and supports workspaces.
 
 ## 1.26.3
 

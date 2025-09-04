@@ -72,35 +72,40 @@ class Runner {
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
 
-  /// Creates a new runner based on [configuration].
-  factory Runner(Configuration config) => config.asCurrent(() {
-    var engine = Engine(
-      concurrency: config.concurrency,
-      coverage: config.coverage,
-      coverageLcov: config.coverageLcov,
-      testRandomizeOrderingSeed: config.testRandomizeOrderingSeed,
-      stopOnFirstFailure: config.stopOnFirstFailure,
-    );
+  /// Creates a new runner based on [config].
+  ///
+  /// The [testVersion] is the test runner version.
+  factory Runner(Configuration config, {String? testVersion}) =>
+      config.asCurrent(() {
+        var engine = Engine(
+          concurrency: config.concurrency,
+          coverage: config.coverage,
+          coverageLcov: config.coverageLcov,
+          testRandomizeOrderingSeed: config.testRandomizeOrderingSeed,
+          stopOnFirstFailure: config.stopOnFirstFailure,
+          testVersion: testVersion,
+        );
 
-    var sinks = <IOSink>[];
-    Reporter createFileReporter(String reporterName, String filepath) {
-      final sink = (File(filepath)..createSync(recursive: true)).openWrite();
-      sinks.add(sink);
-      return allReporters[reporterName]!.factory(config, engine, sink);
-    }
+        var sinks = <IOSink>[];
+        Reporter createFileReporter(String reporterName, String filepath) {
+          final sink =
+              (File(filepath)..createSync(recursive: true)).openWrite();
+          sinks.add(sink);
+          return allReporters[reporterName]!.factory(config, engine, sink);
+        }
 
-    return Runner._(
-      engine,
-      MultiplexReporter([
-        // Standard reporter.
-        allReporters[config.reporter]!.factory(config, engine, stdout),
-        // File reporters.
-        for (var reporter in config.fileReporters.keys)
-          createFileReporter(reporter, config.fileReporters[reporter]!),
-      ]),
-      sinks,
-    );
-  });
+        return Runner._(
+          engine,
+          MultiplexReporter([
+            // Standard reporter.
+            allReporters[config.reporter]!.factory(config, engine, stdout),
+            // File reporters.
+            for (var reporter in config.fileReporters.keys)
+              createFileReporter(reporter, config.fileReporters[reporter]!),
+          ]),
+          sinks,
+        );
+      });
 
   Runner._(this._engine, this._reporter, this._sinks);
 

@@ -3,6 +3,8 @@
 * Restrict to latest version of analyzer package.
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Change `--version` to use a hard coded value instead of reading it from the
+  pubspec.lock, this is more efficient and supports workspaces.
 
 ## 0.6.12
 

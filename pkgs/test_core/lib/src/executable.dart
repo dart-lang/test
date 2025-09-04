@@ -15,7 +15,6 @@ import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/no_tests_found_exception.dart';
-import 'runner/version.dart';
 import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
@@ -34,8 +33,10 @@ final String _globalConfigPath = () {
   }
 }();
 
-Future<void> main(List<String> args) async {
-  await _execute(args);
+/// Main entrypoint for the executable, the [version] is the version of the
+/// test runner executing this function.
+Future<void> main(List<String> args, {String? testVersion}) async {
+  await _execute(args, testVersion: testVersion);
   completeShutdown();
 }
 
@@ -54,7 +55,7 @@ void completeShutdown() {
   cancelStdinLines();
 }
 
-Future<void> _execute(List<String> args) async {
+Future<void> _execute(List<String> args, {String? testVersion}) async {
   /// A merged stream of all signals that tell the test runner to shut down
   /// gracefully.
   ///
@@ -87,12 +88,11 @@ Future<void> _execute(List<String> args) async {
   }
 
   if (configuration.version) {
-    var version = testVersion;
-    if (version == null) {
+    if (testVersion == null) {
       stderr.writeln("Couldn't find version number.");
       exitCode = exit_codes.data;
     } else {
-      print(version);
+      print(testVersion);
     }
     return;
   }
@@ -157,7 +157,7 @@ Future<void> _execute(List<String> args) async {
   });
 
   try {
-    runner = Runner(configuration);
+    runner = Runner(configuration, testVersion: testVersion);
     exitCode = (await runner.run()) ? 0 : 1;
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);

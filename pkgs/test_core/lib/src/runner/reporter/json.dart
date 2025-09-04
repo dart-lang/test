@@ -22,7 +22,6 @@ import '../../platform.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
-import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
@@ -89,7 +88,7 @@ class JsonReporter implements Reporter {
 
     _emit('start', {
       'protocolVersion': '0.1.1',
-      'runnerVersion': testVersion,
+      'runnerVersion': _engine.testVersion,
       'pid': pid,
     });
   }

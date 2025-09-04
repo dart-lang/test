@@ -9,6 +9,7 @@ import 'package:test_core/src/runner/hack_register_platform.dart'; // ignore: im
 
 import 'runner/browser/platform.dart';
 import 'runner/node/platform.dart';
+import 'version.dart';
 
 Future<void> main(List<String> args) async {
   registerPlatformPlugin([Runtime.nodeJS], NodePlatform.new);
@@ -19,5 +20,5 @@ Future<void> main(List<String> args) async {
     Runtime.safari,
   ], BrowserPlatform.start);
 
-  await executable.main(args);
+  await executable.main(args, testVersion: testVersion);
 }
