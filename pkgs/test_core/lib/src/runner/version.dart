@@ -17,24 +17,17 @@ final String? testVersion = _readWorkspaceRef() ?? _readPubspecLock();
 
 String? _readWorkspaceRef() {
   try {
-    final workspaceRefPath = p.join('.dart_tool', 'pub', 'workspace_ref.json');
-    final workspaceRefFile = File(workspaceRefPath);
+    final pubDirectory = p.join('.dart_tool', 'pub');
+    final workspaceRefFile = File(p.join(pubDirectory, 'workspace_ref.json'));
     if (!workspaceRefFile.existsSync()) return null;
-    final ref = jsonDecode(workspaceRefFile.readAsStringSync());
-    if (ref is! Map) return null;
-    final relativeRoot = ref['workspaceRoot'];
+    final workspaceRef = jsonDecode(workspaceRefFile.readAsStringSync());
+    if (workspaceRef is! Map) return null;
+    final relativeRoot = workspaceRef['workspaceRoot'];
     if (relativeRoot is! String) return null;
     final packageGraphPath = p.normalize(
-      p.join(
-        '.dart_tool',
-        'pub',
-        relativeRoot,
-        '.dart_tool',
-        'package_graph.json',
-      ),
+      p.join(pubDirectory, relativeRoot, '.dart_tool', 'package_graph.json'),
     );
-    final packageGraphFile = File(packageGraphPath);
-    final packageGraph = jsonDecode(packageGraphFile.readAsStringSync());
+    final packageGraph = jsonDecode(File(packageGraphPath).readAsStringSync());
     if (packageGraph is! Map) return null;
     final packages = packageGraph['packages'];
     if (packages is! List) return null;
