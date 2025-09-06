@@ -41,7 +41,8 @@ Future<void> expectJsonReport(
   final start = {
     'type': 'start',
     'protocolVersion': '0.1.1',
-    'runnerVersion': testVersion,
+    // Runner version cannot be read in the synthetic package
+    'runnerVersion': null,
     'pid': testPid,
   };
   expect(decoded.first, equals(start));
