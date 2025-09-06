@@ -9,10 +9,8 @@ import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
-/// The version number of the test runner, or `null` if it couldn't be loaded.
-///
-/// This is a semantic version, optionally followed by a space and additional
-/// data about its source.
+/// The semantic version number of the test runner, or `null` if it couldn't be
+/// found.
 final String? testVersion = _readWorkspaceRef() ?? _readPubspecLock();
 
 String? _readWorkspaceRef() {
