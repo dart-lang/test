@@ -3,6 +3,7 @@
 * Restrict to latest version of analyzer package.
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Don't generate ANSI color codes when stdout is redirected or piped.
 
 ## 0.6.12
 
