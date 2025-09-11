@@ -11,6 +11,7 @@ import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 
+import 'runner/configuration.dart';
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
 import 'runner/reporter/expanded.dart';
@@ -63,7 +64,7 @@ Declarer get _declarer {
     ExpandedReporter.watch(
       engine,
       PrintSink(),
-      color: true,
+      color: Configuration.empty.color,
       printPath: false,
       printPlatform: false,
     );
