@@ -230,6 +230,57 @@ void main() {
     });
   });
 
+  group('solo:', () {
+    test('displays non-solo skipped tests separately', () {
+      return _expectReport(
+        '''
+          test('skip 1', () {});
+          test('skip 2', () {});
+          test('solo 3', () {}, solo: true);''',
+        '+1 ~2: All tests passed!',
+      );
+    });
+
+    test('displays a non-solo skipped group', () {
+      return _expectReport(
+        '''
+          group('skip', () {
+            test('test 1', () {});
+            test('test 2', () {});
+            test('test 3', () {});
+          });
+          group('solo', () {
+            test('test 4', () {});
+            test('test 5', () {});
+            test('test 6', () {});
+          }, solo: true);''',
+        '+3 ~1: All tests passed!',
+      );
+    });
+
+    test('runs solo tests along with successful and failing tests', () {
+      return _expectReport(
+        '''
+          test('failure 1', () => throw TestFailure('oh no'), solo: true);
+          test('skip 1', () {});
+          test('success 1', () {}, solo: true);
+          test('failure 2', () => throw TestFailure('oh no'), solo: true);
+          test('skip 2', () {});
+          test('success 2', () {}, solo: true);''',
+        '''
+          +0 -1: failure 1 [E]
+            oh no
+            test.dart 6:35  main.<fn>
+
+          +1 ~1 -2: failure 2 [E]
+            oh no
+            test.dart 9:35  main.<fn>
+
+          +2 ~2 -2: Some tests failed.''',
+      );
+    });
+  });
+
   test('Directs users to enable stack trace chaining if disabled', () async {
     await _expectReport(
       '''test('failure 1', () => throw TestFailure('oh no'));''',

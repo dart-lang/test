@@ -378,6 +378,7 @@ class Declarer {
               entry.name,
               entry.metadata.change(
                 skip: true,
+                soloSkip: true,
                 skipReason: 'does not have "solo"',
               ),
               () {},
