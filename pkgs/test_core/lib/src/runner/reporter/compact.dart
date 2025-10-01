@@ -11,8 +11,8 @@ import 'package:test_api/src/backend/message.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 
 import '../../util/io.dart';
-import '../../util/pretty_print.dart';
 import '../../util/pretty_print.dart' as utils;
+import '../../util/pretty_print.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
@@ -228,6 +228,7 @@ class CompactReporter implements Reporter {
 
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
+        if (liveTest.test.metadata.soloSkip) return;
         _progressLine(_description(liveTest), truncate: false);
         if (!_printedNewline) _sink.writeln('');
         _printedNewline = true;
