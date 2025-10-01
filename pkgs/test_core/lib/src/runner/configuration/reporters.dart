@@ -33,7 +33,7 @@ final UnmodifiableMapView<String, ReporterDetails> allReporters =
 final _allReporters = <String, ReporterDetails>{
   'compact': ReporterDetails(
     'A single line, updated continuously.',
-    (config, engine, sink) => CompactReporter.watch(
+    (config, engine, sink, {version}) => CompactReporter.watch(
       engine,
       sink,
       color: config.color,
@@ -47,7 +47,7 @@ final _allReporters = <String, ReporterDetails>{
   ),
   'expanded': ReporterDetails(
     'A separate line for each update.',
-    (config, engine, sink) => ExpandedReporter.watch(
+    (config, engine, sink, {version}) => ExpandedReporter.watch(
       engine,
       sink,
       color: config.color,
@@ -61,7 +61,7 @@ final _allReporters = <String, ReporterDetails>{
   ),
   'failures-only': ReporterDetails(
     'A separate line for failing tests with no output for passing tests',
-    (config, engine, sink) => FailuresOnlyReporter.watch(
+    (config, engine, sink, {version}) => FailuresOnlyReporter.watch(
       engine,
       sink,
       color: config.color,
@@ -76,7 +76,7 @@ final _allReporters = <String, ReporterDetails>{
   'github': ReporterDetails(
     'A custom reporter for GitHub Actions '
     '(the default reporter when running on GitHub Actions).',
-    (config, engine, sink) => GithubReporter.watch(
+    (config, engine, sink, {version}) => GithubReporter.watch(
       engine,
       sink,
       printPath:
@@ -90,13 +90,13 @@ final _allReporters = <String, ReporterDetails>{
   'json': ReporterDetails(
     'A machine-readable format (see '
     'https://dart.dev/go/test-docs/json_reporter.md).',
-    (config, engine, sink) =>
+    (config, engine, sink, {version}) =>
         JsonReporter.watch(engine, sink, isDebugRun: config.debug),
   ),
   'silent': ReporterDetails(
     'A reporter with no output. '
     'May be useful when only the exit code is meaningful.',
-    (config, engine, sink) => SilentReporter(),
+    (config, engine, sink, {version}) => SilentReporter(),
   ),
 };
 

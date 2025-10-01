@@ -205,6 +205,11 @@ class Engine {
   /// `false` to `true`.
   Stream get onIdle => _group.onIdle;
 
+  /// The version of the test reporter (generally, the `test` package).
+  ///
+  /// Can be `null` if not running using the test runner.
+  final String? testVersion;
+
   /// Creates an [Engine] that will run all tests provided via [suiteSink].
   ///
   /// [concurrency] controls how many suites are loaded and ran at once, and
@@ -218,13 +223,14 @@ class Engine {
   /// [coverage] specifies a directory to output coverage information.
   ///
   /// If [stopOnFirstFailure] then a single failing test will cause the engine
-  /// to [close] and stop ruunning further tests.
+  /// to [close] and stop running further tests.
   Engine({
     int? concurrency,
     String? coverage,
     String? coverageLcov,
     this.testRandomizeOrderingSeed,
     bool stopOnFirstFailure = false,
+    this.testVersion,
   }) : _runPool = Pool(concurrency ?? 1),
        _stopOnFirstFailure = stopOnFirstFailure,
        _coverage = coverage,
