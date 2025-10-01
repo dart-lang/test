@@ -181,6 +181,7 @@ SuiteConfiguration suiteConfiguration({
   Map<BooleanSelector, SuiteConfiguration>? tags,
   Map<PlatformSelector, SuiteConfiguration>? onPlatform,
   bool? ignoreTimeouts,
+  Timeout? suiteLoadTimeout,
 
   // Test-level configuration
   Timeout? timeout,
@@ -203,6 +204,7 @@ SuiteConfiguration suiteConfiguration({
   tags: tags,
   onPlatform: onPlatform,
   ignoreTimeouts: ignoreTimeouts,
+  suiteLoadTimeout: suiteLoadTimeout,
   timeout: timeout,
   verboseTrace: verboseTrace,
   chainStackTraces: chainStackTraces,
@@ -239,6 +241,7 @@ Configuration configuration({
   Map<String, CustomRuntime>? defineRuntimes,
   bool? noRetry,
   bool? ignoreTimeouts,
+  Timeout? suiteLoadTimeout,
 
   // Suite-level configuration
   bool? allowDuplicateTestNames,
@@ -291,6 +294,7 @@ Configuration configuration({
   defineRuntimes: defineRuntimes,
   noRetry: noRetry,
   ignoreTimeouts: ignoreTimeouts,
+  suiteLoadTimeout: suiteLoadTimeout,
   allowDuplicateTestNames: allowDuplicateTestNames,
   allowTestRandomization: allowTestRandomization,
   jsTrace: jsTrace,

@@ -1,9 +1,12 @@
 ## 1.27.0-wip
 
+* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Remove the default 12 minute timeout to compile and load test suites.
+* Add a `--suite-load-timeout` argument to allow configuring a timeout for
+  compiling and loading individual test suites.
+* Serve dart2wasm source map files.
 * Restrict to latest version of analyzer package.
 * Require Dart 3.7
-* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
-* Serve dart2wasm source map files.
 
 ## 1.26.3
 

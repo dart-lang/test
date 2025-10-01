@@ -303,6 +303,7 @@ class Configuration {
     required Map<BooleanSelector, SuiteConfiguration>? tags,
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required bool? ignoreTimeouts,
+    required Timeout? suiteLoadTimeout,
 
     // Test-level configuration
     required Timeout? timeout,
@@ -357,6 +358,7 @@ class Configuration {
         tags: tags,
         onPlatform: onPlatform,
         ignoreTimeouts: ignoreTimeouts,
+        suiteLoadTimeout: suiteLoadTimeout,
 
         // Test-level configuration
         timeout: timeout,
@@ -419,6 +421,7 @@ class Configuration {
     Map<BooleanSelector, SuiteConfiguration>? tags,
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
+    Timeout? suiteLoadTimeout,
 
     // Test-level configuration
     Timeout? timeout,
@@ -470,6 +473,7 @@ class Configuration {
     tags: tags,
     onPlatform: onPlatform,
     ignoreTimeouts: ignoreTimeouts,
+    suiteLoadTimeout: suiteLoadTimeout,
     timeout: timeout,
     verboseTrace: verboseTrace,
     chainStackTraces: chainStackTraces,
@@ -489,6 +493,7 @@ class Configuration {
     required bool? verboseTrace,
     required bool? jsTrace,
     required Timeout? timeout,
+    required Timeout? suiteLoadTimeout,
     required Map<String, Configuration>? presets,
     required bool? chainStackTraces,
     required Iterable<String>? foldTraceExcept,
@@ -498,6 +503,7 @@ class Configuration {
     foldTraceOnly: foldTraceOnly,
     jsTrace: jsTrace,
     timeout: timeout,
+    suiteLoadTimeout: suiteLoadTimeout,
     verboseTrace: verboseTrace,
     chainStackTraces: chainStackTraces,
     help: null,
@@ -604,6 +610,7 @@ class Configuration {
     tags: null,
     onPlatform: null,
     ignoreTimeouts: null,
+    suiteLoadTimeout: null,
     timeout: null,
     verboseTrace: null,
     chainStackTraces: null,
@@ -669,6 +676,7 @@ class Configuration {
     tags: null,
     onPlatform: null,
     ignoreTimeouts: null,
+    suiteLoadTimeout: null,
     timeout: null,
     verboseTrace: null,
     chainStackTraces: null,
@@ -732,6 +740,7 @@ class Configuration {
     tags: null,
     onPlatform: null,
     ignoreTimeouts: null,
+    suiteLoadTimeout: null,
     timeout: null,
     verboseTrace: null,
     chainStackTraces: null,
@@ -1046,6 +1055,7 @@ class Configuration {
     bool? noRetry,
     int? testRandomizeOrderingSeed,
     bool? ignoreTimeouts,
+    Timeout? suiteLoadTimeout,
 
     // Suite-level configuration
     bool? allowDuplicateTestNames,
@@ -1117,6 +1127,7 @@ class Configuration {
         testOn: testOn,
         addTags: addTags,
         ignoreTimeouts: ignoreTimeouts,
+        suiteLoadTimeout: suiteLoadTimeout,
       ),
     );
     return config._resolvePresets();
