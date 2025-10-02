@@ -371,6 +371,16 @@ only supports boolean operations. The following identifiers are defined:
 * `posix`: Whether the test is running on a POSIX operating system. This is
   equivalent to `!windows`.
 
+### Compiler Selectors
+
+Compiler selectors use the [boolean selector syntax] defined in the
+[`boolean_selector`] package, which is a subset of Dart's expression syntax that
+only supports boolean operations. The following identifiers are defined:
+
+[boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
+
+[`boolean_selector`]: https://pub.dev/packages/boolean_selector
+
 * `dart2js`: Whether the test has been compiled with Dart2Js.
 
 * `dart2wasm`: Whether the test has been compiled with Dart2Wasm.
@@ -379,8 +389,8 @@ only supports boolean operations. The following identifiers are defined:
 
 * `source`: Whether the test has been run with no compiler (from source).
 
-For example, if you wanted to run a test on every browser but Chrome, you would
-write `@TestOn('browser && !chrome')`.
+For example, if you wanted to run a test on every browser but Chrome, using the Dart2Js compiler, you would
+write `@TestOn('browser && !chrome && dart2js')`.
 
 ### Running Tests on Node.js
 
