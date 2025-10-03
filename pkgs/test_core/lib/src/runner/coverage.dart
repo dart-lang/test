@@ -12,7 +12,7 @@ import '../util/package_config.dart';
 import 'live_suite_controller.dart';
 
 /// Collects coverage and outputs to the [coveragePath] path.
-Future<Map<String, HitMap>> writeCoverage(
+Future<Coverage> writeCoverage(
   String? coveragePath,
   LiveSuiteController controller,
 ) async {
@@ -35,7 +35,7 @@ Future<Map<String, HitMap>> writeCoverage(
 
 Future<void> writeCoverageLcov(
   String coverageLcov,
-  Map<String, HitMap> allCoverageData,
+  Coverage allCoverageData,
 ) async {
   final resolver = await Resolver.create(
     packagePath: (await currentPackage).root.toFilePath(),
@@ -50,4 +50,10 @@ Future<void> writeCoverageLcov(
   out.write(lcovData);
   await out.flush();
   await out.close();
+}
+
+typedef Coverage = Map<String, HitMap>;
+
+extension Merge on Coverage {
+  void merge(Coverage other) => FileHitMaps(this).merge(other);
 }
