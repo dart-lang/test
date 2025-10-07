@@ -33,9 +33,6 @@ final class Metadata {
   bool get skip => _skip ?? false;
   final bool? _skip;
 
-  bool get soloSkip => _soloSkip;
-  final bool _soloSkip;
-
   /// The reason the test or suite should be skipped, if given.
   final String? skipReason;
 
@@ -166,7 +163,6 @@ final class Metadata {
     PlatformSelector? testOn,
     Timeout? timeout,
     bool? skip,
-    bool? soloSkip,
     bool? verboseTrace,
     bool? chainStackTraces,
     int? retry,
@@ -181,7 +177,6 @@ final class Metadata {
       testOn: testOn,
       timeout: timeout,
       skip: skip,
-      soloSkip: soloSkip,
       verboseTrace: verboseTrace,
       chainStackTraces: chainStackTraces,
       retry: retry,
@@ -218,7 +213,6 @@ final class Metadata {
     PlatformSelector? testOn,
     Timeout? timeout,
     bool? skip,
-    bool? soloSkip,
     this.skipReason,
     bool? verboseTrace,
     bool? chainStackTraces,
@@ -227,14 +221,9 @@ final class Metadata {
     Map<PlatformSelector, Metadata>? onPlatform,
     Map<BooleanSelector, Metadata>? forTag,
     this.languageVersionComment,
-  }) : assert(
-         soloSkip == null || skip == null || soloSkip == skip,
-         'soloSkip and skip cannot be contradictory.',
-       ),
-       testOn = testOn ?? PlatformSelector.all,
+  }) : testOn = testOn ?? PlatformSelector.all,
        timeout = timeout ?? const Timeout.factor(1),
        _skip = skip,
-       _soloSkip = soloSkip ?? false,
        _verboseTrace = verboseTrace,
        _chainStackTraces = chainStackTraces,
        _retry = retry,
@@ -266,7 +255,6 @@ final class Metadata {
                : PlatformSelector.parse(testOn),
        timeout = timeout ?? const Timeout.factor(1),
        _skip = skip == null ? null : skip != false,
-       _soloSkip = false,
        _verboseTrace = verboseTrace,
        _chainStackTraces = chainStackTraces,
        _retry = retry,
@@ -291,7 +279,6 @@ final class Metadata {
               : PlatformSelector.parse(serialized['testOn'] as String),
       timeout = _deserializeTimeout(serialized['timeout']),
       _skip = serialized['skip'] as bool?,
-      _soloSkip = serialized['soloSkip'] as bool? ?? false,
       skipReason = serialized['skipReason'] as String?,
       _verboseTrace = serialized['verboseTrace'] as bool?,
       _chainStackTraces = serialized['chainStackTraces'] as bool?,
@@ -383,7 +370,6 @@ final class Metadata {
     PlatformSelector? testOn,
     Timeout? timeout,
     bool? skip,
-    bool? soloSkip,
     bool? verboseTrace,
     bool? chainStackTraces,
     int? retry,
@@ -393,14 +379,9 @@ final class Metadata {
     Map<BooleanSelector, Metadata>? forTag,
     String? languageVersionComment,
   }) {
-    assert(
-      soloSkip == null || skip == null || soloSkip == skip,
-      'soloSkip and skip cannot be contradictory.',
-    );
     testOn ??= this.testOn;
     timeout ??= this.timeout;
     skip ??= _skip;
-    soloSkip ??= _soloSkip;
     verboseTrace ??= _verboseTrace;
     chainStackTraces ??= _chainStackTraces;
     retry ??= _retry;
@@ -413,7 +394,6 @@ final class Metadata {
       testOn: testOn,
       timeout: timeout,
       skip: skip,
-      soloSkip: soloSkip,
       verboseTrace: verboseTrace,
       chainStackTraces: chainStackTraces,
       skipReason: skipReason,
@@ -451,7 +431,6 @@ final class Metadata {
       'testOn': testOn == PlatformSelector.all ? null : testOn.toString(),
       'timeout': _serializeTimeout(timeout),
       'skip': _skip,
-      'soloSkip': _soloSkip,
       'skipReason': skipReason,
       'verboseTrace': _verboseTrace,
       'chainStackTraces': _chainStackTraces,

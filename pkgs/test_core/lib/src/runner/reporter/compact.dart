@@ -228,7 +228,7 @@ class CompactReporter implements Reporter {
 
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
-        if (liveTest.test.metadata.soloSkip) return;
+        if (liveTest.test.metadata.skip) return;
         _progressLine(_description(liveTest), truncate: false);
         if (!_printedNewline) _sink.writeln('');
         _printedNewline = true;

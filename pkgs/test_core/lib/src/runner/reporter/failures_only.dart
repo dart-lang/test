@@ -161,7 +161,7 @@ class FailuresOnlyReporter implements Reporter {
 
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
-        if (liveTest.test.metadata.soloSkip) return;
+        if (liveTest.test.metadata.skip) return;
         // TODO - Should this suppress output? Behave like printOnFailure?
         _progressLine(_description(liveTest));
         var text = message.text;
