@@ -331,7 +331,6 @@ subsets of the ways that Dart code can be compiled and run.
 
 The following identifiers are defined:
 
-
 * `vm`: Whether the test is running on the command-line Dart VM.
 
 * `chrome`: Whether the test is running on Google Chrome.
