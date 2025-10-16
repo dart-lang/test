@@ -4,6 +4,7 @@
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
 * Serve dart2wasm source map files.
+* Doc edit: clarify in README that a platform selector includes the compiler.
 
 ## 1.26.3
 
