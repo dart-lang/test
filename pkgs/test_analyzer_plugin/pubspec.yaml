@@ -7,20 +7,20 @@ environment:
   sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
-  analysis_server_plugin: ^0.2.2
-  analyzer: ^8.0.0
-  analyzer_plugin: ^0.13.6
-  analyzer_testing: ^0.1.2
+  analysis_server_plugin: ^0.3.0
+  analyzer: ^8.4.0
+  analyzer_plugin: ^0.13.5
 
 dev_dependencies:
+  analyzer_testing: ^0.1.0
   test: any
   test_reflective_loader: any
 
-  #dependency_overrides:
+dependency_overrides:
   #  _fe_analyzer_shared:
   #    path: /Users/srawlins/code/dart-sdk/sdk/pkg/_fe_analyzer_shared
   #  analysis_server_plugin:
-  #    path: /Users/srawlins/code/dart-sdk/sdk/pkg/analysis_server_plugin
+  #    path: /Users/srawlins/code/analysis_server_plugin
   #  analyzer:
   #    path: /Users/srawlins/code/dart-sdk/sdk/pkg/analyzer
   #  analyzer_plugin:

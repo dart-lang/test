@@ -12,6 +12,8 @@ import 'src/rules/test_in_test_rule.dart';
 final plugin = TestPackagePlugin();
 
 class TestPackagePlugin extends Plugin {
+  String get name => 'Test package plugin';
+
   @override
   void register(PluginRegistry registry) {
     registry.registerWarningRule(TestInTestRule());
