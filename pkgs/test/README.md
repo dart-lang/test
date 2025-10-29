@@ -322,11 +322,14 @@ adding a [`test_on` field] to your package config file.
 
 Platform selectors use the [boolean selector syntax] defined in the
 [`boolean_selector`] package, which is a subset of Dart's expression syntax that
-only supports boolean operations. The following identifiers are defined:
+only supports boolean operations. The platform selectors identify overlapping
+subsets of the ways that Dart code can be compiled and run.
 
 [boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
 
 [`boolean_selector`]: https://pub.dev/packages/boolean_selector
+
+The following identifiers are defined:
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
@@ -379,8 +382,9 @@ only supports boolean operations. The following identifiers are defined:
 
 * `source`: Whether the test has been run with no compiler (from source).
 
-For example, if you wanted to run a test on every browser but Chrome, you would
-write `@TestOn('browser && !chrome')`.
+For example, if you wanted to run a test on every browser but Chrome compiled
+with dart2js (in opposition to dart2wasm), you would write
+`@TestOn('browser && !chrome && dart2js')`.
 
 ### Running Tests on Node.js
 
