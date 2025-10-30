@@ -4,7 +4,7 @@
   channels to the test runner.
 * Restrict to latest version of analyzer package.
 * Require Dart 3.7
-* Require `analyzer: '>=6.0.0 <10.0.0'`
+* Allow `analyzer` major version 9.
 
 ## 0.7.7
 
