@@ -7,6 +7,7 @@ sdk:
 os:
 - linux
 - windows
+- macos
 
 stages:
 - analyze_and_format:
