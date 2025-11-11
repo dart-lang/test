@@ -1,6 +1,5 @@
-## 0.6.13-wip
+## 0.6.13
 
-* Restrict to latest version of analyzer package.
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
 * Allow `analyzer` major version 9.

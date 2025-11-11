@@ -1,12 +1,11 @@
-## 1.27.0-wip
+## 1.27.0
 
-* Restrict to latest version of analyzer package.
-* Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
 * Serve dart2wasm source map files.
 * Fix Node.js dart2wasm tests on windows.
 * Doc edit: clarify in README that a platform selector includes the compiler.
 * Allow `analyzer` major version 9.
+* Require Dart 3.7
 
 ## 1.26.3
 
