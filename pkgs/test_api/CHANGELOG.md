@@ -2,7 +2,6 @@
 
 * Add a zone function available from the test suite `main` that allows creating
   channels to the test runner.
-* Restrict to latest version of analyzer package.
 * Require Dart 3.7
 * Allow `analyzer` major version 9.
 
