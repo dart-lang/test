@@ -1,6 +1,6 @@
-## 1.27.0-wip
+## 1.27.0
 
-* Restrict to latest version of analyzer package.
+* Allow latest version of analyzer package.
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
 * Serve dart2wasm source map files.
