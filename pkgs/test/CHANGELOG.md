@@ -1,3 +1,7 @@
+## 1.27.1-wip
+
+* Removed unused `js` dependency
+
 ## 1.27.0
 
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
