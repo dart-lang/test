@@ -44,6 +44,24 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
     return element.library?.uri.path.startsWith('matcher/') ?? false;
   }
 
+  /// Whether this identifier represents the 'isFalse' matcher from the
+  /// 'matcher' package.
+  bool get isIsFalse {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name != 'isFalse') return false;
+    return element.library?.uri.path.startsWith('matcher/') ?? false;
+  }
+
+  /// Whether this identifier represents the 'isTrue' matcher from the
+  /// 'matcher' package.
+  bool get isIsTrue {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name != 'isTrue') return false;
+    return element.library?.uri.path.startsWith('matcher/') ?? false;
+  }
+
   /// Whether this identifier represents the 'isNotNull' constant from the
   /// 'matcher' package.
   bool get isNotNull {

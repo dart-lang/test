@@ -13,9 +13,10 @@ import 'utilities.dart';
 
 class MoveBelowEnclosingTestCall extends ResolvedCorrectionProducer {
   static const _moveBelowEnclosingTestCallKind = FixKind(
-      'dart.fix.moveBelowEnclosingTestCall',
-      DartFixKindPriority.standard,
-      "Move below the enclosing 'test' call");
+    'dart.fix.moveBelowEnclosingTestCall',
+    DartFixKindPriority.standard,
+    "Move below the enclosing 'test' call",
+  );
 
   MoveBelowEnclosingTestCall({required super.context});
 
@@ -52,7 +53,9 @@ class MoveBelowEnclosingTestCall extends ResolvedCorrectionProducer {
       // Move the source for `methodCall` wholsale to be just after `enclosingTestCall`.
       builder.addDeletion(range.deletionRange(methodCall));
       builder.addSimpleInsertion(
-          enclosingTestCall.end, '$defaultEol$defaultEol$indent$source');
+        enclosingTestCall.end,
+        '$defaultEol$defaultEol$indent$source',
+      );
     });
   }
 }

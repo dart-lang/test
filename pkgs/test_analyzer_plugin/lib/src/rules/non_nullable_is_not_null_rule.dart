@@ -12,10 +12,6 @@ import 'package:analyzer/error/error.dart';
 
 import '../utilities.dart';
 
-// TODO(srawlins): Several others; use same name or just different codes?
-// * `expect(null, isNotNull)` - always false
-// * `expect(null, isNull)`    - always true
-// * `expect(7, isNull)`       - always false
 class NonNullableIsNotNullRule extends MultiAnalysisRule {
   static const LintCode nonNullableIsNotNullCode = LintCode(
     'non_nullable_is_not_null',
@@ -30,18 +26,24 @@ class NonNullableIsNotNullRule extends MultiAnalysisRule {
   );
 
   NonNullableIsNotNullRule()
-      : super(
-          name: 'non_nullable_is_not_null',
-          description: "Non-nullable values will always pass an 'isNotNull' "
-              "expectation and never pass an 'isNull' expectation.",
-        );
+    : super(
+        name: 'non_nullable_is_not_null',
+        description:
+            "Non-nullable values will always pass an 'isNotNull' "
+            "expectation and never pass an 'isNull' expectation.",
+      );
 
   @override
-  List<LintCode> get diagnosticCodes => [nonNullableIsNotNullCode];
+  List<LintCode> get diagnosticCodes => [
+    nonNullableIsNotNullCode,
+    nonNullableIsNullCode,
+  ];
 
   @override
   void registerNodeProcessors(
-      RuleVisitorRegistry registry, RuleContext context) {
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
     var visitor = _Visitor(this, context.typeSystem);
     registry.addMethodInvocation(this, visitor);
   }
@@ -60,20 +62,25 @@ class _Visitor extends SimpleAstVisitor<void> {
       return;
     }
 
-    if (node.argumentList.arguments
-        case [var actual, SimpleIdentifier matcher]) {
+    if (node.argumentList.arguments case [
+      var actual,
+      SimpleIdentifier matcher,
+    ]) {
       var actualType = actual.staticType;
       if (actualType == null) return;
       if (typeSystem.isNonNullable(actualType)) {
         if (matcher.isNotNull) {
           // The actual value will always match this matcher.
-          rule.reportAtNode(matcher,
-              diagnosticCode:
-                  NonNullableIsNotNullRule.nonNullableIsNotNullCode);
+          rule.reportAtNode(
+            matcher,
+            diagnosticCode: NonNullableIsNotNullRule.nonNullableIsNotNullCode,
+          );
         } else if (matcher.isNull) {
           // The actual value will never match this matcher.
-          rule.reportAtNode(matcher,
-              diagnosticCode: NonNullableIsNotNullRule.nonNullableIsNullCode);
+          rule.reportAtNode(
+            matcher,
+            diagnosticCode: NonNullableIsNotNullRule.nonNullableIsNullCode,
+          );
         }
       }
     }

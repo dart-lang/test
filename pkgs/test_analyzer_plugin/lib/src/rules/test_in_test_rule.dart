@@ -19,19 +19,21 @@ class TestInTestRule extends AnalysisRule {
   );
 
   TestInTestRule()
-      : super(
-          name: 'test_in_test',
-          description:
-              'Tests and groups declared inside of a test are not properly '
-              'registered in the test framework.',
-        );
+    : super(
+        name: 'test_in_test',
+        description:
+            'Tests and groups declared inside of a test are not properly '
+            'registered in the test framework.',
+      );
 
   @override
   LintCode get diagnosticCode => code;
 
   @override
   void registerNodeProcessors(
-      RuleVisitorRegistry registry, RuleContext context) {
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
     var visitor = _Visitor(this);
     registry.addMethodInvocation(this, visitor);
   }
