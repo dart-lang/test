@@ -13,6 +13,7 @@ import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_im
 
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
+import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
@@ -60,13 +61,32 @@ Declarer get _declarer {
     var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(
-      engine,
-      PrintSink(),
-      color: true,
-      printPath: false,
-      printPlatform: false,
+    var useCompactReporter = const bool.fromEnvironment(
+      'test_core.compactReporter',
     );
+    var colors = const bool.fromEnvironment(
+      'test_core.colors',
+      defaultValue: true,
+    );
+    var printPath = const bool.fromEnvironment('test_core.printPath');
+    var printPlatform = const bool.fromEnvironment('test_core.printPlatform');
+    if (useCompactReporter) {
+      CompactReporter.watch(
+        engine,
+        PrintSink(),
+        color: colors,
+        printPath: printPath,
+        printPlatform: printPlatform,
+      );
+    } else {
+      ExpandedReporter.watch(
+        engine,
+        PrintSink(),
+        color: colors,
+        printPath: printPath,
+        printPlatform: printPlatform,
+      );
+    }
 
     var success = await runZoned(
       () => Invoker.guard(engine.run),
