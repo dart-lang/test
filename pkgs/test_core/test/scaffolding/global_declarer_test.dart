@@ -166,11 +166,10 @@ Future<void> _run(
     );
     print('args: $args');
   }
+  var tester = File('test/scaffolding/fixtures/tester.dart');
   var result = await Process.run(Platform.executable, [
     ...args,
-    Platform.script
-        .resolve('fixtures/tester.dart')
-        .toFilePath(windows: Platform.isWindows),
+    tester.absolute.path,
   ]);
 
   var stdout = _decode(result.stdout);
