@@ -1,3 +1,6 @@
+## 0.6.14
+* Support environment flags for configuring the global declarer.
+
 ## 0.6.13
 
 * Require Dart 3.7
