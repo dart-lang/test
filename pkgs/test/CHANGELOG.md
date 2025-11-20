@@ -1,5 +1,6 @@
 ## 1.27.1-wip
 
+* Bump `test_core` to 0.6.14
 * Removed unused `js` dependency
 
 ## 1.27.0
