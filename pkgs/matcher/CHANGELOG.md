@@ -1,4 +1,4 @@
-## 0.12.18-wip
+## 0.12.18
 
 * Add `isSorted` and related matchers for iterables.
 * Consider `NaN` to be equal to itself in `equals`.
