@@ -30,8 +30,13 @@ Future<Coverage> writeCoverage(
     await out.flush();
     await out.close();
   }
-  final hitMapJson = coverage['coverage'] as List<Map<String, dynamic>>?;
-  return hitMapJson == null ? const {} : HitMap.parseJson(hitMapJson);
+  return switch (coverage['coverage']) {
+    List<dynamic> hitMapJson? => HitMap.parseJson(
+      hitMapJson.cast<Map<String, dynamic>>(),
+    ),
+    null => const {},
+    _ => throw StateError('Invalid coverage data'),
+  };
 }
 
 Future<void> writeCoverageLcov(
