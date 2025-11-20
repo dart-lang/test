@@ -17,5 +17,10 @@ This analyzer plugin provides the following additional analysis:
   an actual value. Instead, the `isEmpty` or `isNotEmpty` Matcher should be
   used.
 
+* Report a lint when the body argument of a `test` or `group` is not last. Lint
+  rules are not enabled by default and must be actively enabled in analysis
+  options.
+
 * Offer a quick fix in the IDE for the above warning, which moves the violating
   `test` or `group` declaration below the containing `test` declaration.
+
