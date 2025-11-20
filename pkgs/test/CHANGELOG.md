@@ -1,5 +1,7 @@
 ## 1.27.1-wip
 
+* Add `isSorted` and related matchers for iterables.
+* Consider `NaN` to be equal to itself in `equals`.
 * Removed unused `js` dependency
 
 ## 1.27.0
