@@ -31,7 +31,10 @@ Future<Coverage> writeCoverage(
     await out.close();
   }
   return switch (coverage['coverage']) {
-    List<dynamic> hitMapJson? => HitMap.parseJson(
+    // Matching on `List<dynamic>` the runtime type of `List` in JSON is
+    // never `Map<String, dynamic>`. The `cast` below ensures the runtime type
+    // is correct for `HitMap.parseJson`.
+    List<dynamic> hitMapJson => HitMap.parseJson(
       hitMapJson.cast<Map<String, dynamic>>(),
     ),
     null => const {},
