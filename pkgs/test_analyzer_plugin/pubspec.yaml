@@ -7,10 +7,10 @@ environment:
 
 dependencies:
   analysis_server_plugin: ^0.3.0
-  analyzer: ^8.4.0
+  analyzer: ^9.0.0
   analyzer_plugin: ^0.13.5
 
 dev_dependencies:
-  analyzer_testing: ^0.1.2
+  analyzer_testing: ^0.1.7
   test: any
   test_reflective_loader: any

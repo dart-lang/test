@@ -58,9 +58,7 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
-    if (!node.methodName.isExpect) {
-      return;
-    }
+    if (!node.methodName.isExpect) return;
 
     if (node.argumentList.arguments case [
       var actual,

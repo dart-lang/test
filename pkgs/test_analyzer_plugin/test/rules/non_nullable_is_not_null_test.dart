@@ -4,7 +4,6 @@
 
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:analyzer/src/lint/registry.dart';
 import 'package:analyzer/utilities/package_config_file_builder.dart';
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:test_analyzer_plugin/src/rules/non_nullable_is_not_null_rule.dart';
@@ -20,8 +19,7 @@ void main() {
 class NonNullableIsNotNullTest extends AnalysisRuleTest {
   @override
   void setUp() {
-    Registry.ruleRegistry.registerLintRule(NonNullableIsNotNullRule());
-
+    rule = NonNullableIsNotNullRule();
     super.setUp();
 
     var matcherPath = '/packages/matcher';
@@ -36,9 +34,6 @@ const isNull = 0;
         ..add(name: 'matcher', rootPath: convertPath(matcherPath)),
     );
   }
-
-  @override
-  String get analysisRule => 'non_nullable_is_not_null';
 
   void test_nullableValue_isNotNullMatcher() async {
     await assertNoDiagnostics(r'''

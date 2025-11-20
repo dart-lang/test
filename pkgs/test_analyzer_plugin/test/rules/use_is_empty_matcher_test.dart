@@ -4,7 +4,6 @@
 
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:analyzer/src/lint/registry.dart';
 import 'package:analyzer/utilities/package_config_file_builder.dart';
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:test_analyzer_plugin/src/rules/use_is_empty_matcher.dart';
@@ -19,12 +18,8 @@ void main() {
 @reflectiveTest
 class UseIsEmptyMatcherTest extends AnalysisRuleTest {
   @override
-  String get analysisRule => 'use_is_empty_matcher';
-
-  @override
   void setUp() {
-    Registry.ruleRegistry.registerLintRule(UseIsEmptyMatcherRule());
-
+    rule = UseIsEmptyMatcherRule();
     super.setUp();
 
     var matcherPath = '/packages/matcher';
@@ -77,7 +72,9 @@ void f() {
   expect(''.isEmpty, isTrue);
 }
 ''',
-      [lint(71, 6, messageContains: 'isEmpty')],
+      [
+        lint(71, 6, messageContainsAll: ['isEmpty']),
+      ],
     );
   }
 
@@ -89,7 +86,9 @@ void f() {
   expect(''.isEmpty, true);
 }
 ''',
-      [lint(71, 4, messageContains: 'isEmpty')],
+      [
+        lint(71, 4, messageContainsAll: ['isEmpty']),
+      ],
     );
   }
 
@@ -110,7 +109,9 @@ void f() {
   expect(''.isNotEmpty, false);
 }
 ''',
-      [lint(74, 5, messageContains: 'isEmpty')],
+      [
+        lint(74, 5, messageContainsAll: ['isEmpty']),
+      ],
     );
   }
 
@@ -122,7 +123,9 @@ void f() {
   expect(''.isNotEmpty, isFalse);
 }
 ''',
-      [lint(74, 7, messageContains: 'isEmpty')],
+      [
+        lint(74, 7, messageContainsAll: ['isEmpty']),
+      ],
     );
   }
 
