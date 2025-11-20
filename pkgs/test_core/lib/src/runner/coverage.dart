@@ -30,7 +30,16 @@ Future<Coverage> writeCoverage(
     await out.flush();
     await out.close();
   }
-  return HitMap.parseJson(coverage['coverage'] as List<Map<String, dynamic>>);
+  return switch (coverage['coverage']) {
+    // Matching on `List<dynamic>` the runtime type of `List` in JSON is
+    // never `Map<String, dynamic>`. The `cast` below ensures the runtime type
+    // is correct for `HitMap.parseJson`.
+    List<dynamic> hitMapJson => HitMap.parseJson(
+      hitMapJson.cast<Map<String, dynamic>>(),
+    ),
+    null => const {},
+    _ => throw StateError('Invalid coverage data'),
+  };
 }
 
 Future<void> writeCoverageLcov(

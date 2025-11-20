@@ -1,3 +1,7 @@
+## 0.6.14
+
+* Fix type cast when parsing a `null` hit map.
+
 ## 0.6.13
 
 * Require Dart 3.7
