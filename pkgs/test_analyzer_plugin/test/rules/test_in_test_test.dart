@@ -5,84 +5,80 @@
 // ignore_for_file: non_constant_identifier_names
 
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
-import 'package:test_analyzer_plugin/src/rules/test_body_goes_last_rule.dart';
+import 'package:test_analyzer_plugin/src/rules/test_in_test_rule.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
 import '../with_test_package.dart';
 
 void main() {
   defineReflectiveSuite(() {
-    defineReflectiveTests(TestBodyGoesLastTest);
+    defineReflectiveTests(TestInTestTest);
   });
 }
 
 @reflectiveTest
-class TestBodyGoesLastTest extends AnalysisRuleTest with WithTestPackage {
+class TestInTestTest extends AnalysisRuleTest with WithTestPackage {
   @override
   void setUp() {
-    rule = TestBodyGoesLastRule();
+    rule = TestInTestRule();
     super.setUp();
   }
 
-  void test_groupBeforeSkip() async {
-    await assertDiagnostics(
-      r'''
-import 'package:test_core/test_core.dart';
-void f() {
-  group('description',
-    () {
-      // Test case.
-    },
-    skip: true,
-  );
-}
-''',
-      [lint(81, 2)],
-    );
-  }
-
-  void test_groupLast() async {
+  void test_groupInGroup() async {
     await assertNoDiagnostics(r'''
 import 'package:test_core/test_core.dart';
 void f() {
-  group('description',
-    skip: true,
+  group('one',
     () {
-      // Test case.
+      group('two', () {});
     },
   );
 }
 ''');
   }
 
-  void test_testBeforeSkip() async {
+  void test_groupInTest() async {
     await assertDiagnostics(
       r'''
 import 'package:test_core/test_core.dart';
 void f() {
-  test('description',
+  test('one',
     () {
-      // Test case.
+      group('two', () {});
     },
-    skip: true,
   );
 }
 ''',
-      [lint(80, 2)],
+      [lint(83, 19)],
     );
   }
 
-  void test_testLast() async {
+  void test_testInGroup() async {
     await assertNoDiagnostics(r'''
 import 'package:test_core/test_core.dart';
 void f() {
-  test('description',
-    skip: true,
+  group('one',
     () {
-      // Test case.
+      test('two', () {});
     },
   );
 }
 ''');
+  }
+
+  void test_testInTest() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  test('one',
+    () {
+      test('two', () {});
+    },
+  );
+}
+''',
+      [lint(83, 18)],
+    );
   }
 }
