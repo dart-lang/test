@@ -30,7 +30,9 @@ Future<Coverage> writeCoverage(
     await out.flush();
     await out.close();
   }
-  return HitMap.parseJson(coverage['coverage'] as List<Map<String, dynamic>>);
+  final hitMapJson = coverage['coverage'] as List<Map<String, dynamic>>?;
+  if (hitMapJson == null) return const {};
+  return HitMap.parseJson(hitMapJson);
 }
 
 Future<void> writeCoverageLcov(
