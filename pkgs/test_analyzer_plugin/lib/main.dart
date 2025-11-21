@@ -9,6 +9,7 @@ import 'src/fixes.dart';
 import 'src/rules/non_nullable_is_not_null_rule.dart';
 import 'src/rules/test_body_goes_last_rule.dart';
 import 'src/rules/test_in_test_rule.dart';
+import 'src/rules/use_contains_matcher_rule.dart';
 import 'src/rules/use_is_empty_matcher.dart';
 
 final plugin = TestPackagePlugin();
@@ -26,6 +27,7 @@ class TestPackagePlugin extends Plugin {
     );
 
     registry.registerWarningRule(NonNullableIsNotNullRule());
+    registry.registerWarningRule(UseContainsMatcherRule());
     registry.registerWarningRule(UseIsEmptyMatcherRule());
     registry.registerLintRule(TestBodyGoesLastRule());
     // Should we register a fix for this rule? The only automatic fix I can
@@ -33,10 +35,9 @@ class TestPackagePlugin extends Plugin {
     // `expect(a, isNotNull);` or `expect(a, isNull);`.
 
     // TODO(srawlins): More rules to catch:
-    // * `expect(7, contains(6))` - should only use `hasLength` with `Iterable`
-    //   or `String`.
-    // * `expect(7, hasLength(3))` - should only use `hasLength` with `Iterable`
-    //   or `String`.
-    // * `expect([].contains(7), isFalse)` - should use `contains` matcher.
+    // * `expect(7, contains(6))` - should only use `hasLength` with `Iterable`,
+    //   `Map`, or `String`.
+    // * `expect(7, hasLength(3))` - should only use `hasLength` with
+    //   `Iterable`, `Map`, or `String`.
   }
 }
