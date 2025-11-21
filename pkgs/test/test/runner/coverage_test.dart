@@ -81,6 +81,40 @@ dev_dependencies:
   test: ^1.26.2
         '''),
         ]),
+        d.dir('fake_client', [
+          d.dir('lib', [
+            d.file('calculate.dart', '''
+            import 'package:fake_package/calculate.dart' as fake_package;
+
+            int calculate(int x) {
+              return fake_package.calculate(x);
+            }
+          '''),
+          ]),
+          d.dir('test', [
+            d.file('test.dart', '''
+            import 'package:fake_client/calculate.dart';
+            import 'package:test/test.dart';
+
+            void main() {
+              test('test 1', () {
+                expect(calculate(6), 12);
+              });
+            }
+          '''),
+          ]),
+          d.file('pubspec.yaml', '''
+name: fake_client
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+dependencies:
+  fake_package:
+    path: ../fake_package
+dev_dependencies:
+  test: ^1.26.2
+        '''),
+        ]),
       ]);
       await outerDirectory.create();
       pkgDir = p.join(d.sandbox, 'fake_package');
@@ -146,12 +180,13 @@ end_of_record
     });
 
     test('gathers coverage for tests in multiple pacakges', () async {
-      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
+      final clientPkgDir = p.join(d.sandbox, 'fake_client');
+      await (await runPub(['get'], workingDirectory: clientPkgDir)).shouldExit(0);
       final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
       var test = await runTest(
         ['--coverage-path', lcovFile, 'test/test.dart'],
-        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
-        workingDirectory: pkgDir,
+        packageConfig: p.join(clientPkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: clientPkgDir,
       );
       await validateTest(test);
       expect(File(lcovFile).readAsStringSync(), '''
@@ -162,6 +197,12 @@ DA:3,1
 DA:5,0
 LF:4
 LH:3
+end_of_record
+SF:${p.join(clientPkgDir, 'lib', 'calculate.dart')}
+DA:3,1
+DA:4,1
+LF:2
+LH:2
 end_of_record
 ''');
     });
