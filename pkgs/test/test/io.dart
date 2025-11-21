@@ -100,6 +100,7 @@ Future<TestProcess> runTest(
   bool forwardStdio = false,
   String? packageConfig,
   Iterable<String>? vmArgs,
+  String? workingDirectory,
 }) async {
   concurrency ??= 1;
   var testExecutablePath = _testExecutablePath;
@@ -127,6 +128,7 @@ Future<TestProcess> runTest(
     description: 'dart bin/test.dart',
     forwardStdio: forwardStdio,
     packageConfig: packageConfig,
+    workingDirectory: workingDirectory,
   );
 }
 
@@ -140,6 +142,7 @@ Future<TestProcess> runDart(
   String? description,
   bool forwardStdio = false,
   String? packageConfig,
+  String? workingDirectory,
 }) async {
   var allArgs = <String>[
     '--packages=${packageConfig ?? await Isolate.packageConfig}',
@@ -149,7 +152,7 @@ Future<TestProcess> runDart(
   return await TestProcess.start(
     p.absolute(Platform.resolvedExecutable),
     allArgs,
-    workingDirectory: d.sandbox,
+    workingDirectory: workingDirectory ?? d.sandbox,
     environment: environment,
     description: description,
     forwardStdio: forwardStdio,
@@ -160,11 +163,12 @@ Future<TestProcess> runDart(
 Future<TestProcess> runPub(
   Iterable<String> args, {
   Map<String, String>? environment,
+  String? workingDirectory,
 }) {
   return TestProcess.start(
     p.absolute(Platform.resolvedExecutable),
     ['pub', ...args],
-    workingDirectory: d.sandbox,
+    workingDirectory: workingDirectory ?? d.sandbox,
     environment: environment,
     description: 'pub ${args.first}',
   );

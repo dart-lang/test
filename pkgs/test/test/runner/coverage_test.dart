@@ -21,7 +21,7 @@ void main() {
 
   group('with the --coverage flag,', () {
     late Directory coverageDirectory;
-    late d.DirectoryDescriptor packageDirectory;
+    late String pkgDir;
 
     Future<void> validateTest(TestProcess test) async {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -47,9 +47,10 @@ void main() {
         'test_coverage',
       );
 
-      packageDirectory = d.dir(d.sandbox, [
-        d.dir('lib', [
-          d.file('calculate.dart', '''
+      final outerDirectory = d.dir(d.sandbox, [
+        d.dir('fake_package', [
+          d.dir('lib', [
+            d.file('calculate.dart', '''
             int calculate(int x) {
               if (x % 2 == 0) {
                 return x * 2;
@@ -58,9 +59,9 @@ void main() {
               }
             }
           '''),
-        ]),
-        d.dir('test', [
-          d.file('test.dart', '''
+          ]),
+          d.dir('test', [
+            d.file('test.dart', '''
             import 'package:fake_package/calculate.dart';
             import 'package:test/test.dart';
 
@@ -70,8 +71,8 @@ void main() {
               });
             }
           '''),
-        ]),
-        d.file('pubspec.yaml', '''
+          ]),
+          d.file('pubspec.yaml', '''
 name: fake_package
 version: 1.0.0
 environment:
@@ -79,8 +80,10 @@ environment:
 dev_dependencies:
   test: ^1.26.2
         '''),
+        ]),
       ]);
-      await packageDirectory.create();
+      await outerDirectory.create();
+      pkgDir = p.join(d.sandbox, 'fake_package');
     });
 
     tearDown(() async {
@@ -88,12 +91,12 @@ dev_dependencies:
     });
 
     test('gathers coverage for VM tests', () async {
-      await (await runPub(['get'])).shouldExit(0);
-      var test = await runTest([
-        '--coverage',
-        coverageDirectory.path,
-        'test/test.dart',
-      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
+      var test = await runTest(
+        ['--coverage', coverageDirectory.path, 'test/test.dart'],
+        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
+      );
       final coverage = await validateCoverage(test, 'test/test.dart.vm.json');
       final hitmap = coverage['package:fake_package/calculate.dart']!;
       expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
@@ -102,7 +105,7 @@ dev_dependencies:
     });
 
     test('gathers branch coverage for VM tests', () async {
-      await (await runPub(['get'])).shouldExit(0);
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
       var test = await runTest(
         [
           '--coverage',
@@ -111,7 +114,8 @@ dev_dependencies:
           'test/test.dart',
         ],
         vmArgs: ['--branch-coverage'],
-        packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'),
+        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
       );
       final coverage = await validateCoverage(test, 'test/test.dart.vm.json');
       final hitmap = coverage['package:fake_package/calculate.dart']!;
@@ -121,16 +125,37 @@ dev_dependencies:
     });
 
     test('gathers lcov coverage for VM tests', () async {
-      await (await runPub(['get'])).shouldExit(0);
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
       final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
-      var test = await runTest([
-        '--coverage-path',
-        lcovFile,
-        'test/test.dart',
-      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      var test = await runTest(
+        ['--coverage-path', lcovFile, 'test/test.dart'],
+        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
+      );
       await validateTest(test);
       expect(File(lcovFile).readAsStringSync(), '''
-SF:${p.join(d.sandbox, 'lib', 'calculate.dart')}
+SF:${p.join(pkgDir, 'lib', 'calculate.dart')}
+DA:1,1
+DA:2,2
+DA:3,1
+DA:5,0
+LF:4
+LH:3
+end_of_record
+''');
+    });
+
+    test('gathers coverage for tests in multiple pacakges', () async {
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
+      final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
+      var test = await runTest(
+        ['--coverage-path', lcovFile, 'test/test.dart'],
+        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
+      );
+      await validateTest(test);
+      expect(File(lcovFile).readAsStringSync(), '''
+SF:${p.join(pkgDir, 'lib', 'calculate.dart')}
 DA:1,1
 DA:2,2
 DA:3,1
@@ -142,14 +167,18 @@ end_of_record
     });
 
     test('gathers coverage for Chrome tests', () async {
-      await (await runPub(['get'])).shouldExit(0);
-      var test = await runTest([
-        '--coverage',
-        coverageDirectory.path,
-        'test/test.dart',
-        '-p',
-        'chrome',
-      ], packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'));
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
+      var test = await runTest(
+        [
+          '--coverage',
+          coverageDirectory.path,
+          'test/test.dart',
+          '-p',
+          'chrome',
+        ],
+        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
+      );
       await validateCoverage(test, 'test/test.dart.chrome.json');
     });
 
