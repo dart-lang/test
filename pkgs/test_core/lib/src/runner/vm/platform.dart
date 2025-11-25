@@ -427,7 +427,7 @@ Future<Map<String, dynamic>> _gatherCoverage(
     false,
     false,
     false,
-    await _getCoveragePackages(config.coveragePackages),
+    await _filterCoveragePackages(config.coveragePackages),
     isolateIds: {isolateId!},
     branchCoverage: config.branchCoverage,
   );
@@ -454,7 +454,9 @@ void _setupPauseAfterTests() {
   });
 }
 
-Future<Set<String>> _getCoveragePackages(List<RegExp>? coveragePackages) async {
+Future<Set<String>> _filterCoveragePackages(
+  List<RegExp>? coveragePackages,
+) async {
   if (coveragePackages == null || coveragePackages.isEmpty) {
     return {(await currentPackage).name};
   } else {

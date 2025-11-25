@@ -76,8 +76,10 @@ class Configuration {
   final bool? _branchCoverage;
 
   /// A list of regular expressions to match against the package names during
-  /// coverage collection. Only packages that match at least one of the regexps
-  /// will be included in the coverage report.
+  /// coverage collection.
+  ///
+  /// Only packages that match at least one of the regexps will be included in
+  /// the coverage report.
   final List<RegExp>? coveragePackages;
 
   /// The path to the file from which to load more configuration information.
