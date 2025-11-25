@@ -36,7 +36,7 @@ dependencies:
 
   # Use an exact version until the test_api and test_core package are stable.
   test_api: 0.7.8
-  test_core: 0.6.15
+  test_core: 0.6.15-wip
 
   typed_data: ^1.3.0
   web_socket_channel: '>=2.0.0 <4.0.0'
