@@ -183,10 +183,10 @@ final ArgParser _parser =
       parser.addMultiOption(
         'coverage-package',
         help:
-            'A regular expression matching packages names '
-            'to include in the coverage report (if coverage is enabled). '
-            'If unset, matches the current package name.',
-        valueHelp: 'package-name-regexp',
+            'A regular expression matching packages names to include in\n'
+            'the coverage report (if coverage is enabled). If unset,\n'
+            'matches the current package name.',
+        valueHelp: 'regexp',
         splitCommas: false,
       );
       parser.addFlag(
