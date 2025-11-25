@@ -33,6 +33,18 @@ void test(
   Object? /*TestLocation?*/ location,
   bool solo = false,
 }) {}
+
+void setUp(dynamic callback()) {}
+
+void setUpAll(dynamic callback(), {
+  Object? /*TestLocation?*/ location,
+}) {}
+
+void tearDown(dynamic callback()) {}
+
+void tearDownAll(dynamic callback(), {
+  Object? /*TestLocation?*/ location,
+}) {}
 ''');
     writeTestPackageConfig(
       PackageConfigFileBuilder()

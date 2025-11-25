@@ -5,9 +5,10 @@ usage of the test package.
 
 This analyzer plugin provides the following additional analysis:
 
-* Report a warning when a `test` or a `group` is declared inside a `test`
-  declaration. This can _sometimes_ be detected at runtime, but it's more
-  convenient to report this warning statically.
+* Report a warning when a `test`, `group`, `setUp`, `setUpAll`, `tearDown`, or
+  `tearDownAll` is declared inside a `test`, `setUp`, `setUpAll`, `tearDown`, or
+  `tearDownAll` declaration. This can _sometimes_ be detected at runtime, but
+  it's more convenient to report this warning statically.
 
 * Report a warning when a non-nullable value is matched against `isNotNull` or
   `isNull`.

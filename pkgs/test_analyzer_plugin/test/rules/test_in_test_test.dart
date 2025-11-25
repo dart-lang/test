@@ -49,7 +49,21 @@ void f() {
   );
 }
 ''',
-      [lint(83, 19)],
+      [lint(83, 5)],
+    );
+  }
+
+  void test_groupInSetUp() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  setUp(() {
+    group('two', () {});
+  });
+}
+''',
+      [lint(71, 5)],
     );
   }
 
@@ -78,7 +92,88 @@ void f() {
   );
 }
 ''',
-      [lint(83, 18)],
+      [lint(83, 4)],
     );
+  }
+
+  void test_testInSetUp() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  setUp(() {
+    test('two', () {});
+  });
+}
+''',
+      [lint(71, 4)],
+    );
+  }
+
+  void test_testInSetUpAll() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  setUpAll(() {
+    test('two', () {});
+  });
+}
+''',
+      [lint(74, 4)],
+    );
+  }
+
+  void test_testInTearDown() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  tearDown(() {
+    test('two', () {});
+  });
+}
+''',
+      [lint(74, 4)],
+    );
+  }
+
+  void test_testInTearDownAll() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  tearDownAll(() {
+    test('two', () {});
+  });
+}
+''',
+      [lint(77, 4)],
+    );
+  }
+
+  void test_setUpInSetUp() async {
+    await assertDiagnostics(
+      r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  setUp(() {
+    setUp(() {});
+  });
+}
+''',
+      [lint(71, 5)],
+    );
+  }
+
+  void test_setUpInGroup() async {
+    await assertNoDiagnostics(r'''
+import 'package:test_core/test_core.dart';
+void f() {
+  group('', () {
+    setUp(() {});
+  });
+}
+''');
   }
 }

@@ -16,14 +16,67 @@ MethodInvocation? findEnclosingTestCall(MethodInvocation node) {
   return null;
 }
 
+/// Finds an enclosing call to the 'test', 'setUp', 'setUpAll', 'tearDown', or
+/// 'tearDownAll' function if there is one.
+MethodInvocation? findEnclosingTestOrSetUpOrTearDownCall(
+  MethodInvocation node,
+) {
+  var ancestor = node.parent?.thisOrAncestorOfType<MethodInvocation>();
+  while (ancestor != null) {
+    var methodName = ancestor.methodName;
+    if (methodName.isTest ||
+        methodName.name == 'setUp' ||
+        methodName.name == 'setUpAll' ||
+        methodName.name == 'tearDown' ||
+        methodName.name == 'tearDownAll') {
+      if (methodName.isFromTestCore) {
+        return ancestor;
+      }
+    }
+    ancestor = ancestor.parent?.thisOrAncestorOfType<MethodInvocation>();
+  }
+  return null;
+}
+
 extension SimpleIdentifierExtension on SimpleIdentifier {
+  /// Whether this identifier represents the 'test', 'group', 'setUp',
+  /// 'setUpAll', 'tearDown', or 'tearDownAll' function from the 'test_core'
+  /// package.
+  bool get isTestOrGroupOrSetUpOrTearDown {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name != 'test' &&
+        element.name != 'group' &&
+        element.name != 'setUp' &&
+        element.name != 'setUpAll' &&
+        element.name != 'tearDown' &&
+        element.name != 'tearDownAll') {
+      return false;
+    }
+    return element.library?.uri.path.startsWith('test_core/') ?? false;
+  }
+
+  /// Whether this identifier represents the 'test', 'setUp', 'setUpAll',
+  /// 'tearDown', or 'tearDownAll' function from the 'test_core' package.
+  bool get isTestOrSetUpOrTearDown {
+    final element = this.element;
+    if (element == null) return false;
+    if (element.name != 'test' &&
+        element.name != 'setUp' &&
+        element.name != 'setUpAll' &&
+        element.name != 'tearDown' &&
+        element.name != 'tearDownAll') {
+      return false;
+    }
+    return isFromTestCore;
+  }
+
   /// Whether this identifier represents the 'test' function from the
   /// 'test_core' package.
   bool get isTest {
     final element = this.element;
     if (element == null) return false;
-    if (element.name != 'test') return false;
-    return element.library?.uri.path.startsWith('test_core/') ?? false;
+    return element.name == 'test' && isFromTestCore;
   }
 
   /// Whether this identifier represents the 'group' function from the
@@ -31,9 +84,11 @@ extension SimpleIdentifierExtension on SimpleIdentifier {
   bool get isGroup {
     final element = this.element;
     if (element == null) return false;
-    if (element.name != 'group') return false;
-    return element.library?.uri.path.startsWith('test_core/') ?? false;
+    return element.name == 'group' && isFromTestCore;
   }
+
+  bool get isFromTestCore =>
+      element?.library?.uri.path.startsWith('test_core/') ?? false;
 
   /// Whether this identifier represents the 'expect' function from the
   /// 'matcher' package.

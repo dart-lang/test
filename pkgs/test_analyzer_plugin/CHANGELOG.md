@@ -3,8 +3,9 @@
 - Initial release
 
 - Available rules:
-  - `test_in_test`: Report a warning when a `test` or a `group` is declared inside a `test`
-    declaration.
+  - `test_in_test`: Report a warning when a `test`, `group`, `setUp`, `setUpAll`,
+    `tearDown`, or `tearDownAll` is declared inside a `test`, `setUp`, `setUpAll`,
+    `tearDown`, or `tearDownAll` declaration.
 
   - `non_nullable_is_not_null`: Report a warning when a non-nullable value is
     matched against `isNotNull` or `isNull`.

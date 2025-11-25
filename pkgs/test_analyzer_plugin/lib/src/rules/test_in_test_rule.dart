@@ -14,8 +14,8 @@ import '../utilities.dart';
 class TestInTestRule extends AnalysisRule {
   static const LintCode code = LintCode(
     'test_in_test',
-    "Do not declare a 'test' or a 'group' inside a 'test'",
-    correctionMessage: "Try moving 'test' or 'group' outside of 'test'",
+    "Do not declare a 'test' or a 'group' inside a '{0}'",
+    correctionMessage: "Try moving 'test' or 'group' outside of '{0}'",
   );
 
   TestInTestRule()
@@ -46,11 +46,15 @@ class _Visitor extends SimpleAstVisitor<void> {
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
-    if (!node.methodName.isTest && !node.methodName.isGroup) return;
+    if (!node.methodName.isTestOrGroupOrSetUpOrTearDown) return;
 
-    var enclosingTestCall = findEnclosingTestCall(node);
-    if (enclosingTestCall != null) {
-      rule.reportAtNode(node);
+    var enclosingTestOrSetUpOrTearDownCall =
+        findEnclosingTestOrSetUpOrTearDownCall(node);
+    if (enclosingTestOrSetUpOrTearDownCall != null) {
+      rule.reportAtNode(
+        node.methodName,
+        arguments: [enclosingTestOrSetUpOrTearDownCall.methodName.name],
+      );
     }
   }
 }
