@@ -181,15 +181,28 @@ end_of_record
 
     test('gathers coverage for tests in multiple pacakges', () async {
       final clientPkgDir = p.join(d.sandbox, 'fake_client');
-      await (await runPub(['get'], workingDirectory: clientPkgDir)).shouldExit(0);
+      await (await runPub([
+        'get',
+      ], workingDirectory: clientPkgDir)).shouldExit(0);
       final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
       var test = await runTest(
-        ['--coverage-path', lcovFile, 'test/test.dart'],
+        [
+          '--coverage-path',
+          lcovFile,
+          '--coverage-package=fake_.*',
+          'test/test.dart',
+        ],
         packageConfig: p.join(clientPkgDir, '.dart_tool/package_config.json'),
         workingDirectory: clientPkgDir,
       );
       await validateTest(test);
       expect(File(lcovFile).readAsStringSync(), '''
+SF:${p.join(clientPkgDir, 'lib', 'calculate.dart')}
+DA:3,1
+DA:4,1
+LF:2
+LH:2
+end_of_record
 SF:${p.join(pkgDir, 'lib', 'calculate.dart')}
 DA:1,1
 DA:2,2
@@ -197,12 +210,6 @@ DA:3,1
 DA:5,0
 LF:4
 LH:3
-end_of_record
-SF:${p.join(clientPkgDir, 'lib', 'calculate.dart')}
-DA:3,1
-DA:4,1
-LF:2
-LH:2
 end_of_record
 ''');
     });
