@@ -1,3 +1,8 @@
+## 1.29.0-wip
+
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+
 ## 1.28.0
 
 * Add `isSorted` and related matchers for iterables.

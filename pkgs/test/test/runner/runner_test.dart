@@ -96,6 +96,9 @@ $_runtimeCompilers
                                       Implies --debug.
     --branch-coverage                 Include branch coverage information in the coverage report.
                                       Must be paired with --coverage or --coverage-path.
+    --coverage-package=<regexp>       A regular expression matching packages names to include in
+                                      the coverage report (if coverage is enabled). If unset,
+                                      matches the current package name.
     --[no-]chain-stack-traces         Use chained stack traces to provide greater exception details
                                       especially for asynchronous code. It may be useful to disable
                                       to provide improved test performance but at the cost of

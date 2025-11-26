@@ -1,3 +1,8 @@
+## 0.6.15-wip
+
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+
 ## 0.6.14
 
 * Fix type cast when parsing a `null` hit map.
