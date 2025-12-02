@@ -20,7 +20,7 @@ import '../util/dart.dart';
 /// allowed everywhere.
 ///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
-/// test annotations are incorrect.
+/// test suite is unrunnable due to incorrect annotations or a missing main.
 Metadata parseMetadata(
   String path,
   String contents,
@@ -48,6 +48,12 @@ class _Parser {
   /// The language version override comment if one was present, otherwise null.
   String? _languageVersionComment;
 
+  /// Whether any member of the compilation unit is named 'main'.
+  ///
+  /// When main is missing a call to [parse] will throw a [FormatException] with
+  /// a descriptive message.
+  late final bool _hasMain;
+
   _Parser(this._path, this._contents, this._platformVariables) {
     var result = parseString(
       content: _contents,
@@ -57,6 +63,9 @@ class _Parser {
     var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
+    _hasMain = result.unit.declarations.any(
+      (d) => d is NamedCompilationUnitMember && d.name.toString() == 'main',
+    );
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
@@ -75,6 +84,9 @@ class _Parser {
 
   /// Parses the metadata.
   Metadata parse() {
+    if (!_hasMain) {
+      throw const FormatException('Missing definition of `main` method.');
+    }
     Timeout? timeout;
     PlatformSelector? testOn;
     Object? /*String|bool*/ skip;
