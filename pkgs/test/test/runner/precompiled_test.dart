@@ -278,5 +278,5 @@ Future<void> _precompileBrowserTest(String testPath) async {
   ], workingDirectory: d.sandbox);
   await dart2js.shouldExit(0);
 
-  await d.file(testPath, 'invalid dart}').create();
+  await d.file(testPath, 'void main() {invalid dart}').create();
 }
