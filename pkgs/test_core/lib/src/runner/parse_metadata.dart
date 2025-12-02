@@ -64,7 +64,7 @@ class _Parser {
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
     _hasMain = result.unit.declarations.any(
-      (d) => d is FunctionDeclaration && d.name.toString() == 'main',
+      (d) => d is FunctionDeclaration && d.name.lexeme == 'main',
     );
 
     // We explicitly *don't* just look for "package:test" imports here,
