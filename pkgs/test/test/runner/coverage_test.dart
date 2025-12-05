@@ -263,26 +263,22 @@ dev_dependencies:
       ]).create();
 
       final pkgDir = p.join(d.sandbox, 'fake_workspace', 'workspace_package');
-      await (await runPub([
-        'get',
-      ], workingDirectory: pkgDir)).shouldExit(0);
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
       final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
       var test = await runTest(
-        [
-          '--coverage-path',
-          lcovFile,
-          'test/test.dart',
-        ],
+        ['--coverage-path', lcovFile, 'test/test.dart'],
         packageConfig: p.join(pkgDir, '../.dart_tool/package_config.json'),
         workingDirectory: pkgDir,
       );
       await validateTest(test);
       expect(File(lcovFile).readAsStringSync(), '''
 SF:${p.join(pkgDir, 'lib', 'calculate.dart')}
+DA:1,1
+DA:2,2
 DA:3,1
-DA:4,1
-LF:2
-LH:2
+DA:5,0
+LF:4
+LH:3
 end_of_record
 ''');
     });

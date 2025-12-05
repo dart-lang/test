@@ -7,6 +7,7 @@ import 'dart:isolate';
 
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
+import 'package:pubspec_parse/pubspec_parse.dart';
 
 /// The [PackageConfig] parsed from the current isolates package config file.
 final Future<PackageConfig> currentPackageConfig = () async {
@@ -42,3 +43,24 @@ Future<Uri> absoluteUri(String path) async {
 final Future<Package> currentPackage = () async {
   return (await currentPackageConfig).packageOf(await packageConfigUri)!;
 }();
+
+/// Returns the names of all the packages in the workspace.
+///
+/// The returned set includes the package's own name (if the package is not a
+/// workspace, that will be the only name in the set).
+Set<String> workspacePackageNames(Package package) =>
+    _getAllWorkspaceNames(package.root, <String>{});
+
+Set<String> _getAllWorkspaceNames(Uri packageRoot, Set<String> results) {
+  final pubspecUri = packageRoot.resolve('pubspec.yaml');
+  final pubspecFile = File(pubspecUri.toFilePath());
+  if (pubspecFile.existsSync()) {
+    final yaml = pubspecFile.readAsStringSync();
+    final pubspec = Pubspec.parse(yaml, sourceUrl: pubspecUri);
+    results.add(pubspec.name);
+    for (final workspace in pubspec.workspace ?? <String>[]) {
+      _getAllWorkspaceNames(packageRoot.resolve('$workspace/'), results);
+    }
+  }
+  return results;
+}
