@@ -2,6 +2,8 @@
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
   packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
 
 ## 1.28.0
 
