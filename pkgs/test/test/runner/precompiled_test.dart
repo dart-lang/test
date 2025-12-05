@@ -107,7 +107,9 @@ void main() {
         preamble.getPreamble(minified: true) + await jsFile.readAsString(),
       );
 
-      await d.dir('test', [d.file('test.dart', 'invalid dart}')]).create();
+      await d.dir('test', [
+        d.file('test.dart', 'void main() {invalid dart}'),
+      ]).create();
     });
 
     test(
