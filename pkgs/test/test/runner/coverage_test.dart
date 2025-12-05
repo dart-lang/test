@@ -179,7 +179,7 @@ end_of_record
 ''');
     });
 
-    test('gathers coverage for tests in multiple pacakges', () async {
+    test('gathers coverage for tests in multiple packages', () async {
       final clientPkgDir = p.join(d.sandbox, 'fake_client');
       await (await runPub([
         'get',
@@ -203,6 +203,75 @@ DA:4,1
 LF:2
 LH:2
 end_of_record
+SF:${p.join(pkgDir, 'lib', 'calculate.dart')}
+DA:1,1
+DA:2,2
+DA:3,1
+DA:5,0
+LF:4
+LH:3
+end_of_record
+''');
+    });
+
+    test('gathers coverage for package in a workspace', () async {
+      await d.dir(d.sandbox, [
+        d.dir('fake_workspace', [
+          d.file('pubspec.yaml', '''
+name: fake_workspace
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+workspace:
+  - workspace_package
+          '''),
+          d.dir('workspace_package', [
+            d.file('pubspec.yaml', '''
+name: workspace_package
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+resolution: workspace
+dev_dependencies:
+  test: ^1.26.2
+            '''),
+            d.dir('lib', [
+              d.file('calculate.dart', '''
+              int calculate(int x) {
+                if (x % 2 == 0) {
+                  return x * 2;
+                } else {
+                  return x * 3;
+                }
+              }
+              '''),
+            ]),
+            d.dir('test', [
+              d.file('test.dart', '''
+              import 'package:workspace_package/calculate.dart';
+              import 'package:test/test.dart';
+
+              void main() {
+                test('test 1', () {
+                  expect(calculate(6), 12);
+                });
+              }
+              '''),
+            ]),
+          ]),
+        ]),
+      ]).create();
+
+      final pkgDir = p.join(d.sandbox, 'fake_workspace', 'workspace_package');
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
+      final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
+      var test = await runTest(
+        ['--coverage-path', lcovFile, 'test/test.dart'],
+        packageConfig: p.join(pkgDir, '../.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
+      );
+      await validateTest(test);
+      expect(File(lcovFile).readAsStringSync(), '''
 SF:${p.join(pkgDir, 'lib', 'calculate.dart')}
 DA:1,1
 DA:2,2

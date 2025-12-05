@@ -2,6 +2,8 @@
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
   packages using RegExps.
+* Fix default coverage filter when running in a workspace package. Default
+  filter now includes all the workspace's package.
 
 ## 0.6.14
 
