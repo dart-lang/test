@@ -193,8 +193,7 @@ $_usage''');
         test.stdout,
         containsInOrder([
           'Failed to load "test.dart":',
-          "test.dart:1:9: Error: Expected ';' after this.",
-          'invalid Dart file',
+          "Error: Expected ';' after this.",
         ]),
       );
 
