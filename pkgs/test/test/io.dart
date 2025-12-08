@@ -21,6 +21,9 @@ final Future<String> packageDir = Isolate.resolvePackageUri(
   return dir;
 });
 
+/// The root directory of the Dart SDK.
+final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
+
 /// The platform-specific message emitted when a nonexistent file is loaded.
 final String noSuchFileMessage =
     Platform.isWindows
