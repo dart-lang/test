@@ -2,6 +2,11 @@
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
   packages using RegExps.
+* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
+  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
+  useful for finding issues when using foreign libraries through dart:ffi, such
+  as use-after-free, use of initialized memory and data races, or for detecting
+  data races in Dart code using shared fields.
 
 ## 0.6.14
 
