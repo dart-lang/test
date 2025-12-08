@@ -65,7 +65,12 @@ class Loader {
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
-    _registerPlatformPlugin([Runtime.vm], VMPlatform.new);
+    _registerPlatformPlugin([
+      Runtime.vm,
+      if (File('$sdkDir/bin/dartaotruntime_asan').existsSync()) Runtime.vmAsan,
+      if (File('$sdkDir/bin/dartaotruntime_msan').existsSync()) Runtime.vmMsan,
+      if (File('$sdkDir/bin/dartaotruntime_tsan').existsSync()) Runtime.vmTsan,
+    ], VMPlatform.new);
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
