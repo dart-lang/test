@@ -59,7 +59,7 @@ Set<String> _allWorkspaceNames(Uri packageRoot, Set<String> results) {
     final pubspec = Pubspec.parse(yaml, sourceUrl: pubspecUri);
     results.add(pubspec.name);
     for (final package in pubspec.workspace ?? const <String>[]) {
-      _getAllWorkspaceNames(packageRoot.resolve('$workspace/'), results);
+      _allWorkspaceNames(packageRoot.resolve('$package/'), results);
     }
   }
   return results;
