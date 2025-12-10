@@ -196,14 +196,26 @@ void main() {
   });
 
   group('skip:', () {
-    test('does not emit for skips', () {
+    test('reports when all tests are skipped', () {
       return _expectReport(
         '''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
-          test('skip 3', () {}, skip: true);''',
+          test('skip 3', () {}, skip: 'some reason');''',
         '''
           +0 ~3: All tests skipped.''',
+      );
+    });
+
+    test('reports count of skipped tests', () {
+      return _expectReport(
+        '''
+          test('skip 1', () {});
+          test('skip 2', () {}, skip: true);
+          test('skip 3', () {}, skip: 'some reason');''',
+        '''
+          +1 ~2: 2 skipped tests.
+          +1 ~2: All other tests passed!''',
       );
     });
 
