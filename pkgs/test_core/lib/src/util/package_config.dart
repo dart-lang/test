@@ -49,16 +49,16 @@ final Future<Package> currentPackage = () async {
 /// The returned set includes the package's own name (if the package is not a
 /// workspace, that will be the only name in the set).
 Set<String> workspacePackageNames(Package package) =>
-    _getAllWorkspaceNames(package.root, <String>{});
+    _allWorkspaceNames(package.root, <String>{});
 
-Set<String> _getAllWorkspaceNames(Uri packageRoot, Set<String> results) {
+Set<String> _allWorkspaceNames(Uri packageRoot, Set<String> results) {
   final pubspecUri = packageRoot.resolve('pubspec.yaml');
   final pubspecFile = File(pubspecUri.toFilePath());
   if (pubspecFile.existsSync()) {
     final yaml = pubspecFile.readAsStringSync();
     final pubspec = Pubspec.parse(yaml, sourceUrl: pubspecUri);
     results.add(pubspec.name);
-    for (final workspace in pubspec.workspace ?? <String>[]) {
+    for (final package in pubspec.workspace ?? const <String>[]) {
       _getAllWorkspaceNames(packageRoot.resolve('$workspace/'), results);
     }
   }
