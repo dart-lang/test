@@ -1,8 +1,21 @@
-## 0.6.13-wip
+## 0.6.15-wip
 
-* Restrict to latest version of analyzer package.
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
+* Fix default coverage filter when running in a workspace package. Default
+  filter now includes all the workspace's package.
+
+## 0.6.14
+
+* Fix type cast when parsing a `null` hit map.
+
+## 0.6.13
+
 * Require Dart 3.7
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Allow `analyzer` major version 9.
 
 ## 0.6.12
 

@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
@@ -34,7 +34,7 @@ jobs:
           sdk: stable
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - name: mono_repo self validate
         run: dart pub global activate mono_repo 6.6.3
       - name: mono_repo self validate
@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:integration_tests/regression-integration_tests/wasm;commands:format-analyze_0"
@@ -59,7 +59,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_regression_pub_upgrade
         name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
@@ -91,7 +91,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/checks-pkgs/matcher-pkgs/test_core;commands:analyze_1"
@@ -106,7 +106,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
@@ -154,7 +154,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_regression_pub_upgrade
         name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
@@ -269,7 +269,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -293,7 +293,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -312,7 +312,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:integration_tests/regression;commands:command_00"
@@ -327,7 +327,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_regression_pub_upgrade
         name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
@@ -349,7 +349,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/checks;commands:command_00"
@@ -364,7 +364,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -386,7 +386,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/matcher;commands:command_00"
@@ -401,7 +401,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_matcher_pub_upgrade
         name: pkgs/matcher; dart pub upgrade
         run: dart pub upgrade
@@ -423,7 +423,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test_core;commands:command_00"
@@ -438,7 +438,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_core_pub_upgrade
         name: pkgs/test_core; dart pub upgrade
         run: dart pub upgrade
@@ -460,7 +460,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:integration_tests/spawn_hybrid;commands:test_1"
@@ -475,7 +475,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -497,7 +497,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:integration_tests/wasm;commands:test_2"
@@ -512,7 +512,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -534,7 +534,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_01"
@@ -549,7 +549,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -571,7 +571,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_02"
@@ -586,7 +586,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -608,7 +608,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_03"
@@ -623,7 +623,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -645,7 +645,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_04"
@@ -660,7 +660,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -682,7 +682,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_05"
@@ -697,7 +697,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -719,7 +719,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test_api;commands:command_11"
@@ -734,7 +734,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
         run: dart pub upgrade
@@ -756,7 +756,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression;commands:command_00"
@@ -771,7 +771,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_regression_pub_upgrade
         name: integration_tests/regression; dart pub upgrade
         run: dart pub upgrade
@@ -793,7 +793,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks;commands:command_00"
@@ -808,7 +808,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_checks_pub_upgrade
         name: pkgs/checks; dart pub upgrade
         run: dart pub upgrade
@@ -830,7 +830,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/matcher;commands:command_00"
@@ -845,7 +845,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_matcher_pub_upgrade
         name: pkgs/matcher; dart pub upgrade
         run: dart pub upgrade
@@ -867,7 +867,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_core;commands:command_00"
@@ -882,7 +882,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_core_pub_upgrade
         name: pkgs/test_core; dart pub upgrade
         run: dart pub upgrade
@@ -904,7 +904,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test_1"
@@ -919,7 +919,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -941,7 +941,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm;commands:test_2"
@@ -956,7 +956,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -978,7 +978,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_01"
@@ -993,7 +993,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1015,7 +1015,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_02"
@@ -1030,7 +1030,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1052,7 +1052,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_03"
@@ -1067,7 +1067,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1089,7 +1089,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_04"
@@ -1104,7 +1104,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1126,7 +1126,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_05"
@@ -1141,7 +1141,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1163,7 +1163,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api;commands:command_11"
@@ -1178,7 +1178,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_api_pub_upgrade
         name: pkgs/test_api; dart pub upgrade
         run: dart pub upgrade
@@ -1200,7 +1200,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_06"
@@ -1215,7 +1215,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1237,7 +1237,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_07"
@@ -1252,7 +1252,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1274,7 +1274,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_08"
@@ -1289,7 +1289,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1311,7 +1311,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_09"
@@ -1326,7 +1326,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1348,7 +1348,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Cache Pub hosted dependencies
-        uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.7.0;packages:pkgs/test;commands:command_10"
@@ -1363,7 +1363,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1390,7 +1390,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -1417,7 +1417,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade
@@ -1444,7 +1444,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1471,7 +1471,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1498,7 +1498,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1525,7 +1525,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1552,7 +1552,7 @@ jobs:
           sdk: "3.7.0"
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -1579,7 +1579,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_spawn_hybrid_pub_upgrade
         name: integration_tests/spawn_hybrid; dart pub upgrade
         run: dart pub upgrade
@@ -1606,7 +1606,7 @@ jobs:
           sdk: dev
       - id: checkout
         name: Checkout repository
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
       - id: integration_tests_wasm_pub_upgrade
         name: integration_tests/wasm; dart pub upgrade
         run: dart pub upgrade

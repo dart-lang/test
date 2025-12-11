@@ -96,6 +96,9 @@ $_runtimeCompilers
                                       Implies --debug.
     --branch-coverage                 Include branch coverage information in the coverage report.
                                       Must be paired with --coverage or --coverage-path.
+    --coverage-package=<regexp>       A regular expression matching packages names to include in
+                                      the coverage report (if coverage is enabled). If unset,
+                                      matches the current package name.
     --[no-]chain-stack-traces         Use chained stack traces to provide greater exception details
                                       especially for asynchronous code. It may be useful to disable
                                       to provide improved test performance but at the cost of
@@ -183,15 +186,14 @@ $_usage''');
     });
 
     test('a test file fails to load', () async {
-      await d.file('test.dart', 'invalid Dart file').create();
+      await d.file('test.dart', 'void main(){invalid Dart}').create();
       var test = await runTest(['test.dart']);
 
       expect(
         test.stdout,
         containsInOrder([
           'Failed to load "test.dart":',
-          "test.dart:1:9: Error: Expected ';' after this.",
-          'invalid Dart file',
+          "Error: Expected ';' after this.",
         ]),
       );
 
@@ -219,7 +221,7 @@ $_usage''');
     // This is slightly different from the above test because it's an error
     // that's caught first by the analyzer when it's used to parse the file.
     test('a test file fails to parse', () async {
-      await d.file('test.dart', '@TestOn)').create();
+      await d.file('test.dart', '@TestOn) void main() {}').create();
       var test = await runTest(['test.dart']);
 
       expect(
@@ -236,7 +238,9 @@ $_usage''');
     });
 
     test("an annotation's contents are invalid", () async {
-      await d.file('test.dart', "@TestOn('zim')\nlibrary foo;").create();
+      await d
+          .file('test.dart', "@TestOn('zim')\nlibrary foo;\nvoid main() {}")
+          .create();
       var test = await runTest(['test.dart']);
 
       expect(
@@ -273,12 +277,7 @@ $_usage''');
       expect(test.stdout, emitsThrough(contains('-1: loading test.dart [E]')));
       expect(
         test.stdout,
-        emitsThrough(
-          anyOf([
-            contains("Error: Getter not found: 'main'"),
-            contains("Error: Undefined name 'main'"),
-          ]),
-        ),
+        emitsThrough(contains('Missing definition of `main` method')),
       );
 
       await test.shouldExit(1);
@@ -291,18 +290,7 @@ $_usage''');
       expect(test.stdout, emitsThrough(contains('-1: loading test.dart [E]')));
       expect(
         test.stdout,
-        emitsThrough(
-          anyOf([
-            contains(
-              "A value of type 'int' can't be assigned to a variable of type "
-              "'Function'",
-            ),
-            contains(
-              "A value of type 'int' can't be returned from a function with "
-              "return type 'Function'",
-            ),
-          ]),
-        ),
+        emitsThrough(contains('Missing definition of `main` method')),
       );
 
       await test.shouldExit(1);

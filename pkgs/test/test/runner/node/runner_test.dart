@@ -78,7 +78,7 @@ void main() {
 
   group('fails gracefully if', () {
     test('a test file fails to compile', () async {
-      await d.file('test.dart', 'invalid Dart file').create();
+      await d.file('test.dart', 'void main() {invalid Dart}').create();
       var test = await runTest(['-p', 'node', 'test.dart']);
 
       expect(

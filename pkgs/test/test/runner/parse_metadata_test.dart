@@ -14,8 +14,8 @@ import 'package:test_core/src/runner/parse_metadata.dart';
 final _path = 'test.dart';
 
 void main() {
-  test('returns empty metadata for an empty file', () {
-    var metadata = parseMetadata(_path, '', {});
+  test('returns empty metadata for a file without annotations', () {
+    var metadata = parseMetadata(_path, 'main(){}', {});
     expect(metadata.testOn, equals(PlatformSelector.all));
     expect(metadata.timeout.scaleFactor, equals(1));
   });
@@ -23,7 +23,7 @@ void main() {
   test('ignores irrelevant annotations', () {
     var metadata = parseMetadata(
       _path,
-      '@Fblthp\n@Fblthp.foo\nlibrary foo;',
+      '@Fblthp\n@Fblthp.foo\nlibrary foo;main(){}',
       {},
     );
     expect(metadata.testOn, equals(PlatformSelector.all));
@@ -33,7 +33,8 @@ void main() {
     var metadata = parseMetadata(
       _path,
       "@foo.TestOn('vm')\n"
-      "import 'package:test/test.dart' as foo;",
+      "import 'package:test/test.dart' as foo;\n"
+      'main(){}',
       {},
     );
     expect(
@@ -46,9 +47,20 @@ void main() {
     );
   });
 
+  test('throws for missing definition of `main`', () {
+    expect(
+      () => parseMetadata(_path, 'void notMain() {}', {}),
+      throwsFormatException,
+    );
+  });
+
   group('@TestOn:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(_path, "@TestOn('vm')\nlibrary foo;", {});
+      var metadata = parseMetadata(
+        _path,
+        "@TestOn('vm')\nlibrary foo;\nmain(){}",
+        {},
+      );
       expect(
         metadata.testOn.evaluate(SuitePlatform(Runtime.vm, compiler: null)),
         isTrue,
@@ -62,7 +74,7 @@ void main() {
     test('ignores a constructor named TestOn', () {
       var metadata = parseMetadata(
         _path,
-        "@foo.TestOn('foo')\nlibrary foo;",
+        "@foo.TestOn('foo')\nlibrary foo;\nmain(){}",
         {},
       );
       expect(metadata.testOn, equals(PlatformSelector.all));
@@ -93,6 +105,7 @@ void main() {
     microseconds: 5))
 
 library foo;
+main(){}
 ''', {});
       expect(
         metadata.timeout.duration,
@@ -118,6 +131,7 @@ library foo;
     microseconds: 5))
 
 library foo;
+main(){}
 ''', {});
       expect(
         metadata.timeout.duration,
@@ -142,6 +156,7 @@ library foo;
     milliseconds: 4,
     microseconds: 5))
 import 'dart:core' as core;
+main(){}
 ''', {});
       expect(
         metadata.timeout.duration,
@@ -162,6 +177,7 @@ import 'dart:core' as core;
 @Timeout.factor(1)
 
 library foo;
+main(){}
 ''', {});
       expect(metadata.timeout.scaleFactor, equals(1));
     });
@@ -170,6 +186,7 @@ library foo;
       var metadata = parseMetadata(_path, '''
 @test.Timeout.factor(1)
 import 'package:test/test.dart' as test;
+main(){}
 ''', {});
       expect(metadata.timeout.scaleFactor, equals(1));
     });
@@ -179,6 +196,7 @@ import 'package:test/test.dart' as test;
 @Timeout.factor(0.5)
 
 library foo;
+main(){}
 ''', {});
       expect(metadata.timeout.scaleFactor, equals(0.5));
     });
@@ -188,6 +206,7 @@ library foo;
 @Timeout.none
 
 library foo;
+main(){}
 ''', {});
       expect(metadata.timeout, same(Timeout.none));
     });
@@ -195,7 +214,7 @@ library foo;
     test('ignores a constructor named Timeout', () {
       var metadata = parseMetadata(
         _path,
-        "@foo.Timeout('foo')\nlibrary foo;",
+        "@foo.Timeout('foo')\nlibrary foo;\nmain(){}",
         {},
       );
       expect(metadata.timeout.scaleFactor, equals(1));
@@ -217,19 +236,31 @@ library foo;
 
   group('@Skip:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(_path, '@Skip()\nlibrary foo;', {});
+      var metadata = parseMetadata(
+        _path,
+        '@Skip()\nlibrary foo;\nmain(){}',
+        {},
+      );
       expect(metadata.skip, isTrue);
       expect(metadata.skipReason, isNull);
     });
 
     test('parses a valid annotation with a reason', () {
-      var metadata = parseMetadata(_path, "@Skip('reason')\nlibrary foo;", {});
+      var metadata = parseMetadata(
+        _path,
+        "@Skip('reason')\nlibrary foo;\nmain(){}",
+        {},
+      );
       expect(metadata.skip, isTrue);
       expect(metadata.skipReason, equals('reason'));
     });
 
     test('ignores a constructor named Skip', () {
-      var metadata = parseMetadata(_path, "@foo.Skip('foo')\nlibrary foo;", {});
+      var metadata = parseMetadata(
+        _path,
+        "@foo.Skip('foo')\nlibrary foo;\nmain(){}",
+        {},
+      );
       expect(metadata.skip, isFalse);
     });
 
@@ -249,12 +280,20 @@ library foo;
 
   group('@Tags:', () {
     test('parses a valid annotation', () {
-      var metadata = parseMetadata(_path, "@Tags(['a'])\nlibrary foo;", {});
+      var metadata = parseMetadata(
+        _path,
+        "@Tags(['a'])\nlibrary foo;\nmain(){}",
+        {},
+      );
       expect(metadata.tags, equals(['a']));
     });
 
     test('ignores a constructor named Tags', () {
-      var metadata = parseMetadata(_path, "@foo.Tags(['a'])\nlibrary foo;", {});
+      var metadata = parseMetadata(
+        _path,
+        "@foo.Tags(['a'])\nlibrary foo;\nmain(){}",
+        {},
+      );
       expect(metadata.tags, isEmpty);
     });
 
@@ -290,7 +329,8 @@ library foo;
   'chrome': Timeout.factor(2),
   'vm': [Skip(), Timeout.factor(3)]
 })
-library foo;''', {});
+library foo;
+main(){}''', {});
 
       var key = metadata.onPlatform.keys.first;
       expect(
@@ -319,6 +359,7 @@ library foo;''', {});
   'vm': [test.Skip(), test.Timeout.factor(3)]
 })
 import 'package:test/test.dart' as test;
+main(){}
 ''', {});
 
       var key = metadata.onPlatform.keys.first;
@@ -344,7 +385,7 @@ import 'package:test/test.dart' as test;
     test('ignores a constructor named OnPlatform', () {
       var metadata = parseMetadata(
         _path,
-        "@foo.OnPlatform('foo')\nlibrary foo;",
+        "@foo.OnPlatform('foo')\nlibrary foo;main(){}",
         {},
       );
       expect(metadata.testOn, equals(PlatformSelector.all));
