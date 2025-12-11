@@ -458,7 +458,7 @@ Future<Set<String>> _filterCoveragePackages(
   List<RegExp>? coveragePackages,
 ) async {
   if (coveragePackages == null || coveragePackages.isEmpty) {
-    return {(await currentPackage).name};
+    return workspacePackageNames(await currentPackage);
   } else {
     return (await currentPackageConfig).packages
         .map((package) => package.name)
