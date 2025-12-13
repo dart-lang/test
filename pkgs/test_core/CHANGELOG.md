@@ -5,6 +5,8 @@
 * Require a function definition named `main` directly in a test suite and
   provide a more direct error message than a failing compiler output.
 * Suppress skip reason messages in the compact and failures-only reporters.
+* Fix default coverage filter when running in a workspace package. Default
+  filter now includes all the workspace's package.
 
 ## 0.6.14
 
