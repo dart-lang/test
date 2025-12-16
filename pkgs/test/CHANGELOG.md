@@ -1,9 +1,26 @@
-## 1.27.0-wip
+## 1.29.0-wip
 
-* Restrict to latest version of analyzer package.
-* Require Dart 3.7
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
+* Suppress skip reason messages in the compact and failures-only reporters.
+
+## 1.28.0
+
+* Add `isSorted` and related matchers for iterables.
+* Consider `NaN` to be equal to itself in `equals`.
+* Bump `test_core` to 0.6.14
+* Removed unused `js` dependency
+
+## 1.27.0
+
 * Add `--coverage-path` and `--branch-coverage` options to `dart test`.
 * Serve dart2wasm source map files.
+* Fix Node.js dart2wasm tests on windows.
+* Doc edit: clarify in README that a platform selector includes the compiler.
+* Allow `analyzer` major version 9.
+* Require Dart 3.7
 
 ## 1.26.3
 

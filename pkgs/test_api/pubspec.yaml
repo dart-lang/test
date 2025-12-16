@@ -1,5 +1,5 @@
 name: test_api
-version: 0.7.8-wip
+version: 0.7.8
 description: >-
   The user facing API for structuring Dart tests and checking expectations.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_api
@@ -21,7 +21,7 @@ dependencies:
   term_glyph: ^1.2.0
 
 dev_dependencies:
-  analyzer: ^8.0.0
+  analyzer: '>=8.0.0 <10.0.0'
   fake_async: ^1.2.0
   glob: ^2.0.0
   graphs: ^2.0.0

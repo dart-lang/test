@@ -180,6 +180,15 @@ final ArgParser _parser =
             'Must be paired with --coverage or --coverage-path.',
         negatable: false,
       );
+      parser.addMultiOption(
+        'coverage-package',
+        help:
+            'A regular expression matching packages names to include in\n'
+            'the coverage report (if coverage is enabled). If unset,\n'
+            'matches the current package name.',
+        valueHelp: 'regexp',
+        splitCommas: false,
+      );
       parser.addFlag(
         'chain-stack-traces',
         help:
@@ -462,6 +471,7 @@ class _Parser {
       coverage: coverageDir,
       coverageLcov: coverageLcov,
       branchCoverage: branchCoverage,
+      coveragePackages: _parseCoveragePackagesOption(),
       concurrency: _parseOption('concurrency', int.parse),
       shardIndex: shardIndex,
       totalShards: totalShards,
@@ -536,6 +546,17 @@ class _Parser {
         }
         return {reporter: value.substring(sep + 1)};
       });
+
+  List<RegExp>? _parseCoveragePackagesOption() {
+    final value = _ifParsed<List<String>>('coverage-package');
+    try {
+      return value?.map(RegExp.new).toList();
+    } on FormatException catch (e) {
+      throw FormatException(
+        '--coverage-package regular expression syntax is invalid. $e',
+      );
+    }
+  }
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.

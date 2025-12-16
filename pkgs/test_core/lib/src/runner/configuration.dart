@@ -75,6 +75,13 @@ class Configuration {
   bool get branchCoverage => _branchCoverage ?? false;
   final bool? _branchCoverage;
 
+  /// A list of regular expressions to match against the package names during
+  /// coverage collection.
+  ///
+  /// Only packages that match at least one of the regexps will be included in
+  /// the coverage report.
+  final List<RegExp>? coveragePackages;
+
   /// The path to the file from which to load more configuration information.
   ///
   /// This is *not* resolved automatically.
@@ -273,6 +280,7 @@ class Configuration {
     required String? coverage,
     required String? coverageLcov,
     required bool? branchCoverage,
+    required List<RegExp>? coveragePackages,
     required int? concurrency,
     required int? shardIndex,
     required int? totalShards,
@@ -328,6 +336,7 @@ class Configuration {
       coverage: coverage,
       coverageLcov: coverageLcov,
       branchCoverage: branchCoverage,
+      coveragePackages: coveragePackages,
       concurrency: concurrency,
       shardIndex: shardIndex,
       totalShards: totalShards,
@@ -389,6 +398,7 @@ class Configuration {
     String? coverage,
     String? coverageLcov,
     bool? branchCoverage,
+    List<RegExp>? coveragePackages,
     int? concurrency,
     int? shardIndex,
     int? totalShards,
@@ -442,6 +452,7 @@ class Configuration {
     coverage: coverage,
     coverageLcov: coverageLcov,
     branchCoverage: branchCoverage,
+    coveragePackages: coveragePackages,
     concurrency: concurrency,
     shardIndex: shardIndex,
     totalShards: totalShards,
@@ -512,6 +523,7 @@ class Configuration {
     coverage: null,
     coverageLcov: null,
     branchCoverage: null,
+    coveragePackages: null,
     concurrency: null,
     shardIndex: null,
     totalShards: null,
@@ -578,6 +590,7 @@ class Configuration {
     coverage: null,
     coverageLcov: null,
     branchCoverage: null,
+    coveragePackages: null,
     concurrency: null,
     shardIndex: null,
     totalShards: null,
@@ -647,6 +660,7 @@ class Configuration {
     coverage: null,
     coverageLcov: null,
     branchCoverage: null,
+    coveragePackages: null,
     shardIndex: null,
     totalShards: null,
     testSelections: null,
@@ -710,6 +724,7 @@ class Configuration {
     coverage: null,
     coverageLcov: null,
     branchCoverage: null,
+    coveragePackages: null,
     concurrency: null,
     shardIndex: null,
     totalShards: null,
@@ -779,6 +794,7 @@ class Configuration {
     required this.coverage,
     required this.coverageLcov,
     required bool? branchCoverage,
+    required this.coveragePackages,
     required int? concurrency,
     required this.shardIndex,
     required this.totalShards,
@@ -873,6 +889,7 @@ class Configuration {
     coverage: null,
     coverageLcov: null,
     branchCoverage: null,
+    coveragePackages: null,
     concurrency: null,
     shardIndex: null,
     totalShards: null,
@@ -975,6 +992,7 @@ class Configuration {
       coverage: other.coverage ?? coverage,
       coverageLcov: other.coverageLcov ?? coverageLcov,
       branchCoverage: other._branchCoverage ?? _branchCoverage,
+      coveragePackages: other.coveragePackages ?? coveragePackages,
       concurrency: other._concurrency ?? _concurrency,
       shardIndex: other.shardIndex ?? shardIndex,
       totalShards: other.totalShards ?? totalShards,
@@ -1032,6 +1050,7 @@ class Configuration {
     String? coverage,
     String? coverageLcov,
     bool? branchCoverage,
+    List<RegExp>? coveragePackages,
     int? concurrency,
     int? shardIndex,
     int? totalShards,
@@ -1082,6 +1101,7 @@ class Configuration {
       coverage: coverage ?? this.coverage,
       coverageLcov: coverageLcov ?? this.coverageLcov,
       branchCoverage: branchCoverage ?? _branchCoverage,
+      coveragePackages: coveragePackages ?? this.coveragePackages,
       concurrency: concurrency ?? _concurrency,
       shardIndex: shardIndex ?? this.shardIndex,
       totalShards: totalShards ?? this.totalShards,
