@@ -6,7 +6,6 @@ import 'dart:convert';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
-import 'package:test_core/src/runner/version.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 /// Asserts that the outputs from running tests with a JSON reporter match the
@@ -41,7 +40,8 @@ Future<void> expectJsonReport(
   final start = {
     'type': 'start',
     'protocolVersion': '0.1.1',
-    'runnerVersion': testVersion,
+    // Runner version cannot be read in the synthetic package
+    'runnerVersion': null,
     'pid': testPid,
   };
   expect(decoded.first, equals(start));

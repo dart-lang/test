@@ -7,6 +7,7 @@
 * Suppress skip reason messages in the compact and failures-only reporters.
 * Fix default coverage filter when running in a workspace package. Default
   filter now includes all the workspace's package.
+* Add support for reading test package version within pub workspaces.
 
 ## 0.6.14
 
