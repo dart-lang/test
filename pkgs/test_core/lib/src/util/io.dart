@@ -95,11 +95,22 @@ final _tempDir =
         ? Platform.environment['_UNITTEST_TEMP_DIR']!
         : Directory.systemTemp.path;
 
-/// Whether or not the current terminal supports ansi escape codes.
+/// Whether [stdout] supports ANSI escape codes.
 ///
 /// Otherwise only printable ASCII characters should be used.
-bool get canUseSpecialChars =>
-    (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
+bool get canUseSpecialChars {
+  if (inTestTests) return false;
+
+  if (Platform.isWindows) return stdout.supportsAnsiEscapes;
+
+  // On Linux and Mac, `supportsAnsiEscapes` always returns `false` on most
+  // modern terminals, see https://github.com/dart-lang/sdk/issues/31606 for
+  // details.
+  //
+  // Instead of relying on `supportsAnsiEscapes`, we assume that all modern
+  // terminals support colors and check that `stdout` is a tty.
+  return stdioType(stdout) == StdioType.terminal;
+}
 
 /// Detect whether we're running in a Github Actions context.
 ///

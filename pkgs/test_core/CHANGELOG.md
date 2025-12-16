@@ -5,6 +5,9 @@
 * Require a function definition named `main` directly in a test suite and
   provide a more direct error message than a failing compiler output.
 * Suppress skip reason messages in the compact and failures-only reporters.
+* Improve fidelity of checks for using ascii characters. Check the SDK reported
+  support on windows, and assume ascii support for all terminals on linux since
+  the SDK reported support is much more narrow.
 * Fix default coverage filter when running in a workspace package. Default
   filter now includes all the workspace's package.
 * Add support for reading test package version within pub workspaces.
