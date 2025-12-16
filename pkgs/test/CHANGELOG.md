@@ -5,6 +5,11 @@
 * Require a function definition named `main` directly in a test suite and
   provide a more direct error message than a failing compiler output.
 * Suppress skip reason messages in the compact and failures-only reporters.
+* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
+  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
+  useful for finding issues when using foreign libraries through dart:ffi, such
+  as use-after-free, use of initialized memory and data races, or for detecting
+  data races in Dart code using shared fields.
 
 ## 1.28.0
 

@@ -15,6 +15,27 @@ final class Runtime {
     Compiler.source,
     Compiler.exe,
   ], isDartVM: true);
+  static const Runtime vmAsan = Runtime(
+    'VM with Address Sanitizer',
+    'vm-asan',
+    Compiler.exe,
+    [Compiler.exe],
+    isDartVM: true,
+  );
+  static const Runtime vmMsan = Runtime(
+    'VM with Memory Sanitizer',
+    'vm-msan',
+    Compiler.exe,
+    [Compiler.exe],
+    isDartVM: true,
+  );
+  static const Runtime vmTsan = Runtime(
+    'VM with Thread Sanitizer',
+    'vm-tsan',
+    Compiler.exe,
+    [Compiler.exe],
+    isDartVM: true,
+  );
 
   /// Google Chrome.
   static const Runtime chrome = Runtime(
@@ -69,6 +90,9 @@ final class Runtime {
   /// The platforms that are supported by the test runner by default.
   static const List<Runtime> builtIn = [
     Runtime.vm,
+    Runtime.vmAsan,
+    Runtime.vmMsan,
+    Runtime.vmTsan,
     Runtime.chrome,
     Runtime.firefox,
     Runtime.safari,
