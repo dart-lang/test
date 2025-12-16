@@ -5,8 +5,8 @@
 import 'dart:async';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import '../../util/pretty_print.dart';
 import '../engine.dart';
@@ -161,11 +161,10 @@ class FailuresOnlyReporter implements Reporter {
 
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
+        if (liveTest.test.metadata.skip) return;
         // TODO - Should this suppress output? Behave like printOnFailure?
         _progressLine(_description(liveTest));
-        var text = message.text;
-        if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-        _sink.writeln(text);
+        _sink.writeln(message.text);
       }),
     );
   }
@@ -219,9 +218,17 @@ class FailuresOnlyReporter implements Reporter {
       }
       _progressLine('Some tests failed.', color: _red);
     } else if (_engine.passed.isEmpty) {
-      _progressLine('All tests skipped.');
-    } else {
+      _progressLine('${_yellow}All tests skipped.$_noColor');
+    } else if (_engine.skipped.isEmpty) {
       _progressLine('All tests passed!');
+    } else {
+      final skippedCount = _engine.skipped.length;
+      _progressLine(
+        '$_yellow'
+        '$skippedCount skipped ${pluralize('test', skippedCount)}.'
+        '$_noColor',
+      );
+      _progressLine('All other tests passed!');
     }
 
     if (_shouldPrintStackTraceChainingNotice) {
