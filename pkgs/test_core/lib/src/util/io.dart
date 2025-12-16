@@ -99,13 +99,9 @@ final _tempDir =
 ///
 /// Otherwise only printable ASCII characters should be used.
 bool get canUseSpecialChars {
-  if (inTestTests) {
-    return false;
-  }
+  if (inTestTests) return false;
 
-  if (Platform.isWindows) {
-    return stdout.supportsAnsiEscapes;
-  }
+  if (Platform.isWindows) return stdout.supportsAnsiEscapes;
 
   // On Linux and Mac, `supportsAnsiEscapes` always returns `false` on most
   // modern terminals, see https://github.com/dart-lang/sdk/issues/31606 for
