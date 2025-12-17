@@ -22,7 +22,6 @@ dependencies:
   package_config: ^2.0.0
   path: ^1.8.0
   pool: ^1.5.0
-  pubspec_parse: ^1.5.0
   source_map_stack_trace: ^2.1.0
   source_maps: ^0.10.10
   source_span: ^1.8.0
