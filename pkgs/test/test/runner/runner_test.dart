@@ -129,12 +129,15 @@ Output:
 ''';
 
 final _runtimes =
-    '[vm (default), chrome, firefox'
+    '[vm (default), vm-asan, vm-msan, vm-tsan, chrome, firefox'
     '${Platform.isMacOS ? ', safari' : ''}'
     ', edge, node]';
 
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe',
+  '[vm-asan]: exe (default)',
+  '[vm-msan]: exe (default)',
+  '[vm-tsan]: exe (default)',
   '[chrome]: dart2js (default), dart2wasm',
   '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
