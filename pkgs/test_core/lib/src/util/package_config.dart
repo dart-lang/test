@@ -57,9 +57,19 @@ Set<String> _allWorkspaceNames(Uri packageRoot, Set<String> results) {
   if (pubspecFile.existsSync()) {
     final yaml = pubspecFile.readAsStringSync();
     final pubspec = loadYaml(yaml, sourceUrl: pubspecUri);
-    results.add(pubspec['name'] as String);
-    for (final package in pubspec['workspace'] as Iterable? ?? const []) {
-      _allWorkspaceNames(packageRoot.resolve('$package/'), results);
+    final name = pubspec['name'];
+    if (name is String) {
+      results.add(name);
+    } else {
+      throw FormatException(
+        "Pubspec doesn't contain a valid name field: $pubspecUri",
+      );
+    }
+    final workspace = pubspec['workspace'];
+    if (workspace is Iterable) {
+      for (final package in workspace) {
+        _allWorkspaceNames(packageRoot.resolve('$package/'), results);
+      }
     }
   }
   return results;
