@@ -7,7 +7,7 @@ import 'dart:isolate';
 
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
-import 'package:pubspec_parse/pubspec_parse.dart';
+import 'package:yaml/yaml.dart';
 
 /// The [PackageConfig] parsed from the current isolates package config file.
 final Future<PackageConfig> currentPackageConfig = () async {
@@ -56,10 +56,20 @@ Set<String> _allWorkspaceNames(Uri packageRoot, Set<String> results) {
   final pubspecFile = File(pubspecUri.toFilePath());
   if (pubspecFile.existsSync()) {
     final yaml = pubspecFile.readAsStringSync();
-    final pubspec = Pubspec.parse(yaml, sourceUrl: pubspecUri);
-    results.add(pubspec.name);
-    for (final package in pubspec.workspace ?? const <String>[]) {
-      _allWorkspaceNames(packageRoot.resolve('$package/'), results);
+    final pubspec = loadYaml(yaml, sourceUrl: pubspecUri);
+    final name = pubspec['name'];
+    if (name is String) {
+      results.add(name);
+    } else {
+      throw FormatException(
+        "Pubspec doesn't contain a valid name field: $pubspecUri",
+      );
+    }
+    final workspace = pubspec['workspace'];
+    if (workspace is Iterable) {
+      for (final package in workspace) {
+        _allWorkspaceNames(packageRoot.resolve('$package/'), results);
+      }
     }
   }
   return results;
