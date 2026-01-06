@@ -52,7 +52,12 @@ class _Parser {
   ///
   /// When main is missing a call to [parse] will throw a [FormatException] with
   /// a descriptive message.
-  late final bool _hasMain;
+  ///
+  /// An empty file may indicate an atypical use of the test runner in
+  /// precompiled mode without the test source available. In these cases the
+  /// definition is not required and it is assumed it is checked by whatever
+  /// compilation approach is used.
+  late final bool _hasMainOrEmpty;
 
   _Parser(this._path, this._contents, this._platformVariables) {
     var result = parseString(
@@ -63,9 +68,11 @@ class _Parser {
     var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
-    _hasMain = result.unit.declarations.any(
-      (d) => d is FunctionDeclaration && d.name.lexeme == 'main',
-    );
+    _hasMainOrEmpty =
+        _contents.isEmpty ||
+        result.unit.declarations.any(
+          (d) => d is FunctionDeclaration && d.name.lexeme == 'main',
+        );
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
@@ -84,7 +91,7 @@ class _Parser {
 
   /// Parses the metadata.
   Metadata parse() {
-    if (!_hasMain) {
+    if (!_hasMainOrEmpty) {
       throw const FormatException('Missing definition of `main` method.');
     }
     Timeout? timeout;
