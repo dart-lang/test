@@ -63,9 +63,14 @@ class _Parser {
     var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
-    _hasMain = result.unit.declarations.any(
-      (d) => d is FunctionDeclaration && d.name.lexeme == 'main',
-    );
+    // An empty test likely indicates use of precompiled tests, in which case
+    // the absence of a valid `main` should be reasonably clear from earlier
+    // infrastructure.
+    _hasMain =
+        _contents.isEmpty ||
+        result.unit.declarations.any(
+          (d) => d is FunctionDeclaration && d.name.lexeme == 'main',
+        );
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.

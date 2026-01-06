@@ -54,6 +54,13 @@ void main() {
     );
   });
 
+  test('allows completely empty files', () {
+    expect(
+      () => parseMetadata(_path, '', {}),
+      returnsNormally,
+    );
+  });
+
   group('@TestOn:', () {
     test('parses a valid annotation', () {
       var metadata = parseMetadata(
