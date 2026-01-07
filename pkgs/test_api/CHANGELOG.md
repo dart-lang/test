@@ -1,3 +1,7 @@
+## 0.7.9
+
+* Allow `analyzer` major version 10.
+
 ## 0.7.8
 
 * Add a zone function available from the test suite `main` that allows creating

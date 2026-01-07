@@ -1,10 +1,11 @@
-## 1.29.0-wip
+## 1.29.0
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
   packages using RegExps.
 * Require a function definition named `main` directly in a test suite and
   provide a more direct error message than a failing compiler output.
 * Suppress skip reason messages in the compact and failures-only reporters.
+* Allow `analyzer` major version 10.
 
 ## 1.28.0
 
