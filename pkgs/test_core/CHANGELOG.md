@@ -11,6 +11,7 @@
 * Fix default coverage filter when running in a workspace package. Default
   filter now includes all the workspace's package.
 * Add support for reading test package version within pub workspaces.
+* Allow `analyzer` major version 10.
 
 ## 0.6.14
 
