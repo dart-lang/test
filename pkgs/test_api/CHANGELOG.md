@@ -1,4 +1,4 @@
-## 0.7.9-wip
+## 0.7.9
 
 * Allow `analyzer` major version 10.
 

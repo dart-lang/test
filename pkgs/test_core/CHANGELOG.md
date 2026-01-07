@@ -1,4 +1,4 @@
-## 0.6.15-wip
+## 0.6.15
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
   packages using RegExps.
