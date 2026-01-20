@@ -2,6 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+/// The main test library.
+///
+/// This library exports the core test APIs, including `test()`, `group()`,
+/// `setUp()`, `tearDown()`, and `expect()`.
+///
+/// This is the recommended import for most test files.
+/// If you want to use `package:checks` for assertions, import
+/// `package:test/scaffold.dart` instead.
+library;
+
 export 'package:matcher/expect.dart';
 // Deprecated exports not surfaced through focused libraries.
 // ignore: deprecated_member_use
