@@ -143,7 +143,7 @@ Declarer get _declarer {
 @isTest
 void test(
   Object? description,
-  dynamic Function() body, {
+  FutureOr<dynamic> Function() body, {
   String? testOn,
   Timeout? timeout,
   Object? skip,
@@ -230,7 +230,7 @@ void test(
 @isTestGroup
 void group(
   Object? description,
-  dynamic Function() body, {
+  void Function() body, {
   String? testOn,
   Timeout? timeout,
   Object? skip,
@@ -272,7 +272,7 @@ void group(
 ///
 /// Each callback at the top level or in a given group will be run in the order
 /// they were declared.
-void setUp(dynamic Function() callback) => _declarer.setUp(callback);
+void setUp(FutureOr<dynamic> Function() callback) => _declarer.setUp(callback);
 
 /// Registers a function to be run after tests.
 ///
@@ -287,7 +287,8 @@ void setUp(dynamic Function() callback) => _declarer.setUp(callback);
 /// reverse of the order they were declared.
 ///
 /// See also [addTearDown], which adds tear-downs to a running test.
-void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
+void tearDown(FutureOr<dynamic> Function() callback) =>
+    _declarer.tearDown(callback);
 
 /// Registers a function to be run once before all tests.
 ///
@@ -302,8 +303,10 @@ void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(dynamic Function() callback, {TestLocation? location}) =>
-    _declarer.setUpAll(callback, location: location);
+void setUpAll(
+  FutureOr<dynamic> Function() callback, {
+  TestLocation? location,
+}) => _declarer.setUpAll(callback, location: location);
 
 /// Registers a function to be run once after all tests.
 ///
@@ -316,5 +319,7 @@ void setUpAll(dynamic Function() callback, {TestLocation? location}) =>
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(dynamic Function() callback, {TestLocation? location}) =>
-    _declarer.tearDownAll(callback, location: location);
+void tearDownAll(
+  FutureOr<dynamic> Function() callback, {
+  TestLocation? location,
+}) => _declarer.tearDownAll(callback, location: location);

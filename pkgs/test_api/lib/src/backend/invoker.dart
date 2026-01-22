@@ -39,7 +39,7 @@ class LocalTest extends Test {
   final bool isScaffoldAll;
 
   /// The test body.
-  final void Function() _body;
+  final FutureOr<void> Function() _body;
 
   /// Whether the test is run in its own error zone.
   final bool _guarded;
@@ -247,7 +247,7 @@ class Invoker {
   ///
   /// The [callback] may return a [Future]. Like all tear-downs, callbacks are
   /// run in the reverse of the order they're declared.
-  void addTearDown(dynamic Function() callback) {
+  void addTearDown(FutureOr<dynamic> Function() callback) {
     if (closed) throw ClosedException();
 
     if (_test.isScaffoldAll) {
