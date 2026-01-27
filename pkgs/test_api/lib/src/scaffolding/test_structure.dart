@@ -160,7 +160,7 @@ void test(
 @isTestGroup
 void group(
   Object? description,
-  void Function() body, {
+  dynamic Function() body, {
   String? testOn,
   Timeout? timeout,
   Object? skip,
