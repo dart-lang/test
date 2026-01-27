@@ -562,6 +562,37 @@ void main() {
       );
     });
   }, testOn: 'windows');
+
+  test('prints failure summary with --summary flag', () {
+    return _expectReport(
+      '''
+        test('failure 1', () => throw TestFailure('oh no'));
+        test('success 1', () {});
+        test('failure 2', () => throw TestFailure('oh no'));''',
+      '''
+        +0: loading test.dart
+        +0: failure 1
+        +0 -1: failure 1 [E]
+          oh no
+          test.dart 6:33  main.<fn>
+
+
+        +0 -1: success 1
+        +1 -1: success 1
+        +1 -1: failure 2
+        +1 -2: failure 2 [E]
+          oh no
+          test.dart 8:33  main.<fn>
+
+
+        +1 -2: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2''',
+      args: ['--summary'],
+    );
+  });
 }
 
 Future<void> _expectReport(

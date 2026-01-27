@@ -104,6 +104,10 @@ class Configuration {
   bool get color => _color ?? canUseSpecialChars;
   final bool? _color;
 
+  /// Whether to print a summary of failed tests at the end.
+  bool get printSummary => _printSummary ?? false;
+  final bool? _printSummary;
+
   /// How many tests to run concurrently.
   int get concurrency =>
       pauseAfterLoad ? 1 : (_concurrency ?? defaultConcurrency);
@@ -274,6 +278,7 @@ class Configuration {
     required bool? pauseAfterLoad,
     required bool? debug,
     required bool? color,
+    required bool? printSummary,
     required String? configurationPath,
     required String? reporter,
     required Map<String, String>? fileReporters,
@@ -330,6 +335,7 @@ class Configuration {
       pauseAfterLoad: pauseAfterLoad,
       debug: debug,
       color: color,
+      printSummary: printSummary,
       configurationPath: configurationPath,
       reporter: reporter,
       fileReporters: fileReporters,
@@ -392,6 +398,7 @@ class Configuration {
     bool? pauseAfterLoad,
     bool? debug,
     bool? color,
+    bool? printSummary,
     String? configurationPath,
     String? reporter,
     Map<String, String>? fileReporters,
@@ -446,6 +453,7 @@ class Configuration {
     pauseAfterLoad: pauseAfterLoad,
     debug: debug,
     color: color,
+    printSummary: printSummary,
     configurationPath: configurationPath,
     reporter: reporter,
     fileReporters: fileReporters,
@@ -517,6 +525,7 @@ class Configuration {
     pauseAfterLoad: null,
     debug: null,
     color: null,
+    printSummary: null,
     configurationPath: null,
     reporter: null,
     fileReporters: null,
@@ -584,6 +593,7 @@ class Configuration {
     pauseAfterLoad: null,
     debug: null,
     color: null,
+    printSummary: null,
     configurationPath: null,
     reporter: null,
     fileReporters: null,
@@ -656,6 +666,7 @@ class Configuration {
     version: null,
     debug: null,
     color: null,
+    printSummary: null,
     configurationPath: null,
     coverage: null,
     coverageLcov: null,
@@ -718,6 +729,7 @@ class Configuration {
     pauseAfterLoad: null,
     debug: null,
     color: null,
+    printSummary: null,
     configurationPath: null,
     reporter: null,
     fileReporters: null,
@@ -788,6 +800,7 @@ class Configuration {
     required bool? pauseAfterLoad,
     required bool? debug,
     required bool? color,
+    required bool? printSummary,
     required String? configurationPath,
     required String? reporter,
     required Map<String, String>? fileReporters,
@@ -818,6 +831,7 @@ class Configuration {
        _pauseAfterLoad = pauseAfterLoad,
        _debug = debug,
        _color = color,
+       _printSummary = printSummary,
        _configurationPath = configurationPath,
        _reporter = reporter,
        fileReporters = fileReporters ?? {},
@@ -883,6 +897,7 @@ class Configuration {
     pauseAfterLoad: null,
     debug: null,
     color: null,
+    printSummary: null,
     configurationPath: null,
     reporter: null,
     fileReporters: null,
@@ -986,6 +1001,7 @@ class Configuration {
       pauseAfterLoad: other._pauseAfterLoad ?? _pauseAfterLoad,
       debug: other._debug ?? _debug,
       color: other._color ?? _color,
+      printSummary: other._printSummary ?? _printSummary,
       configurationPath: other._configurationPath ?? _configurationPath,
       reporter: other._reporter ?? _reporter,
       fileReporters: mergeMaps(fileReporters, other.fileReporters),
@@ -1044,6 +1060,7 @@ class Configuration {
     bool? pauseAfterLoad,
     bool? debug,
     bool? color,
+    bool? printSummary,
     String? configurationPath,
     String? reporter,
     Map<String, String>? fileReporters,
@@ -1095,6 +1112,7 @@ class Configuration {
       pauseAfterLoad: pauseAfterLoad ?? _pauseAfterLoad,
       debug: debug ?? _debug,
       color: color ?? _color,
+      printSummary: printSummary ?? _printSummary,
       configurationPath: configurationPath ?? _configurationPath,
       reporter: reporter ?? _reporter,
       fileReporters: fileReporters ?? this.fileReporters,
