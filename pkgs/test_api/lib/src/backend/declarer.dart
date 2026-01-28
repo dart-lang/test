@@ -55,13 +55,13 @@ class Declarer {
   final bool _noRetry;
 
   /// The set-up functions to run for each test in this group.
-  final _setUps = <dynamic Function()>[];
+  final _setUps = <FutureOr<dynamic> Function()>[];
 
   /// The tear-down functions to run for each test in this group.
-  final _tearDowns = <dynamic Function()>[];
+  final _tearDowns = <FutureOr<dynamic> Function()>[];
 
   /// The set-up functions to run once for this group.
-  final _setUpAlls = <dynamic Function()>[];
+  final _setUpAlls = <FutureOr<dynamic> Function()>[];
 
   /// The default timeout for synthetic tests.
   final _timeout = const Timeout(Duration(minutes: 12));
@@ -197,7 +197,7 @@ class Declarer {
   /// Defines a test case with the given name and body.
   void test(
     String name,
-    dynamic Function() body, {
+    FutureOr<dynamic> Function() body, {
     String? testOn,
     Timeout? timeout,
     Object? skip,
@@ -331,19 +331,22 @@ class Declarer {
   String _prefix(String name) => _name == null ? name : '$_name $name';
 
   /// Registers a function to be run before each test in this group.
-  void setUp(dynamic Function() callback) {
+  void setUp(FutureOr<dynamic> Function() callback) {
     _checkNotBuilt('setUp');
     _setUps.add(callback);
   }
 
   /// Registers a function to be run after each test in this group.
-  void tearDown(dynamic Function() callback) {
+  void tearDown(FutureOr<dynamic> Function() callback) {
     _checkNotBuilt('tearDown');
     _tearDowns.add(callback);
   }
 
   /// Registers a function to be run once before all tests.
-  void setUpAll(dynamic Function() callback, {TestLocation? location}) {
+  void setUpAll(
+    FutureOr<dynamic> Function() callback, {
+    TestLocation? location,
+  }) {
     _checkNotBuilt('setUpAll');
     if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
     _setUpAllLocation ??= location;
@@ -351,7 +354,10 @@ class Declarer {
   }
 
   /// Registers a function to be run once after all tests.
-  void tearDownAll(dynamic Function() callback, {TestLocation? location}) {
+  void tearDownAll(
+    FutureOr<dynamic> Function() callback, {
+    TestLocation? location,
+  }) {
     _checkNotBuilt('tearDownAll');
     if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
     _tearDownAllLocation ??= location;
@@ -360,7 +366,7 @@ class Declarer {
 
   /// Like [tearDownAll], but called from within a running [setUpAll] test to
   /// dynamically add a [tearDownAll].
-  void addTearDownAll(dynamic Function() callback) =>
+  void addTearDownAll(FutureOr<dynamic> Function() callback) =>
       _tearDownAlls.add(callback);
 
   /// Finalizes and returns the group being declared.
