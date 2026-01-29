@@ -3,6 +3,7 @@
 * Add a `--suite-load-timeout` argument to allow configuring a timeout for
   compiling and loading individual test suites.
 * Remove the default 12 minute timeout to compile and load test suites.
+* Bump `test_core` to 0.6.16
 
 ## 1.29.0
 
