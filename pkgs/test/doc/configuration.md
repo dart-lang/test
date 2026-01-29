@@ -26,6 +26,7 @@ tags:
 
 * [Test Configuration](#test-configuration)
   * [`timeout`](#timeout)
+  * [`suite_load_timeout`](#suite_load_timeout)
   * [`ignore-timeouts`](#ignore-timeouts)
   * [`verbose_trace`](#verbose_trace)
   * [`chain_stack_traces`](#chain_stack_traces)
@@ -95,6 +96,20 @@ formats:
 
 ```yaml
 timeout: 1m
+```
+
+### `suite_load_timeout`
+
+This field indicates how much time the test runner should allow for compiling and loading a test suite before it considers that suite to have failed. It has three possible formats:
+
+* The string "none" indicates that suites should never time out.
+
+* A number followed by a unit abbreviation indicates an exact time. For example,
+  "1m" means a timeout of one minute, and "30s" means a timeout of thirty
+  seconds. Multiple numbers can be combined, as in "1m 30s".
+
+```yaml
+suite_load_timeout: 1m
 ```
 
 ###  `ignore-timeouts`
