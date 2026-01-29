@@ -1,3 +1,9 @@
+## 1.30.0
+
+* Add a `--suite-load-timeout` argument to allow configuring a timeout for
+  compiling and loading individual test suites.
+* Remove the default 12 minute timeout to compile and load test suites.
+
 ## 1.29.0
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
