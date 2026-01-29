@@ -146,7 +146,7 @@ final ArgParser _parser =
         help:
             'The timeout for loading a test suite. Loading the test suite '
             'includes compiling the test suite. For example: 15s, 2x, none',
-        defaultsTo: '12m',
+        defaultsTo: 'none',
       );
       parser.addFlag(
         'ignore-timeouts',

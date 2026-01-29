@@ -156,8 +156,7 @@ final class SuiteConfiguration {
 
   /// The timeout for loading a test suite.
   final Timeout? _suiteLoadTimeout;
-  Timeout get suiteLoadTimeout =>
-      _suiteLoadTimeout ?? const Timeout(Duration(minutes: 12));
+  Timeout get suiteLoadTimeout => _suiteLoadTimeout ?? const Timeout(null);
 
   factory SuiteConfiguration({
     required bool? allowDuplicateTestNames,
