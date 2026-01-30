@@ -100,7 +100,7 @@ timeout: 1m
 
 ### `suite_load_timeout`
 
-This field indicates how much time the test runner should allow for compiling and loading a test suite before it considers that suite to have failed. It has three possible formats:
+This field indicates how much time the test runner should allow for compiling and loading a test suite before it considers that suite to have failed. It has two possible formats:
 
 * The string "none" indicates that suites should never time out.
 
