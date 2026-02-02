@@ -61,6 +61,9 @@ class CompactReporter implements Reporter {
   /// Whether the platform each test is running on should be printed.
   final bool _printPlatform;
 
+  /// Whether to print a summary of failed tests at the end.
+  final bool _printSummary;
+
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
 
@@ -124,12 +127,14 @@ class CompactReporter implements Reporter {
     required bool color,
     required bool printPath,
     required bool printPlatform,
+    required bool printSummary,
   }) => CompactReporter._(
     engine,
     sink,
     color: color,
     printPath: printPath,
     printPlatform: printPlatform,
+    printSummary: printSummary,
   );
 
   CompactReporter._(
@@ -138,8 +143,10 @@ class CompactReporter implements Reporter {
     required bool color,
     required bool printPath,
     required bool printPlatform,
+    required bool printSummary,
   }) : _printPath = printPath,
        _printPlatform = printPlatform,
+       _printSummary = printSummary,
        _color = color,
        _green = color ? '\u001b[32m' : '',
        _red = color ? '\u001b[31m' : '',
@@ -342,6 +349,20 @@ class CompactReporter implements Reporter {
       }
       _progressLine('Some tests failed.', color: _red);
       _sink.writeln('');
+
+      if (_printSummary && _engine.failed.isNotEmpty) {
+        _sink.writeln('');
+        _sink.writeln('${_red}Failing tests:$_noColor');
+        for (final liveTest in _engine.failed) {
+          final path = liveTest.suite.path;
+          final name = liveTest.test.name;
+          if (path != null) {
+            _sink.writeln('  $path: $name');
+          } else {
+            _sink.writeln('  $name');
+          }
+        }
+      }
     } else if (_engine.passed.isEmpty) {
       _progressLine('${_yellow}All tests skipped.$_noColor');
       _sink.writeln('');
