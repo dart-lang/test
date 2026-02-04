@@ -9,7 +9,7 @@
 ///
 /// This is the recommended import for most test files.
 /// If you want to use `package:checks` for assertions, import
-/// `package:test/scaffold.dart` instead.
+/// `package:test/scaffolding.dart` instead.
 library;
 
 export 'package:matcher/expect.dart';

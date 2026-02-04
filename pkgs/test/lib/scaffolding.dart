@@ -2,9 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// The core test APIs without exports from `package:matcher`.
+/// The core APIs for defining the structure of a test suite.
 ///
-/// Use this library when using `package:checks` or similar.
+/// This library avoids exports of the `package:matcher` APIs from
+/// `package:test/expect.dart` and can be used with alternative expectation
+/// frameworks like `package:checks`.
 library;
 
 export 'package:test_core/src/scaffolding.dart';
