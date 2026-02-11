@@ -86,6 +86,8 @@ $_runtimeCompilers
     --shard-index                     The index of this test runner invocation (of --total-shards).
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
+    --suite-load-timeout              The timeout for loading a test suite. Loading the test suite includes compiling the test suite. For example: 15s, 2m, none
+                                      (defaults to "none")
     --ignore-timeouts                 Ignore all timeouts (useful if debugging)
     --pause-after-load                Pause for debugging before any tests execute.
                                       Implies --concurrency=1, --debug, and --ignore-timeouts.

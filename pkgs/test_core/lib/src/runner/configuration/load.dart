@@ -134,6 +134,7 @@ class _ConfigurationLoader {
     var jsTrace = _getBool('js_trace');
 
     var timeout = _parseValue('timeout', Timeout.parse);
+    var suiteLoadTimeout = _parseValue('suite_load_timeout', Timeout.parse);
 
     var onPlatform = _getMap(
       'on_platform',
@@ -182,6 +183,7 @@ class _ConfigurationLoader {
       verboseTrace: verboseTrace,
       jsTrace: jsTrace,
       timeout: timeout,
+      suiteLoadTimeout: suiteLoadTimeout,
       presets: presets,
       chainStackTraces: chainStackTraces,
       foldTraceExcept: foldStackFrames['except'],

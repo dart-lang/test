@@ -182,6 +182,7 @@ SuiteConfiguration suiteConfiguration({
   Map<BooleanSelector, SuiteConfiguration>? tags,
   Map<PlatformSelector, SuiteConfiguration>? onPlatform,
   bool? ignoreTimeouts,
+  Timeout? suiteLoadTimeout,
 
   // Test-level configuration
   Timeout? timeout,
@@ -204,6 +205,7 @@ SuiteConfiguration suiteConfiguration({
   tags: tags,
   onPlatform: onPlatform,
   ignoreTimeouts: ignoreTimeouts,
+  suiteLoadTimeout: suiteLoadTimeout,
   timeout: timeout,
   verboseTrace: verboseTrace,
   chainStackTraces: chainStackTraces,
@@ -257,6 +259,7 @@ Configuration configuration({
   Map<BooleanSelector, SuiteConfiguration>? tags,
   Map<PlatformSelector, SuiteConfiguration>? onPlatform,
   int? testRandomizeOrderingSeed,
+  Timeout? suiteLoadTimeout,
 
   // Test-level configuration
   Timeout? timeout,
@@ -308,6 +311,7 @@ Configuration configuration({
   tags: tags,
   onPlatform: onPlatform,
   testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+  suiteLoadTimeout: suiteLoadTimeout,
   stopOnFirstFailure: false,
   timeout: timeout,
   verboseTrace: verboseTrace,
