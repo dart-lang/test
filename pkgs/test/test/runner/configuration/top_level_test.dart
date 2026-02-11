@@ -448,6 +448,34 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test('uses the specified suite load timeout', () async {
+    await d
+        .file('dart_test.yaml', jsonEncode({'suite_load_timeout': '1s'}))
+        .create();
+
+    await d.file('test.dart', '''
+      import 'dart:async';
+
+      import 'package:test/test.dart';
+
+      Future<void> main() async {
+        await Future.delayed(Duration(seconds: 2));
+        test('success', () {});
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(
+      test.stdout,
+      containsInOrder([
+        'loading test.dart [E]',
+        'Test timed out after 1 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
+    await test.shouldExit(1);
+  });
+
   test('runs on the specified platforms', () async {
     await d
         .file(

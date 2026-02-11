@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
@@ -19,14 +18,6 @@ import 'load_exception.dart';
 import 'plugin/environment.dart';
 import 'runner_suite.dart';
 import 'suite.dart';
-
-/// The timeout for loading a test suite.
-///
-/// We want this to be long enough that even a very large application being
-/// compiled with dart2js doesn't trigger it, but short enough that it fires
-/// before the host kills it. For example, Google's Forge service has a
-/// 15-minute timeout.
-final _timeout = const Duration(minutes: 12);
 
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
@@ -177,7 +168,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     String? path,
   }) : super(
          Group.root([
-           LocalTest(name, Metadata(timeout: Timeout(_timeout)), body),
+           LocalTest(name, Metadata(timeout: config.suiteLoadTimeout), body),
          ]),
          platform,
          path: path,
