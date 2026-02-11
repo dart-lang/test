@@ -1,3 +1,7 @@
+## 0.12.19-wip
+
+* Improve speed of pretty printing for large collections.
+
 ## 0.12.18
 
 * Add `isSorted` and related matchers for iterables.
