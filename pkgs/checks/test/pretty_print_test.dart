@@ -5,6 +5,7 @@
 import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
+import 'package:test_api/hooks.dart';
 
 void main() {
   group('literal', () {
@@ -23,10 +24,22 @@ void main() {
       test('in iterables', () {
         check(literal(largeList.followedBy([]))).last.equals('...)');
       });
+      test('without processing truncated elements', () {
+        final poisonedList = [...largeList, _PoisonToString()];
+        check(() {
+          literal(poisonedList);
+        }).returnsNormally();
+      });
       test('in maps', () {
         final map = Map<int, int>.fromIterables(largeList, largeList);
         check(literal(map)).last.equals('...}');
       });
     });
   });
+}
+
+class _PoisonToString {
+  @override
+  String toString() =>
+      throw StateError('Truncated entry should not be processed');
 }
