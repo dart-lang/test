@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:matcher/expect.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
