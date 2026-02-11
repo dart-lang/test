@@ -28,11 +28,14 @@ void main() {
 
   test('runs a handler for an exact URL', () async {
     var request = shelf.Request('GET', Uri.parse('http://localhost/foo'));
-    handler.add('foo', expectAsync1((request) {
-      expect(request.handlerPath, equals('/foo'));
-      expect(request.url.path, isEmpty);
-      return shelf.Response.ok('good job!');
-    }));
+    handler.add(
+      'foo',
+      expectAsync1((request) {
+        expect(request.handlerPath, equals('/foo'));
+        expect(request.url.path, isEmpty);
+        return shelf.Response.ok('good job!');
+      }),
+    );
 
     var response = await localHandler(request);
     expect(response.statusCode, equals(200));
@@ -41,11 +44,14 @@ void main() {
 
   test('runs a handler for a suffix', () async {
     var request = shelf.Request('GET', Uri.parse('http://localhost/foo/bar'));
-    handler.add('foo', expectAsync1((request) {
-      expect(request.handlerPath, equals('/foo/'));
-      expect(request.url.path, 'bar');
-      return shelf.Response.ok('good job!');
-    }));
+    handler.add(
+      'foo',
+      expectAsync1((request) {
+        expect(request.handlerPath, equals('/foo/'));
+        expect(request.url.path, 'bar');
+        return shelf.Response.ok('good job!');
+      }),
+    );
 
     var response = await localHandler(request);
     expect(response.statusCode, equals(200));
@@ -53,24 +59,31 @@ void main() {
   });
 
   test('runs the longest matching handler', () async {
-    var request =
-        shelf.Request('GET', Uri.parse('http://localhost/foo/bar/baz'));
+    var request = shelf.Request(
+      'GET',
+      Uri.parse('http://localhost/foo/bar/baz'),
+    );
 
     handler.add(
-        'foo',
-        expectAsync1((_) {
-          return shelf.Response.notFound('fake');
-        }, count: 0));
-    handler.add('foo/bar', expectAsync1((request) {
-      expect(request.handlerPath, equals('/foo/bar/'));
-      expect(request.url.path, 'baz');
-      return shelf.Response.ok('good job!');
-    }));
+      'foo',
+      expectAsync1((_) {
+        return shelf.Response.notFound('fake');
+      }, count: 0),
+    );
     handler.add(
-        'foo/bar/baz/bang',
-        expectAsync1((_) {
-          return shelf.Response.notFound('fake');
-        }, count: 0));
+      'foo/bar',
+      expectAsync1((request) {
+        expect(request.handlerPath, equals('/foo/bar/'));
+        expect(request.url.path, 'baz');
+        return shelf.Response.ok('good job!');
+      }),
+    );
+    handler.add(
+      'foo/bar/baz/bang',
+      expectAsync1((_) {
+        return shelf.Response.notFound('fake');
+      }, count: 0),
+    );
 
     var response = await localHandler(request);
     expect(response.statusCode, equals(200));

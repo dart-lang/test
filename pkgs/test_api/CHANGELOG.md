@@ -1,6 +1,33 @@
-## 0.7.4-wip
+## 0.7.9
 
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Allow `analyzer` major version 10.
+
+## 0.7.8
+
+* Add a zone function available from the test suite `main` that allows creating
+  channels to the test runner.
+* Require Dart 3.7
+* Allow `analyzer` major version 9.
+
+## 0.7.7
+
+* Expand pub constraint to allow the latest `analyzer`.
+
+## 0.7.6
+
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
+## 0.7.5
+
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
+## 0.7.4
+
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
+* Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 
 ## 0.7.3

@@ -83,8 +83,10 @@ abstract class StreamMatcher extends Matcher {
   /// The [description] should be in the subjunctive mood. This means that it
   /// should be grammatically valid when used after the word "should". For
   /// example, it might be "emit the right events".
-  factory StreamMatcher(Future<String?> Function(StreamQueue) matchQueue,
-      String description) = _StreamMatcher;
+  factory StreamMatcher(
+    Future<String?> Function(StreamQueue) matchQueue,
+    String description,
+  ) = _StreamMatcher;
 
   /// Tries to match events emitted by [queue].
   ///
@@ -138,54 +140,65 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
     // for an invalid argument type.
     var transaction = queue.startTransaction();
     var copy = transaction.newQueue();
-    return matchQueue(copy).then((result) async {
-      // Accept the transaction if the result is null, indicating that the match
-      // succeeded.
-      if (result == null) {
-        transaction.commit(copy);
-        return null;
-      }
+    return matchQueue(copy)
+        .then(
+          (result) async {
+            // Accept the transaction if the result is null, indicating that the
+            // match succeeded.
+            if (result == null) {
+              transaction.commit(copy);
+              return null;
+            }
 
-      // Get a list of events emitted by the stream so we can emit them as part
-      // of the error message.
-      var replay = transaction.newQueue();
-      var events = <Result?>[];
-      var subscription = Result.captureStreamTransformer
-          .bind(replay.rest.cast())
-          .listen(events.add, onDone: () => events.add(null));
+            // Get a list of events emitted by the stream so we can emit them as
+            // part of the error message.
+            var replay = transaction.newQueue();
+            var events = <Result?>[];
+            var subscription = Result.captureStreamTransformer
+                .bind(replay.rest.cast())
+                .listen(events.add, onDone: () => events.add(null));
 
-      // Wait on a timer tick so all buffered events are emitted.
-      await Future.delayed(Duration.zero);
-      _unawaited(subscription.cancel());
+            // Wait on a timer tick so all buffered events are emitted.
+            await Future<void>.delayed(Duration.zero);
+            _unawaited(subscription.cancel());
 
-      var eventsString = events.map((event) {
-        if (event == null) {
-          return 'x Stream closed.';
-        } else if (event.isValue) {
-          return addBullet(event.asValue!.value.toString());
-        } else {
-          var error = event.asError!;
-          var chain = TestHandle.current.formatStackTrace(error.stackTrace);
-          var text = '${error.error}\n$chain';
-          return indent(text, first: '! ');
-        }
-      }).join('\n');
-      if (eventsString.isEmpty) eventsString = 'no events';
+            var eventsString = events
+                .map((event) {
+                  if (event == null) {
+                    return 'x Stream closed.';
+                  } else if (event.isValue) {
+                    return addBullet(event.asValue!.value.toString());
+                  } else {
+                    var error = event.asError!;
+                    var chain = TestHandle.current.formatStackTrace(
+                      error.stackTrace,
+                    );
+                    var text = '${error.error}\n$chain';
+                    return indent(text, first: '! ');
+                  }
+                })
+                .join('\n');
+            if (eventsString.isEmpty) eventsString = 'no events';
 
-      transaction.reject();
+            transaction.reject();
 
-      var buffer = StringBuffer();
-      buffer.writeln(indent(eventsString, first: 'emitted '));
-      if (result.isNotEmpty) buffer.writeln(indent(result, first: '  which '));
-      return buffer.toString().trimRight();
-    }, onError: (Object error) {
-      transaction.reject();
-      // ignore: only_throw_errors
-      throw error;
-    }).then((result) {
-      if (shouldCancelQueue) queue.cancel();
-      return result;
-    });
+            var buffer = StringBuffer();
+            buffer.writeln(indent(eventsString, first: 'emitted '));
+            if (result.isNotEmpty) {
+              buffer.writeln(indent(result, first: '  which '));
+            }
+            return buffer.toString().trimRight();
+          },
+          onError: (Object error) {
+            transaction.reject();
+            // ignore: only_throw_errors
+            throw error;
+          },
+        )
+        .then((result) {
+          if (shouldCancelQueue) queue.cancel();
+          return result;
+        });
   }
 
   @override

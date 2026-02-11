@@ -4,7 +4,7 @@ about: >-
   Report a bug in running tests, integration with a specific platform, or
   any behavior of 'package:test'.
 title: ''
-labels: bug
+labels: bug, package:test
 ---
 Describe the bug in detail.
 Include the specific command you ran and any relevant details about the

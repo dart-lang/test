@@ -25,33 +25,39 @@ void main() {
   });
 
   test('runs several successful tests and reports when each completes', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('success 1', () {});
         test('success 2', () {});
-        test('success 3', () {});''', '''
+        test('success 3', () {});''',
+      '''
         ✅ success 1
         ✅ success 2
         ✅ success 3
-        🎉 3 tests passed.''');
+        🎉 3 tests passed.''',
+    );
   });
 
   test('includes the platform name when multiple platforms are run', () {
-    return _expectReportLines('''
-        test('success 1', () {});''', [
-      '✅ [VM, Kernel] success 1',
-      '✅ [Chrome, Dart2Js] success 1',
-      '🎉 2 tests passed.',
-    ], args: [
-      '-p',
-      'vm,chrome'
-    ]);
+    return _expectReportLines(
+      '''
+        test('success 1', () {});''',
+      [
+        '✅ [VM, Kernel] success 1',
+        '✅ [Chrome, Dart2Js] success 1',
+        '🎉 2 tests passed.',
+      ],
+      args: ['-p', 'vm,chrome'],
+    );
   });
 
   test('runs several failing tests and reports when each fails', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
-        test('failure 3', () => throw TestFailure('oh no'));''', '''
+        test('failure 3', () => throw TestFailure('oh no'));''',
+      '''
         ::group::❌ failure 1 (failed)
         oh no
         test.dart 6:33  main.<fn>
@@ -64,7 +70,8 @@ void main() {
         oh no
         test.dart 8:33  main.<fn>
         ::endgroup::
-        ::error::0 tests passed, 3 failed.''');
+        ::error::0 tests passed, 3 failed.''',
+    );
   });
 
   test('includes the full stack trace with --verbose-trace', () async {
@@ -78,18 +85,22 @@ void main() {
 }
 ''').create();
 
-    var test =
-        await runTest(['--verbose-trace', 'test.dart'], reporter: 'github');
+    var test = await runTest([
+      '--verbose-trace',
+      'test.dart',
+    ], reporter: 'github');
     expect(test.stdout, emitsThrough(contains('dart:async')));
     await test.shouldExit(1);
   });
 
   test('runs failing tests along with successful tests', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
-        test('success 2', () {});''', '''
+        test('success 2', () {});''',
+      '''
         ::group::❌ failure 1 (failed)
         oh no
         test.dart 6:33  main.<fn>
@@ -100,7 +111,8 @@ void main() {
         test.dart 8:33  main.<fn>
         ::endgroup::
         ✅ success 2
-        ::error::2 tests passed, 2 failed.''');
+        ::error::2 tests passed, 2 failed.''',
+    );
   });
 
   test('always prints the full test name', () {
@@ -116,7 +128,8 @@ void main() {
   });
 
   test('gracefully handles multiple test failures in a row', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = Completer();
@@ -126,7 +139,8 @@ void main() {
           Future.microtask(() => throw 'third error');
           Future.microtask(completer.complete);
         });
-        test('wait', () => completer.future);''', '''
+        test('wait', () => completer.future);''',
+      '''
         ::group::❌ failures (failed)
         first error
         test.dart 10:34  main.<fn>.<fn>
@@ -136,7 +150,8 @@ void main() {
         test.dart 12:34  main.<fn>.<fn>
         ::endgroup::
         ✅ wait
-        ::error::1 test passed, 1 failed.''');
+        ::error::1 test passed, 1 failed.''',
+    );
   });
 
   test('displays failures occuring after a test completes', () {
@@ -188,7 +203,8 @@ void main() {
     });
 
     test('handles a print after the test completes', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = Completer();
@@ -206,63 +222,76 @@ void main() {
         test('wait', () {
           waitStarted.complete();
           return testDone.future;
-        });''', '''
+        });''',
+        '''
         ✅ test
         one
         two
         three
         four
         ✅ wait
-        🎉 2 tests passed.''');
+        🎉 2 tests passed.''',
+      );
     });
   });
 
   group('skip:', () {
     test('displays skipped tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
-          test('skip 3', () {}, skip: true);''', '''
+          test('skip 3', () {}, skip: true);''',
+        '''
           ❎ skip 1 (skipped)
           ❎ skip 2 (skipped)
           ❎ skip 3 (skipped)
-          🎉 0 tests passed, 3 skipped.''');
+          🎉 0 tests passed, 3 skipped.''',
+      );
     });
 
     test('displays a skipped group', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
             test('test 3', () {});
-          }, skip: true);''', '''
+          }, skip: true);''',
+        '''
           ❎ skip test 1 (skipped)
           ❎ skip test 2 (skipped)
           ❎ skip test 3 (skipped)
-          🎉 0 tests passed, 3 skipped.''');
+          🎉 0 tests passed, 3 skipped.''',
+      );
     });
 
     test('runs skipped tests along with successful tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
+          test('success 2', () {});''',
+        '''
           ❎ skip 1 (skipped)
           ✅ success 1
           ❎ skip 2 (skipped)
           ✅ success 2
-          🎉 2 tests passed, 2 skipped.''');
+          🎉 2 tests passed, 2 skipped.''',
+      );
     });
 
     test('runs skipped tests along with successful and failing tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('failure 2', () => throw TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
+          test('success 2', () {});''',
+        '''
           ::group::❌ failure 1 (failed)
           oh no
           test.dart 6:35  main.<fn>
@@ -275,41 +304,50 @@ void main() {
           ::endgroup::
           ❎ skip 2 (skipped)
           ✅ success 2
-          ::error::2 tests passed, 2 failed, 2 skipped.''');
+          ::error::2 tests passed, 2 failed, 2 skipped.''',
+      );
     });
 
     test('displays the skip reason if available', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: 'some reason');
-          test('skip 2', () {}, skip: 'or another');''', '''
+          test('skip 2', () {}, skip: 'or another');''',
+        '''
           ::group::❎ skip 1 (skipped)
           Skip: some reason
           ::endgroup::
           ::group::❎ skip 2 (skipped)
           Skip: or another
           ::endgroup::
-          🎉 0 tests passed, 2 skipped.''');
+          🎉 0 tests passed, 2 skipped.''',
+      );
     });
   });
 
   test('loadSuite, setUpAll, and tearDownAll hidden if no content', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
           group('one', () {
             setUpAll(() {/* nothing to do here */});
             tearDownAll(() {/* nothing to do here */});
             test('test 1', () {});
-          });''', '''
+          });''',
+      '''
           ✅ one test 1
-          🎉 1 test passed.''');
+          🎉 1 test passed.''',
+    );
   });
 
   test('setUpAll and tearDownAll show when they have content', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
           group('one', () {
             setUpAll(() { print('one'); });
             tearDownAll(() { print('two'); });
             test('test 1', () {});
-          });''', '''
+          });''',
+      '''
           ::group::✅ one (setUpAll)
           one
           ::endgroup::
@@ -317,7 +355,8 @@ void main() {
           ::group::✅ one (tearDownAll)
           two
           ::endgroup::
-          🎉 1 test passed.''');
+          🎉 1 test passed.''',
+    );
   });
 }
 
@@ -361,10 +400,7 @@ $tests
     }
   ''').create();
 
-  var test = await runTest([
-    'test.dart',
-    ...args,
-  ], reporter: 'github');
+  var test = await runTest(['test.dart', ...args], reporter: 'github');
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

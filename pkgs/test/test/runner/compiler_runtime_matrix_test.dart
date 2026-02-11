@@ -38,93 +38,107 @@ void main() {
       } else if (runtime == Runtime.firefox && Platform.isMacOS) {
         skipReason = 'https://github.com/dart-lang/test/pull/2276';
       }
-      group('--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
-          skip: skipReason, () {
-        final testArgs = [
-          'test.dart',
-          '-p',
-          runtime.identifier,
-          '-c',
-          compiler.identifier
-        ];
+      group(
+        '--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
+        skip: skipReason,
+        () {
+          final testArgs = [
+            'test.dart',
+            '-p',
+            runtime.identifier,
+            '-c',
+            compiler.identifier,
+          ];
 
-        test('can run passing tests', () async {
-          await d.file('test.dart', _goodTest).create();
-          var test = await runTest(testArgs);
+          test('can run passing tests', () async {
+            await d.file('test.dart', _goodTest).create();
+            var test = await runTest(testArgs);
 
-          expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-          await test.shouldExit(0);
-        });
+            expect(
+              test.stdout,
+              emitsThrough(contains('+1: All tests passed!')),
+            );
+            await test.shouldExit(0);
+          });
 
-        test('fails gracefully for invalid code', () async {
-          await d.file('test.dart', _compileErrorTest).create();
-          var test = await runTest(testArgs);
+          test('fails gracefully for invalid code', () async {
+            await d.file('test.dart', _compileErrorTest).create();
+            var test = await runTest(testArgs);
 
-          expect(
+            expect(
               test.stdout,
               containsInOrder([
                 "Error: A value of type 'String' can't be assigned to a variable of type 'int'.",
                 "int x = 'hello';",
-              ]));
+              ]),
+            );
 
-          await test.shouldExit(1);
-        });
+            await test.shouldExit(1);
+          });
 
-        test('fails gracefully for test failures', () async {
-          await d.file('test.dart', _failingTest).create();
-          var test = await runTest(testArgs);
+          test('fails gracefully for test failures', () async {
+            await d.file('test.dart', _failingTest).create();
+            var test = await runTest(testArgs);
 
-          expect(
+            expect(
               test.stdout,
               containsInOrder([
                 'Expected: <2>',
                 'Actual: <1>',
                 'test.dart 5',
                 '+0 -1: Some tests failed.',
-              ]));
+              ]),
+            );
 
-          await test.shouldExit(1);
-        });
+            await test.shouldExit(1);
+          });
 
-        test('fails gracefully if a test file throws in main', () async {
-          await d.file('test.dart', _throwingTest).create();
-          var test = await runTest(testArgs);
-          expect(
+          test('fails gracefully if a test file throws in main', () async {
+            await d.file('test.dart', _throwingTest).create();
+            var test = await runTest(testArgs);
+            expect(
               test.stdout,
               containsInOrder([
                 '-1: [${runtime.name}, ${compiler.name}] loading test.dart [E]',
-                'Failed to load "test.dart": oh no'
-              ]));
-          await test.shouldExit(1);
-        });
+                'Failed to load "test.dart": oh no',
+              ]),
+            );
+            await test.shouldExit(1);
+          });
 
-        test('captures prints', () async {
-          await d.file('test.dart', _testWithPrints).create();
-          var test = await runTest([...testArgs, '-r', 'json']);
+          test('captures prints', () async {
+            await d.file('test.dart', _testWithPrints).create();
+            var test = await runTest([...testArgs, '-r', 'json']);
 
-          expect(
+            expect(
               test.stdout,
               containsInOrder([
                 '"messageType":"print","message":"hello","type":"print"',
-              ]));
+              ]),
+            );
 
-          await test.shouldExit(0);
-        });
-
-        if (runtime.isDartVM) {
-          test('forwards stdout/stderr', () async {
-            await d.file('test.dart', _testWithStdOutAndErr).create();
-            var test = await runTest(testArgs, reporter: 'silent');
-
-            expect(test.stdout, emitsThrough('hello'));
-            expect(test.stderr, emits('world'));
             await test.shouldExit(0);
-          },
-              skip: Platform.isWindows && compiler == Compiler.exe
-                  ? 'https://github.com/dart-lang/test/issues/2150'
-                  : null);
-        }
-      });
+          });
+
+          if (runtime.isDartVM) {
+            test(
+              'forwards stdout/stderr',
+              () async {
+                await d.file('test.dart', _testWithStdOutAndErr).create();
+                var test = await runTest(testArgs, reporter: 'silent');
+
+                expect(test.stdout, emitsThrough('hello'));
+                expect(test.stderr, emits('world'));
+                await test.shouldExit(0);
+              },
+              skip:
+                  Platform.isWindows && compiler == Compiler.exe
+                      ? 'https://github.com/dart-lang/test/issues/2150'
+                      : null,
+            );
+          }
+        },
+      );
     }
   }
 }

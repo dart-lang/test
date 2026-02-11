@@ -200,11 +200,15 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(lines(
-              'Warning: Tags were used that weren\'t specified in dart_test.yaml.\n'
-              '  a was used in the test "foo"\n'
-              '  b was used in the test "foo"')));
+        test.stdout,
+        emitsThrough(
+          lines(
+            'Warning: Tags were used that weren\'t specified in dart_test.yaml.\n'
+            '  a was used in the test "foo"\n'
+            '  b was used in the test "foo"',
+          ),
+        ),
+      );
       await test.shouldExit(0);
     });
 
@@ -220,12 +224,16 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(lines(
-              'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
-              '  a was used in:\n'
-              '    the test "foo"\n'
-              '    the test "bar"')));
+        test.stdout,
+        emitsThrough(
+          lines(
+            'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
+            '  a was used in:\n'
+            '    the test "foo"\n'
+            '    the test "bar"',
+          ),
+        ),
+      );
       await test.shouldExit(0);
     });
 
@@ -243,10 +251,14 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(lines(
-              'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
-              '  a was used in the group "group"')));
+        test.stdout,
+        emitsThrough(
+          lines(
+            'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
+            '  a was used in the group "group"',
+          ),
+        ),
+      );
       await test.shouldExit(0);
     });
 
@@ -263,10 +275,14 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(lines(
-              'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
-              '  a was used in the suite itself')));
+        test.stdout,
+        emitsThrough(
+          lines(
+            'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
+            '  a was used in the suite itself',
+          ),
+        ),
+      );
       await test.shouldExit(0);
     });
 
@@ -281,10 +297,14 @@ void main() {
 
       var test = await runTest(['-p', 'vm,chrome', 'test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(lines(
-              'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
-              '  a was used in the test "foo"')));
+        test.stdout,
+        emitsThrough(
+          lines(
+            'Warning: A tag was used that wasn\'t specified in dart_test.yaml.\n'
+            '  a was used in the test "foo"',
+          ),
+        ),
+      );
       expect(test.stdout, neverEmits(startsWith('Warning:')));
       await test.shouldExit(0);
     }, tags: 'chrome');
@@ -302,10 +322,12 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(
-              '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
-              'b". Tags must be (optionally hyphenated) Dart identifiers.'));
+        test.stdout,
+        emitsThrough(
+          '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
+          'b". Tags must be (optionally hyphenated) Dart identifiers.',
+        ),
+      );
       await test.shouldExit(1);
     });
 
@@ -322,10 +344,12 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(
-              '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
-              'b". Tags must be (optionally hyphenated) Dart identifiers.'));
+        test.stdout,
+        emitsThrough(
+          '  Failed to load "test.dart": Invalid argument(s): Invalid tag "a '
+          'b". Tags must be (optionally hyphenated) Dart identifiers.',
+        ),
+      );
       await test.shouldExit(1);
     });
 
@@ -342,10 +366,15 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          emitsThrough(lines('  Failed to load "test.dart":\n'
-              '  Error on line 1, column 22: Invalid tag name. Tags must be '
-              '(optionally hyphenated) Dart identifiers.')));
+        test.stdout,
+        emitsThrough(
+          lines(
+            '  Failed to load "test.dart":\n'
+            '  Error on line 1, column 22: Invalid tag name. Tags must be '
+            '(optionally hyphenated) Dart identifiers.',
+          ),
+        ),
+      );
       await test.shouldExit(1);
     });
   });
@@ -354,18 +383,19 @@ void main() {
 /// Returns a [StreamMatcher] that asserts that a test emits warnings for [tags]
 /// in order.
 StreamMatcher tagWarnings(List<String> tags) => emitsInOrder([
-      emitsThrough(
-          "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
-          "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
-          'dart_test.yaml.'),
+  emitsThrough(
+    "Warning: ${tags.length == 1 ? 'A tag was' : 'Tags were'} used that "
+    "${tags.length == 1 ? "wasn't" : "weren't"} specified in "
+    'dart_test.yaml.',
+  ),
 
-      for (var tag in tags) emitsThrough(startsWith('  $tag was used in')),
+  for (var tag in tags) emitsThrough(startsWith('  $tag was used in')),
 
-      // Consume until the end of the warning block, and assert that it has no
-      // further tags than the ones we specified.
-      mayEmitMultiple(isNot(anyOf([contains(' was used in'), isEmpty]))),
-      isEmpty,
-    ]);
+  // Consume until the end of the warning block, and assert that it has no
+  // further tags than the ones we specified.
+  mayEmitMultiple(isNot(anyOf([contains(' was used in'), isEmpty]))),
+  isEmpty,
+]);
 
 /// Returns a [StreamMatcher] that matches the lines of [string] in order.
 StreamMatcher lines(String string) => emitsInOrder(string.split('\n'));

@@ -14,7 +14,9 @@ import 'util/pretty_print.dart';
 
 /// Returns a [StreamMatcher] that asserts that the stream emits a "done" event.
 final emitsDone = StreamMatcher(
-    (queue) async => (await queue.hasNext) ? '' : null, 'be done');
+  (queue) async => (await queue.hasNext) ? '' : null,
+  'be done',
+);
 
 /// Returns a [StreamMatcher] for [matcher].
 ///
@@ -31,21 +33,23 @@ StreamMatcher emits(Object? matcher) {
 
   var matcherDescription = wrapped.describe(StringDescription());
 
-  return StreamMatcher((queue) async {
-    if (!await queue.hasNext) return '';
+  return StreamMatcher(
+    (queue) async {
+      if (!await queue.hasNext) return '';
 
-    var matchState = {};
-    var actual = await queue.next;
-    if (wrapped.matches(actual, matchState)) return null;
+      var matchState = <Object?, Object?>{};
+      var actual = await queue.next;
+      if (wrapped.matches(actual, matchState)) return null;
 
-    var mismatchDescription = StringDescription();
-    wrapped.describeMismatch(actual, mismatchDescription, matchState, false);
+      var mismatchDescription = StringDescription();
+      wrapped.describeMismatch(actual, mismatchDescription, matchState, false);
 
-    if (mismatchDescription.length == 0) return '';
-    return 'emitted an event that $mismatchDescription';
-  },
-      // TODO(nweiz): add "should" once matcher#42 is fixed.
-      'emit an event that $matcherDescription');
+      if (mismatchDescription.length == 0) return '';
+      return 'emitted an event that $mismatchDescription';
+    },
+    // TODO(nweiz): add "should" once matcher#42 is fixed.
+    'emit an event that $matcherDescription',
+  );
 }
 
 /// Returns a [StreamMatcher] that matches a single error event that matches
@@ -56,9 +60,10 @@ StreamMatcher emitsError(Object? matcher) {
   var throwsMatcher = throwsA(wrapped) as AsyncMatcher;
 
   return StreamMatcher(
-      (queue) => throwsMatcher.matchAsync(queue.next) as Future<String?>,
-      // TODO(nweiz): add "should" once matcher#42 is fixed.
-      'emit an error that $matcherDescription');
+    (queue) => throwsMatcher.matchAsync(queue.next) as Future<String?>,
+    // TODO(nweiz): add "should" once matcher#42 is fixed.
+    'emit an error that $matcherDescription',
+  );
 }
 
 /// Returns a [StreamMatcher] that allows (but doesn't require) [matcher] to
@@ -70,7 +75,8 @@ StreamMatcher mayEmit(Object? matcher) {
   var streamMatcher = emits(matcher);
   return StreamMatcher((queue) async {
     await queue.withTransaction(
-        (copy) async => (await streamMatcher.matchQueue(copy)) == null);
+      (copy) async => (await streamMatcher.matchQueue(copy)) == null,
+    );
     return null;
   }, 'maybe ${streamMatcher.description}');
 }
@@ -91,7 +97,8 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
   }
 
   if (streamMatchers.length == 1) return streamMatchers.first;
-  var description = 'do one of the following:\n'
+  var description =
+      'do one of the following:\n'
       '${bullet(streamMatchers.map((matcher) => matcher.description))}';
 
   return StreamMatcher((queue) async {
@@ -138,7 +145,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
     if (consumedMost == null) {
       transaction.reject();
       if (firstError != null) {
-        await Future.error(firstError!, firstStackTrace);
+        await Future<Never>.error(firstError!, firstStackTrace);
       }
 
       var failureMessages = <String>[];
@@ -168,7 +175,8 @@ StreamMatcher emitsInOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.length == 1) return streamMatchers.first;
 
-  var description = 'do the following in order:\n'
+  var description =
+      'do the following in order:\n'
       '${bullet(streamMatchers.map((matcher) => matcher.description))}';
 
   return StreamMatcher((queue) async {
@@ -200,11 +208,11 @@ StreamMatcher emitsThrough(Object? matcher) {
     var failures = <String>[];
 
     Future<bool> tryHere() => queue.withTransaction((copy) async {
-          var result = await streamMatcher.matchQueue(copy);
-          if (result == null) return true;
-          failures.add(result);
-          return false;
-        });
+      var result = await streamMatcher.matchQueue(copy);
+      if (result == null) return true;
+      failures.add(result);
+      return false;
+    });
 
     while (await queue.hasNext) {
       if (await tryHere()) return null;
@@ -217,8 +225,9 @@ StreamMatcher emitsThrough(Object? matcher) {
 
     var result = 'never did ${streamMatcher.description}';
 
-    var failureMessages =
-        bullet(failures.where((failure) => failure.isNotEmpty));
+    var failureMessages = bullet(
+      failures.where((failure) => failure.isNotEmpty),
+    );
     if (failureMessages.isNotEmpty) {
       result += result.contains('\n') ? '\n' : ' ';
       result += 'because it:\n$failureMessages';
@@ -312,17 +321,21 @@ Future<bool> _tryMatch(StreamQueue queue, StreamMatcher matcher) {
 StreamMatcher emitsInAnyOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toSet();
   if (streamMatchers.length == 1) return streamMatchers.first;
-  var description = 'do the following in any order:\n'
+  var description =
+      'do the following in any order:\n'
       '${bullet(streamMatchers.map((matcher) => matcher.description))}';
 
   return StreamMatcher(
-      (queue) async => await _tryInAnyOrder(queue, streamMatchers) ? null : '',
-      description);
+    (queue) async => await _tryInAnyOrder(queue, streamMatchers) ? null : '',
+    description,
+  );
 }
 
 /// Returns whether [queue] matches [matchers] in any order.
 Future<bool> _tryInAnyOrder(
-    StreamQueue queue, Set<StreamMatcher> matchers) async {
+  StreamQueue queue,
+  Set<StreamMatcher> matchers,
+) async {
   if (matchers.length == 1) {
     return await matchers.first.matchQueue(queue) == null;
   }
@@ -335,40 +348,44 @@ Future<bool> _tryInAnyOrder(
   Object? firstError;
   StackTrace? firstStackTrace;
 
-  await Future.wait(matchers.map((matcher) async {
-    var copy = transaction.newQueue();
-    try {
-      if (await matcher.matchQueue(copy) != null) return;
-    } catch (error, stackTrace) {
-      if (firstError == null) {
-        firstError = error;
-        firstStackTrace = stackTrace;
+  await Future.wait(
+    matchers.map((matcher) async {
+      var copy = transaction.newQueue();
+      try {
+        if (await matcher.matchQueue(copy) != null) return;
+      } catch (error, stackTrace) {
+        if (firstError == null) {
+          firstError = error;
+          firstStackTrace = stackTrace;
+        }
+        return;
       }
-      return;
-    }
 
-    var rest = Set<StreamMatcher>.from(matchers);
-    rest.remove(matcher);
+      var rest = Set<StreamMatcher>.from(matchers);
+      rest.remove(matcher);
 
-    try {
-      if (!await _tryInAnyOrder(copy, rest)) return;
-    } catch (error, stackTrace) {
-      if (firstError == null) {
-        firstError = error;
-        firstStackTrace = stackTrace;
+      try {
+        if (!await _tryInAnyOrder(copy, rest)) return;
+      } catch (error, stackTrace) {
+        if (firstError == null) {
+          firstError = error;
+          firstStackTrace = stackTrace;
+        }
+        return;
       }
-      return;
-    }
 
-    if (consumedMost == null ||
-        consumedMost!.eventsDispatched < copy.eventsDispatched) {
-      consumedMost = copy;
-    }
-  }));
+      if (consumedMost == null ||
+          consumedMost!.eventsDispatched < copy.eventsDispatched) {
+        consumedMost = copy;
+      }
+    }),
+  );
 
   if (consumedMost == null) {
     transaction.reject();
-    if (firstError != null) await Future.error(firstError!, firstStackTrace);
+    if (firstError != null) {
+      await Future<Never>.error(firstError!, firstStackTrace);
+    }
     return false;
   } else {
     transaction.commit(consumedMost!);

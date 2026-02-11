@@ -29,60 +29,70 @@ void main() {
 
       test("if only the old configuration's is defined, uses it", () {
         var merged = suiteConfiguration(
-                jsTrace: true,
-                runSkipped: true,
-                precompiledPath: '/tmp/js',
-                runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
-                compilerSelections: [CompilerSelection.parse('dart2js')])
-            .merge(suiteConfiguration());
+          jsTrace: true,
+          runSkipped: true,
+          precompiledPath: '/tmp/js',
+          runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
+          compilerSelections: [CompilerSelection.parse('dart2js')],
+        ).merge(suiteConfiguration());
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals('/tmp/js'));
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
-        expect(merged.compilerSelections,
-            equals([CompilerSelection.parse('dart2js')]));
+        expect(
+          merged.compilerSelections,
+          equals([CompilerSelection.parse('dart2js')]),
+        );
       });
 
       test("if only the configuration's is defined, uses it", () {
-        var merged = suiteConfiguration().merge(suiteConfiguration(
+        var merged = suiteConfiguration().merge(
+          suiteConfiguration(
             jsTrace: true,
             runSkipped: true,
             precompiledPath: '/tmp/js',
             runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
-            compilerSelections: [CompilerSelection.parse('dart2js')]));
+            compilerSelections: [CompilerSelection.parse('dart2js')],
+          ),
+        );
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isTrue);
         expect(merged.precompiledPath, equals('/tmp/js'));
         expect(merged.runtimes, equals([Runtime.chrome.identifier]));
-        expect(merged.compilerSelections,
-            equals([CompilerSelection.parse('dart2js')]));
+        expect(
+          merged.compilerSelections,
+          equals([CompilerSelection.parse('dart2js')]),
+        );
       });
 
-      test(
-          "if the two configurations conflict, uses the configuration's "
+      test("if the two configurations conflict, uses the configuration's "
           'values', () {
         var older = suiteConfiguration(
-            jsTrace: false,
-            runSkipped: true,
-            precompiledPath: '/tmp/js',
-            runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
-            compilerSelections: [CompilerSelection.parse('dart2js')]);
+          jsTrace: false,
+          runSkipped: true,
+          precompiledPath: '/tmp/js',
+          runtimes: [RuntimeSelection(Runtime.chrome.identifier)],
+          compilerSelections: [CompilerSelection.parse('dart2js')],
+        );
         var newer = suiteConfiguration(
-            jsTrace: true,
-            runSkipped: false,
-            precompiledPath: '../js',
-            runtimes: [RuntimeSelection(Runtime.firefox.identifier)],
-            compilerSelections: [CompilerSelection.parse('source')]);
+          jsTrace: true,
+          runSkipped: false,
+          precompiledPath: '../js',
+          runtimes: [RuntimeSelection(Runtime.firefox.identifier)],
+          compilerSelections: [CompilerSelection.parse('source')],
+        );
         var merged = older.merge(newer);
 
         expect(merged.jsTrace, isTrue);
         expect(merged.runSkipped, isFalse);
         expect(merged.precompiledPath, equals('../js'));
         expect(merged.runtimes, equals([Runtime.firefox.identifier]));
-        expect(merged.compilerSelections,
-            equals([CompilerSelection.parse('source')]));
+        expect(
+          merged.compilerSelections,
+          equals([CompilerSelection.parse('source')]),
+        );
       });
     });
 
@@ -93,14 +103,16 @@ void main() {
       });
 
       test("if only the old configuration's is defined, uses it", () {
-        var merged = suiteConfiguration(dart2jsArgs: ['--foo', '--bar'])
-            .merge(suiteConfiguration());
+        var merged = suiteConfiguration(
+          dart2jsArgs: ['--foo', '--bar'],
+        ).merge(suiteConfiguration());
         expect(merged.dart2jsArgs, equals(['--foo', '--bar']));
       });
 
       test("if only the configuration's is defined, uses it", () {
-        var merged = suiteConfiguration()
-            .merge(suiteConfiguration(dart2jsArgs: ['--foo', '--bar']));
+        var merged = suiteConfiguration().merge(
+          suiteConfiguration(dart2jsArgs: ['--foo', '--bar']),
+        );
         expect(merged.dart2jsArgs, equals(['--foo', '--bar']));
       });
 
@@ -114,34 +126,57 @@ void main() {
 
     group('for config maps', () {
       test('merges each nested configuration', () {
-        var merged = suiteConfiguration(tags: {
-          BooleanSelector.parse('foo'):
-              suiteConfiguration(precompiledPath: 'path/'),
-          BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: true)
-        }, onPlatform: {
-          PlatformSelector.parse('vm'):
-              suiteConfiguration(precompiledPath: 'path/'),
-          PlatformSelector.parse('chrome'): suiteConfiguration(jsTrace: true)
-        }).merge(suiteConfiguration(tags: {
-          BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: false),
-          BooleanSelector.parse('baz'): suiteConfiguration(runSkipped: true)
-        }, onPlatform: {
-          PlatformSelector.parse('chrome'): suiteConfiguration(jsTrace: false),
-          PlatformSelector.parse('firefox'):
-              suiteConfiguration(runSkipped: true)
-        }));
+        var merged = suiteConfiguration(
+          tags: {
+            BooleanSelector.parse('foo'): suiteConfiguration(
+              precompiledPath: 'path/',
+            ),
+            BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: true),
+          },
+          onPlatform: {
+            PlatformSelector.parse('vm'): suiteConfiguration(
+              precompiledPath: 'path/',
+            ),
+            PlatformSelector.parse('chrome'): suiteConfiguration(jsTrace: true),
+          },
+        ).merge(
+          suiteConfiguration(
+            tags: {
+              BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: false),
+              BooleanSelector.parse('baz'): suiteConfiguration(
+                runSkipped: true,
+              ),
+            },
+            onPlatform: {
+              PlatformSelector.parse('chrome'): suiteConfiguration(
+                jsTrace: false,
+              ),
+              PlatformSelector.parse('firefox'): suiteConfiguration(
+                runSkipped: true,
+              ),
+            },
+          ),
+        );
 
-        expect(merged.tags[BooleanSelector.parse('foo')]!.precompiledPath,
-            equals('path/'));
+        expect(
+          merged.tags[BooleanSelector.parse('foo')]!.precompiledPath,
+          equals('path/'),
+        );
         expect(merged.tags[BooleanSelector.parse('bar')]!.jsTrace, isFalse);
         expect(merged.tags[BooleanSelector.parse('baz')]!.runSkipped, isTrue);
 
-        expect(merged.onPlatform[PlatformSelector.parse('vm')]!.precompiledPath,
-            'path/');
-        expect(merged.onPlatform[PlatformSelector.parse('chrome')]!.jsTrace,
-            isFalse);
-        expect(merged.onPlatform[PlatformSelector.parse('firefox')]!.runSkipped,
-            isTrue);
+        expect(
+          merged.onPlatform[PlatformSelector.parse('vm')]!.precompiledPath,
+          'path/',
+        );
+        expect(
+          merged.onPlatform[PlatformSelector.parse('chrome')]!.jsTrace,
+          isFalse,
+        );
+        expect(
+          merged.onPlatform[PlatformSelector.parse('firefox')]!.runSkipped,
+          isTrue,
+        );
       });
     });
   });

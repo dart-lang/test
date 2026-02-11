@@ -26,9 +26,15 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(
-        ['-p', 'chrome', '-p', 'vm', '-j', '1', 'test.dart'],
-        reporter: 'compact');
+    var test = await runTest([
+      '-p',
+      'chrome',
+      '-p',
+      'vm',
+      '-j',
+      '1',
+      'test.dart',
+    ], reporter: 'compact');
 
     expect(test.stdout, containsInOrder(['[Chrome, Dart2Js]', '[VM, Kernel]']));
     await test.shouldExit(0);

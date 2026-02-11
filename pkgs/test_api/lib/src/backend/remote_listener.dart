@@ -43,100 +43,127 @@ final class RemoteListener {
   ///
   /// If [beforeLoad] is passed, it's called before the tests have been declared
   /// for this worker.
-  static StreamChannel<Object?> start(Function Function() getMain,
-      {bool hidePrints = true,
-      Future Function(
-              StreamChannel<Object?> Function(String name) suiteChannel)?
-          beforeLoad}) {
+  static StreamChannel<Object?> start(
+    Function Function() getMain, {
+    bool hidePrints = true,
+    Future Function(StreamChannel<Object?> Function(String name) suiteChannel)?
+    beforeLoad,
+  }) {
     // Synchronous in order to allow `print` output to show up immediately, even
     // if they are followed by long running synchronous work.
-    var controller =
-        StreamChannelController<Object?>(allowForeignErrors: false, sync: true);
+    var controller = StreamChannelController<Object?>(
+      allowForeignErrors: false,
+      sync: true,
+    );
     var channel = MultiChannel<Object?>(controller.local);
 
     var verboseChain = true;
 
     var printZone = hidePrints ? null : Zone.current;
-    var spec = ZoneSpecification(print: (_, __, ___, line) {
-      if (printZone != null) printZone.print(line);
-      channel.sink.add({'type': 'print', 'line': line});
-    });
+    var spec = ZoneSpecification(
+      print: (_, _, _, line) {
+        if (printZone != null) printZone.print(line);
+        channel.sink.add({'type': 'print', 'line': line});
+      },
+    );
 
     final suiteChannelManager = SuiteChannelManager();
     StackTraceFormatter().asCurrent(() {
-      runZonedGuarded(() async {
-        Function? main;
-        try {
-          main = getMain();
-        } on NoSuchMethodError catch (_) {
-          _sendLoadException(channel, 'No top-level main() function defined.');
-          return;
-        } catch (error, stackTrace) {
-          _sendError(channel, error, stackTrace, verboseChain);
-          return;
-        }
-
-        if (main is! FutureOr<void> Function()) {
-          _sendLoadException(
-              channel, 'Top-level main() function takes arguments.');
-          return;
-        }
-
-        var queue = StreamQueue(channel.stream);
-        var message = await queue.next as Map;
-        assert(message['type'] == 'initial');
-
-        queue.rest.cast<Map>().listen((message) {
-          if (message['type'] == 'close') {
-            controller.local.sink.close();
+      runZonedGuarded(
+        () async {
+          Function? main;
+          try {
+            main = getMain();
+          } on NoSuchMethodError catch (_) {
+            _sendLoadException(
+              channel,
+              'No top-level main() function defined.',
+            );
+            return;
+          } catch (error, stackTrace) {
+            _sendError(channel, error, stackTrace, verboseChain);
             return;
           }
 
-          assert(message['type'] == 'suiteChannel');
-          suiteChannelManager.connectIn(message['name'] as String,
-              channel.virtualChannel((message['id'] as num).toInt()));
-        });
+          if (main is! FutureOr<void> Function()) {
+            _sendLoadException(
+              channel,
+              'Top-level main() function takes arguments.',
+            );
+            return;
+          }
 
-        if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
-        var metadata = Metadata.deserialize(message['metadata'] as Map);
-        verboseChain = metadata.verboseTrace;
-        var declarer = Declarer(
-          metadata: metadata,
-          platformVariables: Set.from(message['platformVariables'] as Iterable),
-          collectTraces: message['collectTraces'] as bool,
-          noRetry: message['noRetry'] as bool,
-          // TODO: Change to non-nullable https://github.com/dart-lang/test/issues/1591
-          allowDuplicateTestNames:
-              message['allowDuplicateTestNames'] as bool? ?? true,
-        );
-        StackTraceFormatter.current!.configure(
+          var queue = StreamQueue(channel.stream);
+          var message = await queue.next as Map;
+          assert(message['type'] == 'initial');
+
+          queue.rest.cast<Map>().listen((message) {
+            if (message['type'] == 'close') {
+              controller.local.sink.close();
+              return;
+            }
+
+            assert(message['type'] == 'suiteChannel');
+            suiteChannelManager.connectIn(
+              message['name'] as String,
+              channel.virtualChannel((message['id'] as num).toInt()),
+            );
+          });
+
+          if ((message['asciiGlyphs'] as bool?) ?? false) glyph.ascii = true;
+          var metadata = Metadata.deserialize(message['metadata'] as Map);
+          verboseChain = metadata.verboseTrace;
+          var declarer = Declarer(
+            metadata: metadata,
+            platformVariables: Set.from(
+              message['platformVariables'] as Iterable,
+            ),
+            collectTraces: message['collectTraces'] as bool,
+            noRetry: message['noRetry'] as bool,
+            // TODO: Change to non-nullable https://github.com/dart-lang/test/issues/1591
+            allowDuplicateTestNames:
+                message['allowDuplicateTestNames'] as bool? ?? true,
+          );
+          StackTraceFormatter.current!.configure(
             except: _deserializeSet(message['foldTraceExcept'] as List),
-            only: _deserializeSet(message['foldTraceOnly'] as List));
+            only: _deserializeSet(message['foldTraceOnly'] as List),
+          );
 
-        if (beforeLoad != null) {
-          await beforeLoad(suiteChannelManager.connectOut);
-        }
+          if (beforeLoad != null) {
+            await beforeLoad(suiteChannelManager.connectOut);
+          }
 
-        await declarer.declare(main);
+          await declarer.declare(
+            main,
+            zoneValues: {
+              #test.openChannelCallback: suiteChannelManager.connectOut,
+            },
+          );
 
-        var suite = Suite(
-          declarer.build(),
-          SuitePlatform.deserialize(message['platform'] as Object),
-          path: message['path'] as String,
-          ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
-        );
+          var suite = Suite(
+            declarer.build(),
+            SuitePlatform.deserialize(message['platform'] as Object),
+            path: message['path'] as String,
+            ignoreTimeouts: message['ignoreTimeouts'] as bool? ?? false,
+          );
 
-        runZoned(() {
-          Invoker.guard(
-              () => RemoteListener._(suite, printZone)._listen(channel));
-        },
+          runZoned(
+            () {
+              Invoker.guard(
+                () => RemoteListener._(suite, printZone)._listen(channel),
+              );
+            },
             // Make the declarer visible to running tests so that they'll throw
             // useful errors when calling `test()` and `group()` within a test,
             // and so they can add to the declarer's `tearDownAll()` list.
-            zoneValues: {#test.declarer: declarer});
-      }, (error, stackTrace) {
-        _sendError(channel, error, stackTrace, verboseChain);
-      }, zoneSpecification: spec);
+            zoneValues: {#test.declarer: declarer},
+          );
+        },
+        (error, stackTrace) {
+          _sendError(channel, error, stackTrace, verboseChain);
+        },
+        zoneSpecification: spec,
+      );
     });
 
     return controller.foreign;
@@ -158,14 +185,21 @@ final class RemoteListener {
   }
 
   /// Sends a message over [channel] indicating an error from user code.
-  static void _sendError(StreamChannel channel, Object error,
-      StackTrace stackTrace, bool verboseChain) {
+  static void _sendError(
+    StreamChannel channel,
+    Object error,
+    StackTrace stackTrace,
+    bool verboseChain,
+  ) {
     channel.sink.add({
       'type': 'error',
       'error': RemoteException.serialize(
-          error,
-          StackTraceFormatter.current!
-              .formatStackTrace(stackTrace, verbose: verboseChain))
+        error,
+        StackTraceFormatter.current!.formatStackTrace(
+          stackTrace,
+          verbose: verboseChain,
+        ),
+      ),
     });
   }
 
@@ -176,7 +210,7 @@ final class RemoteListener {
   void _listen(MultiChannel channel) {
     channel.sink.add({
       'type': 'success',
-      'root': _serializeGroup(channel, _suite.group, [])
+      'root': _serializeGroup(channel, _suite.group, []),
     });
   }
 
@@ -184,25 +218,31 @@ final class RemoteListener {
   ///
   /// [parents] lists the groups that contain [group].
   Map _serializeGroup(
-      MultiChannel channel, Group group, Iterable<Group> parents) {
+    MultiChannel channel,
+    Group group,
+    Iterable<Group> parents,
+  ) {
     parents = parents.toList()..add(group);
     return {
       'type': 'group',
       'name': group.name,
       'metadata': group.metadata.serialize(),
-      'trace': group.trace == null
-          ? null
-          : StackTraceFormatter.current
-                  ?.formatStackTrace(group.trace!)
-                  .toString() ??
-              group.trace?.toString(),
+      'trace':
+          group.trace == null
+              ? null
+              : StackTraceFormatter.current
+                      ?.formatStackTrace(group.trace!)
+                      .toString() ??
+                  group.trace?.toString(),
+      'location': group.location?.serialize(),
       'setUpAll': _serializeTest(channel, group.setUpAll, parents),
       'tearDownAll': _serializeTest(channel, group.tearDownAll, parents),
-      'entries': group.entries.map((entry) {
-        return entry is Group
-            ? _serializeGroup(channel, entry, parents)
-            : _serializeTest(channel, entry as Test, parents);
-      }).toList()
+      'entries':
+          group.entries.map((entry) {
+            return entry is Group
+                ? _serializeGroup(channel, entry, parents)
+                : _serializeTest(channel, entry as Test, parents);
+          }).toList(),
     };
   }
 
@@ -211,27 +251,34 @@ final class RemoteListener {
   /// [groups] lists the groups that contain [test]. Returns `null` if [test]
   /// is `null`.
   Map? _serializeTest(
-      MultiChannel channel, Test? test, Iterable<Group>? groups) {
+    MultiChannel channel,
+    Test? test,
+    Iterable<Group>? groups,
+  ) {
     if (test == null) return null;
 
     var testChannel = channel.virtualChannel();
     testChannel.stream.listen((message) {
       assert(message['command'] == 'run');
-      _runLiveTest(test.load(_suite, groups: groups),
-          channel.virtualChannel((message['channel'] as num).toInt()));
+      _runLiveTest(
+        test.load(_suite, groups: groups),
+        channel.virtualChannel((message['channel'] as num).toInt()),
+      );
     });
 
     return {
       'type': 'test',
       'name': test.name,
       'metadata': test.metadata.serialize(),
-      'trace': test.trace == null
-          ? null
-          : StackTraceFormatter.current
-                  ?.formatStackTrace(test.trace!)
-                  .toString() ??
-              test.trace?.toString(),
-      'channel': testChannel.id
+      'trace':
+          test.trace == null
+              ? null
+              : StackTraceFormatter.current
+                      ?.formatStackTrace(test.trace!)
+                      .toString() ??
+                  test.trace?.toString(),
+      'location': test.location?.serialize(),
+      'channel': testChannel.id,
     };
   }
 
@@ -246,7 +293,7 @@ final class RemoteListener {
       channel.sink.add({
         'type': 'state-change',
         'status': state.status.name,
-        'result': state.result.name
+        'result': state.result.name,
       });
     });
 
@@ -254,9 +301,12 @@ final class RemoteListener {
       channel.sink.add({
         'type': 'error',
         'error': RemoteException.serialize(
-            asyncError.error,
-            StackTraceFormatter.current!.formatStackTrace(asyncError.stackTrace,
-                verbose: liveTest.test.metadata.verboseTrace))
+          asyncError.error,
+          StackTraceFormatter.current!.formatStackTrace(
+            asyncError.stackTrace,
+            verbose: liveTest.test.metadata.verboseTrace,
+          ),
+        ),
       });
     });
 
@@ -265,7 +315,7 @@ final class RemoteListener {
       channel.sink.add({
         'type': 'message',
         'message-type': message.type.name,
-        'text': message.text
+        'text': message.text,
       });
     });
 

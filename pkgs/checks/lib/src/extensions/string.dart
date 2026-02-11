@@ -36,27 +36,21 @@ extension StringChecks on Subject<String> {
   }
 
   void startsWith(Pattern other) {
-    context.expect(
-      () => prefixFirst('starts with ', literal(other)),
-      (actual) {
-        if (actual.startsWith(other)) return null;
-        return Rejection(
-          which: prefixFirst('does not start with ', literal(other)),
-        );
-      },
-    );
+    context.expect(() => prefixFirst('starts with ', literal(other)), (actual) {
+      if (actual.startsWith(other)) return null;
+      return Rejection(
+        which: prefixFirst('does not start with ', literal(other)),
+      );
+    });
   }
 
   void endsWith(String other) {
-    context.expect(
-      () => prefixFirst('ends with ', literal(other)),
-      (actual) {
-        if (actual.endsWith(other)) return null;
-        return Rejection(
-          which: prefixFirst('does not end with ', literal(other)),
-        );
-      },
-    );
+    context.expect(() => prefixFirst('ends with ', literal(other)), (actual) {
+      if (actual.endsWith(other)) return null;
+      return Rejection(
+        which: prefixFirst('does not end with ', literal(other)),
+      );
+    });
   }
 
   /// Expects that the string matches the pattern [expected].
@@ -72,7 +66,8 @@ extension StringChecks on Subject<String> {
     context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
       if (expected.allMatches(actual).isNotEmpty) return null;
       return Rejection(
-          which: prefixFirst('does not match ', literal(expected)));
+        which: prefixFirst('does not match ', literal(expected)),
+      );
     });
   }
 
@@ -83,39 +78,52 @@ extension StringChecks on Subject<String> {
   ///
   ///     check('abcdefg').containsInOrder(['a','e']);
   void containsInOrder(Iterable<String> expected) {
-    context.expect(() => prefixFirst('contains, in order: ', literal(expected)),
-        (actual) {
-      var fromIndex = 0;
-      for (var s in expected) {
-        var index = actual.indexOf(s, fromIndex);
-        if (index < 0) {
-          return Rejection(which: [
-            ...prefixFirst(
-                'does not have a match for the substring ', literal(s)),
-            if (fromIndex != 0)
-              'following the other matches up to character $fromIndex'
-          ]);
+    context.expect(
+      () => prefixFirst('contains, in order: ', literal(expected)),
+      (actual) {
+        var fromIndex = 0;
+        for (var s in expected) {
+          var index = actual.indexOf(s, fromIndex);
+          if (index < 0) {
+            return Rejection(
+              which: [
+                ...prefixFirst(
+                  'does not have a match for the substring ',
+                  literal(s),
+                ),
+                if (fromIndex != 0)
+                  'following the other matches up to character $fromIndex',
+              ],
+            );
+          }
+          fromIndex = index + s.length;
         }
-        fromIndex = index + s.length;
-      }
-      return null;
-    });
+        return null;
+      },
+    );
   }
 
   /// Expects that the `String` contains exactly the same code units as
   /// [expected].
   void equals(String expected) {
-    context.expect(() => prefixFirst('equals ', literal(expected)),
-        (actual) => _findDifference(actual, expected));
+    context.expect(
+      () => prefixFirst('equals ', literal(expected)),
+      (actual) => _findDifference(actual, expected),
+    );
   }
 
   /// Expects that the `String` contains the same characters as [expected] if
   /// both were lower case.
   void equalsIgnoringCase(String expected) {
     context.expect(
-        () => prefixFirst('equals ignoring case ', literal(expected)),
-        (actual) => _findDifference(
-            actual.toLowerCase(), expected.toLowerCase(), actual, expected));
+      () => prefixFirst('equals ignoring case ', literal(expected)),
+      (actual) => _findDifference(
+        actual.toLowerCase(),
+        expected.toLowerCase(),
+        actual,
+        expected,
+      ),
+    );
   }
 
   /// Expects that the `String` contains the same content as [expected],
@@ -134,18 +142,27 @@ extension StringChecks on Subject<String> {
   ///     check('he llo world').equalsIgnoringWhitespace('hello world');
   void equalsIgnoringWhitespace(String expected) {
     context.expect(
-        () => prefixFirst('equals ignoring whitespace ', literal(expected)),
-        (actual) {
-      final collapsedActual = _collapseWhitespace(actual);
-      final collapsedExpected = _collapseWhitespace(expected);
-      return _findDifference(collapsedActual, collapsedExpected,
-          collapsedActual, collapsedExpected);
-    });
+      () => prefixFirst('equals ignoring whitespace ', literal(expected)),
+      (actual) {
+        final collapsedActual = _collapseWhitespace(actual);
+        final collapsedExpected = _collapseWhitespace(expected);
+        return _findDifference(
+          collapsedActual,
+          collapsedExpected,
+          collapsedActual,
+          collapsedExpected,
+        );
+      },
+    );
   }
 }
 
-Rejection? _findDifference(String actual, String expected,
-    [String? actualDisplay, String? expectedDisplay]) {
+Rejection? _findDifference(
+  String actual,
+  String expected, [
+  String? actualDisplay,
+  String? expectedDisplay,
+]) {
   if (actual == expected) return null;
   final escapedActual = escape(actual);
   final escapedExpected = escape(expected);
@@ -165,34 +182,41 @@ Rejection? _findDifference(String actual, String expected,
       if (expected.isEmpty) {
         return Rejection(which: ['is not the empty string']);
       }
-      return Rejection(which: [
-        'is too long with unexpected trailing characters:',
-        _trailing(escapedActualDisplay, i)
-      ]);
+      return Rejection(
+        which: [
+          'is too long with unexpected trailing characters:',
+          _trailing(escapedActualDisplay, i),
+        ],
+      );
     } else {
       if (actual.isEmpty) {
-        return Rejection(actual: [
-          'an empty string'
-        ], which: [
-          'is missing all expected characters:',
-          _trailing(escapedExpectedDisplay, 0)
-        ]);
+        return Rejection(
+          actual: ['an empty string'],
+          which: [
+            'is missing all expected characters:',
+            _trailing(escapedExpectedDisplay, 0),
+          ],
+        );
       }
-      return Rejection(which: [
-        'is too short with missing trailing characters:',
-        _trailing(escapedExpectedDisplay, i)
-      ]);
+      return Rejection(
+        which: [
+          'is too short with missing trailing characters:',
+          _trailing(escapedExpectedDisplay, i),
+        ],
+      );
     }
   } else {
     final indentation = ' ' * (i > 10 ? 14 : i);
-    return Rejection(which: [
-      'differs at offset $i:',
-      '${_leading(escapedExpectedDisplay, i)}'
-          '${_trailing(escapedExpectedDisplay, i)}',
-      '${_leading(escapedActualDisplay, i)}'
-          '${_trailing(escapedActualDisplay, i)}',
-      '$indentation^'
-    ]);
+    return Rejection(
+      which: [
+        'differs at offset $i:',
+        '${_leading(escapedExpectedDisplay, i)}'
+            '${_trailing(escapedExpectedDisplay, i)}',
+        '${_leading(escapedActualDisplay, i)}'
+            '${_trailing(escapedActualDisplay, i)}',
+        '$indentation^',
+      ],
+    );
   }
 }
 
@@ -201,9 +225,10 @@ String _leading(String s, int end) =>
     (end > 10) ? '... ${s.substring(end - 10, end)}' : s.substring(0, end);
 
 /// The truncated remainder of [s] starting at the [start] character.
-String _trailing(String s, int start) => (start + 10 > s.length)
-    ? s.substring(start)
-    : '${s.substring(start, start + 10)} ...';
+String _trailing(String s, int start) =>
+    (start + 10 > s.length)
+        ? s.substring(start)
+        : '${s.substring(start, start + 10)} ...';
 
 /// Utility function to collapse whitespace runs to single spaces
 /// and strip leading/trailing whitespace.

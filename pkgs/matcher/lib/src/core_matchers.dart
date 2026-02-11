@@ -14,7 +14,8 @@ class _Empty extends Matcher {
   const _Empty();
 
   @override
-  bool matches(Object? item, Map matchState) => (item as dynamic).isEmpty;
+  bool matches(Object? item, Map matchState) =>
+      (item as dynamic).isEmpty as bool;
 
   @override
   Description describe(Description description) => description.add('empty');
@@ -27,7 +28,8 @@ class _NotEmpty extends Matcher {
   const _NotEmpty();
 
   @override
-  bool matches(Object? item, Map matchState) => (item as dynamic).isNotEmpty;
+  bool matches(Object? item, Map matchState) =>
+      (item as dynamic).isNotEmpty as bool;
 
   @override
   Description describe(Description description) => description.add('non-empty');
@@ -164,8 +166,12 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
       description.add('return normally');
 
   @override
-  Description describeTypedMismatch(Function item,
-      Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(
+    Function item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     mismatchDescription.add('threw ').addDescriptionOf(matchState['exception']);
     if (verbose) {
       mismatchDescription.add(' at ').add(matchState['stack'].toString());
@@ -203,8 +209,12 @@ class _HasLength extends Matcher {
       description.add('an object with length of ').addDescriptionOf(_matcher);
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     try {
       final length = (item as dynamic).length;
       return mismatchDescription.add('has length of ').addDescriptionOf(length);
@@ -250,8 +260,12 @@ class _Contains extends Matcher {
       description.add('contains ').addDescriptionOf(_expected);
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (item is String || item is Iterable || item is Map) {
       super.describeMismatch(item, mismatchDescription, matchState, verbose);
       mismatchDescription.add('does not contain ').addDescriptionOf(_expected);
@@ -274,7 +288,10 @@ Matcher isIn(Object? expected) {
   }
 
   throw ArgumentError.value(
-      expected, 'expected', 'Only Iterable, Map, and String are supported.');
+    expected,
+    'expected',
+    'Only Iterable, Map, and String are supported.',
+  );
 }
 
 class _In<T> extends FeatureMatcher<T> {
@@ -308,9 +325,10 @@ class _In<T> extends FeatureMatcher<T> {
 /// Using an explicit generict argument allows a passed function literal to have
 /// an inferred argument type of [T], and values of the wrong type will be
 /// rejected with an informative message.
-Matcher predicate<T>(bool Function(T) f,
-        [String description = 'satisfies function']) =>
-    _Predicate(f, description);
+Matcher predicate<T>(
+  bool Function(T) f, [
+  String description = 'satisfies function',
+]) => _Predicate(f, description);
 
 class _Predicate<T> extends FeatureMatcher<T> {
   final bool Function(T) _matcher;

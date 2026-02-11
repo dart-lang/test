@@ -21,6 +21,9 @@ abstract class Test implements GroupEntry {
   String get name;
 
   @override
+  Group? parent;
+
+  @override
   Metadata get metadata;
 
   @override
@@ -38,5 +41,8 @@ abstract class Test implements GroupEntry {
   Test? forPlatform(SuitePlatform platform);
 
   @override
-  Test? filter(bool Function(Test) callback) => callback(this) ? this : null;
+  Test? filter(bool Function(Test) callback);
+
+  @override
+  Test? clone();
 }

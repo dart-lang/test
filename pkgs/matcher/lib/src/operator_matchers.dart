@@ -28,13 +28,15 @@ class _IsNot extends Matcher {
 /// Instead of passing the matchers separately they can be passed as a single
 /// List argument. Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
-Matcher allOf(Object? arg0,
-    [Object? arg1,
-    Object? arg2,
-    Object? arg3,
-    Object? arg4,
-    Object? arg5,
-    Object? arg6]) {
+Matcher allOf(
+  Object? arg0, [
+  Object? arg1,
+  Object? arg2,
+  Object? arg3,
+  Object? arg4,
+  Object? arg5,
+  Object? arg6,
+]) {
   return _AllOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
@@ -55,11 +57,19 @@ class _AllOf extends Matcher {
   }
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     var matcher = matchState['matcher'] as Matcher;
     matcher.describeMismatch(
-        item, mismatchDescription, matchState['state'], verbose);
+      item,
+      mismatchDescription,
+      matchState['state'] as Map,
+      verbose,
+    );
     return mismatchDescription;
   }
 
@@ -78,13 +88,15 @@ class _AllOf extends Matcher {
 ///
 /// Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
-Matcher anyOf(Object? arg0,
-    [Object? arg1,
-    Object? arg2,
-    Object? arg3,
-    Object? arg4,
-    Object? arg5,
-    Object? arg6]) {
+Matcher anyOf(
+  Object? arg0, [
+  Object? arg1,
+  Object? arg2,
+  Object? arg3,
+  Object? arg4,
+  Object? arg5,
+  Object? arg6,
+]) {
   return _AnyOf(_wrapArgs(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 }
 
@@ -108,8 +120,15 @@ class _AnyOf extends Matcher {
       description.addAll('(', ' or ', ')', _matchers);
 }
 
-List<Matcher> _wrapArgs(Object? arg0, Object? arg1, Object? arg2, Object? arg3,
-    Object? arg4, Object? arg5, Object? arg6) {
+List<Matcher> _wrapArgs(
+  Object? arg0,
+  Object? arg1,
+  Object? arg2,
+  Object? arg3,
+  Object? arg4,
+  Object? arg5,
+  Object? arg6,
+) {
   Iterable args;
   if (arg0 is List) {
     if (arg1 != null ||
@@ -118,8 +137,10 @@ List<Matcher> _wrapArgs(Object? arg0, Object? arg1, Object? arg2, Object? arg3,
         arg4 != null ||
         arg5 != null ||
         arg6 != null) {
-      throw ArgumentError('If arg0 is a List, all other arguments must be'
-          ' null.');
+      throw ArgumentError(
+        'If arg0 is a List, all other arguments must be'
+        ' null.',
+      );
     }
 
     args = arg0;

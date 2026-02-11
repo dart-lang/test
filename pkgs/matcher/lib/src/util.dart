@@ -19,7 +19,8 @@ const _escapeMap = {
 
 /// A [RegExp] that matches whitespace characters that should be escaped.
 final _escapeRegExp = RegExp(
-    '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_getHexLiteral).join()}]');
+  '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_getHexLiteral).join()}]',
+);
 
 /// Useful utility for nesting match states.
 void addStateInfo(Map matchState, Map values) {
@@ -43,8 +44,7 @@ Matcher wrapMatcher(Object? valueOrMatcher) {
   } else if (valueOrMatcher is bool Function(Never)) {
     // unary predicate, but expects a specific type
     // so wrap it.
-    // ignore: unnecessary_lambdas
-    return predicate((a) => (valueOrMatcher as dynamic)(a));
+    return predicate((a) => (valueOrMatcher as dynamic)(a) as bool);
   } else {
     return equals(valueOrMatcher);
   }

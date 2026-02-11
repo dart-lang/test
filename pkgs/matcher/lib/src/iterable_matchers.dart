@@ -36,8 +36,12 @@ class _EveryElement extends _IterableMatcher {
       description.add('every element(').addDescriptionOf(_matcher).add(')');
 
   @override
-  Description describeTypedMismatch(dynamic item,
-      Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (matchState['index'] != null) {
       var index = matchState['index'];
       var element = matchState['element'];
@@ -47,7 +51,11 @@ class _EveryElement extends _IterableMatcher {
           .add(' which ');
       var subDescription = StringDescription();
       _matcher.describeMismatch(
-          element, subDescription, matchState['state'] as Map, verbose);
+        element,
+        subDescription,
+        matchState['state'] as Map,
+        verbose,
+      );
       if (subDescription.length > 0) {
         mismatchDescription.add(subDescription.toString());
       } else {
@@ -57,8 +65,12 @@ class _EveryElement extends _IterableMatcher {
       mismatchDescription.add(' at index $index');
       return mismatchDescription;
     }
-    return super
-        .describeMismatch(item, mismatchDescription, matchState, verbose);
+    return super.describeMismatch(
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -102,10 +114,18 @@ class _OrderedEquals extends _IterableMatcher {
       description.add('equals ').addDescriptionOf(_expected).add(' ordered');
 
   @override
-  Description describeTypedMismatch(Iterable item,
-      Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(
+    Iterable item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     return _matcher.describeMismatch(
-        item, mismatchDescription, matchState, verbose);
+      item,
+      mismatchDescription,
+      matchState,
+      verbose,
+    );
   }
 }
 
@@ -120,8 +140,8 @@ class _UnorderedEquals extends _UnorderedMatches {
   final List _expectedValues;
 
   _UnorderedEquals(Iterable expected)
-      : _expectedValues = expected.toList(),
-        super(expected.map(equals));
+    : _expectedValues = expected.toList(),
+      super(expected.map(equals));
 
   @override
   Description describe(Description description) => description
@@ -132,7 +152,7 @@ class _UnorderedEquals extends _UnorderedMatches {
 
 /// Iterable matchers match against [Iterable]s. We add this intermediate
 /// class to give better mismatch error messages than the base Matcher class.
-abstract class _IterableMatcher extends FeatureMatcher<Iterable> {
+abstract class _IterableMatcher<T> extends FeatureMatcher<Iterable<T>> {
   const _IterableMatcher();
 }
 
@@ -148,8 +168,8 @@ class _UnorderedMatches extends _IterableMatcher {
   final bool _allowUnmatchedValues;
 
   _UnorderedMatches(Iterable expected, {bool allowUnmatchedValues = false})
-      : _expected = expected.map(wrapMatcher).toList(),
-        _allowUnmatchedValues = allowUnmatchedValues;
+    : _expected = expected.map(wrapMatcher).toList(),
+      _allowUnmatchedValues = allowUnmatchedValues;
 
   String? _test(List values) {
     // Check the lengths are the same.
@@ -173,9 +193,11 @@ class _UnorderedMatches extends _IterableMatcher {
     for (var valueIndex = 0; valueIndex < values.length; valueIndex++) {
       _findPairing(edges, valueIndex, matched);
     }
-    for (var matcherIndex = 0;
-        matcherIndex < _expected.length;
-        matcherIndex++) {
+    for (
+      var matcherIndex = 0;
+      matcherIndex < _expected.length;
+      matcherIndex++
+    ) {
       if (matched[matcherIndex] == null) {
         final description = StringDescription()
             .add('has no match for ')
@@ -204,9 +226,12 @@ class _UnorderedMatches extends _IterableMatcher {
       .add(' unordered');
 
   @override
-  Description describeTypedMismatch(Iterable item,
-          Description mismatchDescription, Map matchState, bool verbose) =>
-      mismatchDescription.add(_test(item.toList())!);
+  Description describeTypedMismatch(
+    Iterable item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) => mismatchDescription.add(_test(item.toList())!);
 
   /// Returns `true` if the value at [valueIndex] can be paired with some
   /// unmatched matcher and updates the state of [matched].
@@ -214,15 +239,22 @@ class _UnorderedMatches extends _IterableMatcher {
   /// If there is a conflict where multiple values may match the same matcher
   /// recursively looks for a new place to match the old value.
   bool _findPairing(
-          List<List<int>> edges, int valueIndex, List<int?> matched) =>
-      _findPairingInner(edges, valueIndex, matched, <int>{});
+    List<List<int>> edges,
+    int valueIndex,
+    List<int?> matched,
+  ) => _findPairingInner(edges, valueIndex, matched, <int>{});
 
   /// Implementation of [_findPairing], tracks [reserved] which are the
   /// matchers that have been used _during_ this search.
-  bool _findPairingInner(List<List<int>> edges, int valueIndex,
-      List<int?> matched, Set<int> reserved) {
-    final possiblePairings =
-        edges[valueIndex].where((m) => !reserved.contains(m));
+  bool _findPairingInner(
+    List<List<int>> edges,
+    int valueIndex,
+    List<int?> matched,
+    Set<int> reserved,
+  ) {
+    final possiblePairings = edges[valueIndex].where(
+      (m) => !reserved.contains(m),
+    );
     for (final matcherIndex in possiblePairings) {
       reserved.add(matcherIndex);
       final previouslyMatched = matched[matcherIndex];
@@ -243,9 +275,11 @@ class _UnorderedMatches extends _IterableMatcher {
 /// The [comparator] function, taking an expected and an actual argument, and
 /// returning whether they match, will be applied to each pair in order.
 /// [description] should be a meaningful name for the comparator.
-Matcher pairwiseCompare<S, T>(Iterable<S> expected,
-        bool Function(S, T) comparator, String description) =>
-    _PairwiseCompare(expected, comparator, description);
+Matcher pairwiseCompare<S, T>(
+  Iterable<S> expected,
+  bool Function(S, T) comparator,
+  String description,
+) => _PairwiseCompare(expected, comparator, description);
 
 typedef _Comparator<S, T> = bool Function(S a, T b);
 
@@ -264,8 +298,11 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
     for (var e in _expected) {
       iterator.moveNext();
       if (!_comparator(e, iterator.current as T)) {
-        addStateInfo(matchState,
-            {'index': i, 'expected': e, 'actual': iterator.current});
+        addStateInfo(matchState, {
+          'index': i,
+          'expected': e,
+          'actual': iterator.current,
+        });
         return false;
       }
       i++;
@@ -278,11 +315,16 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
       description.add('pairwise $_description ').addDescriptionOf(_expected);
 
   @override
-  Description describeTypedMismatch(Iterable item,
-      Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(
+    Iterable item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (item.length != _expected.length) {
-      return mismatchDescription
-          .add('has length ${item.length} instead of ${_expected.length}');
+      return mismatchDescription.add(
+        'has length ${item.length} instead of ${_expected.length}',
+      );
     } else {
       return mismatchDescription
           .add('has ')
@@ -317,8 +359,8 @@ class _ContainsAll extends _UnorderedMatches {
   final Iterable _unwrappedExpected;
 
   _ContainsAll(Iterable expected)
-      : _unwrappedExpected = expected,
-        super(expected.map(wrapMatcher), allowUnmatchedValues: true);
+    : _unwrappedExpected = expected,
+      super(expected.map(wrapMatcher), allowUnmatchedValues: true);
   @override
   Description describe(Description description) =>
       description.add('contains all of ').addDescriptionOf(_unwrappedExpected);
@@ -364,9 +406,12 @@ class _ContainsAllInOrder extends _IterableMatcher {
       .add(')');
 
   @override
-  Description describeTypedMismatch(Iterable item,
-          Description mismatchDescription, Map matchState, bool verbose) =>
-      mismatchDescription.add(_test(item, matchState)!);
+  Description describeTypedMismatch(
+    Iterable item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) => mismatchDescription.add(_test(item, matchState)!);
 }
 
 /// Matches [Iterable]s where exactly one element matches the expected
@@ -410,7 +455,137 @@ class _ContainsOnce extends _IterableMatcher {
       description.add('contains once(').addDescriptionOf(_expected).add(')');
 
   @override
-  Description describeTypedMismatch(Iterable item,
-          Description mismatchDescription, Map matchState, bool verbose) =>
-      mismatchDescription.add(_test(item, matchState)!);
+  Description describeTypedMismatch(
+    Iterable item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) => mismatchDescription.add(_test(item, matchState)!);
+}
+
+/// Matches [Iterable]s which are sorted.
+Matcher isSorted<T extends Comparable<T>>() =>
+    _IsSorted<T, T>((t) => t, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are [compare]-sorted.
+Matcher isSortedUsing<T>(Comparator<T> compare) =>
+    _IsSorted<T, T>((t) => t, compare);
+
+/// Matches [Iterable]s which are sorted by the [keyOf] property.
+Matcher isSortedBy<T, K extends Comparable<K>>(K Function(T) keyOf) =>
+    _IsSorted<T, K>(keyOf, (a, b) => a.compareTo(b));
+
+/// Matches [Iterable]s which are [compare]-sorted by their [keyOf] property.
+Matcher isSortedByCompare<T, K>(K Function(T) keyOf, Comparator<K> compare) =>
+    _IsSorted(keyOf, compare);
+
+class _IsSorted<T, K> extends _IterableMatcher<T> {
+  final K Function(T) _keyOf;
+  final Comparator<K> _compare;
+
+  _IsSorted(K Function(T) keyOf, Comparator<K> compare)
+    : _keyOf = keyOf,
+      _compare = compare;
+
+  @override
+  bool typedMatches(Iterable<T> item, Map matchState) {
+    var iterator = item.iterator;
+    if (!iterator.moveNext()) return true;
+    var previousElement = iterator.current;
+    K previousKey;
+    try {
+      previousKey = _keyOf(previousElement);
+    } catch (e) {
+      addStateInfo(matchState, {
+        'index': 0,
+        'element': previousElement,
+        'error': e,
+        'keyError': true,
+      });
+      return false;
+    }
+
+    var index = 0;
+    while (iterator.moveNext()) {
+      final element = iterator.current;
+      final K key;
+      try {
+        key = _keyOf(element);
+      } catch (e) {
+        addStateInfo(matchState, {
+          'index': index,
+          'element': element,
+          'error': e,
+          'keyError': true,
+        });
+        return false;
+      }
+
+      final int comparison;
+      try {
+        comparison = _compare(previousKey, key);
+      } catch (e) {
+        addStateInfo(matchState, {
+          'index': index,
+          'first': previousElement,
+          'second': element,
+          'error': e,
+          'compareError': true,
+        });
+        return false;
+      }
+
+      if (comparison > 0) {
+        addStateInfo(matchState, {
+          'index': index,
+          'first': previousElement,
+          'second': element,
+        });
+        return false;
+      }
+      previousElement = element;
+      previousKey = key;
+      index++;
+    }
+    return true;
+  }
+
+  @override
+  Description describe(Description description) => description.add('is sorted');
+
+  @override
+  Description describeTypedMismatch(
+    Iterable<T> item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
+    if (matchState.containsKey('error')) {
+      mismatchDescription
+          .add('got error ')
+          .addDescriptionOf(matchState['error'])
+          .add(' at ')
+          .addDescriptionOf(matchState['index']);
+
+      if (matchState.containsKey('compareError')) {
+        return mismatchDescription
+            .add(' when comparing ')
+            .addDescriptionOf(matchState['first'])
+            .add(' and ')
+            .addDescriptionOf(matchState['second']);
+      } else {
+        return mismatchDescription
+            .add(' when getting key of ')
+            .addDescriptionOf(matchState['element']);
+      }
+    }
+
+    return mismatchDescription
+        .add('found elements out of order at ')
+        .addDescriptionOf(matchState['index'])
+        .add(': ')
+        .addDescriptionOf(matchState['first'])
+        .add(' and ')
+        .addDescriptionOf(matchState['second']);
+  }
 }

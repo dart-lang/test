@@ -8,6 +8,7 @@ import 'dart:math';
 import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/group.dart';
+import 'package:test_api/src/backend/group_entry.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_core/src/runner/engine.dart';
 
@@ -19,17 +20,18 @@ void main() {
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
         test(
-            'test ${i + 1}',
-            expectAsync0(() {
-              expect(testsRun, equals(i));
-              testsRun++;
-            }, max: 1));
+          'test ${i + 1}',
+          expectAsync0(() {
+            expect(testsRun, equals(i));
+            testsRun++;
+          }, max: 1),
+        );
       }
     });
 
     var engine = Engine.withSuites([
-      runnerSuite(Group.root(tests.take(2))),
-      runnerSuite(Group.root(tests.skip(2)))
+      runnerSuite(tests.take(2).asRootGroup()),
+      runnerSuite(tests.skip(2).asRootGroup()),
     ]);
 
     await engine.run();
@@ -41,22 +43,24 @@ void main() {
     var tests = declare(() {
       for (var i = 0; i < 4; i++) {
         test(
-            'test ${i + 1}',
-            expectAsync0(() {
-              expect(testsRun, equals(i));
-              testsRun++;
-            }, max: 1));
+          'test ${i + 1}',
+          expectAsync0(() {
+            expect(testsRun, equals(i));
+            testsRun++;
+          }, max: 1),
+        );
       }
     });
 
     var engine = Engine();
     expect(
-        engine.run().then((_) {
-          expect(testsRun, equals(4));
-        }),
-        completes);
+      engine.run().then((_) {
+        expect(testsRun, equals(4));
+      }),
+      completes,
+    );
 
-    engine.suiteSink.add(runnerSuite(Group.root(tests)));
+    engine.suiteSink.add(runnerSuite(tests.asRootGroup()));
     engine.suiteSink.close();
   });
 
@@ -75,8 +79,7 @@ void main() {
     completer.complete();
   });
 
-  test(
-      'emits each test before it starts running and after the previous test '
+  test('emits each test before it starts running and after the previous test '
       'finished', () {
     var testsRun = 0;
     var engine = declareEngine(() {
@@ -85,15 +88,23 @@ void main() {
       }
     });
 
-    engine.onTestStarted.listen(expectAsync1((liveTest) {
-      // [testsRun] should be one less than the test currently running.
-      expect(liveTest.test.name, equals('test ${testsRun + 1}'));
+    engine.onTestStarted.listen(
+      expectAsync1(
+        (liveTest) {
+          // [testsRun] should be one less than the test currently running.
+          expect(liveTest.test.name, equals('test ${testsRun + 1}'));
 
-      // [Engine.onTestStarted] is guaranteed to fire before the first
-      // [LiveTest.onStateChange].
-      expect(liveTest.onStateChange.first,
-          completion(equals(const State(Status.running, Result.success))));
-    }, count: 3, max: 3));
+          // [Engine.onTestStarted] is guaranteed to fire before the first
+          // [LiveTest.onStateChange].
+          expect(
+            liveTest.onStateChange.first,
+            completion(equals(const State(Status.running, Result.success))),
+          );
+        },
+        count: 3,
+        max: 3,
+      ),
+    );
 
     return engine.run();
   });
@@ -130,18 +141,20 @@ void main() {
     expect(engine.run(), completion(isFalse));
   });
 
-  test('.run() does not run more tests after failure for stopOnFirstFailure',
-      () async {
-    var secondTestRan = false;
-    var engine = declareEngine(() {
-      test('failure', () => throw 'oh no');
-      test('subsequent', () {
-        secondTestRan = true;
-      });
-    }, stopOnFirstFailure: true);
-    await expectLater(engine.run(), completion(isFalse));
-    expect(secondTestRan, false);
-  });
+  test(
+    '.run() does not run more tests after failure for stopOnFirstFailure',
+    () async {
+      var secondTestRan = false;
+      var engine = declareEngine(() {
+        test('failure', () => throw 'oh no');
+        test('subsequent', () {
+          secondTestRan = true;
+        });
+      }, stopOnFirstFailure: true);
+      await expectLater(engine.run(), completion(isFalse));
+      expect(secondTestRan, false);
+    },
+  );
 
   test('.run() may not be called more than once', () {
     var engine = Engine.withSuites([]);
@@ -208,26 +221,39 @@ void main() {
         test('test', () {}, skip: true);
       });
 
-      var engine = Engine.withSuites([runnerSuite(Group.root(tests))]);
+      var engine = Engine.withSuites([runnerSuite(tests.asRootGroup())]);
 
-      engine.onTestStarted.listen(expectAsync1((liveTest) {
-        expect(liveTest, same(engine.liveTests.single));
-        expect(liveTest.test.name, equals(tests.single.name));
+      engine.onTestStarted.listen(
+        expectAsync1((liveTest) {
+          expect(liveTest, same(engine.liveTests.single));
+          expect(liveTest.test.name, equals(tests.single.name));
 
-        var i = 0;
-        liveTest.onStateChange.listen(expectAsync1((state) {
-          if (i == 0) {
-            expect(state, equals(const State(Status.running, Result.success)));
-          } else if (i == 1) {
-            expect(state, equals(const State(Status.running, Result.skipped)));
-          } else if (i == 2) {
-            expect(state, equals(const State(Status.complete, Result.skipped)));
-          }
-          i++;
-        }, count: 3));
+          var i = 0;
+          liveTest.onStateChange.listen(
+            expectAsync1((state) {
+              if (i == 0) {
+                expect(
+                  state,
+                  equals(const State(Status.running, Result.success)),
+                );
+              } else if (i == 1) {
+                expect(
+                  state,
+                  equals(const State(Status.running, Result.skipped)),
+                );
+              } else if (i == 2) {
+                expect(
+                  state,
+                  equals(const State(Status.complete, Result.skipped)),
+                );
+              }
+              i++;
+            }, count: 3),
+          );
 
-        expect(liveTest.onComplete, completes);
-      }));
+          expect(liveTest.onComplete, completes);
+        }),
+      );
 
       return engine.run();
     });
@@ -277,26 +303,39 @@ void main() {
         }, skip: true);
       });
 
-      var engine = Engine.withSuites([runnerSuite(Group.root(entries))]);
+      var engine = Engine.withSuites([runnerSuite(entries.asRootGroup())]);
 
-      engine.onTestStarted.listen(expectAsync1((liveTest) {
-        expect(liveTest, same(engine.liveTests.single));
-        expect(liveTest.test.name, equals('group test'));
+      engine.onTestStarted.listen(
+        expectAsync1((liveTest) {
+          expect(liveTest, same(engine.liveTests.single));
+          expect(liveTest.test.name, equals('group test'));
 
-        var i = 0;
-        liveTest.onStateChange.listen(expectAsync1((state) {
-          if (i == 0) {
-            expect(state, equals(const State(Status.running, Result.success)));
-          } else if (i == 1) {
-            expect(state, equals(const State(Status.running, Result.skipped)));
-          } else if (i == 2) {
-            expect(state, equals(const State(Status.complete, Result.skipped)));
-          }
-          i++;
-        }, count: 3));
+          var i = 0;
+          liveTest.onStateChange.listen(
+            expectAsync1((state) {
+              if (i == 0) {
+                expect(
+                  state,
+                  equals(const State(Status.running, Result.success)),
+                );
+              } else if (i == 1) {
+                expect(
+                  state,
+                  equals(const State(Status.running, Result.skipped)),
+                );
+              } else if (i == 2) {
+                expect(
+                  state,
+                  equals(const State(Status.complete, Result.skipped)),
+                );
+              }
+              i++;
+            }, count: 3),
+          );
 
-        expect(liveTest.onComplete, completes);
-      }));
+          expect(liveTest.onComplete, completes);
+        }),
+      );
 
       return engine.run();
     });
@@ -311,8 +350,9 @@ void main() {
         var maxTestConcurrency = 0;
         var testCount = concurrency * 2;
 
-        Future<void> updateAndCheckConcurrency(
-            {bool isLoadSuite = false}) async {
+        Future<void> updateAndCheckConcurrency({
+          bool isLoadSuite = false,
+        }) async {
           if (isLoadSuite) {
             testsLoaded++;
             maxLoadConcurrency = max(maxLoadConcurrency, testsLoaded);
@@ -342,7 +382,7 @@ void main() {
           for (var i = 0; i < testCount; i++)
             loadSuite('group $i', () async {
               await updateAndCheckConcurrency(isLoadSuite: true);
-              return runnerSuite(Group.root([tests[i]]));
+              return runnerSuite([tests[i]].asRootGroup());
             }),
         ], concurrency: concurrency);
 
@@ -355,4 +395,12 @@ void main() {
       }
     });
   });
+}
+
+extension on Iterable<GroupEntry> {
+  /// Clones these entries into a new root group, assigning the new parent group
+  /// as necessary.
+  Group asRootGroup() {
+    return Group.root(map((entry) => entry.filter((_) => true)!));
+  }
 }

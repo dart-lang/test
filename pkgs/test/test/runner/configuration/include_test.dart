@@ -87,11 +87,17 @@ void main() {
 
     var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
     expect(
-        () => Configuration.load(path),
-        throwsA(allOf(
-            isFormatException,
-            predicate((error) =>
-                error.toString().contains("include isn't supported here")))));
+      () => Configuration.load(path),
+      throwsA(
+        allOf(
+          isFormatException,
+          predicate(
+            (error) =>
+                error.toString().contains("include isn't supported here"),
+          ),
+        ),
+      ),
+    );
   });
 
   test('should allow an include field in a runner config context', () async {
@@ -133,9 +139,7 @@ void main() {
   group('gracefully handles', () {
     test('a non-string include field', () async {
       await d.dir('repo', [
-        d.dir('pkg', [
-          d.file('dart_test.yaml', 'include: 3'),
-        ]),
+        d.dir('pkg', [d.file('dart_test.yaml', 'include: 3')]),
       ]).create();
 
       var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');
@@ -144,9 +148,7 @@ void main() {
 
     test('a non-existent included file', () async {
       await d.dir('repo', [
-        d.dir('pkg', [
-          d.file('dart_test.yaml', 'include: other_test.yaml'),
-        ]),
+        d.dir('pkg', [d.file('dart_test.yaml', 'include: other_test.yaml')]),
       ]).create();
 
       var path = p.join(d.sandbox, 'repo', 'pkg', 'dart_test.yaml');

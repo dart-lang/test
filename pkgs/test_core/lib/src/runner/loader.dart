@@ -80,7 +80,9 @@ class Loader {
 
   /// Registers a [PlatformPlugin] for [runtimes].
   void _registerPlatformPlugin(
-      Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> Function() plugin) {
+    Iterable<Runtime> runtimes,
+    FutureOr<PlatformPlugin> Function() plugin,
+  ) {
     var memoizer = AsyncMemoizer<PlatformPlugin>();
     for (var runtime in runtimes) {
       _platformPlugins[runtime] = memoizer;
@@ -94,16 +96,20 @@ class Loader {
     for (var customRuntime in _config.defineRuntimes.values) {
       if (_runtimesByIdentifier.containsKey(customRuntime.identifier)) {
         throw SourceSpanFormatException(
-            wordWrap(
-                'The platform "${customRuntime.identifier}" already exists. '
-                'Use override_platforms to override it.'),
-            customRuntime.identifierSpan);
+          wordWrap(
+            'The platform "${customRuntime.identifier}" already exists. '
+            'Use override_platforms to override it.',
+          ),
+          customRuntime.identifierSpan,
+        );
       }
 
       var parent = _runtimesByIdentifier[customRuntime.parent];
       if (parent == null) {
         throw SourceSpanFormatException(
-            'Unknown platform.', customRuntime.parentSpan);
+          'Unknown platform.',
+          customRuntime.parentSpan,
+        );
       }
 
       var runtime = parent.extend(customRuntime.name, customRuntime.identifier);
@@ -139,13 +145,15 @@ class Loader {
   /// [RunnerSuite]s defined in the file.
   Stream<LoadSuite> loadDir(String dir, SuiteConfiguration suiteConfig) {
     return StreamGroup.merge(
-        Directory(dir).listSync(recursive: true).map((entry) {
-      if (entry is! File || !_config.filename.matches(p.basename(entry.path))) {
-        return const Stream.empty();
-      }
+      Directory(dir).listSync(recursive: true).map((entry) {
+        if (entry is! File ||
+            !_config.filename.matches(p.basename(entry.path))) {
+          return const Stream.empty();
+        }
 
-      return loadFile(entry.path, suiteConfig);
-    }));
+        return loadFile(entry.path, suiteConfig);
+      }),
+    );
   }
 
   /// Loads a test suite from the file at [path] according to [suiteConfig].
@@ -155,17 +163,28 @@ class Loader {
   ///
   /// This will emit a [LoadException] if the file fails to load.
   Stream<LoadSuite> loadFile(
-      String path, SuiteConfiguration suiteConfig) async* {
+    String path,
+    SuiteConfiguration suiteConfig,
+  ) async* {
     try {
-      suiteConfig = suiteConfig.merge(SuiteConfiguration.fromMetadata(
+      suiteConfig = suiteConfig.merge(
+        SuiteConfiguration.fromMetadata(
           parseMetadata(
-              path, File(path).readAsStringSync(), _runtimeVariables.toSet())));
+            path,
+            File(path).readAsStringSync(),
+            _runtimeVariables.toSet(),
+          ),
+        ),
+      );
     } on ArgumentError catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
       // the VM's or dart2js's.
     } on FormatException catch (error, stackTrace) {
-      yield LoadSuite.forLoadException(LoadException(path, error), suiteConfig,
-          stackTrace: stackTrace);
+      yield LoadSuite.forLoadException(
+        LoadException(path, error),
+        suiteConfig,
+        stackTrace: stackTrace,
+      );
       return;
     }
 
@@ -183,8 +202,9 @@ class Loader {
             in suiteConfig.compilerSelections ?? <CompilerSelection>[])
           if (runtime.supportedCompilers.contains(selection.compiler) &&
               (selection.platformSelector == null ||
-                  selection.platformSelector!
-                      .evaluate(currentPlatform(runtime, selection.compiler))))
+                  selection.platformSelector!.evaluate(
+                    currentPlatform(runtime, selection.compiler),
+                  )))
             selection.compiler,
       };
       if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
@@ -197,13 +217,17 @@ class Loader {
 
         // Don't load a skipped suite.
         if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
-          yield LoadSuite.forSuite(RunnerSuite(
+          yield LoadSuite.forSuite(
+            RunnerSuite(
               const PluginEnvironment(),
               platformConfig,
-              Group.root([LocalTest('(suite)', platformConfig.metadata, () {})],
-                  metadata: platformConfig.metadata),
+              Group.root([
+                LocalTest('(suite)', platformConfig.metadata, () {}),
+              ], metadata: platformConfig.metadata),
               platform,
-              path: path));
+              path: path,
+            ),
+          );
           continue;
         }
 
@@ -213,11 +237,13 @@ class Loader {
           var retriesLeft = suiteConfig.metadata.retry;
           while (true) {
             try {
-              var plugin =
-                  await memo.runOnce(_platformCallbacks[platform.runtime]!);
+              var plugin = await memo.runOnce(
+                _platformCallbacks[platform.runtime]!,
+              );
               _customizePlatform(plugin, platform.runtime);
-              var suite = await plugin.load(path, platform, platformConfig,
-                  {'platformVariables': _runtimeVariables.toList()});
+              var suite = await plugin.load(path, platform, platformConfig, {
+                'platformVariables': _runtimeVariables.toList(),
+              });
               if (suite != null) _suites.add(suite);
               return suite;
             } on Object catch (error, stackTrace) {
@@ -268,30 +294,36 @@ class Loader {
       }
 
       throw SourceSpanFormatException(
-          'The "$identifier" platform can\'t be customized.', span);
+        'The "$identifier" platform can\'t be customized.',
+        span,
+      );
     }
   }
 
   Future closeEphemeral() async {
-    await Future.wait(_platformPlugins.values.map((memo) async {
-      if (!memo.hasRun) return;
-      await (await memo.future).closeEphemeral();
-    }));
+    await Future.wait(
+      _platformPlugins.values.map((memo) async {
+        if (!memo.hasRun) return;
+        await (await memo.future).closeEphemeral();
+      }),
+    );
   }
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
-        await Future.wait([
-          Future.wait(_platformPlugins.values.map((memo) async {
-            if (!memo.hasRun) return;
-            await (await memo.future).close();
-          })),
-          Future.wait(_suites.map((suite) => suite.close()))
-        ]);
+    await Future.wait([
+      Future.wait(
+        _platformPlugins.values.map((memo) async {
+          if (!memo.hasRun) return;
+          await (await memo.future).close();
+        }),
+      ),
+      Future.wait(_suites.map((suite) => suite.close())),
+    ]);
 
-        _platformPlugins.clear();
-        _platformCallbacks.clear();
-        _suites.clear();
-      });
+    _platformPlugins.clear();
+    _platformCallbacks.clear();
+    _suites.clear();
+  });
   final _closeMemo = AsyncMemoizer<void>();
 }

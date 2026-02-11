@@ -20,39 +20,41 @@ void main() {
     });
 
     test('succeeds when a future does not complete', () {
-      var completer = Completer();
+      var completer = Completer<Never>();
       expect(completer.future, doesNotComplete);
     });
 
     test('fails when a future does complete', () async {
       var monitor = await TestCaseMonitor.run(() {
-        var completer = Completer();
+        var completer = Completer<void>();
         completer.complete(null);
         expect(completer.future, doesNotComplete);
       });
 
       expectTestFailed(
-          monitor,
-          'Future was not expected to complete but completed with a value of'
-          ' null');
+        monitor,
+        'Future was not expected to complete but completed with a value of'
+        ' null',
+      );
     });
 
     test('fails when a future completes after the expect', () async {
       var monitor = await TestCaseMonitor.run(() {
-        var completer = Completer();
+        var completer = Completer<void>();
         expect(completer.future, doesNotComplete);
         completer.complete(null);
       });
 
       expectTestFailed(
-          monitor,
-          'Future was not expected to complete but completed with a value of'
-          ' null');
+        monitor,
+        'Future was not expected to complete but completed with a value of'
+        ' null',
+      );
     });
 
     test('fails when a future eventually completes', () async {
       var monitor = await TestCaseMonitor.run(() {
-        var completer = Completer();
+        var completer = Completer<void>();
         expect(completer.future, doesNotComplete);
         Future(() async {
           await pumpEventQueue(times: 10);
@@ -60,9 +62,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Future was not expected to complete but completed with a value of'
-          ' null');
+        monitor,
+        'Future was not expected to complete but completed with a value of'
+        ' null',
+      );
     });
   });
   group('[completes]', () {
@@ -80,7 +83,7 @@ void main() {
 
     test('with an error', () async {
       var monitor = await TestCaseMonitor.run(() {
-        expect(Future.error('X'), completes);
+        expect(Future<Never>.error('X'), completes);
       });
 
       expect(monitor.state, equals(State.failed));
@@ -89,7 +92,7 @@ void main() {
 
     test('with a failure', () async {
       var monitor = await TestCaseMonitor.run(() {
-        expect(Future.error(TestFailure('oh no')), completes);
+        expect(Future<Never>.error(TestFailure('oh no')), completes);
       });
 
       expectTestFailed(monitor, 'oh no');
@@ -101,10 +104,11 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Expected: completes successfully\n'
-          '  Actual: <10>\n'
-          '   Which: was not a Future\n');
+        monitor,
+        'Expected: completes successfully\n'
+        '  Actual: <10>\n'
+        '   Which: was not a Future\n',
+      );
     });
 
     test('with a successful future', () {
@@ -127,7 +131,7 @@ void main() {
 
     test('with an error', () async {
       var monitor = await TestCaseMonitor.run(() {
-        expect(Future.error('X'), completion(isNull));
+        expect(Future<Never>.error('X'), completion(isNull));
       });
 
       expect(monitor.state, equals(State.failed));
@@ -136,7 +140,7 @@ void main() {
 
     test('with a failure', () async {
       var monitor = await TestCaseMonitor.run(() {
-        expect(Future.error(TestFailure('oh no')), completion(isNull));
+        expect(Future<Never>.error(TestFailure('oh no')), completion(isNull));
       });
 
       expectTestFailed(monitor, 'oh no');
@@ -148,10 +152,11 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Expected: completes to a value that <10>\n'
-          '  Actual: <10>\n'
-          '   Which: was not a Future\n');
+        monitor,
+        'Expected: completes to a value that <10>\n'
+        '  Actual: <10>\n'
+        '   Which: was not a Future\n',
+      );
     });
 
     test('with an incorrect value', () async {
@@ -160,26 +165,33 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          allOf([
-            startsWith("Expected: completes to a value that 'b'\n"
-                '  Actual: <'),
-            endsWith('>\n'
-                "   Which: emitted 'a'\n"
-                '            which is different.\n'
-                '                  Expected: b\n'
-                '                    Actual: a\n'
-                '                            ^\n'
-                '                   Differ at offset 0\n')
-          ]));
+        monitor,
+        allOf([
+          startsWith(
+            "Expected: completes to a value that 'b'\n"
+            '  Actual: <',
+          ),
+          endsWith(
+            '>\n'
+            "   Which: emitted 'a'\n"
+            '            which is different.\n'
+            '                  Expected: b\n'
+            '                    Actual: a\n'
+            '                            ^\n'
+            '                   Differ at offset 0\n',
+          ),
+        ]),
+      );
     });
 
     test("blocks expectLater's Future", () async {
-      var completer = Completer();
+      var completer = Completer<int>();
       var fired = false;
-      unawaited(expectLater(completer.future, completion(equals(1))).then((_) {
-        fired = true;
-      }));
+      unawaited(
+        expectLater(completer.future, completion(equals(1))).then((_) {
+          fired = true;
+        }),
+      );
 
       await pumpEventQueue();
       expect(fired, isFalse);

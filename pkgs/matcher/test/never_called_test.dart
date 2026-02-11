@@ -15,7 +15,7 @@ void main() {
 
   test("doesn't throw if it isn't called", () async {
     var monitor = await TestCaseMonitor.run(() {
-      const Stream.empty().listen(neverCalled);
+      const Stream<Never>.empty().listen(neverCalled);
     });
 
     expectTestPassed(monitor);
@@ -28,9 +28,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Callback should never have been called, but it was called with no '
-          'arguments.');
+        monitor,
+        'Callback should never have been called, but it was called with no '
+        'arguments.',
+      );
     });
 
     test('pretty-prints arguments', () async {
@@ -39,11 +40,12 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Callback should never have been called, but it was called with:\n'
-          '* <1>\n'
-          "* 'foo\\n'\n"
-          "    'bar'");
+        monitor,
+        'Callback should never have been called, but it was called with:\n'
+        '* <1>\n'
+        "* 'foo\\n'\n"
+        "    'bar'",
+      );
     });
 
     test('keeps the test alive', () async {
@@ -52,9 +54,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Callback should never have been called, but it was called with:\n'
-          '* <null>');
+        monitor,
+        'Callback should never have been called, but it was called with:\n'
+        '* <null>',
+      );
     });
 
     test("can't be caught", () async {
@@ -67,9 +70,10 @@ void main() {
       });
 
       expectTestFailed(
-          monitor,
-          'Callback should never have been called, but it was called with '
-          'no arguments.');
+        monitor,
+        'Callback should never have been called, but it was called with '
+        'no arguments.',
+      );
     });
   });
 }

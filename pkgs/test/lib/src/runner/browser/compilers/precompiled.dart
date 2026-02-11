@@ -62,8 +62,13 @@ abstract class PrecompiledSupport extends CompilerSupport {
   @override
   Uri get serverUrl => _server.url.resolve('$_secret/');
 
-  PrecompiledSupport._(super.config, super.defaultTemplatePath, this._server,
-      this._root, String faviconPath) {
+  PrecompiledSupport._(
+    super.config,
+    super.defaultTemplatePath,
+    this._server,
+    this._root,
+    String faviconPath,
+  ) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
         .add(createStaticHandler(_root, serveFilesOutsidePath: true))
@@ -77,10 +82,9 @@ abstract class PrecompiledSupport extends CompilerSupport {
         .addMiddleware(PathHandler.nestedIn(_secret))
         .addHandler(cascade.handler);
 
-    _server.mount(shelf.Cascade()
-        .add(createFileHandler(faviconPath))
-        .add(pipeline)
-        .handler);
+    _server.mount(
+      shelf.Cascade().add(createFileHandler(faviconPath)).add(pipeline).handler,
+    );
   }
 
   static Future<PrecompiledSupport> start({
@@ -94,30 +98,46 @@ abstract class PrecompiledSupport extends CompilerSupport {
 
     return switch (compiler) {
       Compiler.dart2js => JsPrecompiledSupport._(
-          config, defaultTemplatePath, server, root, faviconPath),
+        config,
+        defaultTemplatePath,
+        server,
+        root,
+        faviconPath,
+      ),
       Compiler.dart2wasm => WasmPrecompiledSupport._(
-          config, defaultTemplatePath, server, root, faviconPath),
-      Compiler.exe ||
-      Compiler.kernel ||
-      Compiler.source =>
+        config,
+        defaultTemplatePath,
+        server,
+        root,
+        faviconPath,
+      ),
+      Compiler.exe || Compiler.kernel || Compiler.source =>
         throw UnsupportedError(
-            'The browser platform does not support $compiler'),
+          'The browser platform does not support $compiler',
+        ),
     };
   }
 
   /// Compiles [dartPath] using [suiteConfig] for [platform].
   @override
-  Future<void> compileSuite(String dartPath, SuiteConfiguration suiteConfig,
-      SuitePlatform platform) async {
+  Future<void> compileSuite(
+    String dartPath,
+    SuiteConfiguration suiteConfig,
+    SuitePlatform platform,
+  ) async {
     if (suiteConfig.jsTrace) return;
     var mapPath = p.join(
-        suiteConfig.precompiledPath!, '$dartPath.browser_test.dart.js.map');
+      suiteConfig.precompiledPath!,
+      '$dartPath.browser_test.dart.js.map',
+    );
     var mapFile = File(mapPath);
     if (mapFile.existsSync()) {
-      _mappers[dartPath] = JSStackTraceMapper(mapFile.readAsStringSync(),
-          mapUrl: p.toUri(mapPath),
-          sdkRoot: Uri.parse(r'/packages/$sdk'),
-          packageMap: (await currentPackageConfig).toPackageMap());
+      _mappers[dartPath] = JSStackTraceMapper(
+        mapFile.readAsStringSync(),
+        mapUrl: p.toUri(mapPath),
+        sdkRoot: Uri.parse(r'/packages/$sdk'),
+        packageMap: (await currentPackageConfig).toPackageMap(),
+      );
     }
   }
 
@@ -137,7 +157,13 @@ abstract class PrecompiledSupport extends CompilerSupport {
   @override
   (Uri, Future<WebSocketChannel>) get webSocket {
     var completer = Completer<WebSocketChannel>.sync();
-    var path = _webSocketHandler.create(webSocketHandler(completer.complete));
+    // Note: the WebSocketChannel type below is needed for compatibility with
+    // package:shelf_web_socket v2.
+    var path = _webSocketHandler.create(
+      webSocketHandler((WebSocketChannel ws, _) {
+        completer.complete(ws);
+      }),
+    );
     var webSocketUrl = serverUrl.replace(scheme: 'ws').resolve(path);
     return (webSocketUrl, completer.future);
   }

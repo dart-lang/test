@@ -14,8 +14,10 @@ import '../../io.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('prints the platform name when running on multiple platforms', () async {
-    await d.file('test.dart', '''
+  test(
+    'prints the platform name when running on multiple platforms',
+    () async {
+      await d.file('test.dart', '''
 import 'dart:async';
 
 import 'package:test/test.dart';
@@ -25,13 +27,15 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest([
-      '-r', 'expanded', '-p', 'chrome', '-p', 'vm', '-j', '1', //
-      'test.dart'
-    ]);
+      var test = await runTest([
+        '-r', 'expanded', '-p', 'chrome', '-p', 'vm', '-j', '1', //
+        'test.dart',
+      ]);
 
-    expect(test.stdoutStream(), emitsThrough(contains('[VM, Kernel]')));
-    expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
-    await test.shouldExit(0);
-  }, tags: ['chrome']);
+      expect(test.stdoutStream(), emitsThrough(contains('[VM, Kernel]')));
+      expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
+      await test.shouldExit(0);
+    },
+    tags: ['chrome'],
+  );
 }

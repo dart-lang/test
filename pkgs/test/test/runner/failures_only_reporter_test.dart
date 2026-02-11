@@ -25,18 +25,23 @@ void main() {
   });
 
   test('runs several successful tests and reports only at the end', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('success 1', () {});
         test('success 2', () {});
-        test('success 3', () {});''', '''
-        +3: All tests passed!''');
+        test('success 3', () {});''',
+      '''
+        +3: All tests passed!''',
+    );
   });
 
   test('runs several failing tests and reports when each fails', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
-        test('failure 3', () => throw TestFailure('oh no'));''', '''
+        test('failure 3', () => throw TestFailure('oh no'));''',
+      '''
         +0 -1: failure 1 [E]
           oh no
           test.dart 6:33  main.<fn>
@@ -49,7 +54,8 @@ void main() {
           oh no
           test.dart 8:33  main.<fn>
 
-        +0 -3: Some tests failed.''');
+        +0 -3: Some tests failed.''',
+    );
   });
 
   test('includes the full stack trace with --verbose-trace', () async {
@@ -63,18 +69,22 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(['--verbose-trace', 'test.dart'],
-        reporter: 'failures-only');
+    var test = await runTest([
+      '--verbose-trace',
+      'test.dart',
+    ], reporter: 'failures-only');
     expect(test.stdout, emitsThrough(contains('dart:async')));
     await test.shouldExit(1);
   });
 
   test('reports only failing tests amid successful tests', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
-        test('success 2', () {});''', '''
+        test('success 2', () {});''',
+      '''
         +0 -1: failure 1 [E]
           oh no
           test.dart 6:33  main.<fn>
@@ -83,28 +93,33 @@ void main() {
           oh no
           test.dart 8:33  main.<fn>
 
-        +2 -2: Some tests failed.''');
+        +2 -2: Some tests failed.''',
+    );
   });
 
   group('print:', () {
     test('handles multiple prints', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         test('test', () {
           print("one");
           print("two");
           print("three");
           print("four");
-        });''', '''
+        });''',
+        '''
         +0: test
         one
         two
         three
         four
-        +1: All tests passed!''');
+        +1: All tests passed!''',
+      );
     });
 
     test('handles a print after the test completes', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = Completer();
@@ -122,17 +137,20 @@ void main() {
         test('wait', () {
           waitStarted.complete();
           return testDone.future;
-        });''', '''
+        });''',
+        '''
         +1: test
         one
         two
         three
         four
-        +2: All tests passed!''');
+        +2: All tests passed!''',
+      );
     });
 
     test('interleaves prints and errors', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var completer = Completer();
@@ -154,7 +172,8 @@ void main() {
           throw "first error";
         });
 
-        test('wait', () => completer.future);''', '''
+        test('wait', () => completer.future);''',
+        '''
         +0: test
         one
         two
@@ -172,27 +191,45 @@ void main() {
 
         five
         six
-        +1 -1: Some tests failed.''');
+        +1 -1: Some tests failed.''',
+      );
     });
   });
 
   group('skip:', () {
-    test('does not emit for skips', () {
-      return _expectReport('''
+    test('reports when all tests are skipped', () {
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
-          test('skip 3', () {}, skip: true);''', '''
-          +0 ~3: All tests skipped.''');
+          test('skip 3', () {}, skip: 'some reason');''',
+        '''
+          +0 ~3: All tests skipped.''',
+      );
+    });
+
+    test('reports count of skipped tests', () {
+      return _expectReport(
+        '''
+          test('skip 1', () {});
+          test('skip 2', () {}, skip: true);
+          test('skip 3', () {}, skip: 'some reason');''',
+        '''
+          +1 ~2: 2 skipped tests.
+          +1 ~2: All other tests passed!''',
+      );
     });
 
     test('runs skipped tests along with successful and failing tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('failure 2', () => throw TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
+          test('success 2', () {});''',
+        '''
           +0 -1: failure 1 [E]
             oh no
             test.dart 6:35  main.<fn>
@@ -201,13 +238,15 @@ void main() {
             oh no
             test.dart 9:35  main.<fn>
 
-          +2 ~2 -2: Some tests failed.''');
+          +2 ~2 -2: Some tests failed.''',
+      );
     });
   });
 
   test('Directs users to enable stack trace chaining if disabled', () async {
     await _expectReport(
-        '''test('failure 1', () => throw TestFailure('oh no'));''', '''
+      '''test('failure 1', () => throw TestFailure('oh no'));''',
+      '''
         +0 -1: failure 1 [E]
           oh no
           test.dart 6:25  main.<fn>
@@ -216,12 +255,17 @@ void main() {
 
         Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
         For example, 'dart test --chain-stack-traces'.''',
-        chainStackTraces: false);
+      chainStackTraces: false,
+    );
   });
 }
 
-Future<void> _expectReport(String tests, String expected,
-    {List<String> args = const [], bool chainStackTraces = true}) async {
+Future<void> _expectReport(
+  String tests,
+  String expected, {
+  List<String> args = const [],
+  bool chainStackTraces = true,
+}) async {
   await d.file('test.dart', '''
     import 'dart:async';
 
@@ -242,17 +286,22 @@ $tests
   var stdoutLines = await test.stdoutStream().toList();
 
   // Remove excess trailing whitespace.
-  var actual = stdoutLines.map((line) {
-    if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
-    return line.trim();
-  }).join('\n');
+  var actual = stdoutLines
+      .map((line) {
+        if (line.startsWith('  ') || line.isEmpty) return line.trimRight();
+        return line.trim();
+      })
+      .join('\n');
 
   // Un-indent the expected string.
   var indentation = expected.indexOf(RegExp('[^ ]'));
-  expected = expected.split('\n').map((line) {
-    if (line.isEmpty) return line;
-    return line.substring(indentation);
-  }).join('\n');
+  expected = expected
+      .split('\n')
+      .map((line) {
+        if (line.isEmpty) return line;
+        return line.substring(indentation);
+      })
+      .join('\n');
 
   expect(actual, equals(expected));
 }

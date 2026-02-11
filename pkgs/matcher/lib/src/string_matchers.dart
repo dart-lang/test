@@ -14,8 +14,8 @@ class _IsEqualIgnoringCase extends FeatureMatcher<String> {
   final String _matchValue;
 
   _IsEqualIgnoringCase(String value)
-      : _value = value,
-        _matchValue = value.toLowerCase();
+    : _value = value,
+      _matchValue = value.toLowerCase();
 
   @override
   bool typedMatches(String item, Map matchState) =>
@@ -50,7 +50,7 @@ class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
   final String _matchValue;
 
   _IsEqualIgnoringWhitespace(String value)
-      : _matchValue = collapseWhitespace(value);
+    : _matchValue = collapseWhitespace(value);
 
   @override
   bool typedMatches(String item, Map matchState) =>
@@ -61,8 +61,12 @@ class _IsEqualIgnoringWhitespace extends FeatureMatcher<String> {
       description.addDescriptionOf(_matchValue).add(' ignoring whitespace');
 
   @override
-  Description describeTypedMismatch(dynamic item,
-      Description mismatchDescription, Map matchState, bool verbose) {
+  Description describeTypedMismatch(
+    String item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     return mismatchDescription
         .add('is ')
         .addDescriptionOf(collapseWhitespace(item))
@@ -131,7 +135,11 @@ class _StringContainsInOrder extends FeatureMatcher<String> {
 
   @override
   Description describe(Description description) => description.addAll(
-      'a string containing ', ', ', ' in order', _substrings);
+    'a string containing ',
+    ', ',
+    ' in order',
+    _substrings,
+  );
 }
 
 /// Returns a matcher that matches if the match argument is a string and
@@ -145,14 +153,15 @@ class _MatchesRegExp extends FeatureMatcher<String> {
   final RegExp _regexp;
 
   _MatchesRegExp(Pattern re)
-      : _regexp = (re is String)
-            ? RegExp(re)
-            : (re is RegExp)
-                ? re
-                : throw ArgumentError('matches requires a regexp or string');
+    : _regexp =
+          (re is String)
+              ? RegExp(re)
+              : (re is RegExp)
+              ? re
+              : throw ArgumentError('matches requires a regexp or string');
 
   @override
-  bool typedMatches(dynamic item, Map matchState) => _regexp.hasMatch(item);
+  bool typedMatches(String item, Map matchState) => _regexp.hasMatch(item);
 
   @override
   Description describe(Description description) =>

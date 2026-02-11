@@ -22,9 +22,12 @@ final _macOSDirectories = {
 /// This is useful for running test files directly and skipping tests as
 /// appropriate. The only OS-specific information we have is the current path,
 /// which we try to use to figure out the OS.
-final OperatingSystem currentOSGuess = (() {
-  if (p.style == p.Style.url) return OperatingSystem.none;
-  if (p.style == p.Style.windows) return OperatingSystem.windows;
-  if (_macOSDirectories.any(p.current.startsWith)) return OperatingSystem.macOS;
-  return OperatingSystem.linux;
-})();
+final OperatingSystem currentOSGuess =
+    (() {
+      if (p.style == p.Style.url) return OperatingSystem.none;
+      if (p.style == p.Style.windows) return OperatingSystem.windows;
+      if (_macOSDirectories.any(p.current.startsWith)) {
+        return OperatingSystem.macOS;
+      }
+      return OperatingSystem.linux;
+    })();

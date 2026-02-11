@@ -1,7 +1,81 @@
-## 1.25.9-wip
+## 1.29.1-wip
 
+* Add comments to the top-level libraries in the package.
+
+## 1.29.0
+
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
+* Suppress skip reason messages in the compact and failures-only reporters.
+* Allow `analyzer` major version 10.
+
+## 1.28.0
+
+* Add `isSorted` and related matchers for iterables.
+* Consider `NaN` to be equal to itself in `equals`.
+* Bump `test_core` to 0.6.14
+* Removed unused `js` dependency
+
+## 1.27.0
+
+* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Serve dart2wasm source map files.
+* Fix Node.js dart2wasm tests on windows.
+* Doc edit: clarify in README that a platform selector includes the compiler.
+* Allow `analyzer` major version 9.
+* Require Dart 3.7
+
+## 1.26.3
+
+* Expand pub constraint to allow the latest `analyzer`.
+
+## 1.26.2
+
+* Graduate native assets from experiment to preview.
+
+## 1.26.1
+
+* Set a debug name for test isolates.
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
+## 1.26.0
+
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
+## 1.25.15
+
+* Allow the latest version of `package:shelf_web_socket`.
+
+## 1.25.14
+
+* Use secure random for url secrets.
+
+## 1.25.13
+
+* Allow the latest version of `package:matcher`.
+
+## 1.25.12
+
+* Fix hang when running multiple precompiled browser tests.
+
+## 1.25.11
+
+* Update to be forward compatible with `package:shelf_web_socket` version `3.x`.
+
+## 1.25.10
+
+* Update the `package:vm_service` constraint to allow version `15.x`.
+
+## 1.25.9
+
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
 * Fix dart2wasm tests on windows.
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 * Allow `firefox` or `firefox-bin` executable name on macOS.
 

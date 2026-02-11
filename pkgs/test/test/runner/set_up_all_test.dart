@@ -96,4 +96,19 @@ void main() {
     expect(test.stdout, neverEmits(contains('(setUpAll)')));
     await test.shouldExit(0);
   });
+
+  test('does not fail with asserts enabled - issue #2498', () async {
+    await d.file('test.dart', r'''
+        import 'package:test/test.dart';
+
+        void main() {
+          setUpAll(() {});
+
+          test("test", () {});
+        }
+        ''').create();
+
+    var test = await runTest(['test.dart'], vmArgs: ['--enable-asserts']);
+    await test.shouldExit(0);
+  });
 }

@@ -1,7 +1,7 @@
 name: wasm_tests
 publish_to: none
 environment:
-  sdk: ^3.5.0-311.0.dev
+  sdk: ^3.7.0
 resolution: workspace
 dev_dependencies:
   matcher: any

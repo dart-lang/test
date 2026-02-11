@@ -170,9 +170,13 @@ void main() {
 
           addTearDown(() {
             final tearDownZone = Zone.current;
-            expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
-                reason: 'The tear down callback is in a different error zone '
-                    'than the test body.');
+            expect(
+              tearDownZone.inSameErrorZone(testBodyZone),
+              isTrue,
+              reason:
+                  'The tear down callback is in a different error zone '
+                  'than the test body.',
+            );
           });
         });
       });
@@ -227,9 +231,12 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(Future(() {
-                tearDown1Run = true;
-              }), completes);
+              expect(
+                Future(() {
+                  tearDown1Run = true;
+                }),
+                completes,
+              );
             });
 
             addTearDown(() {
@@ -237,9 +244,12 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(Future(() {
-                tearDown2Run = true;
-              }), completes);
+              expect(
+                Future(() {
+                  tearDown2Run = true;
+                }),
+                completes,
+              );
             });
 
             addTearDown(() {
@@ -247,9 +257,12 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(Future(() {
-                tearDown3Run = true;
-              }), completes);
+              expect(
+                Future(() {
+                  tearDown3Run = true;
+                }),
+                completes,
+              );
             });
 
             expect(tearDown1Run, isFalse);
@@ -292,9 +305,12 @@ void main() {
             expect(groupTearDownRun, isFalse);
             expect(testTearDownRun, isFalse);
 
-            expect(Future(() {
-              groupTearDownRun = true;
-            }), completes);
+            expect(
+              Future(() {
+                groupTearDownRun = true;
+              }),
+              completes,
+            );
           });
 
           test('test', () {
@@ -302,9 +318,12 @@ void main() {
               expect(groupTearDownRun, isFalse);
               expect(testTearDownRun, isFalse);
 
-              expect(Future(() {
-                testTearDownRun = true;
-              }), completes);
+              expect(
+                Future(() {
+                  testTearDownRun = true;
+                }),
+                completes,
+              );
             });
 
             expect(groupTearDownRun, isFalse);
@@ -337,10 +356,11 @@ void main() {
             addTearDown(() async {
               expect(tearDownRun, isFalse);
               expect(
-                  pumpEventQueue().then((_) {
-                    tearDownRun = true;
-                  }),
-                  completes);
+                pumpEventQueue().then((_) {
+                  tearDownRun = true;
+                }),
+                completes,
+              );
             });
           });
 
@@ -570,9 +590,13 @@ void main() {
 
           addTearDown(() {
             final tearDownZone = Zone.current;
-            expect(tearDownZone.inSameErrorZone(setUpAllZone), isTrue,
-                reason: 'The tear down callback is in a different error zone '
-                    'than the set up all callback.');
+            expect(
+              tearDownZone.inSameErrorZone(setUpAllZone),
+              isTrue,
+              reason:
+                  'The tear down callback is in a different error zone '
+                  'than the set up all callback.',
+            );
           });
         });
 
@@ -635,9 +659,12 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(Future(() {
-                tearDown1Run = true;
-              }), completes);
+              expect(
+                Future(() {
+                  tearDown1Run = true;
+                }),
+                completes,
+              );
             });
 
             addTearDown(() {
@@ -645,9 +672,12 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(Future(() {
-                tearDown2Run = true;
-              }), completes);
+              expect(
+                Future(() {
+                  tearDown2Run = true;
+                }),
+                completes,
+              );
             });
 
             addTearDown(() {
@@ -655,9 +685,12 @@ void main() {
               expect(tearDown2Run, isFalse);
               expect(tearDown3Run, isFalse);
 
-              expect(Future(() {
-                tearDown3Run = true;
-              }), completes);
+              expect(
+                Future(() {
+                  tearDown3Run = true;
+                }),
+                completes,
+              );
             });
           });
 
@@ -703,40 +736,48 @@ void main() {
         expect(testTearDownRun, isTrue);
       });
 
-      test("doesn't block additional tearDownAlls on out-of-band async",
-          () async {
-        var groupTearDownRun = false;
-        var testTearDownRun = false;
-        await expectTestsPass(() {
-          tearDownAll(() {
-            expect(groupTearDownRun, isFalse);
-            expect(testTearDownRun, isFalse);
-
-            expect(Future(() {
-              groupTearDownRun = true;
-            }), completes);
-          });
-
-          setUpAll(() {
-            addTearDown(() {
+      test(
+        "doesn't block additional tearDownAlls on out-of-band async",
+        () async {
+          var groupTearDownRun = false;
+          var testTearDownRun = false;
+          await expectTestsPass(() {
+            tearDownAll(() {
               expect(groupTearDownRun, isFalse);
               expect(testTearDownRun, isFalse);
 
-              expect(Future(() {
-                testTearDownRun = true;
-              }), completes);
+              expect(
+                Future(() {
+                  groupTearDownRun = true;
+                }),
+                completes,
+              );
+            });
+
+            setUpAll(() {
+              addTearDown(() {
+                expect(groupTearDownRun, isFalse);
+                expect(testTearDownRun, isFalse);
+
+                expect(
+                  Future(() {
+                    testTearDownRun = true;
+                  }),
+                  completes,
+                );
+              });
+            });
+
+            test('test', () {
+              expect(groupTearDownRun, isFalse);
+              expect(testTearDownRun, isFalse);
             });
           });
 
-          test('test', () {
-            expect(groupTearDownRun, isFalse);
-            expect(testTearDownRun, isFalse);
-          });
-        });
-
-        expect(groupTearDownRun, isTrue);
-        expect(testTearDownRun, isTrue);
-      });
+          expect(groupTearDownRun, isTrue);
+          expect(testTearDownRun, isTrue);
+        },
+      );
     });
 
     group('with an error', () {

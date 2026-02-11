@@ -13,23 +13,20 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
 /// The path to the root directory of the `test` package.
-final Future<String> packageDir =
-    Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/'))
-        .then((uri) {
+final Future<String> packageDir = Isolate.resolvePackageUri(
+  Uri(scheme: 'package', path: 'test/'),
+).then((uri) {
   var dir = p.dirname(uri!.path);
   // If it starts with a `/C:` or other drive letter, remove the leading `/`.
   if (dir[0] == '/' && dir[2] == ':') dir = dir.substring(1);
   return dir;
 });
 
-/// The path to the `pub` executable in the current Dart SDK.
-final _pubPath = p.absolute(p.join(p.dirname(Platform.resolvedExecutable),
-    Platform.isWindows ? 'pub.bat' : 'pub'));
-
 /// The platform-specific message emitted when a nonexistent file is loaded.
-final String noSuchFileMessage = Platform.isWindows
-    ? 'The system cannot find the file specified.'
-    : 'No such file or directory';
+final String noSuchFileMessage =
+    Platform.isWindows
+        ? 'The system cannot find the file specified.'
+        : 'No such file or directory';
 
 /// An operating system name that's different than the current operating system.
 final otherOS = Platform.isWindows ? 'mac-os' : 'windows';
@@ -44,10 +41,13 @@ void expectStderrEquals(TestProcess test, String expected) =>
 
 /// Expects that the entirety of the line stream [stream] equals [expected].
 void _expectStreamEquals(Stream<String> stream, String expected) {
-  expect((() async {
-    var lines = await stream.toList();
-    expect(lines.join('\n').trim(), equals(expected.trim()));
-  })(), completes);
+  expect(
+    (() async {
+      var lines = await stream.toList();
+      expect(lines.join('\n').trim(), equals(expected.trim()));
+    })(),
+    completes,
+  );
 }
 
 /// Returns a [StreamMatcher] that asserts that the stream emits strings
@@ -79,7 +79,8 @@ Future<void> precompileTestExecutable() async {
   ]);
   if (result.exitCode != 0) {
     throw StateError(
-        'Failed to compile test runner:\n${result.stdout}\n${result.stderr}');
+      'Failed to compile test runner:\n${result.stdout}\n${result.stderr}',
+    );
   }
 
   addTearDown(() async {
@@ -91,19 +92,23 @@ Future<void> precompileTestExecutable() async {
 /// Runs the test executable with the package root set properly.
 ///
 /// You must invoke [precompileTestExecutable] before invoking this function.
-Future<TestProcess> runTest(Iterable<String> args,
-    {String? reporter,
-    String? fileReporter,
-    int? concurrency,
-    Map<String, String>? environment,
-    bool forwardStdio = false,
-    String? packageConfig,
-    Iterable<String>? vmArgs}) async {
+Future<TestProcess> runTest(
+  Iterable<String> args, {
+  String? reporter,
+  String? fileReporter,
+  int? concurrency,
+  Map<String, String>? environment,
+  bool forwardStdio = false,
+  String? packageConfig,
+  Iterable<String>? vmArgs,
+  String? workingDirectory,
+}) async {
   concurrency ??= 1;
   var testExecutablePath = _testExecutablePath;
   if (testExecutablePath == null) {
     throw StateError(
-        'You must call `precompileTestExecutable` before calling `runTest`');
+      'You must call `precompileTestExecutable` before calling `runTest`',
+    );
   }
 
   var allArgs = [
@@ -118,42 +123,54 @@ Future<TestProcess> runTest(Iterable<String> args,
   environment ??= {};
   environment.putIfAbsent('_DART_TEST_TESTING', () => 'true');
 
-  return await runDart(allArgs,
-      environment: environment,
-      description: 'dart bin/test.dart',
-      forwardStdio: forwardStdio,
-      packageConfig: packageConfig);
+  return await runDart(
+    allArgs,
+    environment: environment,
+    description: 'dart bin/test.dart',
+    forwardStdio: forwardStdio,
+    packageConfig: packageConfig,
+    workingDirectory: workingDirectory,
+  );
 }
 
 /// Runs Dart.
 ///
 /// If [packageConfig] is provided then that is passed for the `--packages`
 /// arg, otherwise the current isolate config is passed.
-Future<TestProcess> runDart(Iterable<String> args,
-    {Map<String, String>? environment,
-    String? description,
-    bool forwardStdio = false,
-    String? packageConfig}) async {
+Future<TestProcess> runDart(
+  Iterable<String> args, {
+  Map<String, String>? environment,
+  String? description,
+  bool forwardStdio = false,
+  String? packageConfig,
+  String? workingDirectory,
+}) async {
   var allArgs = <String>[
-    ...Platform.executableArguments.where((arg) =>
-        !arg.startsWith('--package-root=') && !arg.startsWith('--packages=')),
     '--packages=${packageConfig ?? await Isolate.packageConfig}',
-    ...args
+    ...args,
   ];
 
   return await TestProcess.start(
-      p.absolute(Platform.resolvedExecutable), allArgs,
-      workingDirectory: d.sandbox,
-      environment: environment,
-      description: description,
-      forwardStdio: forwardStdio);
+    p.absolute(Platform.resolvedExecutable),
+    allArgs,
+    workingDirectory: workingDirectory ?? d.sandbox,
+    environment: environment,
+    description: description,
+    forwardStdio: forwardStdio,
+  );
 }
 
 /// Runs Pub.
-Future<TestProcess> runPub(Iterable<String> args,
-    {Map<String, String>? environment}) {
-  return TestProcess.start(_pubPath, args,
-      workingDirectory: d.sandbox,
-      environment: environment,
-      description: 'pub ${args.first}');
+Future<TestProcess> runPub(
+  Iterable<String> args, {
+  Map<String, String>? environment,
+  String? workingDirectory,
+}) {
+  return TestProcess.start(
+    p.absolute(Platform.resolvedExecutable),
+    ['pub', ...args],
+    workingDirectory: workingDirectory ?? d.sandbox,
+    environment: environment,
+    description: 'pub ${args.first}',
+  );
 }

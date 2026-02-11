@@ -50,20 +50,28 @@ Declarer get _declarer {
     await pumpEventQueue();
 
     var suite = RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.empty,
-        _globalDeclarer!.build(),
-        SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
-        path: p.prettyUri(Uri.base));
+      const PluginEnvironment(),
+      SuiteConfiguration.empty,
+      _globalDeclarer!.build(),
+      SuitePlatform(Runtime.vm, compiler: null, os: currentOSGuess),
+      path: p.prettyUri(Uri.base),
+    );
 
     var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(engine, PrintSink(),
-        color: true, printPath: false, printPlatform: false);
+    ExpandedReporter.watch(
+      engine,
+      PrintSink(),
+      color: true,
+      printPath: false,
+      printPlatform: false,
+    );
 
-    var success = await runZoned(() => Invoker.guard(engine.run),
-        zoneValues: {#test.declarer: _globalDeclarer});
+    var success = await runZoned(
+      () => Invoker.guard(engine.run),
+      zoneValues: {#test.declarer: _globalDeclarer},
+    );
     if (success == true) return null;
     print('');
     unawaited(Future.error('Dummy exception to set exit code.'));
@@ -133,23 +141,31 @@ Declarer get _declarer {
 /// avoid this flag if possible and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTest
-void test(Object? description, dynamic Function() body,
-    {String? testOn,
-    Timeout? timeout,
-    Object? skip,
-    Object? tags,
-    Map<String, dynamic>? onPlatform,
-    int? retry,
-    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
-  _declarer.test(description.toString(), body,
-      testOn: testOn,
-      timeout: timeout,
-      skip: skip,
-      onPlatform: onPlatform,
-      tags: tags,
-      retry: retry,
-      solo: solo);
+void test(
+  Object? description,
+  FutureOr<dynamic> Function() body, {
+  String? testOn,
+  Timeout? timeout,
+  Object? skip,
+  Object? tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+  TestLocation? location,
+  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+}) {
+  _declarer.test(
+    description.toString(),
+    body,
+    testOn: testOn,
+    timeout: timeout,
+    skip: skip,
+    onPlatform: onPlatform,
+    tags: tags,
+    retry: retry,
+    location: location,
+    solo: solo,
+  );
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and
@@ -212,23 +228,31 @@ void test(Object? description, dynamic Function() body,
 /// avoid this flag if possible, and instead use the test runner flag `-n` to
 /// filter tests by name.
 @isTestGroup
-void group(Object? description, dynamic Function() body,
-    {String? testOn,
-    Timeout? timeout,
-    Object? skip,
-    Object? tags,
-    Map<String, dynamic>? onPlatform,
-    int? retry,
-    // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-    @Deprecated('Debug only') @doNotSubmit bool solo = false}) {
-  _declarer.group(description.toString(), body,
-      testOn: testOn,
-      timeout: timeout,
-      skip: skip,
-      tags: tags,
-      onPlatform: onPlatform,
-      retry: retry,
-      solo: solo);
+void group(
+  Object? description,
+  dynamic Function() body, {
+  String? testOn,
+  Timeout? timeout,
+  Object? skip,
+  Object? tags,
+  Map<String, dynamic>? onPlatform,
+  int? retry,
+  TestLocation? location,
+  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
+  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+}) {
+  _declarer.group(
+    description.toString(),
+    body,
+    testOn: testOn,
+    timeout: timeout,
+    skip: skip,
+    tags: tags,
+    onPlatform: onPlatform,
+    retry: retry,
+    location: location,
+    solo: solo,
+  );
 
   // Force dart2js not to inline this function. We need it to be separate from
   // `main()` in JS stack traces in order to properly determine the line and
@@ -248,7 +272,7 @@ void group(Object? description, dynamic Function() body,
 ///
 /// Each callback at the top level or in a given group will be run in the order
 /// they were declared.
-void setUp(dynamic Function() callback) => _declarer.setUp(callback);
+void setUp(FutureOr<dynamic> Function() callback) => _declarer.setUp(callback);
 
 /// Registers a function to be run after tests.
 ///
@@ -263,7 +287,8 @@ void setUp(dynamic Function() callback) => _declarer.setUp(callback);
 /// reverse of the order they were declared.
 ///
 /// See also [addTearDown], which adds tear-downs to a running test.
-void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
+void tearDown(FutureOr<dynamic> Function() callback) =>
+    _declarer.tearDown(callback);
 
 /// Registers a function to be run once before all tests.
 ///
@@ -278,7 +303,10 @@ void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
+void setUpAll(
+  FutureOr<dynamic> Function() callback, {
+  TestLocation? location,
+}) => _declarer.setUpAll(callback, location: location);
 
 /// Registers a function to be run once after all tests.
 ///
@@ -291,5 +319,7 @@ void setUpAll(dynamic Function() callback) => _declarer.setUpAll(callback);
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(dynamic Function() callback) =>
-    _declarer.tearDownAll(callback);
+void tearDownAll(
+  FutureOr<dynamic> Function() callback, {
+  TestLocation? location,
+}) => _declarer.tearDownAll(callback, location: location);

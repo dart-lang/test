@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @Deprecated('Check properties on known types')
-library mirror_matchers;
+library;
 
 /// The mirror matchers library provides some additional matchers that
 /// make use of `dart:mirrors`.
@@ -39,7 +39,7 @@ class _HasProperty extends Matcher {
     if (!(isInstanceField || isInstanceGetter)) {
       addStateInfo(matchState, {
         'reason':
-            'has a member named "$_name", but it is not an instance property'
+            'has a member named "$_name", but it is not an instance property',
       });
       return false;
     }
@@ -63,8 +63,12 @@ class _HasProperty extends Matcher {
   }
 
   @override
-  Description describeMismatch(Object? item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    Object? item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     var reason = matchState['reason'];
     if (reason != null) {
       mismatchDescription.add(reason as String);
@@ -73,9 +77,13 @@ class _HasProperty extends Matcher {
           .add('has property "$_name" with value ')
           .addDescriptionOf(matchState['value']);
       var innerDescription = StringDescription();
-      matchState['state'] ??= {};
-      _matcher?.describeMismatch(matchState['value'], innerDescription,
-          matchState['state'] as Map, verbose);
+      matchState['state'] ??= <Object?, Object?>{};
+      _matcher?.describeMismatch(
+        matchState['value'],
+        innerDescription,
+        matchState['state'] as Map,
+        verbose,
+      );
       if (innerDescription.length > 0) {
         mismatchDescription.add(' which ').add(innerDescription.toString());
       }

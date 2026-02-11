@@ -23,58 +23,70 @@ void main() {
         .create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['fold_stack_frames must be a map', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['fold_stack_frames must be a map', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
   test('rejects multiple fold_stack_frames keys', () async {
     await d
         .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'fold_stack_frames': {
-                'except': ['blah'],
-                'only': ['blah']
-              }
-            }))
+          'dart_test.yaml',
+          jsonEncode({
+            'fold_stack_frames': {
+              'except': ['blah'],
+              'only': ['blah'],
+            },
+          }),
+        )
         .create();
 
     var test = await runTest(['test.dart']);
     expect(
-        test.stderr,
-        containsInOrder(
-            ['Can only contain one of "only" or "except".', '^^^^^^']));
+      test.stderr,
+      containsInOrder([
+        'Can only contain one of "only" or "except".',
+        '^^^^^^',
+      ]),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
   test('rejects invalid fold_stack_frames keys', () async {
     await d
         .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'fold_stack_frames': {'invalid': 'blah'}
-            }))
+          'dart_test.yaml',
+          jsonEncode({
+            'fold_stack_frames': {'invalid': 'blah'},
+          }),
+        )
         .create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['Must be "only" or "except".', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['Must be "only" or "except".', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
   test('rejects invalid fold_stack_frames values', () async {
     await d
         .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'fold_stack_frames': {'only': 'blah'}
-            }))
+          'dart_test.yaml',
+          jsonEncode({
+            'fold_stack_frames': {'only': 'blah'},
+          }),
+        )
         .create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['Folded packages must be strings', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['Folded packages must be strings', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -84,8 +96,10 @@ void main() {
         .create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['pause_after_load must be a boolean', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['pause_after_load must be a boolean', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -95,8 +109,10 @@ void main() {
         .create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['verbose_trace must be a boolean', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['verbose_trace must be a boolean', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -106,8 +122,10 @@ void main() {
         .create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['chain_stack_traces must be a boolean', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['chain_stack_traces must be a boolean', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -115,8 +133,10 @@ void main() {
     await d.file('dart_test.yaml', jsonEncode({'retry': 'flup'})).create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['retry must be a non-negative int', '^^^^^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['retry must be a non-negative int', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -124,8 +144,10 @@ void main() {
     await d.file('dart_test.yaml', jsonEncode({'retry': -1})).create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr,
-        containsInOrder(['retry must be a non-negative int', '^^']));
+    expect(
+      test.stderr,
+      containsInOrder(['retry must be a non-negative int', '^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -134,7 +156,9 @@ void main() {
 
     var test = await runTest(['test.dart']);
     expect(
-        test.stderr, containsInOrder(['js_trace must be a boolean', '^^^^^^']));
+      test.stderr,
+      containsInOrder(['js_trace must be a boolean', '^^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -154,9 +178,9 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr,
-          containsInOrder(
-              ['Unknown reporter "non-existent"', '^^^^^^^^^^^^^^']));
+        test.stderr,
+        containsInOrder(['Unknown reporter "non-existent"', '^^^^^^^^^^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
   });
@@ -169,39 +193,45 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr, containsInOrder(['file_reporters must be a map', '^^']));
+        test.stderr,
+        containsInOrder(['file_reporters must be a map', '^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
     test('rejects an invalid value type', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'file_reporters': {'json': 12}
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'file_reporters': {'json': 12},
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stderr,
-          containsInOrder(['file_reporters value must be a string', '^^']));
+      expect(
+        test.stderr,
+        containsInOrder(['file_reporters value must be a string', '^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
     test('rejects an invalid name', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'file_reporters': {'non-existent': 'out'}
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'file_reporters': {'non-existent': 'out'},
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr,
-          containsInOrder(
-              ['Unknown reporter "non-existent"', '^^^^^^^^^^^^^^']));
+        test.stderr,
+        containsInOrder(['Unknown reporter "non-existent"', '^^^^^^^^^^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
   });
@@ -211,7 +241,9 @@ void main() {
 
     var test = await runTest(['test.dart']);
     expect(
-        test.stderr, containsInOrder(['concurrency must be an int', '^^^^^']));
+      test.stderr,
+      containsInOrder(['concurrency must be an int', '^^^^^']),
+    );
     await test.shouldExit(exit_codes.data);
   });
 
@@ -228,8 +260,10 @@ void main() {
       await d.file('dart_test.yaml', jsonEncode({'timeout': '12p'})).create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stderr,
-          containsInOrder(['Invalid timeout: expected unit', '^^^^^']));
+      expect(
+        test.stderr,
+        containsInOrder(['Invalid timeout: expected unit', '^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
   });
@@ -246,10 +280,11 @@ void main() {
     test('rejects an invalid member type', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'names': [12]
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'names': [12],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
@@ -260,15 +295,18 @@ void main() {
     test('rejects an invalid RegExp', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'names': ['(foo']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'names': ['(foo'],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stderr,
-          containsInOrder(['Invalid name: Unterminated group', '^^^^^^']));
+      expect(
+        test.stderr,
+        containsInOrder(['Invalid name: Unterminated group', '^^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
   });
@@ -281,17 +319,20 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr, containsInOrder(['plain_names must be a list', '^^^^']));
+        test.stderr,
+        containsInOrder(['plain_names must be a list', '^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
     test('rejects an invalid member type', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'plain_names': [12]
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'plain_names': [12],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
@@ -306,32 +347,38 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr, containsInOrder(['platforms must be a list', '^^^^']));
+        test.stderr,
+        containsInOrder(['platforms must be a list', '^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
     test('rejects an invalid member type', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'platforms': [12]
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'platforms': [12],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stderr,
-          containsInOrder(['Platform name must be a string', '^^']));
+      expect(
+        test.stderr,
+        containsInOrder(['Platform name must be a string', '^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
     test('rejects an invalid member name', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'platforms': ['foo']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'platforms': ['foo'],
+            }),
+          )
           .create();
 
       await d.dir('test').create();
@@ -354,10 +401,11 @@ void main() {
     test('rejects an invalid member type', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'paths': [12]
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'paths': [12],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
@@ -368,30 +416,36 @@ void main() {
     test('rejects an absolute path', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'paths': ['/foo']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'paths': ['/foo'],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr, containsInOrder(['Paths must be relative.', '^^^^^^']));
+        test.stderr,
+        containsInOrder(['Paths must be relative.', '^^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
     test('rejects an invalid URI', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'paths': [':invalid']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'paths': [':invalid'],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stderr,
-          containsInOrder(['Invalid path: Invalid empty scheme', '^^^^^^^^']));
+      expect(
+        test.stderr,
+        containsInOrder(['Invalid path: Invalid empty scheme', '^^^^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
   });
@@ -402,7 +456,9 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stderr, containsInOrder(['filename must be a string.', '^^']));
+        test.stderr,
+        containsInOrder(['filename must be a string.', '^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
 
@@ -410,8 +466,10 @@ void main() {
       await d.file('dart_test.yaml', jsonEncode({'filename': '{foo'})).create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stderr,
-          containsInOrder(['Invalid filename: expected ",".', '^^^^^^']));
+      expect(
+        test.stderr,
+        containsInOrder(['Invalid filename: expected ",".', '^^^^^^']),
+      );
       await test.shouldExit(exit_codes.data);
     });
   });

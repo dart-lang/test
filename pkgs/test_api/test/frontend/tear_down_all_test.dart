@@ -186,9 +186,12 @@ void main() {
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
 
-          expect(Future(() {
-            tearDownAll1Run = true;
-          }), completes);
+          expect(
+            Future(() {
+              tearDownAll1Run = true;
+            }),
+            completes,
+          );
         });
 
         tearDownAll(() {
@@ -196,9 +199,12 @@ void main() {
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
 
-          expect(Future(() {
-            tearDownAll2Run = true;
-          }), completes);
+          expect(
+            Future(() {
+              tearDownAll2Run = true;
+            }),
+            completes,
+          );
         });
 
         tearDownAll(() {
@@ -206,9 +212,12 @@ void main() {
           expect(tearDownAll2Run, isFalse);
           expect(tearDownAll3Run, isFalse);
 
-          expect(Future(() {
-            tearDownAll3Run = true;
-          }), completes);
+          expect(
+            Future(() {
+              tearDownAll3Run = true;
+            }),
+            completes,
+          );
         });
 
         test('test', () {
@@ -245,10 +254,11 @@ void main() {
           tearDownAll(() async {
             expect(tearDownAllRun, isFalse);
             expect(
-                pumpEventQueue().then((_) {
-                  tearDownAllRun = true;
-                }),
-                completes);
+              pumpEventQueue().then((_) {
+                tearDownAllRun = true;
+              }),
+              completes,
+            );
           });
 
           test('test', () {});

@@ -22,14 +22,17 @@ void main() {
 
   setUpAll(() async {
     await precompileTestExecutable();
-    currentPackageConfig =
-        await loadPackageConfigUri((await Isolate.packageConfig)!);
+    currentPackageConfig = await loadPackageConfigUri(
+      (await Isolate.packageConfig)!,
+    );
   });
 
   setUp(() async {
     await d
-        .file('package_config.json',
-            jsonEncode(PackageConfig.toJson(currentPackageConfig)))
+        .file(
+          'package_config.json',
+          jsonEncode(PackageConfig.toJson(currentPackageConfig)),
+        )
         .create();
   });
 
@@ -58,24 +61,37 @@ void main() {
       await test.shouldExit(0);
     });
 
-    test("doesn't run a test suite on a non-matching operating system",
-        () async {
-      await _writeTestFile('os_test.dart',
-          suiteTestOn: otherOS, loadable: false);
+    test(
+      "doesn't run a test suite on a non-matching operating system",
+      () async {
+        await _writeTestFile(
+          'os_test.dart',
+          suiteTestOn: otherOS,
+          loadable: false,
+        );
 
-      var test = await runTest(['os_test.dart']);
-      expect(test.stdout, emitsThrough(contains('No tests ran.')));
-      await test.shouldExit(79);
-    });
+        var test = await runTest(['os_test.dart']);
+        expect(test.stdout, emitsThrough(contains('No tests ran.')));
+        await test.shouldExit(79);
+      },
+    );
 
     test('only loads matching files when loading as a group', () async {
       await _writeTestFile('vm_test.dart', suiteTestOn: 'vm');
-      await _writeTestFile('browser_test.dart',
-          suiteTestOn: 'browser', loadable: false);
-      await _writeTestFile('this_os_test.dart',
-          suiteTestOn: currentOS.identifier);
-      await _writeTestFile('other_os_test.dart',
-          suiteTestOn: otherOS, loadable: false);
+      await _writeTestFile(
+        'browser_test.dart',
+        suiteTestOn: 'browser',
+        loadable: false,
+      );
+      await _writeTestFile(
+        'this_os_test.dart',
+        suiteTestOn: currentOS.identifier,
+      );
+      await _writeTestFile(
+        'other_os_test.dart',
+        suiteTestOn: otherOS,
+        loadable: false,
+      );
 
       var test = await runTest(['.']);
       expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
@@ -153,8 +169,12 @@ void main() {
 
   group('with suite, group, and test selectors', () {
     test('runs the test if all selectors match', () async {
-      await _writeTestFile('vm_test.dart',
-          suiteTestOn: '!browser', groupTestOn: '!js', testTestOn: 'vm');
+      await _writeTestFile(
+        'vm_test.dart',
+        suiteTestOn: '!browser',
+        groupTestOn: '!js',
+        testTestOn: 'vm',
+      );
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('All tests passed!')));
@@ -162,8 +182,12 @@ void main() {
     });
 
     test("doesn't runs the test if the suite doesn't match", () async {
-      await _writeTestFile('vm_test.dart',
-          suiteTestOn: 'browser', groupTestOn: '!js', testTestOn: 'vm');
+      await _writeTestFile(
+        'vm_test.dart',
+        suiteTestOn: 'browser',
+        groupTestOn: '!js',
+        testTestOn: 'vm',
+      );
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
@@ -171,8 +195,12 @@ void main() {
     });
 
     test("doesn't runs the test if the group doesn't match", () async {
-      await _writeTestFile('vm_test.dart',
-          suiteTestOn: '!browser', groupTestOn: 'browser', testTestOn: 'vm');
+      await _writeTestFile(
+        'vm_test.dart',
+        suiteTestOn: '!browser',
+        groupTestOn: 'browser',
+        testTestOn: 'vm',
+      );
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
@@ -180,8 +208,12 @@ void main() {
     });
 
     test("doesn't runs the test if the test doesn't match", () async {
-      await _writeTestFile('vm_test.dart',
-          suiteTestOn: '!browser', groupTestOn: '!js', testTestOn: 'browser');
+      await _writeTestFile(
+        'vm_test.dart',
+        suiteTestOn: '!browser',
+        groupTestOn: '!js',
+        testTestOn: 'browser',
+      );
 
       var test = await runTest(['vm_test.dart']);
       expect(test.stdout, emitsThrough(contains('No tests ran.')));
@@ -195,14 +227,16 @@ void main() {
 /// Each of [suiteTestOn], [groupTestOn], and [testTestOn] is a platform
 /// selector that's suite-, group-, and test-level respectively. If [loadable]
 /// is `false`, the test file will be made unloadable on the Dart VM.
-Future<void> _writeTestFile(String filename,
-    {String? suiteTestOn,
-    String? groupTestOn,
-    String? testTestOn,
-    bool loadable = true}) {
+Future<void> _writeTestFile(
+  String filename, {
+  String? suiteTestOn,
+  String? groupTestOn,
+  String? testTestOn,
+  bool loadable = true,
+}) {
   var buffer = StringBuffer();
   if (suiteTestOn != null) buffer.writeln("@TestOn('$suiteTestOn')");
-  if (!loadable) buffer.writeln("import 'dart:js_util';");
+  if (!loadable) buffer.writeln("import 'dart:js_interop';");
 
   buffer
     ..writeln("import 'package:test/test.dart';")

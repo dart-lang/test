@@ -46,8 +46,10 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
         void main(_, List data) => listen(() => lib.hybridMain, data);
       ''';
 
-      var isolate = await dart.runInIsolate(code, [port.sendPort, message],
-          onExit: onExitPort.sendPort);
+      var isolate = await dart.runInIsolate(code, [
+        port.sendPort,
+        message,
+      ], onExit: onExitPort.sendPort);
 
       // Ensure that we close [port] and [channel] when the isolate exits.
       var disconnector = Disconnector<void>();
@@ -59,24 +61,31 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
 
       return IsolateChannel<Object?>.connectReceive(port)
           .transform(disconnector)
-          .transformSink(StreamSinkTransformer.fromHandlers(handleDone: (sink) {
-        // If the user closes the stream channel, kill the isolate.
-        isolate.kill();
-        port.close();
-        onExitPort.close();
-        sink.close();
-      }));
+          .transformSink(
+            StreamSinkTransformer.fromHandlers(
+              handleDone: (sink) {
+                // If the user closes the stream channel, kill the isolate.
+                isolate.kill();
+                port.close();
+                onExitPort.close();
+                sink.close();
+              },
+            ),
+          );
     } catch (error, stackTrace) {
       port.close();
       onExitPort.close();
 
       // Make sure any errors in spawning the isolate are forwarded to the test.
       return StreamChannel(
-          Stream.fromFuture(Future.value({
+        Stream.fromFuture(
+          Future.value({
             'type': 'error',
-            'error': RemoteException.serialize(error, stackTrace)
-          })),
-          NullStreamSink<void>());
+            'error': RemoteException.serialize(error, stackTrace),
+          }),
+        ),
+        NullStreamSink<void>(),
+      );
     }
   }());
 }
@@ -98,19 +107,25 @@ Future<String> _normalizeUrl(String url, Suite suite) async {
         // We assume that the current path is the package root. `pub run`
         // enforces this currently, but at some point it would probably be good
         // to pass in an explicit root.
-        return p.url
-            .join(p.toUri(p.current).toString(), parsedUri.path.substring(1));
+        return p.url.join(
+          p.toUri(p.current).toString(),
+          parsedUri.path.substring(1),
+        );
       } else {
         var suitePath = suite.path!;
         return p.url.join(
-            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-            parsedUri.toString());
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUri.toString(),
+        );
       }
     case 'package':
       final resolvedUri = await Isolate.resolvePackageUri(parsedUri);
       if (resolvedUri == null) {
         throw ArgumentError.value(
-            url, 'uri', 'Could not resolve the package URI');
+          url,
+          'uri',
+          'Could not resolve the package URI',
+        );
       }
       return resolvedUri.toString();
     default:
@@ -135,9 +150,10 @@ Future<String> _languageVersionCommentFor(String url) async {
 
   // Returns the explicit language version comment if one exists.
   var result = parseString(
-      content: await _readUri(parsedUri),
-      path: parsedUri.scheme == 'data' ? null : p.fromUri(parsedUri),
-      throwIfDiagnostics: false);
+    content: await _readUri(parsedUri),
+    path: parsedUri.scheme == 'data' ? null : p.fromUri(parsedUri),
+    throwIfDiagnostics: false,
+  );
   var languageVersionComment = result.unit.languageVersionToken?.value();
   if (languageVersionComment != null) return languageVersionComment.toString();
 
@@ -160,8 +176,12 @@ Future<String> _languageVersionCommentFor(String url) async {
 }
 
 Future<String> _readUri(Uri uri) async => switch (uri.scheme) {
-      '' || 'file' => await File.fromUri(uri).readAsString(),
-      'data' => uri.data!.contentAsString(),
-      _ => throw ArgumentError.value(uri, 'uri',
-          'Only data and file uris (as well as relative paths) are supported'),
-    };
+  '' || 'file' => await File.fromUri(uri).readAsString(),
+  'data' => uri.data!.contentAsString(),
+  _ =>
+    throw ArgumentError.value(
+      uri,
+      'uri',
+      'Only data and file uris (as well as relative paths) are supported',
+    ),
+};

@@ -20,7 +20,11 @@ const _maxLineLength = 80;
 const _maxItems = 25;
 
 Iterable<String> _prettyPrint(
-    Object? object, int indentSize, Set<Object?> seen, bool isTopLevel) {
+  Object? object,
+  int indentSize,
+  Set<Object?> seen,
+  bool isTopLevel,
+) {
   if (seen.contains(object)) return ['(recursive)'];
   seen = seen.union({object});
   Iterable<String> prettyPrintNested(Object? child) =>
@@ -40,26 +44,36 @@ Iterable<String> _prettyPrint(
     }
     final elements = object.map(prettyPrintNested).toList();
     return _prettyPrintCollection(
-        open, close, elements, _maxLineLength - indentSize);
+      open,
+      close,
+      elements,
+      _maxLineLength - indentSize,
+    );
   } else if (object is Map) {
-    final entries = object.entries.map((entry) {
-      final key = prettyPrintNested(entry.key);
-      final value = prettyPrintNested(entry.value);
-      return [
-        ...key.take(key.length - 1),
-        '${key.last}: ${value.first}',
-        ...value.skip(1)
-      ];
-    }).toList();
+    final entries =
+        object.entries.map((entry) {
+          final key = prettyPrintNested(entry.key);
+          final value = prettyPrintNested(entry.value);
+          return [
+            ...key.take(key.length - 1),
+            '${key.last}: ${value.first}',
+            ...value.skip(1),
+          ];
+        }).toList();
     return _prettyPrintCollection(
-        '{', '}', entries, _maxLineLength - indentSize);
+      '{',
+      '}',
+      entries,
+      _maxLineLength - indentSize,
+    );
   } else if (object is String) {
     if (object.isEmpty) return ["''"];
-    final escaped = const LineSplitter()
-        .convert(object)
-        .map(escape)
-        .map((line) => line.replaceAll("'", r"\'"))
-        .toList();
+    final escaped =
+        const LineSplitter()
+            .convert(object)
+            .map(escape)
+            .map((line) => line.replaceAll("'", r"\'"))
+            .toList();
     return prefixFirst("'", postfixLast("'", escaped));
   } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];
@@ -70,11 +84,16 @@ Iterable<String> _prettyPrint(
 }
 
 Iterable<String> _prettyPrintCollection(
-    String open, String close, List<Iterable<String>> elements, int maxLength) {
+  String open,
+  String close,
+  List<Iterable<String>> elements,
+  int maxLength,
+) {
   if (elements.length > _maxItems) {
-    elements.replaceRange(_maxItems - 1, elements.length, [
-      ['...']
-    ]);
+    const ellipsisElement = [
+      ['...'],
+    ];
+    elements.replaceRange(_maxItems - 1, elements.length, ellipsisElement);
   }
   if (elements.every((e) => e.length == 1)) {
     final singleLine = '$open${elements.map((e) => e.single).join(', ')}$close';
@@ -143,7 +162,8 @@ String escape(String output) {
 
 /// A [RegExp] that matches whitespace characters that should be escaped.
 final _escapeRegExp = RegExp(
-    '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_hexLiteral).join()}]');
+  '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_hexLiteral).join()}]',
+);
 
 /// A [Map] between whitespace characters and their escape sequences.
 const _escapeMap = {

@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
-    show Metadata, RemoteException, SuitePlatform;
+    show Metadata, RemoteException, SuitePlatform, TestLocation;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
@@ -37,13 +37,14 @@ import '../suite.dart';
 /// [gatherCoverage] is a callback which returns a hit-map containing merged
 /// coverage report suitable for use with `package:coverage`.
 RunnerSuiteController deserializeSuite(
-    String path,
-    SuitePlatform platform,
-    SuiteConfiguration suiteConfig,
-    Environment environment,
-    StreamChannel<Object?> channel,
-    Object /*Map<String, Object?>*/ message,
-    {Future<Map<String, dynamic>> Function()? gatherCoverage}) {
+  String path,
+  SuitePlatform platform,
+  SuiteConfiguration suiteConfig,
+  Environment environment,
+  StreamChannel<Object?> channel,
+  Object /*Map<String, Object?>*/ message, {
+  Future<Map<String, dynamic>> Function()? gatherCoverage,
+}) {
   var disconnector = Disconnector<Object?>();
   var suiteChannel = MultiChannel<Object?>(channel.transform(disconnector));
 
@@ -53,10 +54,12 @@ RunnerSuiteController deserializeSuite(
     'metadata': suiteConfig.metadata.serialize(),
     'asciiGlyphs': Platform.isWindows,
     'path': path,
-    'collectTraces': Configuration.current.reporter == 'json' ||
+    'collectTraces':
+        Configuration.current.reporter == 'json' ||
         Configuration.current.fileReporters.containsKey('json') ||
         suiteConfig.testSelections.any(
-            (selection) => selection.line != null || selection.col != null),
+          (selection) => selection.line != null || selection.col != null,
+        ),
     'noRetry': Configuration.current.noRetry,
     'foldTraceExcept': Configuration.current.foldTraceExcept.toList(),
     'foldTraceOnly': Configuration.current.foldTraceOnly.toList(),
@@ -82,44 +85,57 @@ RunnerSuiteController deserializeSuite(
   }
 
   suiteChannel.stream.cast<Map<String, Object?>>().listen(
-      (response) {
-        switch (response['type'] as String) {
-          case 'print':
-            print(response['line']);
-            break;
+    (response) {
+      switch (response['type'] as String) {
+        case 'print':
+          print(response['line']);
+          break;
 
-          case 'loadException':
-            handleError(LoadException(path, response['message'] as Object),
-                Trace.current());
-            break;
+        case 'loadException':
+          handleError(
+            LoadException(path, response['message'] as Object),
+            Trace.current(),
+          );
+          break;
 
-          case 'error':
-            var asyncError = RemoteException.deserialize(
-                response['error'] as Map<String, dynamic>);
-            handleError(
-                LoadException(path, asyncError.error), asyncError.stackTrace);
-            break;
+        case 'error':
+          var asyncError = RemoteException.deserialize(
+            response['error'] as Map<String, dynamic>,
+          );
+          handleError(
+            LoadException(path, asyncError.error),
+            asyncError.stackTrace,
+          );
+          break;
 
-          case 'success':
-            var deserializer = _Deserializer(suiteChannel);
-            completer.complete(
-                deserializer.deserializeGroup(response['root'] as Map));
-            break;
-        }
-      },
-      onError: handleError,
-      onDone: () {
-        if (completer.isCompleted) return;
-        completer.completeError(
-            LoadException(path, 'Connection closed before test suite loaded.'),
-            Trace.current());
-      });
+        case 'success':
+          var deserializer = _Deserializer(suiteChannel);
+          completer.complete(
+            deserializer.deserializeGroup(response['root'] as Map),
+          );
+          break;
+      }
+    },
+    onError: handleError,
+    onDone: () {
+      if (completer.isCompleted) return;
+      completer.completeError(
+        LoadException(path, 'Connection closed before test suite loaded.'),
+        Trace.current(),
+      );
+    },
+  );
 
   return RunnerSuiteController(
-      environment, suiteConfig, suiteChannel, completer.future, platform,
-      path: path,
-      onClose: () => disconnector.disconnect().onError(handleError),
-      gatherCoverage: gatherCoverage);
+    environment,
+    suiteConfig,
+    suiteChannel,
+    completer.future,
+    platform,
+    path: path,
+    onClose: () => disconnector.disconnect().onError(handleError),
+    gatherCoverage: gatherCoverage,
+  );
 }
 
 /// A utility class for storing state while deserializing tests.
@@ -132,19 +148,28 @@ class _Deserializer {
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
     var metadata = Metadata.deserialize(group['metadata'] as Map);
-    return Group(
-        group['name'] as String,
+    var trace =
+        group['trace'] == null ? null : Trace.parse(group['trace'] as String);
+    var location = switch (group['location']) {
+      Map map => TestLocation.deserialize(map),
+      _ => null,
+    };
+    var entries =
         (group['entries'] as List).map((entry) {
           var map = entry as Map;
           if (map['type'] == 'group') return deserializeGroup(map);
           return _deserializeTest(map)!;
-        }),
-        metadata: metadata,
-        trace: group['trace'] == null
-            ? null
-            : Trace.parse(group['trace'] as String),
-        setUpAll: _deserializeTest(group['setUpAll'] as Map?),
-        tearDownAll: _deserializeTest(group['tearDownAll'] as Map?));
+        }).toList();
+
+    return Group(
+      group['name'] as String,
+      entries,
+      metadata: metadata,
+      trace: trace,
+      location: location,
+      setUpAll: _deserializeTest(group['setUpAll'] as Map?),
+      tearDownAll: _deserializeTest(group['tearDownAll'] as Map?),
+    );
   }
 
   /// Deserializes [test] into a concrete [Test] class.
@@ -156,7 +181,17 @@ class _Deserializer {
     var metadata = Metadata.deserialize(test['metadata'] as Map);
     var trace =
         test['trace'] == null ? null : Trace.parse(test['trace'] as String);
+    var location = switch (test['location']) {
+      Map map => TestLocation.deserialize(map),
+      _ => null,
+    };
     var testChannel = _channel.virtualChannel((test['channel'] as num).toInt());
-    return RunnerTest(test['name'] as String, metadata, trace, testChannel);
+    return RunnerTest(
+      test['name'] as String,
+      metadata,
+      trace,
+      location,
+      testChannel,
+    );
   }
 }

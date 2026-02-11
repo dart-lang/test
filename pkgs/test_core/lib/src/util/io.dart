@@ -51,26 +51,31 @@ final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
 /// [OperatingSystem.none].
 // TODO: https://github.com/dart-lang/test/issues/2119 - require compiler
 SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
-    SuitePlatform(runtime,
-        compiler: compiler,
-        os: runtime.isBrowser ? OperatingSystem.none : currentOS,
-        inGoogle: inGoogle);
+    SuitePlatform(
+      runtime,
+      compiler: compiler,
+      os: runtime.isBrowser ? OperatingSystem.none : currentOS,
+      inGoogle: inGoogle,
+    );
 
 /// A transformer that decodes bytes using UTF-8 and splits them on newlines.
 final lineSplitter = StreamTransformer<List<int>, String>(
-    (stream, cancelOnError) => utf8.decoder
-        .bind(stream)
-        .transform(const LineSplitter())
-        .listen(null, cancelOnError: cancelOnError));
+  (stream, cancelOnError) => utf8.decoder
+      .bind(stream)
+      .transform(const LineSplitter())
+      .listen(null, cancelOnError: cancelOnError),
+);
 
 /// A queue of lines of standard input.
 ///
 /// Also returns an empty stream for Fuchsia since Fuchsia components can't
 /// access stdin.
 StreamQueue<String> get stdinLines =>
-    _stdinLines ??= StreamQueue(Platform.isFuchsia
-        ? const Stream<String>.empty()
-        : lineSplitter.bind(stdin));
+    _stdinLines ??= StreamQueue(
+      Platform.isFuchsia
+          ? const Stream<String>.empty()
+          : lineSplitter.bind(stdin),
+    );
 
 StreamQueue<String>? _stdinLines;
 
@@ -85,15 +90,27 @@ bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
 ///
 /// This is configurable so that the test code can validate that the runner
 /// cleans up after itself fully.
-final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
-    ? Platform.environment['_UNITTEST_TEMP_DIR']!
-    : Directory.systemTemp.path;
+final _tempDir =
+    Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
+        ? Platform.environment['_UNITTEST_TEMP_DIR']!
+        : Directory.systemTemp.path;
 
-/// Whether or not the current terminal supports ansi escape codes.
+/// Whether [stdout] supports ANSI escape codes.
 ///
 /// Otherwise only printable ASCII characters should be used.
-bool get canUseSpecialChars =>
-    (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
+bool get canUseSpecialChars {
+  if (inTestTests) return false;
+
+  if (Platform.isWindows) return stdout.supportsAnsiEscapes;
+
+  // On Linux and Mac, `supportsAnsiEscapes` always returns `false` on most
+  // modern terminals, see https://github.com/dart-lang/sdk/issues/31606 for
+  // details.
+  //
+  // Instead of relying on `supportsAnsiEscapes`, we assume that all modern
+  // terminals support colors and check that `stdout` is a tty.
+  return stdioType(stdout) == StdioType.terminal;
+}
 
 /// Detect whether we're running in a Github Actions context.
 ///
@@ -116,8 +133,9 @@ String createTempDir() =>
 Future withTempDir(Future Function(String) fn) {
   return Future.sync(() {
     var tempDir = createTempDir();
-    return Future.sync(() => fn(tempDir))
-        .whenComplete(() => Directory(tempDir).deleteWithRetry());
+    return Future.sync(
+      () => fn(tempDir),
+    ).whenComplete(() => Directory(tempDir).deleteWithRetry());
   });
 }
 
@@ -127,28 +145,31 @@ Future withTempDir(Future Function(String) fn) {
 /// part of a word's length. It only splits words on spaces, not on other sorts
 /// of whitespace.
 String wordWrap(String text) {
-  return text.split('\n').map((originalLine) {
-    var buffer = StringBuffer();
-    var lengthSoFar = 0;
-    for (var word in originalLine.split(' ')) {
-      var wordLength = withoutColors(word).length;
-      if (wordLength > lineLength) {
-        if (lengthSoFar != 0) buffer.writeln();
-        buffer.writeln(word);
-      } else if (lengthSoFar == 0) {
-        buffer.write(word);
-        lengthSoFar = wordLength;
-      } else if (lengthSoFar + 1 + wordLength > lineLength) {
-        buffer.writeln();
-        buffer.write(word);
-        lengthSoFar = wordLength;
-      } else {
-        buffer.write(' $word');
-        lengthSoFar += 1 + wordLength;
-      }
-    }
-    return buffer.toString();
-  }).join('\n');
+  return text
+      .split('\n')
+      .map((originalLine) {
+        var buffer = StringBuffer();
+        var lengthSoFar = 0;
+        for (var word in originalLine.split(' ')) {
+          var wordLength = withoutColors(word).length;
+          if (wordLength > lineLength) {
+            if (lengthSoFar != 0) buffer.writeln();
+            buffer.writeln(word);
+          } else if (lengthSoFar == 0) {
+            buffer.write(word);
+            lengthSoFar = wordLength;
+          } else if (lengthSoFar + 1 + wordLength > lineLength) {
+            buffer.writeln();
+            buffer.write(word);
+            lengthSoFar = wordLength;
+          } else {
+            buffer.write(' $word');
+            lengthSoFar += 1 + wordLength;
+          }
+        }
+        return buffer.toString();
+      })
+      .join('\n');
 }
 
 /// Print a warning containing [message].
@@ -175,7 +196,8 @@ void warn(String message, {bool? color, bool print = false}) {
 /// This is necessary for ensuring that our port binding isn't flaky for
 /// applications that don't print out the bound port.
 Future<T> getUnusedPort<T extends Object>(
-    FutureOr<T> Function(int port) tryPort) async {
+  FutureOr<T> Function(int port) tryPort,
+) async {
   T? value;
   await Future.doWhile(() async {
     value = await tryPort(await getUnsafeUnusedPort());
@@ -196,8 +218,11 @@ Future<int> getUnsafeUnusedPort() async {
   late int port;
   if (_maySupportIPv6) {
     try {
-      final socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0,
-          v6Only: true);
+      final socket = await ServerSocket.bind(
+        InternetAddress.loopbackIPv6,
+        0,
+        v6Only: true,
+      );
       port = socket.port;
       await socket.close();
     } on SocketException {
@@ -224,8 +249,9 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
     var response = await request.close();
     var jsonObject =
         await json.fuse(utf8).decoder.bind(response).single as List;
-    return base
-        .resolve((jsonObject.first as Map)['devtoolsFrontendUrl'] as String);
+    return base.resolve(
+      (jsonObject.first as Map)['devtoolsFrontendUrl'] as String,
+    );
   } catch (_) {
     // If we fail to talk to the remote debugger protocol, give up and return
     // the raw URL rather than crashing.
@@ -244,7 +270,8 @@ extension RetryDelete on FileSystemEntity {
         if (attempt == 2) rethrow;
         attempt++;
         await Future<void>.delayed(
-            Duration(milliseconds: pow(10, attempt).toInt()));
+          Duration(milliseconds: pow(10, attempt).toInt()),
+        );
       }
     }
   }

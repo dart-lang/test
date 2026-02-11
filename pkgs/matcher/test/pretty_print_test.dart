@@ -6,7 +6,7 @@ import 'dart:collection';
 
 import 'package:matcher/matcher.dart';
 import 'package:matcher/src/pretty_print.dart';
-import 'package:test/test.dart' show group, test, expect;
+import 'package:test/test.dart' show expect, group, test;
 
 class DefaultToString {}
 
@@ -41,15 +41,20 @@ void main() {
 
     test('containing newlines', () {
       expect(
-          prettyPrint('foo\nbar\nbaz'),
-          equals("'foo\\n'\n"
-              "  'bar\\n'\n"
-              "  'baz'"));
+        prettyPrint('foo\nbar\nbaz'),
+        equals(
+          "'foo\\n'\n"
+          "  'bar\\n'\n"
+          "  'baz'",
+        ),
+      );
     });
 
     test('containing escapable characters', () {
-      expect(prettyPrint("foo\rbar\tbaz'qux\v"),
-          equals(r"'foo\rbar\tbaz\'qux\v'"));
+      expect(
+        prettyPrint("foo\rbar\tbaz'qux\v"),
+        equals(r"'foo\rbar\tbaz\'qux\v'"),
+      );
     });
   });
 
@@ -60,75 +65,92 @@ void main() {
 
     test('containing a multiline string', () {
       expect(
-          prettyPrint(['foo', 'bar\nbaz\nbip', 'qux']),
-          equals('[\n'
-              "  'foo',\n"
-              "  'bar\\n'\n"
-              "    'baz\\n'\n"
-              "    'bip',\n"
-              "  'qux'\n"
-              ']'));
+        prettyPrint(['foo', 'bar\nbaz\nbip', 'qux']),
+        equals(
+          '[\n'
+          "  'foo',\n"
+          "  'bar\\n'\n"
+          "    'baz\\n'\n"
+          "    'bip',\n"
+          "  'qux'\n"
+          ']',
+        ),
+      );
     });
 
     test('containing a matcher', () {
-      expect(prettyPrint(['foo', endsWith('qux')]),
-          equals("['foo', <a string ending with 'qux'>]"));
+      expect(
+        prettyPrint(['foo', endsWith('qux')]),
+        equals("['foo', <a string ending with 'qux'>]"),
+      );
     });
 
     test("that's under maxLineLength", () {
-      expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 30),
-          equals('[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'));
+      expect(
+        prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 30),
+        equals('[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'),
+      );
     });
 
     test("that's over maxLineLength", () {
       expect(
-          prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 29),
-          equals('[\n'
-              '  0,\n'
-              '  1,\n'
-              '  2,\n'
-              '  3,\n'
-              '  4,\n'
-              '  5,\n'
-              '  6,\n'
-              '  7,\n'
-              '  8,\n'
-              '  9\n'
-              ']'));
+        prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxLineLength: 29),
+        equals(
+          '[\n'
+          '  0,\n'
+          '  1,\n'
+          '  2,\n'
+          '  3,\n'
+          '  4,\n'
+          '  5,\n'
+          '  6,\n'
+          '  7,\n'
+          '  8,\n'
+          '  9\n'
+          ']',
+        ),
+      );
     });
 
     test('factors indentation into maxLineLength', () {
       expect(
-          prettyPrint([
-            'foo\nbar',
-            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-          ], maxLineLength: 30),
-          equals('[\n'
-              "  'foo\\n'\n"
-              "    'bar',\n"
-              '  [\n'
-              '    0,\n'
-              '    1,\n'
-              '    2,\n'
-              '    3,\n'
-              '    4,\n'
-              '    5,\n'
-              '    6,\n'
-              '    7,\n'
-              '    8,\n'
-              '    9\n'
-              '  ]\n'
-              ']'));
+        prettyPrint([
+          'foo\nbar',
+          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        ], maxLineLength: 30),
+        equals(
+          '[\n'
+          "  'foo\\n'\n"
+          "    'bar',\n"
+          '  [\n'
+          '    0,\n'
+          '    1,\n'
+          '    2,\n'
+          '    3,\n'
+          '    4,\n'
+          '    5,\n'
+          '    6,\n'
+          '    7,\n'
+          '    8,\n'
+          '    9\n'
+          '  ]\n'
+          ']',
+        ),
+      );
     });
 
     test("that's under maxItems", () {
-      expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxItems: 10),
-          equals('[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'));
+      expect(
+        prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxItems: 10),
+        equals('[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'),
+      );
     });
 
     test("that's over maxItems", () {
-      expect(prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxItems: 9),
-          equals('[0, 1, 2, 3, 4, 5, 6, 7, ...]'));
+      expect(
+        prettyPrint([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], maxItems: 9),
+        equals('[0, 1, 2, 3, 4, 5, 6, 7, ...]'),
+      );
     });
 
     test("that's recursive", () {
@@ -140,120 +162,157 @@ void main() {
 
   group('with a map', () {
     test('containing primitive objects', () {
-      expect(prettyPrint({'foo': 1, 'bar': true}),
-          equals("{'foo': 1, 'bar': true}"));
+      expect(
+        prettyPrint({'foo': 1, 'bar': true}),
+        equals("{'foo': 1, 'bar': true}"),
+      );
     });
 
     test('containing a multiline string key', () {
       expect(
-          prettyPrint({'foo\nbar': 1, 'bar': true}),
-          equals('{\n'
-              "  'foo\\n'\n"
-              "    'bar': 1,\n"
-              "  'bar': true\n"
-              '}'));
+        prettyPrint({'foo\nbar': 1, 'bar': true}),
+        equals(
+          '{\n'
+          "  'foo\\n'\n"
+          "    'bar': 1,\n"
+          "  'bar': true\n"
+          '}',
+        ),
+      );
     });
 
     test('containing a multiline string value', () {
       expect(
-          prettyPrint({'foo': 'bar\nbaz', 'qux': true}),
-          equals('{\n'
-              "  'foo': 'bar\\n'\n"
-              "    'baz',\n"
-              "  'qux': true\n"
-              '}'));
+        prettyPrint({'foo': 'bar\nbaz', 'qux': true}),
+        equals(
+          '{\n'
+          "  'foo': 'bar\\n'\n"
+          "    'baz',\n"
+          "  'qux': true\n"
+          '}',
+        ),
+      );
     });
 
     test('containing a multiline string key/value pair', () {
       expect(
-          prettyPrint({'foo\nbar': 'baz\nqux'}),
-          equals('{\n'
-              "  'foo\\n'\n"
-              "    'bar': 'baz\\n'\n"
-              "    'qux'\n"
-              '}'));
+        prettyPrint({'foo\nbar': 'baz\nqux'}),
+        equals(
+          '{\n'
+          "  'foo\\n'\n"
+          "    'bar': 'baz\\n'\n"
+          "    'qux'\n"
+          '}',
+        ),
+      );
     });
 
     test('containing a matcher key', () {
-      expect(prettyPrint({endsWith('bar'): 'qux'}),
-          equals("{<a string ending with 'bar'>: 'qux'}"));
+      expect(
+        prettyPrint({endsWith('bar'): 'qux'}),
+        equals("{<a string ending with 'bar'>: 'qux'}"),
+      );
     });
 
     test('containing a matcher value', () {
-      expect(prettyPrint({'foo': endsWith('qux')}),
-          equals("{'foo': <a string ending with 'qux'>}"));
+      expect(
+        prettyPrint({'foo': endsWith('qux')}),
+        equals("{'foo': <a string ending with 'qux'>}"),
+      );
     });
 
     test("that's under maxLineLength", () {
-      expect(prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 32),
-          equals("{'0': 1, '2': 3, '4': 5, '6': 7}"));
+      expect(
+        prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 32),
+        equals("{'0': 1, '2': 3, '4': 5, '6': 7}"),
+      );
     });
 
     test("that's over maxLineLength", () {
       expect(
-          prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 31),
-          equals('{\n'
-              "  '0': 1,\n"
-              "  '2': 3,\n"
-              "  '4': 5,\n"
-              "  '6': 7\n"
-              '}'));
+        prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxLineLength: 31),
+        equals(
+          '{\n'
+          "  '0': 1,\n"
+          "  '2': 3,\n"
+          "  '4': 5,\n"
+          "  '6': 7\n"
+          '}',
+        ),
+      );
     });
 
     test('factors indentation into maxLineLength', () {
       expect(
-          prettyPrint([
-            'foo\nbar',
-            {'0': 1, '2': 3, '4': 5, '6': 7}
-          ], maxLineLength: 32),
-          equals('[\n'
-              "  'foo\\n'\n"
-              "    'bar',\n"
-              '  {\n'
-              "    '0': 1,\n"
-              "    '2': 3,\n"
-              "    '4': 5,\n"
-              "    '6': 7\n"
-              '  }\n'
-              ']'));
+        prettyPrint([
+          'foo\nbar',
+          {'0': 1, '2': 3, '4': 5, '6': 7},
+        ], maxLineLength: 32),
+        equals(
+          '[\n'
+          "  'foo\\n'\n"
+          "    'bar',\n"
+          '  {\n'
+          "    '0': 1,\n"
+          "    '2': 3,\n"
+          "    '4': 5,\n"
+          "    '6': 7\n"
+          '  }\n'
+          ']',
+        ),
+      );
     });
 
     test("that's under maxItems", () {
-      expect(prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxItems: 4),
-          equals("{'0': 1, '2': 3, '4': 5, '6': 7}"));
+      expect(
+        prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxItems: 4),
+        equals("{'0': 1, '2': 3, '4': 5, '6': 7}"),
+      );
     });
 
     test("that's over maxItems", () {
-      expect(prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxItems: 3),
-          equals("{'0': 1, '2': 3, ...}"));
+      expect(
+        prettyPrint({'0': 1, '2': 3, '4': 5, '6': 7}, maxItems: 3),
+        equals("{'0': 1, '2': 3, ...}"),
+      );
     });
   });
   group('with an object', () {
     test('with a default [toString]', () {
-      expect(prettyPrint(DefaultToString()),
-          equals("<Instance of 'DefaultToString'>"));
+      expect(
+        prettyPrint(DefaultToString()),
+        equals("<Instance of 'DefaultToString'>"),
+      );
     });
 
     test('with a custom [toString]', () {
-      expect(prettyPrint(CustomToString()),
-          equals('CustomToString:<string representation>'));
+      expect(
+        prettyPrint(CustomToString()),
+        equals('CustomToString:<string representation>'),
+      );
     });
 
     test('with a custom [toString] and a private name', () {
-      expect(prettyPrint(_PrivateName()),
-          equals('_PrivateName:<string representation>'));
+      expect(
+        prettyPrint(_PrivateName()),
+        equals('_PrivateName:<string representation>'),
+      );
     });
   });
 
   group('with an iterable', () {
     test("that's not a list", () {
-      expect(prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
-          equals('MappedListIterable<int, int>:[2, 4, 6, 8]'));
+      expect(
+        prettyPrint([1, 2, 3, 4].map((n) => n * 2)),
+        equals('MappedListIterable<int, int>:[2, 4, 6, 8]'),
+      );
     });
 
     test("that's not a list and has a private name", () {
-      expect(prettyPrint(_PrivateNameIterable()),
-          equals('_PrivateNameIterable:[1, 2, 3]'));
+      expect(
+        prettyPrint(_PrivateNameIterable()),
+        equals('_PrivateNameIterable:[1, 2, 3]'),
+      );
     });
   });
 

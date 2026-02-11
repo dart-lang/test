@@ -19,25 +19,28 @@ import 'code_server.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('starts Chrome with the given URL', () async {
-    var server = await CodeServer.start();
+  test(
+    'starts Chrome with the given URL',
+    () async {
+      var server = await CodeServer.start();
 
-    server.handleJavaScript('''
+      server.handleJavaScript('''
 var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
 webSocket.addEventListener("open", function() {
   webSocket.send("loaded!");
 });
 ''');
-    var webSocket = server.handleWebSocket();
+      var webSocket = server.handleWebSocket();
 
-    var chrome = Chrome(server.url, configuration());
-    addTearDown(() => chrome.close());
+      var chrome = Chrome(server.url, configuration());
+      addTearDown(() => chrome.close());
 
-    expect(await (await webSocket).stream.first, equals('loaded!'));
-  },
-      // It's not clear why, but this test in particular seems to time out
-      // when run in parallel with many other tests.
-      timeout: const Timeout.factor(2));
+      expect(await (await webSocket).stream.first, equals('loaded!'));
+    },
+    // It's not clear why, but this test in particular seems to time out
+    // when run in parallel with many other tests.
+    timeout: const Timeout.factor(2),
+  );
 
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
@@ -46,15 +49,23 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var chrome = Chrome(Uri.https('dart.dev'), configuration(),
-        settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+    var chrome = Chrome(
+      Uri.https('dart.dev'),
+      configuration(),
+      settings: ExecutableSettings(
+        linuxExecutable: '_does_not_exist',
+        macOSExecutable: '_does_not_exist',
+        windowsExecutable: '_does_not_exist',
+      ),
+    );
     expect(
-        chrome.onExit,
-        throwsA(isApplicationException(
-            startsWith('Failed to run Chrome: $noSuchFileMessage'))));
+      chrome.onExit,
+      throwsA(
+        isApplicationException(
+          startsWith('Failed to run Chrome: $noSuchFileMessage'),
+        ),
+      ),
+    );
   });
 
   test('can run successful tests', () async {
@@ -93,8 +104,10 @@ void main() {
   test("success", () {});
 }
 ''').create();
-    var test = await runTest(['-p', 'chrome', 'test.dart'],
-        environment: {'CHROME_EXECUTABLE': '/some/bad/path'});
+    var test = await runTest(
+      ['-p', 'chrome', 'test.dart'],
+      environment: {'CHROME_EXECUTABLE': '/some/bad/path'},
+    );
     expect(test.stdout, emitsThrough(contains('Failed to run Chrome:')));
     await test.shouldExit(1);
   });

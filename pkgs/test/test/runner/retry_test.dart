@@ -108,9 +108,10 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test('tests are not retried after they have already been reported successful',
-      () async {
-    await d.file('test.dart', '''
+  test(
+    'tests are not retried after they have already been reported successful',
+    () async {
+      await d.file('test.dart', '''
               import 'dart:async';
 
               import 'package:test/test.dart';
@@ -132,13 +133,16 @@ void main() {
               }
           ''').create();
 
-    var test = await runTest(['test.dart']);
-    expect(
+      var test = await runTest(['test.dart']);
+      expect(
         test.stdout,
         emitsThrough(
-            contains('This test failed after it had already completed')));
-    await test.shouldExit(1);
-  });
+          contains('This test failed after it had already completed'),
+        ),
+      );
+      await test.shouldExit(1);
+    },
+  );
 
   group('retries tests', () {
     test('and eventually passes for valid tests', () async {

@@ -25,25 +25,33 @@ import 'runner_suite.dart';
 /// finished running. If the operation is canceled, the debugger will clean up
 /// any resources it allocated.
 CancelableOperation debug(
-    Engine engine, Reporter reporter, LoadSuite loadSuite) {
+  Engine engine,
+  Reporter reporter,
+  LoadSuite loadSuite,
+) {
   _Debugger? debugger;
   var canceled = false;
-  return CancelableOperation.fromFuture(() async {
-    engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
-      engine.pause();
-      return runnerSuite;
-    }));
+  return CancelableOperation.fromFuture(
+    () async {
+      engine.suiteSink.add(
+        loadSuite.changeSuite((runnerSuite) {
+          engine.pause();
+          return runnerSuite;
+        }),
+      );
 
-    var suite = await loadSuite.suite;
-    if (canceled || suite == null) return;
+      var suite = await loadSuite.suite;
+      if (canceled || suite == null) return;
 
-    await (debugger = _Debugger(engine, reporter, suite)).run();
-  }(), onCancel: () {
-    canceled = true;
-    // Make sure the load test finishes so the engine can close.
-    engine.resume();
-    debugger?.close();
-  });
+      await (debugger = _Debugger(engine, reporter, suite)).run();
+    }(),
+    onCancel: () {
+      canceled = true;
+      // Make sure the load test finishes so the engine can close.
+      engine.resume();
+      debugger?.close();
+    },
+  );
 }
 
 // TODO(nweiz): Test using the console and restarting a test once sdk#25369 is
@@ -84,9 +92,12 @@ class _Debugger {
   bool get _json => _config.reporter == 'json';
 
   _Debugger(this._engine, this._reporter, this._suite)
-      : _console = Console(color: Configuration.current.color) {
-    _console.registerCommand('restart',
-        'Restart the current test after it finishes running.', _restartTest);
+    : _console = Console(color: Configuration.current.color) {
+    _console.registerCommand(
+      'restart',
+      'Restart the current test after it finishes running.',
+      _restartTest,
+    );
 
     _onRestartSubscription = _suite.environment.onRestart.listen((_) {
       _restartTest();
@@ -161,8 +172,10 @@ class _Debugger {
           }
         }
 
-        buffer.write("and set breakpoints. Once you're finished, return to "
-            'this terminal and press Enter.');
+        buffer.write(
+          "and set breakpoints. Once you're finished, return to "
+          'this terminal and press Enter.',
+        );
 
         print(wordWrap(buffer.toString()));
       }
@@ -170,7 +183,7 @@ class _Debugger {
       await inCompletionOrder([
         _suite.environment.displayPause(),
         stdinLines.cancelable((queue) => queue.next),
-        _pauseCompleter.operation
+        _pauseCompleter.operation,
       ]).first;
     } finally {
       if (!_json) _reporter.resume();
@@ -203,8 +216,11 @@ class _Debugger {
     var liveTest = _engine.active.single;
     _engine.restartTest(liveTest);
     if (!_json) {
-      print(wordWrap(
-          'Will restart "${liveTest.test.name}" once it finishes running.'));
+      print(
+        wordWrap(
+          'Will restart "${liveTest.test.name}" once it finishes running.',
+        ),
+      );
     }
   }
 

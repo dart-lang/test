@@ -23,12 +23,13 @@ extension FutureChecks<T> on Subject<Future<T>> {
       try {
         return Extracted.value(await actual);
       } catch (e, st) {
-        return Extracted.rejection(actual: [
-          'a future that completes as an error'
-        ], which: [
-          ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-          ...const LineSplitter().convert(st.toString())
-        ]);
+        return Extracted.rejection(
+          actual: ['a future that completes as an error'],
+          which: [
+            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+            ...const LineSplitter().convert(st.toString()),
+          ],
+        );
       }
     }, completionCondition);
   }
@@ -44,17 +45,28 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// concrete end point where this condition has definitely succeeded.
   void doesNotComplete() {
     context.expectUnawaited(() => ['does not complete'], (actual, reject) {
-      unawaited(actual.then((r) {
-        reject(Rejection(
-            actual: prefixFirst('a future that completed to ', literal(r))));
-      }, onError: (Object e, StackTrace st) {
-        reject(Rejection(actual: [
-          'a future that completed as an error:'
-        ], which: [
-          ...prefixFirst('threw ', literal(e)),
-          ...const LineSplitter().convert(st.toString())
-        ]));
-      }));
+      unawaited(
+        actual.then(
+          (r) {
+            reject(
+              Rejection(
+                actual: prefixFirst('a future that completed to ', literal(r)),
+              ),
+            );
+          },
+          onError: (Object e, StackTrace st) {
+            reject(
+              Rejection(
+                actual: ['a future that completed as an error:'],
+                which: [
+                  ...prefixFirst('threw ', literal(e)),
+                  ...const LineSplitter().convert(st.toString()),
+                ],
+              ),
+            );
+          },
+        ),
+      );
     });
   }
 
@@ -67,26 +79,31 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [errorCondition] has optionally been checked.
-  Future<void> throws<E extends Object>(
-      [AsyncCondition<E>? errorCondition]) async {
+  Future<void> throws<E extends Object>([
+    AsyncCondition<E>? errorCondition,
+  ]) async {
     await context.nestAsync<E>(
-        () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
-        (actual) async {
-      try {
-        return Extracted.rejection(
+      () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
+      (actual) async {
+        try {
+          return Extracted.rejection(
             actual: prefixFirst('completed to ', literal(await actual)),
-            which: ['did not throw']);
-      } on E catch (e) {
-        return Extracted.value(e);
-      } catch (e, st) {
-        return Extracted.rejection(
+            which: ['did not throw'],
+          );
+        } on E catch (e) {
+          return Extracted.value(e);
+        } catch (e, st) {
+          return Extracted.rejection(
             actual: prefixFirst('completed to error ', literal(e)),
             which: [
               'threw an exception that is not a $E at:',
-              ...const LineSplitter().convert(st.toString())
-            ]);
-      }
-    }, errorCondition);
+              ...const LineSplitter().convert(st.toString()),
+            ],
+          );
+        }
+      },
+      errorCondition,
+    );
   }
 }
 
@@ -98,19 +115,20 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// Calls [Context.expectAsync] and wraps [predicate] with a transaction.
   ///
   /// The transaction is committed if the check passes, or rejected if it fails.
-  Future<void> _expectAsync(Iterable<String> Function() clause,
-          FutureOr<Rejection?> Function(StreamQueue<T>) predicate) =>
-      context.expectAsync(clause, (actual) async {
-        final transaction = actual.startTransaction();
-        final copy = transaction.newQueue();
-        final result = await predicate(copy);
-        if (result == null) {
-          transaction.commit(copy);
-        } else {
-          transaction.reject();
-        }
-        return result;
-      });
+  Future<void> _expectAsync(
+    Iterable<String> Function() clause,
+    FutureOr<Rejection?> Function(StreamQueue<T>) predicate,
+  ) => context.expectAsync(clause, (actual) async {
+    final transaction = actual.startTransaction();
+    final copy = transaction.newQueue();
+    final result = await predicate(copy);
+    if (result == null) {
+      transaction.commit(copy);
+    } else {
+      transaction.reject();
+    }
+    return result;
+  });
 
   /// Expect that the `Stream` emits a value without first emitting an error.
   ///
@@ -130,19 +148,21 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
     await context.nestAsync<T>(() => ['emits a value'], (actual) async {
       if (!await actual.hasNext) {
         return Extracted.rejection(
-            actual: ['a stream'],
-            which: ['closed without emitting enough values']);
+          actual: ['a stream'],
+          which: ['closed without emitting enough values'],
+        );
       }
       try {
         await actual.peek;
         return Extracted.value(await actual.next);
       } catch (e, st) {
         return Extracted.rejection(
-            actual: prefixFirst('a stream with error ', literal(e)),
-            which: [
-              'emitted an error instead of a value at:',
-              ...const LineSplitter().convert(st.toString())
-            ]);
+          actual: prefixFirst('a stream with error ', literal(e)),
+          which: [
+            'emitted an error instead of a value at:',
+            ...const LineSplitter().convert(st.toString()),
+          ],
+        );
       }
     }, emittedCondition);
   }
@@ -162,33 +182,39 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [errorCondition] has optionally been checked.
-  Future<void> emitsError<E extends Object>(
-      [AsyncCondition<E>? errorCondition]) async {
+  Future<void> emitsError<E extends Object>([
+    AsyncCondition<E>? errorCondition,
+  ]) async {
     await context.nestAsync<E>(
-        () => ['emits an error${E == Object ? '' : ' of type $E'}'],
-        (actual) async {
-      if (!await actual.hasNext) {
-        return Extracted.rejection(
+      () => ['emits an error${E == Object ? '' : ' of type $E'}'],
+      (actual) async {
+        if (!await actual.hasNext) {
+          return Extracted.rejection(
             actual: ['a stream'],
-            which: ['closed without emitting an expected error']);
-      }
-      try {
-        final value = await actual.peek;
-        return Extracted.rejection(
+            which: ['closed without emitting an expected error'],
+          );
+        }
+        try {
+          final value = await actual.peek;
+          return Extracted.rejection(
             actual: prefixFirst('a stream emitting value ', literal(value)),
-            which: ['closed without emitting an error']);
-      } on E catch (e) {
-        await actual.next.then<void>((_) {}, onError: (_) {});
-        return Extracted.value(e);
-      } catch (e, st) {
-        return Extracted.rejection(
+            which: ['closed without emitting an error'],
+          );
+        } on E catch (e) {
+          await actual.next.then<void>((_) {}, onError: (_) {});
+          return Extracted.value(e);
+        } catch (e, st) {
+          return Extracted.rejection(
             actual: prefixFirst('a stream with error ', literal(e)),
             which: [
               'emitted an error which is not $E at:',
-              ...const LineSplitter().convert(st.toString())
-            ]);
-      }
-    }, errorCondition);
+              ...const LineSplitter().convert(st.toString()),
+            ],
+          );
+        }
+      },
+      errorCondition,
+    );
   }
 
   /// Expects that the `Stream` emits any number of events before emitting an
@@ -206,21 +232,24 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// events.
   Future<void> emitsThrough(AsyncCondition<T> condition) async {
     await _expectAsync(
-        () => [
-              'emits any values then emits a value that:',
-              ...describe(condition)
-            ], (actual) async {
-      var count = 0;
-      while (await actual.hasNext) {
-        if (softCheck(await actual.next, condition) == null) {
-          return null;
+      () => [
+        'emits any values then emits a value that:',
+        ...describe(condition),
+      ],
+      (actual) async {
+        var count = 0;
+        while (await actual.hasNext) {
+          if (softCheck(await actual.next, condition) == null) {
+            return null;
+          }
+          count++;
         }
-        count++;
-      }
-      return Rejection(
+        return Rejection(
           actual: ['a stream'],
-          which: ['ended after emitting $count elements with none matching']);
-    });
+          which: ['ended after emitting $count elements with none matching'],
+        );
+      },
+    );
   }
 
   /// Expects that the stream satisfies each condition in [conditions] serially.
@@ -241,41 +270,54 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation succeeds, consumes as many events from the source
   /// stream as are consumed by all the conditions.
   Future<void> inOrder(
-      Iterable<AsyncCondition<StreamQueue<T>>> conditions) async {
+    Iterable<AsyncCondition<StreamQueue<T>>> conditions,
+  ) async {
     conditions = conditions.toList();
     final descriptions = <String>[];
     await _expectAsync(
-        () => descriptions.isEmpty
-            ? ['satisfies ${conditions.length} conditions in order']
-            : descriptions, (actual) async {
-      var satisfiedCount = 0;
-      for (var condition in conditions) {
-        descriptions.addAll(await describeAsync(condition));
-        final failure = await softCheckAsync(actual, condition);
-        if (failure != null) {
-          final which = failure.rejection.which;
-          return Rejection(actual: [
-            'a stream'
-          ], which: [
-            if (satisfiedCount > 0) 'satisfied $satisfiedCount conditions then',
-            'failed to satisfy the condition at index $satisfiedCount',
-            if (failure.detail.depth > 0) ...[
-              'because it:',
-              ...indent(
-                  failure.detail.actual.skip(1), failure.detail.depth - 1),
-              ...indent(prefixFirst('Actual: ', failure.rejection.actual),
-                  failure.detail.depth),
-              if (which != null)
-                ...indent(prefixFirst('Which: ', which), failure.detail.depth),
-            ] else ...[
-              if (which != null) ...prefixFirst('because it ', which),
-            ],
-          ]);
+      () =>
+          descriptions.isEmpty
+              ? ['satisfies ${conditions.length} conditions in order']
+              : descriptions,
+      (actual) async {
+        var satisfiedCount = 0;
+        for (var condition in conditions) {
+          descriptions.addAll(await describeAsync(condition));
+          final failure = await softCheckAsync(actual, condition);
+          if (failure != null) {
+            final which = failure.rejection.which;
+            return Rejection(
+              actual: ['a stream'],
+              which: [
+                if (satisfiedCount > 0)
+                  'satisfied $satisfiedCount conditions then',
+                'failed to satisfy the condition at index $satisfiedCount',
+                if (failure.detail.depth > 0) ...[
+                  'because it:',
+                  ...indent(
+                    failure.detail.actual.skip(1),
+                    failure.detail.depth - 1,
+                  ),
+                  ...indent(
+                    prefixFirst('Actual: ', failure.rejection.actual),
+                    failure.detail.depth,
+                  ),
+                  if (which != null)
+                    ...indent(
+                      prefixFirst('Which: ', which),
+                      failure.detail.depth,
+                    ),
+                ] else ...[
+                  if (which != null) ...prefixFirst('because it ', which),
+                ],
+              ],
+            );
+          }
+          satisfiedCount++;
         }
-        satisfiedCount++;
-      }
-      return null;
-    });
+        return null;
+      },
+    );
   }
 
   /// Expects that the stream statisfies at least one condition from
@@ -287,74 +329,82 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// queue as the satisfied condition. If multiple conditions are satisfied,
   /// chooses the condition which consumed the most events.
   Future<void> anyOf(
-      Iterable<AsyncCondition<StreamQueue<T>>> conditions) async {
+    Iterable<AsyncCondition<StreamQueue<T>>> conditions,
+  ) async {
     conditions = conditions.toList();
     if (conditions.isEmpty) {
       throw ArgumentError('conditions may not be empty');
     }
     final descriptions = <Iterable<String>>[];
     await context.expectAsync(
-        () => descriptions.isEmpty
-            ? ['satisfies any of ${conditions.length} conditions']
-            : [
+      () =>
+          descriptions.isEmpty
+              ? ['satisfies any of ${conditions.length} conditions']
+              : [
                 'satisfies one of:',
                 for (var i = 0; i < descriptions.length; i++) ...[
                   ...descriptions[i],
-                  if (i < descriptions.length - 1) 'or,'
-                ]
-              ], (actual) async {
-      final transaction = actual.startTransaction();
-      StreamQueue<T>? longestAccepted;
-      final descriptionFuture = Future.wait(conditions.map(describeAsync));
-      final failures = await Future.wait(conditions.map((condition) async {
-        final copy = transaction.newQueue();
-        final failure = await softCheckAsync(copy, condition);
-        if (failure == null &&
-            (longestAccepted == null ||
-                copy.eventsDispatched > longestAccepted!.eventsDispatched)) {
-          longestAccepted = copy;
+                  if (i < descriptions.length - 1) 'or,',
+                ],
+              ],
+      (actual) async {
+        final transaction = actual.startTransaction();
+        StreamQueue<T>? longestAccepted;
+        final descriptionFuture = Future.wait(conditions.map(describeAsync));
+        final failures = await Future.wait(
+          conditions.map((condition) async {
+            final copy = transaction.newQueue();
+            final failure = await softCheckAsync(copy, condition);
+            if (failure == null &&
+                (longestAccepted == null ||
+                    copy.eventsDispatched >
+                        longestAccepted!.eventsDispatched)) {
+              longestAccepted = copy;
+            }
+            return failure;
+          }),
+        );
+        descriptions.addAll(await descriptionFuture);
+        if (longestAccepted != null) {
+          transaction.commit(longestAccepted!);
+          return null;
         }
-        return failure;
-      }));
-      descriptions.addAll(await descriptionFuture);
-      if (longestAccepted != null) {
-        transaction.commit(longestAccepted!);
-        return null;
-      }
-      transaction.reject();
-      Iterable<String> failureDetails(int index, CheckFailure? failure) {
-        final actual = failure!.rejection.actual;
-        final which = failure.rejection.which;
-        final detail = failure.detail;
-        final failed = 'failed the condition at index $index';
-        if (detail.depth > 0) {
-          return [
-            '$failed because it:',
-            ...indent(detail.actual.skip(1), detail.depth - 1),
-            ...indent(prefixFirst('Actual: ', actual), detail.depth),
-            if (which != null)
-              ...indent(prefixFirst('Which: ', which), detail.depth),
-          ];
-        } else {
-          return [
-            if (which == null)
-              failed
-            else ...[
+        transaction.reject();
+        Iterable<String> failureDetails(int index, CheckFailure? failure) {
+          final actual = failure!.rejection.actual;
+          final which = failure.rejection.which;
+          final detail = failure.detail;
+          final failed = 'failed the condition at index $index';
+          if (detail.depth > 0) {
+            return [
               '$failed because it:',
-              ...indent(which),
-            ],
-          ];
+              ...indent(detail.actual.skip(1), detail.depth - 1),
+              ...indent(prefixFirst('Actual: ', actual), detail.depth),
+              if (which != null)
+                ...indent(prefixFirst('Which: ', which), detail.depth),
+            ];
+          } else {
+            return [
+              if (which == null)
+                failed
+              else ...[
+                '$failed because it:',
+                ...indent(which),
+              ],
+            ];
+          }
         }
-      }
 
-      return Rejection(actual: [
-        'a stream'
-      ], which: [
-        'failed to satisfy any condition',
-        for (var i = 0; i < failures.length; i++)
-          ...failureDetails(i, failures[i]),
-      ]);
-    });
+        return Rejection(
+          actual: ['a stream'],
+          which: [
+            'failed to satisfy any condition',
+            for (var i = 0; i < failures.length; i++)
+              ...failureDetails(i, failures[i]),
+          ],
+        );
+      },
+    );
   }
 
   /// Expects that the stream closes without emitting any event that satisfies
@@ -370,22 +420,24 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// [condition] until the end of the stream.
   Future<void> neverEmits(AsyncCondition<T> condition) async {
     await _expectAsync(
-        () => ['never emits a value that:', ...describe(condition)],
-        (actual) async {
-      var count = 0;
-      await for (var emitted in actual.rest) {
-        if (softCheck(emitted, condition) == null) {
-          return Rejection(actual: [
-            'a stream'
-          ], which: [
-            ...prefixFirst('emitted ', literal(emitted)),
-            if (count > 0) 'following $count other items'
-          ]);
+      () => ['never emits a value that:', ...describe(condition)],
+      (actual) async {
+        var count = 0;
+        await for (var emitted in actual.rest) {
+          if (softCheck(emitted, condition) == null) {
+            return Rejection(
+              actual: ['a stream'],
+              which: [
+                ...prefixFirst('emitted ', literal(emitted)),
+                if (count > 0) 'following $count other items',
+              ],
+            );
+          }
+          count++;
         }
-        count++;
-      }
-      return null;
-    });
+        return null;
+      },
+    );
   }
 
   /// Optionally consumes an event that matches [condition] from the stream.
@@ -395,20 +447,21 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If a non-matching event is emitted, no events are consumed.
   /// If a matching event is emitted, that event is consumed.
   Future<void> mayEmit(AsyncCondition<T> condition) async {
-    await context
-        .expectAsync(() => ['may emit a value that:', ...describe(condition)],
-            (actual) async {
-      if (!await actual.hasNext) return null;
-      try {
-        final value = await actual.peek;
-        if (softCheck(value, condition) == null) {
-          await actual.next;
+    await context.expectAsync(
+      () => ['may emit a value that:', ...describe(condition)],
+      (actual) async {
+        if (!await actual.hasNext) return null;
+        try {
+          final value = await actual.peek;
+          if (softCheck(value, condition) == null) {
+            await actual.next;
+          }
+        } catch (_) {
+          // Ignore an emitted error - it does not match he event.
         }
-      } catch (_) {
-        // Ignore an emitted error - it does not match he event.
-      }
-      return null;
-    });
+        return null;
+      },
+    );
   }
 
   /// Optionally consumes events that match [condition] from the stream.
@@ -420,23 +473,24 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// - An error is emitted.
   /// - The stream closes.
   Future<void> mayEmitMultiple(AsyncCondition<T> condition) async {
-    await context
-        .expectAsync(() => ['may emit a value that:', ...describe(condition)],
-            (actual) async {
-      while (await actual.hasNext) {
-        try {
-          final value = await actual.peek;
-          if (softCheck(value, condition) == null) {
-            await actual.next;
-          } else {
+    await context.expectAsync(
+      () => ['may emit a value that:', ...describe(condition)],
+      (actual) async {
+        while (await actual.hasNext) {
+          try {
+            final value = await actual.peek;
+            if (softCheck(value, condition) == null) {
+              await actual.next;
+            } else {
+              return null;
+            }
+          } catch (_) {
             return null;
           }
-        } catch (_) {
-          return null;
         }
-      }
-      return null;
-    });
+        return null;
+      },
+    );
   }
 
   /// Expects that the stream closes without emitting any events or errors.
@@ -448,16 +502,20 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
       if (!await actual.hasNext) return null;
       try {
         return Rejection(
-            actual: ['a stream'],
-            which: prefixFirst(
-                'emitted an unexpected value: ', literal(await actual.next)));
+          actual: ['a stream'],
+          which: prefixFirst(
+            'emitted an unexpected value: ',
+            literal(await actual.next),
+          ),
+        );
       } catch (e, st) {
-        return Rejection(actual: [
-          'a stream'
-        ], which: [
-          ...prefixFirst('emitted an unexpected error: ', literal(e)),
-          ...const LineSplitter().convert(st.toString())
-        ]);
+        return Rejection(
+          actual: ['a stream'],
+          which: [
+            ...prefixFirst('emitted an unexpected error: ', literal(e)),
+            ...const LineSplitter().convert(st.toString()),
+          ],
+        );
       }
     });
   }
@@ -470,7 +528,9 @@ extension WithQueueExtension<T> on Subject<Stream<T>> {
   /// Stream expectations operate on a queue, instead of directly on the stream,
   /// so that they can support conditional expectations and check multiple
   /// possibilities from the same point in the stream.
-  Subject<StreamQueue<T>> get withQueue =>
-      context.nest(() => [], (actual) => Extracted.value(StreamQueue(actual)),
-          atSameLevel: true);
+  Subject<StreamQueue<T>> get withQueue => context.nest(
+    () => [],
+    (actual) => Extracted.value(StreamQueue(actual)),
+    atSameLevel: true,
+  );
 }

@@ -27,20 +27,31 @@ void main() {
 
   group('--compiler', () {
     test(
-        'uses the default compiler if none other is specified for the platform',
-        () async {
-      var test =
-          await runTest(['test.dart', '-p', 'chrome,vm', '-c', 'dart2js']);
+      'uses the default compiler if none other is specified for the platform',
+      () async {
+        var test = await runTest([
+          'test.dart',
+          '-p',
+          'chrome,vm',
+          '-c',
+          'dart2js',
+        ]);
 
-      expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
-      expect(test.stdout, emitsThrough(contains('[VM, Kernel]')));
-      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
-      await test.shouldExit(0);
-    });
+        expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
+        expect(test.stdout, emitsThrough(contains('[VM, Kernel]')));
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+        await test.shouldExit(0);
+      },
+    );
 
     test('runs all supported compiler and platform combinations', () async {
-      var test = await runTest(
-          ['test.dart', '-p', 'chrome,vm', '-c', 'dart2js,kernel,source']);
+      var test = await runTest([
+        'test.dart',
+        '-p',
+        'chrome,vm',
+        '-c',
+        'dart2js,kernel,source',
+      ]);
 
       expect(test.stdout, emitsThrough(contains('[Chrome, Dart2Js]')));
       expect(test.stdout, emitsThrough(contains('[VM, Kernel]')));
@@ -50,19 +61,28 @@ void main() {
     });
 
     test('supports platform selectors', () async {
-      var test = await runTest(
-          ['test.dart', '-p', 'vm', '-c', 'vm:source,browser:kernel']);
+      var test = await runTest([
+        'test.dart',
+        '-p',
+        'vm',
+        '-c',
+        'vm:source,browser:kernel',
+      ]);
 
       expect(test.stdout, emitsThrough(contains('[VM, Source]')));
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
 
-    test(
-        'will only run a given test once for each compiler, even if there are '
+    test('will only run a given test once for each compiler, even if there are '
         'multiple matches', () async {
-      var test =
-          await runTest(['test.dart', '-p', 'vm', '-c', 'vm:source,source']);
+      var test = await runTest([
+        'test.dart',
+        '-p',
+        'vm',
+        '-c',
+        'vm:source,source',
+      ]);
 
       expect(test.stdout, emitsThrough(contains('[VM, Source]')));
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));

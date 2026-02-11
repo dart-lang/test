@@ -13,11 +13,15 @@ class MicrosoftEdge extends Browser {
   @override
   String get name => 'Edge';
 
-  MicrosoftEdge(Uri url, Configuration configuration,
-      {ExecutableSettings? settings})
-      : super(() => ChromiumBasedBrowser.microsoftEdge.spawn(
-              url,
-              configuration,
-              settings: settings,
-            ));
+  MicrosoftEdge(
+    Uri url,
+    Configuration configuration, {
+    ExecutableSettings? settings,
+  }) : super(
+         () => ChromiumBasedBrowser.microsoftEdge.spawn(
+           url,
+           configuration,
+           settings: settings,
+         ),
+       );
 }

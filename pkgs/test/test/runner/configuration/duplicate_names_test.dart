@@ -22,8 +22,10 @@ void main() {
       for (var function in ['group', 'test']) {
         test('${function}s', () async {
           await d
-              .file('dart_test.yaml',
-                  jsonEncode({'allow_duplicate_test_names': false}))
+              .file(
+                'dart_test.yaml',
+                jsonEncode({'allow_duplicate_test_names': false}),
+              )
               .create();
 
           var testName = 'test';
@@ -39,13 +41,17 @@ void main() {
           var test = await runTest([
             'test.dart',
             '--configuration',
-            p.join(d.sandbox, 'dart_test.yaml')
+            p.join(d.sandbox, 'dart_test.yaml'),
           ]);
 
           expect(
-              test.stdout,
-              emitsThrough(contains(
-                  'A test with the name "$testName" was already declared.')));
+            test.stdout,
+            emitsThrough(
+              contains(
+                'A test with the name "$testName" was already declared.',
+              ),
+            ),
+          );
 
           await test.shouldExit(1);
         });
@@ -69,9 +75,7 @@ void main() {
           }
         ''').create();
 
-          var test = await runTest(
-            ['test.dart'],
-          );
+          var test = await runTest(['test.dart']);
 
           expect(test.stdout, emitsThrough(contains('All tests passed!')));
 

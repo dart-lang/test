@@ -50,10 +50,13 @@ void main() {
     group('with empty configuration', () {
       setUp(() async {
         await d.file('a_test.dart', _tests).create();
-        var suites = await _loader
-            .loadFile(
-                p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
-            .toList();
+        var suites =
+            await _loader
+                .loadFile(
+                  p.join(d.sandbox, 'a_test.dart'),
+                  SuiteConfiguration.empty,
+                )
+                .toList();
         expect(suites, hasLength(1));
         var loadSuite = suites.first;
         suite = (await loadSuite.getSuite())!;
@@ -77,7 +80,7 @@ void main() {
 
         expectStates(liveTest, [
           const State(Status.running, Result.success),
-          const State(Status.complete, Result.success)
+          const State(Status.complete, Result.success),
         ]);
         expectErrors(liveTest, []);
 
@@ -93,71 +96,100 @@ void main() {
 
     group('with compiler selection', () {
       Future<List<LoadSuite>> loadSuitesWithConfig(
-          SuiteConfiguration suiteConfiguration) async {
+        SuiteConfiguration suiteConfiguration,
+      ) async {
         await d.file('a_test.dart', _tests).create();
         return _loader
             .loadFile(p.join(d.sandbox, 'a_test.dart'), suiteConfiguration)
             .toList();
       }
 
-      test('with a single compiler selection, uses the selected compiler',
-          () async {
-        var suites = await loadSuitesWithConfig(suiteConfiguration(
-            compilerSelections: [CompilerSelection.parse('source')]));
-        expect(suites, hasLength(1));
-        var loadSuite = suites.first;
-        suite = (await loadSuite.getSuite())!;
-        expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
-        expect(suite.platform.runtime, equals(Runtime.vm));
-        expect(suite.platform.compiler, equals(Compiler.source));
-      });
+      test(
+        'with a single compiler selection, uses the selected compiler',
+        () async {
+          var suites = await loadSuitesWithConfig(
+            suiteConfiguration(
+              compilerSelections: [CompilerSelection.parse('source')],
+            ),
+          );
+          expect(suites, hasLength(1));
+          var loadSuite = suites.first;
+          suite = (await loadSuite.getSuite())!;
+          expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
+          expect(suite.platform.runtime, equals(Runtime.vm));
+          expect(suite.platform.compiler, equals(Compiler.source));
+        },
+      );
 
-      test('with multiple compiler selections, returns a suite for each',
-          () async {
-        var suites = await loadSuitesWithConfig(suiteConfiguration(
-            compilerSelections: [
-              CompilerSelection.parse('source'),
-              CompilerSelection.parse('kernel')
-            ]));
+      test(
+        'with multiple compiler selections, returns a suite for each',
+        () async {
+          var suites = await loadSuitesWithConfig(
+            suiteConfiguration(
+              compilerSelections: [
+                CompilerSelection.parse('source'),
+                CompilerSelection.parse('kernel'),
+              ],
+            ),
+          );
 
-        expect(suites, hasLength(2));
-        var runnerSuites =
-            await Future.wait([for (var suite in suites) suite.getSuite()]);
-        expect(
+          expect(suites, hasLength(2));
+          var runnerSuites = await Future.wait([
+            for (var suite in suites) suite.getSuite(),
+          ]);
+          expect(
             runnerSuites,
             unorderedEquals([
               isA<RunnerSuite>()
                   .having(
-                      (s) => s.platform.runtime, 'The vm runtime', Runtime.vm)
-                  .having((s) => s.platform.compiler, 'The source compiler',
-                      Compiler.source),
+                    (s) => s.platform.runtime,
+                    'The vm runtime',
+                    Runtime.vm,
+                  )
+                  .having(
+                    (s) => s.platform.compiler,
+                    'The source compiler',
+                    Compiler.source,
+                  ),
               isA<RunnerSuite>()
                   .having(
-                      (s) => s.platform.runtime, 'The vm runtime', Runtime.vm)
-                  .having((s) => s.platform.compiler, 'The kernel compiler',
-                      Compiler.kernel),
-            ]));
-      });
+                    (s) => s.platform.runtime,
+                    'The vm runtime',
+                    Runtime.vm,
+                  )
+                  .having(
+                    (s) => s.platform.compiler,
+                    'The kernel compiler',
+                    Compiler.kernel,
+                  ),
+            ]),
+          );
+        },
+      );
 
-      test('with unsupported compiler selections, uses the default compiler',
-          () async {
-        var suites =
-            await loadSuitesWithConfig(suiteConfiguration(compilerSelections: [
-          CompilerSelection.parse('dart2js'),
-        ]));
-        expect(suites, hasLength(1));
-        var loadSuite = suites.first;
-        suite = (await loadSuite.getSuite())!;
-        expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
-        expect(suite.platform.runtime, equals(Runtime.vm));
-        expect(suite.platform.compiler, equals(Runtime.vm.defaultCompiler));
-      });
+      test(
+        'with unsupported compiler selections, uses the default compiler',
+        () async {
+          var suites = await loadSuitesWithConfig(
+            suiteConfiguration(
+              compilerSelections: [CompilerSelection.parse('dart2js')],
+            ),
+          );
+          expect(suites, hasLength(1));
+          var loadSuite = suites.first;
+          suite = (await loadSuite.getSuite())!;
+          expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
+          expect(suite.platform.runtime, equals(Runtime.vm));
+          expect(suite.platform.compiler, equals(Runtime.vm.defaultCompiler));
+        },
+      );
 
       test('compiler selections support matching boolean selectors', () async {
-        var suites =
-            await loadSuitesWithConfig(suiteConfiguration(compilerSelections: [
-          CompilerSelection.parse('vm:source'),
-        ]));
+        var suites = await loadSuitesWithConfig(
+          suiteConfiguration(
+            compilerSelections: [CompilerSelection.parse('vm:source')],
+          ),
+        );
         expect(suites, hasLength(1));
         var loadSuite = suites.first;
         suite = (await loadSuite.getSuite())!;
@@ -167,17 +199,20 @@ void main() {
       });
 
       test('compiler selections support unmatched boolean selectors', () async {
-        var suites =
-            await loadSuitesWithConfig(suiteConfiguration(compilerSelections: [
-          CompilerSelection.parse('browser:source'),
-        ]));
+        var suites = await loadSuitesWithConfig(
+          suiteConfiguration(
+            compilerSelections: [CompilerSelection.parse('browser:source')],
+          ),
+        );
         expect(suites, hasLength(1));
         var loadSuite = suites.first;
         suite = (await loadSuite.getSuite())!;
         expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
         expect(suite.platform.runtime, equals(Runtime.vm));
-        expect(suite.platform.compiler,
-            allOf(Runtime.vm.defaultCompiler, isNot(Compiler.source)));
+        expect(
+          suite.platform.compiler,
+          allOf(Runtime.vm.defaultCompiler, isNot(Compiler.source)),
+        );
       });
     });
   });
@@ -185,14 +220,18 @@ void main() {
   group('.loadDir()', () {
     test('ignores non-Dart files', () async {
       await d.file('a_test.txt', _tests).create();
-      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
-          completion(isEmpty));
+      expect(
+        _loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
+        completion(isEmpty),
+      );
     });
 
     test("ignores files that don't end in _test.dart", () async {
       await d.file('test.dart', _tests).create();
-      expect(_loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
-          completion(isEmpty));
+      expect(
+        _loader.loadDir(d.sandbox, SuiteConfiguration.empty).toList(),
+        completion(isEmpty),
+      );
     });
 
     group('with suites loaded from a directory', () {
@@ -202,25 +241,28 @@ void main() {
         await d.file('another_test.dart', _tests).create();
         await d.dir('dir', [d.file('sub_test.dart', _tests)]).create();
 
-        suites = await _loader
-            .loadDir(d.sandbox, SuiteConfiguration.empty)
-            .asyncMap((loadSuite) async => (await loadSuite.getSuite())!)
-            .toList();
+        suites =
+            await _loader
+                .loadDir(d.sandbox, SuiteConfiguration.empty)
+                .asyncMap((loadSuite) async => (await loadSuite.getSuite())!)
+                .toList();
       });
 
       test('gives those suites the correct paths', () {
         expect(
-            suites.map((suite) => suite.path),
-            unorderedEquals([
-              p.join(d.sandbox, 'a_test.dart'),
-              p.join(d.sandbox, 'another_test.dart'),
-              p.join(d.sandbox, 'dir', 'sub_test.dart')
-            ]));
+          suites.map((suite) => suite.path),
+          unorderedEquals([
+            p.join(d.sandbox, 'a_test.dart'),
+            p.join(d.sandbox, 'another_test.dart'),
+            p.join(d.sandbox, 'dir', 'sub_test.dart'),
+          ]),
+        );
       });
 
       test('can run tests in those suites', () {
-        var suite =
-            suites.firstWhere((suite) => suite.path!.contains('a_test'));
+        var suite = suites.firstWhere(
+          (suite) => suite.path!.contains('a_test'),
+        );
         var liveTest = (suite.group.entries[1] as RunnerTest).load(suite);
         expectSingleFailure(liveTest);
         return liveTest.run().whenComplete(() => liveTest.close());
@@ -234,15 +276,21 @@ void main() {
         print('print within test');
       }
     ''').create();
-    var suites = await _loader
-        .loadFile(p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
-        .toList();
+    var suites =
+        await _loader
+            .loadFile(
+              p.join(d.sandbox, 'a_test.dart'),
+              SuiteConfiguration.empty,
+            )
+            .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
     var liveTest = (loadSuite.group.entries.single as Test).load(loadSuite);
-    expect(liveTest.onMessage.first.then((message) => message.text),
-        completion(equals('print within test')));
+    expect(
+      liveTest.onMessage.first.then((message) => message.text),
+      completion(equals('print within test')),
+    );
     await liveTest.run();
     expectTestPassed(liveTest);
   });
@@ -260,30 +308,39 @@ void main() {
       var firstFailureCompleter = Completer<void>();
 
       // After the first load failure we create the missing dependency.
-      unawaited(firstFailureCompleter.future.then((_) async {
-        await d.file('hello.dart', '''
+      unawaited(
+        firstFailureCompleter.future.then((_) async {
+          await d.file('hello.dart', '''
       String get message => 'hello';
     ''').create();
-      }));
+        }),
+      );
 
-      await runZoned(() async {
-        var suites = await _loader
-            .loadFile(p.join(d.sandbox, 'a_test.dart'),
-                suiteConfiguration(retry: numRetries))
-            .toList();
-        expect(suites, hasLength(1));
-        var loadSuite = suites.first;
-        var suite = (await loadSuite.getSuite())!;
-        expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
-        expect(suite.platform.runtime, equals(Runtime.vm));
-      }, zoneSpecification:
-          ZoneSpecification(print: (_, parent, zone, message) {
-        if (message.contains('Retrying load of') &&
-            !firstFailureCompleter.isCompleted) {
-          firstFailureCompleter.complete(null);
-        }
-        parent.print(zone, message);
-      }));
+      await runZoned(
+        () async {
+          var suites =
+              await _loader
+                  .loadFile(
+                    p.join(d.sandbox, 'a_test.dart'),
+                    suiteConfiguration(retry: numRetries),
+                  )
+                  .toList();
+          expect(suites, hasLength(1));
+          var loadSuite = suites.first;
+          var suite = (await loadSuite.getSuite())!;
+          expect(suite.path, equals(p.join(d.sandbox, 'a_test.dart')));
+          expect(suite.platform.runtime, equals(Runtime.vm));
+        },
+        zoneSpecification: ZoneSpecification(
+          print: (_, parent, zone, message) {
+            if (message.contains('Retrying load of') &&
+                !firstFailureCompleter.isCompleted) {
+              firstFailureCompleter.complete(null);
+            }
+            parent.print(zone, message);
+          },
+        ),
+      );
 
       expect(firstFailureCompleter.isCompleted, true);
     });

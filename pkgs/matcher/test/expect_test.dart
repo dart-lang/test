@@ -13,20 +13,26 @@ void main() {
     });
 
     test('contains the expect failure', () {
-      expect(expectLater(Future.value(true), completion(isFalse)),
-          throwsA(isTestFailure(anything)));
+      expect(
+        expectLater(Future.value(true), completion(isFalse)),
+        throwsA(isTestFailure(anything)),
+      );
     });
 
     test('contains an async error', () {
-      expect(expectLater(Future.error('oh no'), completion(isFalse)),
-          throwsA('oh no'));
+      expect(
+        expectLater(Future<Never>.error('oh no'), completion(isFalse)),
+        throwsA('oh no'),
+      );
     });
   });
 
   group('an async matcher that fails synchronously', () {
     test('throws synchronously', () {
-      expect(() => expect(() {}, throwsA(anything)),
-          throwsA(isTestFailure(anything)));
+      expect(
+        () => expect(() {}, throwsA(anything)),
+        throwsA(isTestFailure(anything)),
+      );
     });
 
     test('can be used with synchronous operators', () {

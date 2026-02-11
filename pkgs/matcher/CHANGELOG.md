@@ -1,6 +1,10 @@
-## 0.12.18-wip
+## 0.12.18
 
+* Add `isSorted` and related matchers for iterables.
+* Consider `NaN` to be equal to itself in `equals`.
 * Remove some dynamic invocations.
+* Add explicit casts from `dynamic` values.
+* Require Dart 3.7
 
 ## 0.12.17
 

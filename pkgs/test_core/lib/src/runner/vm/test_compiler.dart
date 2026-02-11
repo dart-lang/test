@@ -22,11 +22,16 @@ class CompilationResponse {
   final int errorCount;
   final Uri? kernelOutputUri;
 
-  const CompilationResponse(
-      {this.compilerOutput, this.errorCount = 0, this.kernelOutputUri});
+  const CompilationResponse({
+    this.compilerOutput,
+    this.errorCount = 0,
+    this.kernelOutputUri,
+  });
 
   static const _wasShutdown = CompilationResponse(
-      errorCount: 1, compilerOutput: 'Compiler no longer active.');
+    errorCount: 1,
+    compilerOutput: 'Compiler no longer active.',
+  );
 }
 
 class TestCompiler {
@@ -49,19 +54,25 @@ class TestCompiler {
   /// the tests.
   Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) async {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
-    var languageVersionComment = metadata.languageVersionComment ??
+    var languageVersionComment =
+        metadata.languageVersionComment ??
         await rootPackageLanguageVersionComment;
     var compiler = _compilerForLanguageVersion.putIfAbsent(
+      languageVersionComment,
+      () => _TestCompilerForLanguageVersion(
+        _dillCachePrefix,
         languageVersionComment,
-        () => _TestCompilerForLanguageVersion(
-            _dillCachePrefix, languageVersionComment));
+      ),
+    );
     return compiler.compile(mainDart);
   }
 
-  Future<void> dispose() => _closeMemo.runOnce(() => Future.wait([
-        for (var compiler in _compilerForLanguageVersion.values)
-          compiler.dispose(),
-      ]));
+  Future<void> dispose() => _closeMemo.runOnce(
+    () => Future.wait([
+      for (var compiler in _compilerForLanguageVersion.values)
+        compiler.dispose(),
+    ]),
+  );
 }
 
 class _TestCompilerForLanguageVersion {
@@ -70,10 +81,12 @@ class _TestCompilerForLanguageVersion {
   final String _dillCachePath;
   FrontendServerClient? _frontendServerClient;
   final String _languageVersionComment;
-  late final _outputDill =
-      File(p.join(_outputDillDirectory.path, 'output.dill'));
-  final _outputDillDirectory =
-      Directory.systemTemp.createTempSync('dart_test.kernel.');
+  late final _outputDill = File(
+    p.join(_outputDillDirectory.path, 'output.dill'),
+  );
+  final _outputDillDirectory = Directory.systemTemp.createTempSync(
+    'dart_test.kernel.',
+  );
   // Used to create unique file names for final kernel files.
   int _compileNumber = 0;
   // The largest incremental dill file we created, will be cached under
@@ -81,9 +94,11 @@ class _TestCompilerForLanguageVersion {
   File? _dillToCache;
 
   _TestCompilerForLanguageVersion(
-      String dillCachePrefix, this._languageVersionComment)
-      : _dillCachePath = '$dillCachePrefix.'
-            '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
+    String dillCachePrefix,
+    this._languageVersionComment,
+  ) : _dillCachePath =
+          '$dillCachePrefix.'
+              '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
   Future<CompilationResponse> compile(Uri mainUri) =>
       _compilePool.withResource(() => _compile(mainUri));
@@ -93,12 +108,14 @@ class _TestCompilerForLanguageVersion {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
     final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-      ..writeAsStringSync(testBootstrapContents(
-        testUri: mainUri,
-        packageConfigUri: await packageConfigUri,
-        languageVersionComment: _languageVersionComment,
-        testType: VmTestType.isolate,
-      ));
+      ..writeAsStringSync(
+        testBootstrapContents(
+          testUri: mainUri,
+          packageConfigUri: await packageConfigUri,
+          languageVersionComment: _languageVersionComment,
+          testType: VmTestType.isolate,
+        ),
+      );
     final testCache = File(_dillCachePath);
 
     try {
@@ -108,8 +125,9 @@ class _TestCompilerForLanguageVersion {
         }
         compilerOutput = await _createCompiler(tempFile.uri);
       } else {
-        compilerOutput =
-            await _frontendServerClient!.compile(<Uri>[tempFile.uri]);
+        compilerOutput = await _frontendServerClient!.compile(<Uri>[
+          tempFile.uri,
+        ]);
       }
     } catch (e, s) {
       if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
@@ -123,13 +141,15 @@ class _TestCompilerForLanguageVersion {
     final outputPath = compilerOutput?.dillOutput;
     if (outputPath == null) {
       return CompilationResponse(
-          compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
-          errorCount: compilerOutput?.errorCount ?? 0);
+        compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+        errorCount: compilerOutput?.errorCount ?? 0,
+      );
     }
 
     final outputFile = File(outputPath);
-    final kernelReadyToRun =
-        await outputFile.copy('${tempFile.path}_$_compileNumber.dill');
+    final kernelReadyToRun = await outputFile.copy(
+      '${tempFile.path}_$_compileNumber.dill',
+    );
     // Keep the `_dillToCache` file up-to-date and use the size of the
     // kernel file as an approximation for how many packages are included.
     // Larger files are preferred, since re-using more packages will reduce the
@@ -140,62 +160,78 @@ class _TestCompilerForLanguageVersion {
     }
 
     return CompilationResponse(
-        compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
-        errorCount: compilerOutput?.errorCount ?? 0,
-        kernelOutputUri: kernelReadyToRun.absolute.uri);
+      compilerOutput: compilerOutput?.compilerOutputLines.join('\n'),
+      errorCount: compilerOutput?.errorCount ?? 0,
+      kernelOutputUri: kernelReadyToRun.absolute.uri,
+    );
   }
 
   Future<CompileResult?> _createCompiler(Uri testUri) async {
     final platformDill = 'lib/_internal/vm_platform_strong.dill';
-    final sdkRoot =
-        p.relative(p.dirname(p.dirname(Platform.resolvedExecutable)));
+    final sdkRoot = p.relative(
+      p.dirname(p.dirname(Platform.resolvedExecutable)),
+    );
     final packageConfigUriAwaited = await packageConfigUri;
 
-    // If we have native assets for the host os in JIT mode, they are here.
+    // If we have native assets for the host os in JIT mode, they are either
+    // in the `.dart_tool/` in the root package or in the pub workspace.
     Uri? nativeAssetsYaml;
-    if (enabledExperiments.contains('native-assets')) {
-      nativeAssetsYaml = packageConfigUriAwaited.resolve('native_assets.yaml');
-      if (!await File.fromUri(nativeAssetsYaml).exists()) {
-        nativeAssetsYaml = null;
+    final nativeAssetsYamlRootPackage = Directory.current.uri.resolve(
+      '.dart_tool/native_assets.yaml',
+    );
+    final nativeAssetsYamlWorkspace = packageConfigUriAwaited.resolve(
+      'native_assets.yaml',
+    );
+    for (final potentialNativeAssetsUri in [
+      nativeAssetsYamlRootPackage,
+      nativeAssetsYamlWorkspace,
+    ]) {
+      if (await File.fromUri(potentialNativeAssetsUri).exists()) {
+        nativeAssetsYaml = potentialNativeAssetsUri;
+        break;
       }
     }
 
-    var client = _frontendServerClient = await FrontendServerClient.start(
-      testUri.toString(),
-      _outputDill.path,
-      platformDill,
-      enabledExperiments: enabledExperiments,
-      sdkRoot: sdkRoot,
-      packagesJson: packageConfigUriAwaited.toFilePath(),
-      nativeAssets: nativeAssetsYaml?.toFilePath(),
-      printIncrementalDependencies: false,
-    );
+    var client =
+        _frontendServerClient = await FrontendServerClient.start(
+          testUri.toString(),
+          _outputDill.path,
+          platformDill,
+          enabledExperiments: enabledExperiments,
+          sdkRoot: sdkRoot,
+          packagesJson: packageConfigUriAwaited.toFilePath(),
+          nativeAssets: nativeAssetsYaml?.toFilePath(),
+          printIncrementalDependencies: false,
+        );
     return client.compile();
   }
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
-        await _compilePool.close();
-        if (_dillToCache != null) {
-          var testCache = File(_dillCachePath);
-          if (!testCache.parent.existsSync()) {
-            testCache.parent.createSync(recursive: true);
-          }
-          _dillToCache!.copySync(_dillCachePath);
-        }
-        _frontendServerClient?.kill();
-        _frontendServerClient = null;
-        if (_outputDillDirectory.existsSync()) {
-          await _outputDillDirectory.deleteWithRetry();
-        }
-      });
+    await _compilePool.close();
+    if (_dillToCache != null) {
+      var testCache = File(_dillCachePath);
+      if (!testCache.parent.existsSync()) {
+        testCache.parent.createSync(recursive: true);
+      }
+      _dillToCache!.copySync(_dillCachePath);
+    }
+    _frontendServerClient?.kill();
+    _frontendServerClient = null;
+    if (_outputDillDirectory.existsSync()) {
+      await _outputDillDirectory.deleteWithRetry();
+    }
+  });
 }
 
 /// Computes a unique dill cache suffix for each [languageVersionComment]
 /// and [enabledExperiments] combination.
 String _dillCacheSuffix(
-    String languageVersionComment, List<String> enabledExperiments) {
-  var identifierString =
-      StringBuffer(languageVersionComment.replaceAll(' ', ''));
+  String languageVersionComment,
+  List<String> enabledExperiments,
+) {
+  var identifierString = StringBuffer(
+    languageVersionComment.replaceAll(' ', ''),
+  );
   for (var experiment in enabledExperiments) {
     identifierString.writeln(experiment);
   }

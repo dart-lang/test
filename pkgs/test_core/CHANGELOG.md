@@ -1,7 +1,62 @@
-## 0.6.6-wip
+## 0.6.15
 
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
+* Suppress skip reason messages in the compact and failures-only reporters.
+* Improve fidelity of checks for using ascii characters. Check the SDK reported
+  support on windows, and assume ascii support for all terminals on linux since
+  the SDK reported support is much more narrow.
+* Fix default coverage filter when running in a workspace package. Default
+  filter now includes all the workspace's package.
+* Add support for reading test package version within pub workspaces.
+* Allow `analyzer` major version 10.
+
+## 0.6.14
+
+* Fix type cast when parsing a `null` hit map.
+
+## 0.6.13
+
+* Require Dart 3.7
+* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Allow `analyzer` major version 9.
+
+## 0.6.12
+
+* Expand pub constraint to allow the latest `analyzer`.
+
+## 0.6.11
+
+* Graduate native assets from experiment to preview.
+
+## 0.6.10
+
+* Set a debug name for test isolates.
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
+## 0.6.9
+
+* Add support for native assets for `dart test` in pub workspaces.
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
+## 0.6.8
+
+* Fix hang when running multiple precompiled browser tests.
+
+## 0.6.7
+
+* Update the `package:vm_service` constraint to allow version `15.x`.
+
+## 0.6.6
+
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
 * Fix dart2wasm tests on windows.
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Increase SDK constraint to ^3.5.0.
 * Allow passing additional arguments to `dart compile wasm`.
 
 ## 0.6.5
