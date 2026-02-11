@@ -100,9 +100,11 @@ timeout: 1m
 
 ### `suite_load_timeout`
 
-This field indicates how much time the test runner should allow for compiling and loading a test suite before it considers that suite to have failed. It has two possible formats:
+This field indicates how much time the test runner should allow for compiling
+and loading a test suite before it considers that suite to have failed. It has
+two possible formats:
 
-* The string "none" indicates that suites should never time out.
+* The string "none" indicates that loading suites should never time out.
 
 * A number followed by a unit abbreviation indicates an exact time. For example,
   "1m" means a timeout of one minute, and "30s" means a timeout of thirty
@@ -114,7 +116,9 @@ suite_load_timeout: 1m
 
 ###  `ignore-timeouts`
 
-This field disables all timeouts for all tests. This can be useful when debugging, so tests don't time out during debug sessions. It defaults to `false`.
+This field disables all timeouts for all tests. This can be useful when
+debugging, so tests don't time out during debug sessions. It defaults to
+`false`.
 
 ```yaml
 ignore-timeouts: true
