@@ -458,7 +458,11 @@ Future<Set<String>> _filterCoveragePackages(
   List<RegExp>? coveragePackages,
 ) async {
   if (coveragePackages == null || coveragePackages.isEmpty) {
-    return workspacePackageNames(await currentPackage);
+    // If no filters were provided, report coverage for all packages.
+    // This is required to maintain backward compatibility particularly
+    // in cases where coverage is required for files outside of the lib directory.
+    // See https://github.com/dart-lang/test/issues/2581
+    return {};
   } else {
     return (await currentPackageConfig).packages
         .map((package) => package.name)
