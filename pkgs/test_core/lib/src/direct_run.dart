@@ -76,6 +76,7 @@ Future<bool> _directRunTests(
         color: Configuration.empty.color,
         printPath: false,
         printPlatform: false,
+        printSummary: false,
       );
   final declarer = Declarer(
     fullTestName: fullTestName,
