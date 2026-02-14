@@ -1,8 +1,3 @@
-## 0.6.16
-
-* Add `-s`/`--summary` flag to print a list of failed tests at the end of the
-  run for the compact and expanded reporters.
-
 ## 0.6.15
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
