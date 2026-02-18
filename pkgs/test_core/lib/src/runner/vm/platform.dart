@@ -459,10 +459,10 @@ Future<Set<String>> _filterCoveragePackages(
   String? coverageLcov,
 ) async {
   if (coverageLcov == null && coveragePackages == null) {
-    // If no filters were provided and we're using json workflow, report
-    // coverage for all packages. This is required to maintain backward
-    // compatibility particularly in cases where coverage is required for files
-    // outside of the lib directory.
+    // If no filters were provided and the JSON workflow is used, report all
+    // coverage. This is required to maintain backward compatibility
+    // particularly in cases where coverage is required for files outside of the
+    // lib directory.
     // See https://github.com/dart-lang/test/issues/2581.
     return {};
   }
