@@ -1,6 +1,7 @@
 ## 0.12.19-wip
 
 * Improve speed of pretty printing for large collections.
+* Improve output of pairwiseCompare with mismatched types.
 
 ## 0.12.18
 
