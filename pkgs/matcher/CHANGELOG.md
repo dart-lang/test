@@ -7,6 +7,8 @@
 
 * Add `isSorted` and related matchers for iterables.
 * Consider `NaN` to be equal to itself in `equals`.
+* Allow exceptions from `operator ==` to bubble up and fail the test instead of
+  treating them as unequal objects.
 * Remove some dynamic invocations.
 * Add explicit casts from `dynamic` values.
 * Require Dart 3.7
