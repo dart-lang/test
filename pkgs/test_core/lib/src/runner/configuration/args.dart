@@ -269,6 +269,12 @@ final ArgParser _parser =
         'color',
         help: 'Use terminal colors.\n(auto-detected by default)',
       );
+      parser.addFlag(
+        'summary',
+        abbr: 's',
+        help: 'Print a summary of all failed tests at the end of the run.',
+        defaultsTo: false,
+      );
 
       /// The following options are used only by the internal Google test runner.
       /// They're hidden and not supported as stable API surface outside Google.
@@ -467,6 +473,7 @@ class _Parser {
       verboseTrace: _ifParsed('verbose-trace'),
       chainStackTraces: _ifParsed('chain-stack-traces'),
       jsTrace: _ifParsed('js-trace'),
+      printSummary: _ifParsed('summary'),
       pauseAfterLoad: _ifParsed('pause-after-load'),
       debug: _ifParsed('debug'),
       color: color,

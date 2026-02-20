@@ -66,6 +66,7 @@ Declarer get _declarer {
       color: true,
       printPath: false,
       printPlatform: false,
+      printSummary: false,
     );
 
     var success = await runZoned(

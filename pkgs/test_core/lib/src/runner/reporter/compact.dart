@@ -17,6 +17,7 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'failure_summary.dart';
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
@@ -60,6 +61,9 @@ class CompactReporter implements Reporter {
 
   /// Whether the platform each test is running on should be printed.
   final bool _printPlatform;
+
+  /// Whether to print a summary of failed tests at the end.
+  final bool _printSummary;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -124,12 +128,14 @@ class CompactReporter implements Reporter {
     required bool color,
     required bool printPath,
     required bool printPlatform,
+    required bool printSummary,
   }) => CompactReporter._(
     engine,
     sink,
     color: color,
     printPath: printPath,
     printPlatform: printPlatform,
+    printSummary: printSummary,
   );
 
   CompactReporter._(
@@ -138,8 +144,10 @@ class CompactReporter implements Reporter {
     required bool color,
     required bool printPath,
     required bool printPlatform,
+    required bool printSummary,
   }) : _printPath = printPath,
        _printPlatform = printPlatform,
+       _printSummary = printSummary,
        _color = color,
        _green = color ? '\u001b[32m' : '',
        _red = color ? '\u001b[31m' : '',
@@ -342,6 +350,15 @@ class CompactReporter implements Reporter {
       }
       _progressLine('Some tests failed.', color: _red);
       _sink.writeln('');
+
+      if (_printSummary) {
+        writeFailureSummary(
+          _sink,
+          _engine.failed,
+          red: _red,
+          noColor: _noColor,
+        );
+      }
     } else if (_engine.passed.isEmpty) {
       _progressLine('${_yellow}All tests skipped.$_noColor');
       _sink.writeln('');

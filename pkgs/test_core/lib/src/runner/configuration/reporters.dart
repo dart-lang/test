@@ -43,6 +43,7 @@ final _allReporters = <String, ReporterDetails>{
       printPlatform:
           config.suiteDefaults.runtimes.length > 1 ||
           config.suiteDefaults.compilerSelections != null,
+      printSummary: config.printSummary,
     ),
   ),
   'expanded': ReporterDetails(
@@ -57,6 +58,7 @@ final _allReporters = <String, ReporterDetails>{
       printPlatform:
           config.suiteDefaults.runtimes.length > 1 ||
           config.suiteDefaults.compilerSelections != null,
+      printSummary: config.printSummary,
     ),
   ),
   'failures-only': ReporterDetails(
