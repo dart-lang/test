@@ -18,26 +18,22 @@ import 'code_server.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test(
-    'starts Safari with the given URL',
-    skip: 'https://github.com/dart-lang/test/issues/1253',
-    () async {
-      var server = await CodeServer.start();
+  test('starts Safari with the given URL', () async {
+    var server = await CodeServer.start();
 
-      server.handleJavaScript('''
+    server.handleJavaScript('''
 var webSocket = new WebSocket(window.location.href.replace("http://", "ws://"));
 webSocket.addEventListener("open", function() {
   webSocket.send("loaded!");
 });
 ''');
-      var webSocket = server.handleWebSocket();
+    var webSocket = server.handleWebSocket();
 
-      var safari = Safari(server.url);
-      addTearDown(() => safari.close());
+    var safari = Safari(server.url);
+    addTearDown(() => safari.close());
 
-      expect(await (await webSocket).stream.first, equals('loaded!'));
-    },
-  );
+    expect(await (await webSocket).stream.first, equals('loaded!'));
+  });
 
   test("a process can be killed synchronously after it's started", () async {
     var server = await CodeServer.start();
@@ -65,11 +61,8 @@ webSocket.addEventListener("open", function() {
     );
   });
 
-  test(
-    'can run successful tests',
-    skip: 'https://github.com/dart-lang/test/issues/1253',
-    () async {
-      await d.file('test.dart', '''
+  test('can run successful tests', () async {
+    await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -77,11 +70,10 @@ void main() {
 }
 ''').create();
 
-      var test = await runTest(['-p', 'safari', 'test.dart']);
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-      await test.shouldExit(0);
-    },
-  );
+    var test = await runTest(['-p', 'safari', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
 
   test('can run failing tests', () async {
     await d.file('test.dart', '''
