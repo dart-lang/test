@@ -209,6 +209,9 @@
   version of the `test_api` package, but `flutter test` does not check the
   version of packages in the pub solve for user test code.
 
+* Deprecate the export of `package:matcher` APIs. Add an import to
+  `package:matcher/expect.dart`.
+
 ## 1.24.0
 
 * Support the `--compiler` flag, which can be used to configure which compiler

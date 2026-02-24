@@ -5,6 +5,7 @@
 @Tags(['firefox'])
 library;
 
+import 'package:matcher/expect.dart';
 import 'package:test/src/runner/browser/firefox.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
