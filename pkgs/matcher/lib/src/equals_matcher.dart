@@ -210,22 +210,12 @@ class _DeepMatcher extends Matcher {
       });
     } else {
       // Otherwise, test for equality, or both values NaN
-      try {
-        if (expected == actual ||
-            (expected is num &&
-                expected.isNaN &&
-                actual is num &&
-                actual.isNaN)) {
-          return null;
-        }
-      } catch (e) {
-        // TODO(gram): Add a test for this case.
-        return _Mismatch(
-          location,
-          actual,
-          (description, verbose) =>
-              description.add('== threw ').addDescriptionOf(e),
-        );
+      if (expected == actual ||
+          (expected is num &&
+              expected.isNaN &&
+              actual is num &&
+              actual.isNaN)) {
+        return null;
       }
     }
 
