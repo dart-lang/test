@@ -55,7 +55,7 @@ webSocket.addEventListener("open", function() {
       safari.onExit,
       throwsA(
         isApplicationException(
-          startsWith('Failed to run Safari: $noSuchFileMessage'),
+          startsWith('Failed to run Safari: Safari failed with exit code 1'),
         ),
       ),
     );
@@ -70,7 +70,7 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(['-p', 'safari', 'test.dart']);
+    var test = await runTest(['-p', 'safaridriver', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
@@ -84,7 +84,7 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(['-p', 'safari', 'test.dart']);
+    var test = await runTest(['-p', 'safaridriver', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
@@ -98,7 +98,7 @@ void main() {
 }
 ''').create();
     var test = await runTest(
-      ['-p', 'safari', 'test.dart'],
+      ['-p', 'safaridriver', 'test.dart'],
       environment: {'SAFARI_EXECUTABLE': '/some/bad/path'},
     );
     expect(test.stdout, emitsThrough(contains('Failed to run Safari:')));
