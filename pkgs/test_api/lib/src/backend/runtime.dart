@@ -36,9 +36,13 @@ final class Runtime {
   );
 
   /// Apple Safari.
-  static const Runtime safari = Runtime('Safari', 'safari', Compiler.dart2js, [
+  static const Runtime safari = Runtime(
+    'Safari',
+    'safaridriver',
     Compiler.dart2js,
-  ], isBrowser: true);
+    [Compiler.dart2js],
+    isBrowser: true,
+  );
 
   /// Microsoft Internet Explorer.
   @Deprecated('Internet Explorer is no longer supported')
