@@ -32,15 +32,18 @@ class Safari extends Browser {
   ) async {
     var executable = settings.executable;
     if (!File(executable).existsSync()) {
-      return await Process.start(executable, []);
+      return await Process.start('safaridriver', []);
     }
 
     var port = await getUnusedPort<int>((p) async => p);
     Process process;
     try {
-      process = await Process.start(executable, ['--port', port.toString()]);
+      process = await Process.start('safaridriver', [
+        '--port',
+        port.toString(),
+      ]);
     } catch (_) {
-      stderr.writeln('$executable failed to start.');
+      stderr.writeln('safaridriver failed to start.');
       stderr.writeln(_safariDriverInstructions);
       rethrow;
     }
@@ -83,14 +86,15 @@ class Safari extends Browser {
         if (!sessionCreated) {
           var isKilled = false;
           try {
-            var exitCode = await process.exitCode.timeout(
-              const Duration(milliseconds: 250),
+            await process.exitCode.timeout(const Duration(milliseconds: 250));
+            isKilled = true;
+            stderr.writeln(
+              '** safaridriver EXITED IMMEDIATELY with exitCode: $exitCode',
             );
-            if (exitCode < 0) isKilled = true;
           } catch (_) {}
 
           if (!isKilled) {
-            stderr.writeln('Exception while connecting to $executable: $e');
+            stderr.writeln('Exception while connecting to safaridriver: $e');
             stderr.writeln(_safariDriverInstructions);
           }
         }
