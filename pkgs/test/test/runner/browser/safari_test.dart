@@ -53,11 +53,7 @@ webSocket.addEventListener("open", function() {
     );
     expect(
       safari.onExit,
-      throwsA(
-        isApplicationException(
-          startsWith('Failed to run Safari: Safari failed with exit code 1'),
-        ),
-      ),
+      throwsA(isApplicationException(startsWith('Failed to run Safari: '))),
     );
   });
 

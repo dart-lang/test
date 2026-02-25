@@ -34,7 +34,7 @@ final defaultSettings = UnmodifiableMapView({
     environmentOverride: 'FIREFOX_EXECUTABLE',
   ),
   Runtime.safari: ExecutableSettings(
-    macOSExecutable: '/Applications/Safari.app/Contents/MacOS/Safari',
+    macOSExecutable: 'safaridriver',
     environmentOverride: 'SAFARI_EXECUTABLE',
   ),
 });

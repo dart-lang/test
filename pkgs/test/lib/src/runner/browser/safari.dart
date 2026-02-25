@@ -30,15 +30,11 @@ class Safari extends Browser {
     Uri url,
     ExecutableSettings settings,
   ) async {
-    var executable = settings.executable;
-    if (!File(executable).existsSync()) {
-      return await Process.start('safaridriver', []);
-    }
-
     var port = await getUnusedPort<int>((p) async => p);
     Process process;
     try {
-      process = await Process.start('safaridriver', [
+      process = await Process.start(settings.executable, [
+        ...settings.arguments,
         '--port',
         port.toString(),
       ]);
@@ -63,7 +59,7 @@ class Safari extends Browser {
 
           var value = json['value'] as Map<String, dynamic>?;
           if (value != null && value.containsKey('error')) {
-            stderr.writeln('$executable failed to create a session.');
+            stderr.writeln('safaridriver failed to create a session.');
             stderr.writeln(value['message']);
             stderr.writeln(_safariDriverInstructions);
             process.kill();
@@ -84,21 +80,8 @@ class Safari extends Browser {
         }
       } catch (e) {
         if (!sessionCreated) {
-          var isKilled = false;
-          try {
-            await process.exitCode.timeout(const Duration(milliseconds: 250));
-            isKilled = true;
-            stderr.writeln(
-              '** safaridriver EXITED IMMEDIATELY with exitCode: $exitCode',
-            );
-          } catch (_) {}
-
-          if (!isKilled) {
-            stderr.writeln('Exception while connecting to safaridriver: $e');
-            stderr.writeln(_safariDriverInstructions);
-          }
+          process.kill();
         }
-        process.kill();
       }
     }
 

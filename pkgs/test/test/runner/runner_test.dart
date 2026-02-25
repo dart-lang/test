@@ -133,7 +133,7 @@ Output:
 
 final _runtimes =
     '[vm (default), vm-asan, vm-msan, vm-tsan, chrome, firefox'
-    '${Platform.isMacOS ? ', safari' : ''}'
+    '${Platform.isMacOS ? ', safaridriver' : ''}'
     ', edge, node]';
 
 final _runtimeCompilers = [
@@ -143,7 +143,7 @@ final _runtimeCompilers = [
   '[vm-tsan]: exe (default), cli',
   '[chrome]: dart2js (default), dart2wasm',
   '[firefox]: dart2js (default), dart2wasm',
-  if (Platform.isMacOS) '[safari]: dart2js (default)',
+  if (Platform.isMacOS) '[safaridriver]: dart2js (default)',
   '[edge]: dart2js (default)',
   '[node]: dart2js (default), dart2wasm',
 ].map((str) => '                                      $str').join('\n');
