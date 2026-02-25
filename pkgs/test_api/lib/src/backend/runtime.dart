@@ -38,7 +38,7 @@ final class Runtime {
   /// Apple Safari.
   static const Runtime safari = Runtime(
     'Safari',
-    'safaridriver',
+    'safari',
     Compiler.dart2js,
     [Compiler.dart2js],
     isBrowser: true,
