@@ -6,5 +6,11 @@
 // so until Mockito stops implementing its own version of `Fake`, because there
 // is code in the wild that imports both test_api.dart and Mockito.
 
+/// The `Fake` class for faking dependencies.
+///
+/// This is a re-export of `package:test_api/fake.dart`. It is kept separate
+/// to avoid a breaking change for users who import `package:mockito` directly.
+library;
+
 // ignore: deprecated_member_use
 export 'package:test_api/fake.dart';

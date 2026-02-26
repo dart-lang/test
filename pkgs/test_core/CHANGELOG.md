@@ -1,3 +1,10 @@
+## 0.6.16-wip
+
+- Fix coverage reporting to report all coverage when using JSON workflow.
+* Add `SuiteConfiguration.suiteLoadTimeout` to configure the timeout for loading a test suite.
+* Removed hard-coded timeout of 12m for loading a test suite and set default to `none`.
+* Bump `test_api` to 0.7.10
+
 ## 0.6.15
 
 * Add `--coverage-package` flag, which filters the coverage report to specific

@@ -634,7 +634,7 @@ void main() {
   });
 }
 
-LocalTest _localTest(dynamic Function() body, {Metadata? metadata}) {
+LocalTest _localTest(FutureOr<void> Function() body, {Metadata? metadata}) {
   metadata ??= Metadata(chainStackTraces: true);
   return LocalTest('test', metadata, body);
 }

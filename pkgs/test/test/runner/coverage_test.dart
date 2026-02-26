@@ -283,6 +283,95 @@ end_of_record
 ''');
     });
 
+    test('gathers coverage for code outside of lib in json mode', () async {
+      await d.dir(d.sandbox, [
+        d.dir('dart_frog_sample', [
+          d.file('pubspec.yaml', '''
+name: dart_frog_sample
+version: 1.0.0
+environment:
+  sdk: ^3.5.0
+dependencies:
+  dart_frog: ^1.0.0
+dev_dependencies:
+  mocktail: ^1.0.0
+  test: ^1.26.2
+            '''),
+          d.dir('routes', [
+            d.file('index.dart', '''
+import 'package:dart_frog/dart_frog.dart';
+Response onRequest(RequestContext context) {
+  return Response(body: 'Welcome to Dart Frog!');
+}
+              '''),
+          ]),
+          d.dir('test', [
+            d.dir('routes', [
+              d.file('index_test.dart', '''
+import 'dart:io';
+import 'package:dart_frog/dart_frog.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:test/test.dart';
+
+import '../../routes/index.dart' as route;
+
+class _MockRequestContext extends Mock implements RequestContext {}
+
+void main() {
+  group('GET /', () {
+    test('responds with a 200 and "Welcome to Dart Frog!".', () {
+      final context = _MockRequestContext();
+      final response = route.onRequest(context);
+      expect(response.statusCode, equals(HttpStatus.ok));
+      expect(
+        response.body(),
+        completion(equals('Welcome to Dart Frog!')),
+      );
+    });
+  });
+}
+              '''),
+            ]),
+          ]),
+        ]),
+      ]).create();
+
+      final pkgDir = p.join(d.sandbox, 'dart_frog_sample');
+      await (await runPub([
+        'global',
+        'activate',
+        'coverage',
+      ], workingDirectory: pkgDir)).shouldExit(0);
+      await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
+      final lcovFile = p.join(coverageDirectory.path, 'lcov.info');
+      var test = await runTest(
+        ['--coverage', coverageDirectory.path, 'test/routes/index_test.dart'],
+        packageConfig: p.join(pkgDir, '.dart_tool/package_config.json'),
+        workingDirectory: pkgDir,
+      );
+      await validateTest(test);
+      await (await runPub([
+        'global',
+        'run',
+        'coverage:format_coverage',
+        '--lcov',
+        '--in=${coverageDirectory.path}',
+        '--out=$lcovFile',
+        '--report-on=lib,routes',
+      ], workingDirectory: pkgDir)).shouldExit(0);
+      expect(
+        File(lcovFile).readAsStringSync(),
+        contains('''
+SF:${p.join(pkgDir, 'routes', 'index.dart')}
+DA:2,1
+DA:3,1
+LF:2
+LH:2
+end_of_record
+'''),
+      );
+    });
+
     test('gathers coverage for Chrome tests', () async {
       await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
       var test = await runTest(
