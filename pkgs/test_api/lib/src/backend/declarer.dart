@@ -386,6 +386,8 @@ class Declarer {
                 skip: true,
                 skipReason: 'does not have "solo"',
               ),
+              trace: entry.trace,
+              location: entry.location,
               () {},
             );
           }

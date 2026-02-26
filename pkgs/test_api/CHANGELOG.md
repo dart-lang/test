@@ -1,3 +1,7 @@
+## 0.7.10
+
+* Fix missing locations on tests skipped due to the use of `solo`.
+
 ## 0.7.9
 
 * Allow `analyzer` major version 10.
