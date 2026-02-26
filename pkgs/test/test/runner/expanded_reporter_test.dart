@@ -61,7 +61,12 @@ void main() {
           oh no
           test.dart 8:33  main.<fn>
 
-        +0 -3: Some tests failed.''',
+        +0 -3: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2
+          test.dart: failure 3''',
     );
   });
 
@@ -102,7 +107,11 @@ void main() {
           test.dart 8:33  main.<fn>
 
         +1 -2: success 2
-        +2 -2: Some tests failed.''',
+        +2 -2: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2''',
     );
   });
 
@@ -156,7 +165,10 @@ void main() {
           test.dart 12:18  main.<fn>
 
         +0 -1: wait
-        +1 -1: Some tests failed.''',
+        +1 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: failures''',
     );
   });
 
@@ -260,7 +272,10 @@ void main() {
         five
         six
         +0 -1: wait
-        +1 -1: Some tests failed.''',
+        +1 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: test''',
       );
     });
   });
@@ -340,7 +355,11 @@ void main() {
 
           +1 ~1 -2: skip 2
           +1 ~2 -2: success 2
-          +2 ~2 -2: Some tests failed.''',
+          +2 ~2 -2: Some tests failed.
+
+          Failing tests:
+            test.dart: failure 1
+            test.dart: failure 2''',
       );
     });
 
@@ -385,6 +404,9 @@ void main() {
           test.dart 6:25  main.<fn>
 
         +0 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
 
         Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
         For example, 'dart test --chain-stack-traces'.''',
