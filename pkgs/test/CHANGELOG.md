@@ -5,6 +5,8 @@
 * Remove the default 12 minute timeout to compile and load test suites.
 * Bump `test_core` to 0.6.16
 * Add comments to the top-level libraries in the package.
+* Bump `test_api` to 0.7.10 to fix missing locations on tests skipped due to
+  the use of `solo`.
 
 ## 1.29.0
 

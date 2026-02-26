@@ -422,6 +422,36 @@ void main() {
       );
     });
 
+    test('reports skipped tests due to solo', () {
+      const reason = 'does not have "solo"';
+      return _expectReport(
+        '''
+        test('skip 1', () {});
+        test('solo 2', () {}, solo: true);
+        test('skip 3', () {});
+      ''',
+        [
+          [
+            suiteJson(0),
+            testStartJson(1, 'loading test.dart', groupIDs: []),
+            testDoneJson(1, hidden: true),
+          ],
+          [
+            groupJson(2, testCount: 3),
+            testStartJson(3, 'skip 1', skip: reason, line: 6, column: 9),
+            printJson(3, 'Skip: $reason', type: 'skip'),
+            testDoneJson(3, skipped: true),
+            testStartJson(4, 'solo 2', skip: false, line: 7, column: 9),
+            testDoneJson(4, skipped: false),
+            testStartJson(5, 'skip 3', skip: reason, line: 8, column: 9),
+            printJson(5, 'Skip: $reason', type: 'skip'),
+            testDoneJson(5, skipped: true),
+          ],
+        ],
+        doneJson(),
+      );
+    });
+
     test('reports skipped groups', () {
       return _expectReport(
         '''
