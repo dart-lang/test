@@ -1,4 +1,4 @@
-## 0.6.16-wip
+## 0.6.16
 
 - Fix coverage reporting to report all coverage when using JSON workflow.
 * Add `SuiteConfiguration.suiteLoadTimeout` to configure the timeout for loading a test suite.
