@@ -1,4 +1,4 @@
-## 0.12.19-wip
+## 0.12.19
 
 * Improve speed of pretty printing for large collections.
 * Improve output of pairwiseCompare with mismatched types.

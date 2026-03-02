@@ -1,4 +1,4 @@
-## 0.7.10-wip
+## 0.7.10
 
 * Fix missing locations on tests skipped due to the use of `solo`.
 

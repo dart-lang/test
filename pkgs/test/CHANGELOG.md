@@ -1,4 +1,4 @@
-## 1.30.0-wip
+## 1.30.0
 
 * Add a `--suite-load-timeout` argument to allow configuring a timeout for
   compiling and loading individual test suites.
