@@ -1,3 +1,7 @@
+## 1.30.1-wip
+
+* Print a summary of failed tests at the end of the expanded reporter output.
+
 ## 1.30.0
 
 * Add a `--suite-load-timeout` argument to allow configuring a timeout for
@@ -7,7 +11,6 @@
 * Add comments to the top-level libraries in the package.
 * Bump `test_api` to 0.7.10 to fix missing locations on tests skipped due to
   the use of `solo`.
-* Print a summary of failed tests at the end of the expanded reporter output.
 
 ## 1.29.0
 
