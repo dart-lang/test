@@ -1,3 +1,9 @@
+## 0.7.11-wip
+
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+
 ## 0.7.10
 
 * Fix missing locations on tests skipped due to the use of `solo`.

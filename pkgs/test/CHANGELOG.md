@@ -1,3 +1,9 @@
+## 1.30.1-wip
+
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+
 ## 1.30.0
 
 * Add a `--suite-load-timeout` argument to allow configuring a timeout for
