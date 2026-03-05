@@ -1,3 +1,7 @@
+## 1.31.0-wip
+
+* Print a summary of failed tests at the end of the expanded reporter output.
+
 ## 1.30.0
 
 * Add a `--suite-load-timeout` argument to allow configuring a timeout for
