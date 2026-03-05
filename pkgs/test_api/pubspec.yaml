@@ -13,7 +13,7 @@ dependencies:
   async: ^2.5.0
   boolean_selector: ^2.1.0
   collection: ^1.15.0
-  meta: ^1.14.0
+  meta: ^1.16.0
   source_span: ^1.8.0
   stack_trace: ^1.10.0
   stream_channel: ^2.1.0
