@@ -1,6 +1,9 @@
 ## 0.6.17-wip
 
 * Print a summary of failed tests at the end of the expanded reporter output.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
 
 ## 0.6.16
 
