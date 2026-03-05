@@ -81,8 +81,7 @@ void test(
   Map<String, dynamic>? onPlatform,
   int? retry,
   TestLocation? location,
-  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+  @doNotSubmit bool solo = false,
 }) {
   _declarer.test(
     description.toString(),
@@ -168,8 +167,7 @@ void group(
   Map<String, dynamic>? onPlatform,
   int? retry,
   TestLocation? location,
-  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+  @doNotSubmit bool solo = false,
 }) {
   _declarer.group(
     description.toString(),
