@@ -12,6 +12,7 @@
 /// `package:test/scaffolding.dart` instead.
 library;
 
+@Deprecated('import `package:matcher/expect.dart`')
 export 'package:matcher/expect.dart';
 // Deprecated exports not surfaced through focused libraries.
 // ignore: deprecated_member_use
