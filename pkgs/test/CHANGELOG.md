@@ -1,4 +1,4 @@
-## 1.30.1-wip
+## 1.31.0-wip
 
 * Print a summary of failed tests at the end of the expanded reporter output.
 
