@@ -1,5 +1,6 @@
 ## 0.6.17-wip
 
+* Print a summary of failed tests at the end of the expanded reporter output.
 * Change return type on the `body` callback argument to `group` to `void` from
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.
@@ -10,6 +11,7 @@
 * Add `SuiteConfiguration.suiteLoadTimeout` to configure the timeout for loading a test suite.
 * Removed hard-coded timeout of 12m for loading a test suite and set default to `none`.
 * Bump `test_api` to 0.7.10
+* Print a summary of failed tests at the end of the expanded reporter output.
 
 ## 0.6.15
 

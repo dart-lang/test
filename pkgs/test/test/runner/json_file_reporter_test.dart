@@ -76,7 +76,12 @@ void main() {
         oh no
         test.dart 8:31  main.<fn>
 
-      +0 -3: Some tests failed.''',
+      +0 -3: Some tests failed.
+
+      Failing tests:
+        test.dart: failure 1
+        test.dart: failure 2
+        test.dart: failure 3''',
       [
         [
           suiteJson(0),

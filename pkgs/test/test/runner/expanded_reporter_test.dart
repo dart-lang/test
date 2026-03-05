@@ -61,7 +61,12 @@ void main() {
           oh no
           test.dart 8:33  main.<fn>
 
-        +0 -3: Some tests failed.''',
+        +0 -3: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2
+          test.dart: failure 3''',
     );
   });
 
@@ -102,7 +107,11 @@ void main() {
           test.dart 8:33  main.<fn>
 
         +1 -2: success 2
-        +2 -2: Some tests failed.''',
+        +2 -2: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2''',
     );
   });
 
@@ -156,7 +165,10 @@ void main() {
           test.dart 12:18  main.<fn>
 
         +0 -1: wait
-        +1 -1: Some tests failed.''',
+        +1 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: failures''',
     );
   });
 
@@ -260,7 +272,10 @@ void main() {
         five
         six
         +0 -1: wait
-        +1 -1: Some tests failed.''',
+        +1 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: test''',
       );
     });
   });
@@ -340,7 +355,11 @@ void main() {
 
           +1 ~1 -2: skip 2
           +1 ~2 -2: success 2
-          +2 ~2 -2: Some tests failed.''',
+          +2 ~2 -2: Some tests failed.
+
+          Failing tests:
+            test.dart: failure 1
+            test.dart: failure 2''',
       );
     });
 
@@ -386,10 +405,115 @@ void main() {
 
         +0 -1: Some tests failed.
 
+        Failing tests:
+          test.dart: failure 1
+
         Consider enabling the flag chain-stack-traces to receive more detailed exceptions.
         For example, 'dart test --chain-stack-traces'.''',
       chainStackTraces: false,
     );
+  });
+
+  group('failure summary', () {
+    test('prints up to 5 errors', () async {
+      await _expectReport(
+        '''
+        test('failure 1', () => throw TestFailure('oh no'));
+        test('failure 2', () => throw TestFailure('oh no'));
+        test('failure 3', () => throw TestFailure('oh no'));
+        test('failure 4', () => throw TestFailure('oh no'));
+        test('failure 5', () => throw TestFailure('oh no'));
+      ''',
+        '''
+        +0: loading test.dart
+        +0: failure 1
+        +0 -1: failure 1 [E]
+          oh no
+          test.dart 6:33  main.<fn>
+
+        +0 -1: failure 2
+        +0 -2: failure 2 [E]
+          oh no
+          test.dart 7:33  main.<fn>
+
+        +0 -2: failure 3
+        +0 -3: failure 3 [E]
+          oh no
+          test.dart 8:33  main.<fn>
+
+        +0 -3: failure 4
+        +0 -4: failure 4 [E]
+          oh no
+          test.dart 9:33  main.<fn>
+
+        +0 -4: failure 5
+        +0 -5: failure 5 [E]
+          oh no
+          test.dart 10:33  main.<fn>
+
+        +0 -5: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2
+          test.dart: failure 3
+          test.dart: failure 4
+          test.dart: failure 5''',
+      );
+    });
+
+    test('collapses more than 5 errors', () async {
+      await _expectReport(
+        '''
+        test('failure 1', () => throw TestFailure('oh no'));
+        test('failure 2', () => throw TestFailure('oh no'));
+        test('failure 3', () => throw TestFailure('oh no'));
+        test('failure 4', () => throw TestFailure('oh no'));
+        test('failure 5', () => throw TestFailure('oh no'));
+        test('failure 6', () => throw TestFailure('oh no'));
+      ''',
+        '''
+        +0: loading test.dart
+        +0: failure 1
+        +0 -1: failure 1 [E]
+          oh no
+          test.dart 6:33  main.<fn>
+
+        +0 -1: failure 2
+        +0 -2: failure 2 [E]
+          oh no
+          test.dart 7:33  main.<fn>
+
+        +0 -2: failure 3
+        +0 -3: failure 3 [E]
+          oh no
+          test.dart 8:33  main.<fn>
+
+        +0 -3: failure 4
+        +0 -4: failure 4 [E]
+          oh no
+          test.dart 9:33  main.<fn>
+
+        +0 -4: failure 5
+        +0 -5: failure 5 [E]
+          oh no
+          test.dart 10:33  main.<fn>
+
+        +0 -5: failure 6
+        +0 -6: failure 6 [E]
+          oh no
+          test.dart 11:33  main.<fn>
+
+        +0 -6: Some tests failed.
+
+        Failing tests:
+          test.dart: failure 1
+          test.dart: failure 2
+          test.dart: failure 3
+          test.dart: failure 4
+          ... and 2 more''',
+      );
+    });
   });
 }
 
