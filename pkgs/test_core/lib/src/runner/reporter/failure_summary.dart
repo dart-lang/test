@@ -39,7 +39,7 @@ void writeFailureSummary(
 
   final displayCount =
       entries.length > maxFailureSummaryCount
-          ? maxFailureSummaryCount
+          ? maxFailureSummaryCount - 1
           : entries.length;
 
   for (var i = 0; i < displayCount; i++) {
