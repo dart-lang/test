@@ -76,6 +76,7 @@ class VMPlatform extends PlatformPlugin {
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(serverSocket.close)
+        ..add(socket.close)
         ..add(process.kill);
     } else {
       var receivePort = ReceivePort();
