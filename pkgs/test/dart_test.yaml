@@ -35,7 +35,7 @@ tags:
     test_on: linux
   chrome: {add_tags: [dart2js]}
 
-  safari:
+  safaridriver:
     add_tags: [dart2js]
     test_on: mac-os
 

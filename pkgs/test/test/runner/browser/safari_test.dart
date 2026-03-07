@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-@Tags(['safari'])
+@Tags(['safaridriver'])
 library;
 
 import 'package:test/src/runner/browser/safari.dart';

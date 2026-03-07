@@ -337,7 +337,7 @@ The following identifiers are defined:
 
 * `firefox`: Whether the test is running on Mozilla Firefox.
 
-* `safari`: Whether the test is running on Apple Safari.
+* `safaridriver`: Whether the test is running on Apple Safari.
 
 * `edge`: Whether the test is running on Microsoft Edge browser.
 
@@ -617,7 +617,7 @@ void main() {
   test('do a thing', () {
     // ...
   }, onPlatform: {
-    'safari': Skip('Safari is currently broken (see #1234)')
+    'safaridriver': Skip('Safari is currently broken (see #1234)')
   });
 }
 ```
