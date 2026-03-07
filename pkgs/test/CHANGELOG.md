@@ -4,6 +4,7 @@
 * Change return type on the `body` callback argument to `group` to `void` from
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.
+* Require `analyzer: '>=8.0.0 <12.0.0'`
 
 ## 1.30.0
 
