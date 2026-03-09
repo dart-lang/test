@@ -72,14 +72,6 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
 
-      // If the child crashes, at least don't hang the parent.
-      // https://github.com/dart-lang/test/issues/2577
-      process.exitCode.then((exitCode) async {
-        if (exitCode == 6) {
-          exit(exitCode);
-        }
-      });
-
       var socket = await serverSocket.first;
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
