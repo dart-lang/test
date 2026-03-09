@@ -5,6 +5,7 @@
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.
 * Fix a hang when a test run with `--compiler exe` crashes.
+* Require `analyzer: '>=8.0.0 <12.0.0'`
 
 ## 0.6.16
 
