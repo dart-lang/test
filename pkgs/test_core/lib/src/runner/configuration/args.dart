@@ -141,6 +141,13 @@ final ArgParser _parser =
         help: 'The default test timeout. For example: 15s, 2x, none',
         defaultsTo: '30s',
       );
+      parser.addOption(
+        'suite-load-timeout',
+        help:
+            'The timeout for loading a test suite. Loading the test suite '
+            'includes compiling the test suite. For example: 15s, 2m, none',
+        defaultsTo: 'none',
+      );
       parser.addFlag(
         'ignore-timeouts',
         help: 'Ignore all timeouts (useful if debugging)',
@@ -476,6 +483,7 @@ class _Parser {
       shardIndex: shardIndex,
       totalShards: totalShards,
       timeout: _parseOption('timeout', Timeout.parse),
+      suiteLoadTimeout: _parseOption('suite-load-timeout', Timeout.parse),
       globalPatterns: patterns,
       compilerSelections: compilerSelections,
       runtimes: runtimes,

@@ -1,4 +1,26 @@
-## 0.6.15-wip
+## 0.6.17-wip
+
+* Print a summary of failed tests at the end of the expanded reporter output.
+* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
+  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
+  useful for finding issues when using foreign libraries through dart:ffi, such
+  as use-after-free, use of initialized memory and data races, or for detecting
+  data races in Dart code using shared fields.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+* Fix a hang when a test run with `--compiler exe` crashes.
+* Require `analyzer: '>=8.0.0 <12.0.0'`
+
+## 0.6.16
+
+* Fix coverage reporting to report all coverage when using JSON workflow.
+* Add `SuiteConfiguration.suiteLoadTimeout` to configure the timeout for loading a test suite.
+* Removed hard-coded timeout of 12m for loading a test suite and set default to `none`.
+* Bump `test_api` to 0.7.10
+* Print a summary of failed tests at the end of the expanded reporter output.
+
+## 0.6.15
 
 * Add `--coverage-package` flag, which filters the coverage report to specific
   packages using RegExps.
@@ -11,11 +33,7 @@
 * Fix default coverage filter when running in a workspace package. Default
   filter now includes all the workspace's package.
 * Add support for reading test package version within pub workspaces.
-* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
-  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
-  useful for finding issues when using foreign libraries through dart:ffi, such
-  as use-after-free, use of initialized memory and data races, or for detecting
-  data races in Dart code using shared fields.
+* Allow `analyzer` major version 10.
 
 ## 0.6.14
 

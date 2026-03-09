@@ -13,6 +13,7 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'failure_summary.dart';
 
 /// A reporter that prints each test on its own line.
 ///
@@ -264,6 +265,14 @@ class ExpandedReporter implements Reporter {
         );
       }
       _progressLine('Some tests failed.', color: _red);
+
+      writeFailureSummary(
+        _sink,
+        failed: _engine.failed,
+        active: _engine.active,
+        red: _red,
+        noColor: _noColor,
+      );
     } else if (_engine.passed.isEmpty) {
       _progressLine('All tests skipped.');
     } else {

@@ -73,7 +73,7 @@ Declarer get _declarer => Zone.current[#test.declarer] as Declarer;
 @isTest
 void test(
   Object? description,
-  dynamic Function() body, {
+  FutureOr<dynamic> Function() body, {
   String? testOn,
   Timeout? timeout,
   Object? skip,
@@ -81,8 +81,7 @@ void test(
   Map<String, dynamic>? onPlatform,
   int? retry,
   TestLocation? location,
-  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+  @doNotSubmit bool solo = false,
 }) {
   _declarer.test(
     description.toString(),
@@ -160,7 +159,7 @@ void test(
 @isTestGroup
 void group(
   Object? description,
-  dynamic Function() body, {
+  void Function() body, {
   String? testOn,
   Timeout? timeout,
   Object? skip,
@@ -168,8 +167,7 @@ void group(
   Map<String, dynamic>? onPlatform,
   int? retry,
   TestLocation? location,
-  // TODO(https://github.com/dart-lang/test/issues/2205): Remove deprecated.
-  @Deprecated('Debug only') @doNotSubmit bool solo = false,
+  @doNotSubmit bool solo = false,
 }) {
   _declarer.group(
     description.toString(),
@@ -202,7 +200,7 @@ void group(
 ///
 /// Each callback at the top level or in a given group will be run in the order
 /// they were declared.
-void setUp(dynamic Function() callback) => _declarer.setUp(callback);
+void setUp(FutureOr<dynamic> Function() callback) => _declarer.setUp(callback);
 
 /// Registers a function to be run after tests.
 ///
@@ -217,7 +215,8 @@ void setUp(dynamic Function() callback) => _declarer.setUp(callback);
 /// reverse of the order they were declared.
 ///
 /// See also [addTearDown], which adds tear-downs to a running test.
-void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
+void tearDown(FutureOr<dynamic> Function() callback) =>
+    _declarer.tearDown(callback);
 
 /// Registers a function to be run after the current test.
 ///
@@ -230,7 +229,7 @@ void tearDown(dynamic Function() callback) => _declarer.tearDown(callback);
 ///
 /// If this is called from within a [setUpAll] or [tearDownAll] callback, it
 /// instead runs the function after *all* tests in the current test suite.
-void addTearDown(dynamic Function() callback) {
+void addTearDown(FutureOr<dynamic> Function() callback) {
   if (Invoker.current == null) {
     throw StateError('addTearDown() may only be called within a test.');
   }
@@ -251,8 +250,10 @@ void addTearDown(dynamic Function() callback) {
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(dynamic Function() callback, {TestLocation? location}) =>
-    _declarer.setUpAll(callback, location: location);
+void setUpAll(
+  FutureOr<dynamic> Function() callback, {
+  TestLocation? location,
+}) => _declarer.setUpAll(callback, location: location);
 
 /// Registers a function to be run once after all tests.
 ///
@@ -265,5 +266,7 @@ void setUpAll(dynamic Function() callback, {TestLocation? location}) =>
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [tearDown], and only use [tearDownAll] if the callback is
 /// prohibitively slow.
-void tearDownAll(dynamic Function() callback, {TestLocation? location}) =>
-    _declarer.tearDownAll(callback, location: location);
+void tearDownAll(
+  FutureOr<dynamic> Function() callback, {
+  TestLocation? location,
+}) => _declarer.tearDownAll(callback, location: location);

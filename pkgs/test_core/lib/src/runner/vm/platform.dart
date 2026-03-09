@@ -84,6 +84,7 @@ class VMPlatform extends PlatformPlugin {
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(serverSocket.close)
+        ..add(socket.destroy)
         ..add(process.kill);
     } else {
       var receivePort = ReceivePort();
@@ -496,7 +497,7 @@ Future<Map<String, dynamic>> _gatherCoverage(
     false,
     false,
     false,
-    await _filterCoveragePackages(config.coveragePackages),
+    await _filterCoveragePackages(config.coveragePackages, config.coverageLcov),
     isolateIds: {isolateId!},
     branchCoverage: config.branchCoverage,
   );
@@ -525,7 +526,16 @@ void _setupPauseAfterTests() {
 
 Future<Set<String>> _filterCoveragePackages(
   List<RegExp>? coveragePackages,
+  String? coverageLcov,
 ) async {
+  if (coverageLcov == null && coveragePackages == null) {
+    // If no filters were provided and the JSON workflow is used, report all
+    // coverage. This is required to maintain backward compatibility
+    // particularly in cases where coverage is required for files outside of the
+    // lib directory.
+    // See https://github.com/dart-lang/test/issues/2581.
+    return {};
+  }
   if (coveragePackages == null || coveragePackages.isEmpty) {
     return workspacePackageNames(await currentPackage);
   } else {

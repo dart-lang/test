@@ -39,9 +39,13 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
       var type = object is List ? '' : '${_typeName(object)}:';
 
       // Truncate the list of strings if it's longer than [maxItems].
-      var strings = object.map(pp).toList();
-      if (maxItems != null && strings.length > maxItems) {
-        strings.replaceRange(maxItems - 1, strings.length, ['...']);
+      var strings = <String>[];
+      for (var item in object) {
+        if (maxItems != null && strings.length >= maxItems) {
+          strings[maxItems - 1] = '...';
+          break;
+        }
+        strings.add(pp(item));
       }
 
       // If the printed string is short and doesn't contain a newline, print it
@@ -58,15 +62,14 @@ String prettyPrint(Object? object, {int? maxLineLength, int? maxItems}) {
         return _indent(indent + 2) + string;
       }).join(',\n')}\n${_indent(indent)}]';
     } else if (object is Map) {
-      // Convert the contents of the map to string representations.
-      var strings =
-          object.keys.map((key) {
-            return '${pp(key)}: ${pp(object[key])}';
-          }).toList();
-
       // Truncate the list of strings if it's longer than [maxItems].
-      if (maxItems != null && strings.length > maxItems) {
-        strings.replaceRange(maxItems - 1, strings.length, ['...']);
+      var strings = <String>[];
+      for (var key in object.keys) {
+        if (maxItems != null && strings.length >= maxItems) {
+          strings[maxItems - 1] = '...';
+          break;
+        }
+        strings.add('${pp(key)}: ${pp(object[key])}');
       }
 
       // If the printed string is short and doesn't contain a newline, print it

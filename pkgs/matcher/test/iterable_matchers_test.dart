@@ -422,6 +422,17 @@ void main() {
     );
   });
 
+  test('pairwiseCompare with mismatched types', () async {
+    final notInts = ['notInt'];
+    shouldFail(
+      notInts,
+      pairwiseCompare([1], (int e, int a) => a <= e, 'less than or equal'),
+      'Expected: pairwise less than or equal [1] '
+      "Actual: ['notInt'] "
+      "Which: has 'notInt' which is not less than or equal <1> at index 0",
+    );
+  });
+
   test('isEmpty', () {
     var d = SimpleIterable(0);
     var e = SimpleIterable(1);

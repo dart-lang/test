@@ -297,7 +297,8 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
     var i = 0;
     for (var e in _expected) {
       iterator.moveNext();
-      if (!_comparator(e, iterator.current as T)) {
+      var current = iterator.current;
+      if (current is! T || !_comparator(e, current)) {
         addStateInfo(matchState, {
           'index': i,
           'expected': e,

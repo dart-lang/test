@@ -1,6 +1,17 @@
-## 0.7.9-wip
+## 0.7.11-wip
 
 * Add `vmAsan`, `vmMsan` and `vmTsan` runtimes.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+
+## 0.7.10
+
+* Fix missing locations on tests skipped due to the use of `solo`.
+
+## 0.7.9
+
+* Allow `analyzer` major version 10.
 
 ## 0.7.8
 
