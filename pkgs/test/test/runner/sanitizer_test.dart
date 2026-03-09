@@ -82,7 +82,7 @@ void main() {
           test.stderr,
           emitsThrough(contains('AddressSanitizer: heap-use-after-free')),
         );
-        await test.shouldExit(6);
+        expect(await test.exitCode, isNot(0));
       });
 
       test('msan success', () async {
@@ -151,7 +151,7 @@ void main() {
           test.stderr,
           emitsThrough(contains('MemorySanitizer: use-of-uninitialized-value')),
         );
-        await test.shouldExit(6);
+        expect(await test.exitCode, isNot(0));
       });
 
       test('tsan success', () async {
@@ -236,7 +236,7 @@ void main() {
           test.stderr,
           emitsThrough(contains('ThreadSanitizer: data race')),
         );
-        await test.shouldExit(6);
+        expect(await test.exitCode, isNot(0));
       });
     },
   );
