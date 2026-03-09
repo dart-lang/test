@@ -12,15 +12,14 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import '../io.dart';
 
 void main() {
-  setUpAll(precompileTestExecutable);
+  group(
+    'asan sanitized',
+    skip: !File('$sdkDir/bin/dartaotruntime_asan').existsSync(),
+    () {
+      setUpAll(precompileTestExecutable);
 
-  String? skipReason;
-  if (!File('$sdkDir/bin/dartaotruntime_asan').existsSync()) {
-    skipReason = 'SDK too old';
-  }
-
-  test('asan success', () async {
-    final testSource = '''
+      test('asan success', () async {
+        final testSource = '''
 @TestOn('vm-asan')
 library asan_environment_test;
 
@@ -45,15 +44,15 @@ void main() {
 }
 ''';
 
-    await d.file('test.dart', testSource).create();
-    var test = await runTest(['test.dart', '-p', 'vm-asan']);
+        await d.file('test.dart', testSource).create();
+        var test = await runTest(['test.dart', '-p', 'vm-asan']);
 
-    expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
-    await test.shouldExit(0);
-  }, skip: skipReason);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+        await test.shouldExit(0);
+      });
 
-  test('asan failure', () async {
-    final testSource = '''
+      test('asan failure', () async {
+        final testSource = '''
 @TestOn('vm-asan')
 library asan_test;
 
@@ -76,18 +75,18 @@ void main() {
 }
 ''';
 
-    await d.file('test.dart', testSource).create();
-    var test = await runTest(['test.dart', '-p', 'vm-asan']);
+        await d.file('test.dart', testSource).create();
+        var test = await runTest(['test.dart', '-p', 'vm-asan']);
 
-    expect(
-      test.stderr,
-      emitsThrough(contains('AddressSanitizer: heap-use-after-free')),
-    );
-    await test.shouldExit(6);
-  }, skip: skipReason);
+        expect(
+          test.stderr,
+          emitsThrough(contains('AddressSanitizer: heap-use-after-free')),
+        );
+        await test.shouldExit(6);
+      });
 
-  test('msan success', () async {
-    final testSource = '''
+      test('msan success', () async {
+        final testSource = '''
 @TestOn('vm-msan')
 library msan_environment_test;
 
@@ -112,15 +111,15 @@ void main() {
 }
 ''';
 
-    await d.file('test.dart', testSource).create();
-    var test = await runTest(['test.dart', '-p', 'vm-msan']);
+        await d.file('test.dart', testSource).create();
+        var test = await runTest(['test.dart', '-p', 'vm-msan']);
 
-    expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
-    await test.shouldExit(0);
-  }, skip: skipReason);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+        await test.shouldExit(0);
+      });
 
-  test('msan failure', () async {
-    final testSource = '''
+      test('msan failure', () async {
+        final testSource = '''
 @TestOn('vm-msan')
 library msan_test;
 
@@ -145,18 +144,18 @@ void main() {
 }
 ''';
 
-    await d.file('test.dart', testSource).create();
-    var test = await runTest(['test.dart', '-p', 'vm-msan']);
+        await d.file('test.dart', testSource).create();
+        var test = await runTest(['test.dart', '-p', 'vm-msan']);
 
-    expect(
-      test.stderr,
-      emitsThrough(contains('MemorySanitizer: use-of-uninitialized-value')),
-    );
-    await test.shouldExit(6);
-  }, skip: skipReason);
+        expect(
+          test.stderr,
+          emitsThrough(contains('MemorySanitizer: use-of-uninitialized-value')),
+        );
+        await test.shouldExit(6);
+      });
 
-  test('tsan success', () async {
-    final testSource = '''
+      test('tsan success', () async {
+        final testSource = '''
 @TestOn('vm-tsan')
 library tsan_environment_test;
 
@@ -181,15 +180,15 @@ void main() {
 }
 ''';
 
-    await d.file('test.dart', testSource).create();
-    var test = await runTest(['test.dart', '-p', 'vm-tsan']);
+        await d.file('test.dart', testSource).create();
+        var test = await runTest(['test.dart', '-p', 'vm-tsan']);
 
-    expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
-    await test.shouldExit(0);
-  }, skip: skipReason);
+        expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+        await test.shouldExit(0);
+      });
 
-  test('tsan failure', () async {
-    final testSource = '''
+      test('tsan failure', () async {
+        final testSource = '''
 @TestOn('vm-tsan')
 library tsan_test;
 
@@ -230,10 +229,15 @@ void main() {
 }
 ''';
 
-    await d.file('test.dart', testSource).create();
-    var test = await runTest(['test.dart', '-p', 'vm-tsan']);
+        await d.file('test.dart', testSource).create();
+        var test = await runTest(['test.dart', '-p', 'vm-tsan']);
 
-    expect(test.stderr, emitsThrough(contains('ThreadSanitizer: data race')));
-    await test.shouldExit(6);
-  }, skip: skipReason);
+        expect(
+          test.stderr,
+          emitsThrough(contains('ThreadSanitizer: data race')),
+        );
+        await test.shouldExit(6);
+      });
+    },
+  );
 }
