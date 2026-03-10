@@ -1,5 +1,6 @@
 ## 0.7.11-wip
 
+* Add `vmAsan`, `vmMsan` and `vmTsan` runtimes.
 * Change return type on the `body` callback argument to `group` to `void` from
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.

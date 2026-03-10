@@ -23,7 +23,10 @@ void main() {
     for (var compiler in runtime.supportedCompilers) {
       // Ignore the platforms we can't run on this OS.
       if ((runtime == Runtime.edge && !Platform.isWindows) ||
-          (runtime == Runtime.safari && !Platform.isMacOS)) {
+          (runtime == Runtime.safari && !Platform.isMacOS) ||
+          (runtime == Runtime.vmAsan && !Platform.isLinux) ||
+          (runtime == Runtime.vmMsan && !Platform.isLinux) ||
+          (runtime == Runtime.vmTsan && !Platform.isLinux)) {
         continue;
       }
       String? skipReason;
@@ -36,6 +39,15 @@ void main() {
         skipReason = 'https://github.com/dart-lang/test/issues/1942';
       } else if (runtime == Runtime.firefox && Platform.isMacOS) {
         skipReason = 'https://github.com/dart-lang/test/pull/2276';
+      } else if (runtime == Runtime.vmAsan &&
+          !File('$sdkDir/bin/dartaotruntime_asan').existsSync()) {
+        skipReason = 'SDK too old';
+      } else if (runtime == Runtime.vmMsan &&
+          !File('$sdkDir/bin/dartaotruntime_msan').existsSync()) {
+        skipReason = 'SDK too old';
+      } else if (runtime == Runtime.vmTsan &&
+          !File('$sdkDir/bin/dartaotruntime_tsan').existsSync()) {
+        skipReason = 'SDK too old';
       }
       group(
         '--runtime ${runtime.identifier} --compiler ${compiler.identifier}',

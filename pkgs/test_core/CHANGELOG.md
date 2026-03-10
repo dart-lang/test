@@ -1,6 +1,11 @@
 ## 0.6.17-wip
 
 * Print a summary of failed tests at the end of the expanded reporter output.
+* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
+  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
+  useful for finding issues when using foreign libraries through dart:ffi, such
+  as use-after-free, use of initialized memory and data races, or for detecting
+  data races in Dart code using shared fields.
 * Change return type on the `body` callback argument to `group` to `void` from
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.
