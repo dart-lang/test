@@ -188,18 +188,12 @@ class VMPlatform extends PlatformPlugin {
   );
 
   String _aotRuntimeFor(SuitePlatform platform) {
-    var sanSuffix = '';
-    switch (platform.runtime) {
-      case Runtime.vmAsan:
-        sanSuffix = '_asan';
-        break;
-      case Runtime.vmMsan:
-        sanSuffix = '_msan';
-        break;
-      case Runtime.vmTsan:
-        sanSuffix = '_tsan';
-        break;
-    }
+    final sanSuffix = switch (platform.runtime) {
+      Runtime.vmAsan => '_asan',
+      Runtime.vmMsan => '_msan',
+      Runtime.vmTsan => '_tsan',
+      _ => '',
+    };
     final exeSuffix = Platform.isWindows ? '.exe' : '';
     return p.join(
       p.dirname(Platform.resolvedExecutable),
@@ -210,26 +204,15 @@ class VMPlatform extends PlatformPlugin {
   Map<String, String> _environmentFor(SuitePlatform platform) {
     // The sanitizers have inconsistent default options, so provide some
     // better defaults if our caller hasn't provided any. SIGABRT=6
-    final parentEnv = Platform.environment;
-    final env = <String, String>{};
-    switch (platform.runtime) {
-      case Runtime.vmAsan:
-        if (parentEnv['ASAN_OPTIONS'] == null) {
-          env['ASAN_OPTIONS'] = 'halt_on_error=1:exitcode=6:symbolize=1';
-        }
-        break;
-      case Runtime.vmMsan:
-        if (parentEnv['MSAN_OPTIONS'] == null) {
-          env['MSAN_OPTIONS'] = 'halt_on_error=1:exitcode=6:symbolize=1';
-        }
-        break;
-      case Runtime.vmTsan:
-        if (parentEnv['TSAN_OPTIONS'] == null) {
-          env['TSAN_OPTIONS'] = 'halt_on_error=1:exitcode=6:symbolize=1';
-        }
-        break;
-    }
-    return env;
+    final envKey = switch (platform.runtime) {
+      Runtime.vmAsan => 'ASAN_OPTIONS',
+      Runtime.vmMsan => 'MSAN_OPTIONS',
+      Runtime.vmTsan => 'TSAN_OPTIONS',
+      _ => null,
+    };
+    return envKey == null || Platform.environment.containsKey(envKey)
+        ? const {}
+        : {envKey: 'halt_on_error=1:exitcode=6:symbolize=1'};
   }
 
   /// Compiles [path] to a native executable and spawns it as a process.
@@ -330,10 +313,9 @@ stderr: ${processResult.stderr}''');
           ),
           message,
         ),
-        _ =>
-          throw StateError(
-            'Unsupported compiler $compiler for the VM platform',
-          ),
+        _ => throw StateError(
+          'Unsupported compiler $compiler for the VM platform',
+        ),
       };
     } catch (_) {
       if (_closeMemo.hasRun) return null;
@@ -380,14 +362,13 @@ stderr: ${processResult.stderr}''');
     switch (compiler) {
       case Compiler.kernel:
         // Load `.dill` files from their absolute file path.
-        var dillUri =
-            (await Isolate.resolvePackageUri(
-              testUri.replace(
-                path:
-                    '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
-                    '.vm.app.dill',
-              ),
-            ))!;
+        var dillUri = (await Isolate.resolvePackageUri(
+          testUri.replace(
+            path:
+                '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
+                '.vm.app.dill',
+          ),
+        ))!;
         if (await File.fromUri(dillUri).exists()) {
           testUri = dillUri;
         }
@@ -480,10 +461,9 @@ Future<Map<String, dynamic>> _gatherCoverage(
   Environment environment,
   Configuration config,
 ) async {
-  final isolateId =
-      Uri.parse(
-        environment.observatoryUrl!.fragment,
-      ).queryParameters['isolateId'];
+  final isolateId = Uri.parse(
+    environment.observatoryUrl!.fragment,
+  ).queryParameters['isolateId'];
   return await collect(
     environment.observatoryUrl!,
     false,
@@ -499,11 +479,10 @@ Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
 Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-  fragment:
-      Uri(
-        path: '/inspect',
-        queryParameters: {'isolateId': isolateId, 'objectId': id},
-      ).toString(),
+  fragment: Uri(
+    path: '/inspect',
+    queryParameters: {'isolateId': isolateId, 'objectId': id},
+  ).toString(),
 );
 
 var _hasRegistered = false;
