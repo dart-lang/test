@@ -38,8 +38,14 @@ final int lineLength = () {
   }
 }();
 
-/// The root directory of the Dart SDK.
-final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
+/// The root directory of the Dart SDK if it can be located.
+final String? sdkDir = () {
+  try {
+    return p.dirname(p.dirname(Platform.resolvedExecutable));
+  } on Exception {
+    return null;
+  }
+}();
 
 /// The current operating system.
 final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
