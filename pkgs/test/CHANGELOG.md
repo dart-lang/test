@@ -1,4 +1,4 @@
-## 1.31.0-wip
+## 1.31.0
 
 * Print a summary of failed tests at the end of the expanded reporter output.
 * Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
@@ -10,7 +10,7 @@
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.
 * Fix a hang when a test run with `--compiler exe` crashes.
-* Require `analyzer: '>=8.0.0 <12.0.0'`
+* Require `analyzer: '>=8.0.0 <13.0.0'`
 
 ## 1.30.0
 
