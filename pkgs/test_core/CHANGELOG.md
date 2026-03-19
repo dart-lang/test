@@ -1,7 +1,7 @@
 ## 0.6.18-wip
 
 * Ignore an error locating the SDK directory on platforms where the
-  `resolvedExecutable` is unexpectedly null.
+  `resolvedExecutable` is unexpectedly `null`.
 
 ## 0.6.17
 
