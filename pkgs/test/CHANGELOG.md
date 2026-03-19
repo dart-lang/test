@@ -1,3 +1,8 @@
+## 1.31.1-wip
+
+* Ignore an error locating the SDK directory on platforms where the
+  `resolvedExecutable` is unexpectedly `null`.
+
 ## 1.31.0
 
 * Print a summary of failed tests at the end of the expanded reporter output.

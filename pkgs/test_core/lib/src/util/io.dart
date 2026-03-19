@@ -42,7 +42,7 @@ final int lineLength = () {
 final String? sdkDir = () {
   try {
     return p.dirname(p.dirname(Platform.resolvedExecutable));
-  } on Exception {
+  } catch (_) {
     return null;
   }
 }();
