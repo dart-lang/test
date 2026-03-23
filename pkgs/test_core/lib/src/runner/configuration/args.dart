@@ -141,6 +141,13 @@ final ArgParser _parser =
         help: 'The default test timeout. For example: 15s, 2x, none',
         defaultsTo: '30s',
       );
+      parser.addOption(
+        'suite-load-timeout',
+        help:
+            'The timeout for loading a test suite. Loading the test suite '
+            'includes compiling the test suite. For example: 15s, 2m, none',
+        defaultsTo: 'none',
+      );
       parser.addFlag(
         'ignore-timeouts',
         help: 'Ignore all timeouts (useful if debugging)',
@@ -179,6 +186,15 @@ final ArgParser _parser =
             'Include branch coverage information in the coverage report.\n'
             'Must be paired with --coverage or --coverage-path.',
         negatable: false,
+      );
+      parser.addMultiOption(
+        'coverage-package',
+        help:
+            'A regular expression matching packages names to include in\n'
+            'the coverage report (if coverage is enabled). If unset,\n'
+            'matches the current package name.',
+        valueHelp: 'regexp',
+        splitCommas: false,
       );
       parser.addFlag(
         'chain-stack-traces',
@@ -462,10 +478,12 @@ class _Parser {
       coverage: coverageDir,
       coverageLcov: coverageLcov,
       branchCoverage: branchCoverage,
+      coveragePackages: _parseCoveragePackagesOption(),
       concurrency: _parseOption('concurrency', int.parse),
       shardIndex: shardIndex,
       totalShards: totalShards,
       timeout: _parseOption('timeout', Timeout.parse),
+      suiteLoadTimeout: _parseOption('suite-load-timeout', Timeout.parse),
       globalPatterns: patterns,
       compilerSelections: compilerSelections,
       runtimes: runtimes,
@@ -536,6 +554,17 @@ class _Parser {
         }
         return {reporter: value.substring(sep + 1)};
       });
+
+  List<RegExp>? _parseCoveragePackagesOption() {
+    final value = _ifParsed<List<String>>('coverage-package');
+    try {
+      return value?.map(RegExp.new).toList();
+    } on FormatException catch (e) {
+      throw FormatException(
+        '--coverage-package regular expression syntax is invalid. $e',
+      );
+    }
+  }
 
   /// Runs [parse], and wraps any [FormatException] it throws with additional
   /// information.

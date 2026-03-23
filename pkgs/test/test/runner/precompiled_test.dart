@@ -107,7 +107,9 @@ void main() {
         preamble.getPreamble(minified: true) + await jsFile.readAsString(),
       );
 
-      await d.dir('test', [d.file('test.dart', 'invalid dart}')]).create();
+      await d.dir('test', [
+        d.file('test.dart', 'void main() {invalid dart}'),
+      ]).create();
     });
 
     test(
@@ -278,5 +280,5 @@ Future<void> _precompileBrowserTest(String testPath) async {
   ], workingDirectory: d.sandbox);
   await dart2js.shouldExit(0);
 
-  await d.file(testPath, 'invalid dart}').create();
+  await d.file(testPath, 'void main() {invalid dart}').create();
 }

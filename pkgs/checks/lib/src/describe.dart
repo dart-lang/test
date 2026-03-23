@@ -42,7 +42,7 @@ Iterable<String> _prettyPrint(
       open = '(';
       close = ')';
     }
-    final elements = object.map(prettyPrintNested).toList();
+    final elements = object.map(prettyPrintNested);
     return _prettyPrintCollection(
       open,
       close,
@@ -50,16 +50,15 @@ Iterable<String> _prettyPrint(
       _maxLineLength - indentSize,
     );
   } else if (object is Map) {
-    final entries =
-        object.entries.map((entry) {
-          final key = prettyPrintNested(entry.key);
-          final value = prettyPrintNested(entry.value);
-          return [
-            ...key.take(key.length - 1),
-            '${key.last}: ${value.first}',
-            ...value.skip(1),
-          ];
-        }).toList();
+    final entries = object.entries.map((entry) {
+      final key = prettyPrintNested(entry.key);
+      final value = prettyPrintNested(entry.value);
+      return [
+        ...key.take(key.length - 1),
+        '${key.last}: ${value.first}',
+        ...value.skip(1),
+      ];
+    });
     return _prettyPrintCollection(
       '{',
       '}',
@@ -86,15 +85,19 @@ Iterable<String> _prettyPrint(
 Iterable<String> _prettyPrintCollection(
   String open,
   String close,
-  List<Iterable<String>> elements,
+  Iterable<Iterable<String>> elements,
   int maxLength,
 ) {
-  if (elements.length > _maxItems) {
-    const ellipsisElement = [
-      ['...'],
-    ];
-    elements.replaceRange(_maxItems - 1, elements.length, ellipsisElement);
+  final trimmedElements = <Iterable<String>>[];
+  for (var element in elements) {
+    if (trimmedElements.length >= _maxItems) {
+      trimmedElements[_maxItems - 1] = ['...'];
+      break;
+    }
+    trimmedElements.add(element);
   }
+  elements = trimmedElements;
+
   if (elements.every((e) => e.length == 1)) {
     final singleLine = '$open${elements.map((e) => e.single).join(', ')}$close';
     if (singleLine.length <= maxLength) {

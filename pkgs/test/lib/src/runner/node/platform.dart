@@ -296,7 +296,7 @@ const { PassThrough } = require('stream');
 const main = async () => {
   const { instantiate, invoke } = await import("./$loader");
 
-  const wasmContents = createReadStream("$wasmPath.wasm");
+  const wasmContents = createReadStream(String.raw`$wasmPath.wasm`);
   const stream = new PassThrough();
   wasmContents.pipe(stream);
 

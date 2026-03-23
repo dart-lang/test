@@ -38,8 +38,14 @@ final int lineLength = () {
   }
 }();
 
-/// The root directory of the Dart SDK.
-final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
+/// The root directory of the Dart SDK if it can be located.
+final String? sdkDir = () {
+  try {
+    return p.dirname(p.dirname(Platform.resolvedExecutable));
+  } catch (_) {
+    return null;
+  }
+}();
 
 /// The current operating system.
 final currentOS = OperatingSystem.findByIoName(Platform.operatingSystem);
@@ -95,11 +101,29 @@ final _tempDir =
         ? Platform.environment['_UNITTEST_TEMP_DIR']!
         : Directory.systemTemp.path;
 
-/// Whether or not the current terminal supports ansi escape codes.
+/// Whether [stdout] supports ANSI escape codes.
 ///
 /// Otherwise only printable ASCII characters should be used.
-bool get canUseSpecialChars =>
-    (!Platform.isWindows || stdout.supportsAnsiEscapes) && !inTestTests;
+bool get canUseSpecialChars => switch (Platform.environment) {
+  // Respect common environment variables for disabling color output.
+  // See https://no-color.org/
+  {'NO_COLOR': _} ||
+  {'TERM': 'dumb'} ||
+  // Respect CLICOLOR=0. See https://bixense.com/clicolors/
+  {'CLICOLOR': '0'} => false,
+
+  // Respect FORCE_COLOR and CLICOLOR_FORCE.
+  {'FORCE_COLOR': _} || {'CLICOLOR_FORCE': _} => true,
+  _ when inTestTests => false,
+  // On Linux and Mac, `supportsAnsiEscapes` always returns `false` on most
+  // modern terminals, see https://github.com/dart-lang/sdk/issues/31606 for
+  // details.
+  //
+  // Instead of relying on `supportsAnsiEscapes`, we assume that all modern
+  // terminals support colors and check that `stdout` is a tty.
+  _ when Platform.isWindows => stdout.supportsAnsiEscapes,
+  _ => stdioType(stdout) == StdioType.terminal,
+};
 
 /// Detect whether we're running in a Github Actions context.
 ///

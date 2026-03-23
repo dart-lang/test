@@ -392,7 +392,8 @@ void main() {
           +1 ~2: skip 2
           +1 ~2: success 2
           +2 ~2: success 2
-          +2 ~2: All tests passed!''',
+          +2 ~2: 2 skipped tests.
+          +2 ~2: All other tests passed!''',
       );
     });
 
@@ -431,22 +432,17 @@ void main() {
       );
     });
 
-    test('displays the skip reason if available', () {
+    test('hides skip reasons', () {
       return _expectReport(
         '''
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''',
         '''
           +0: loading test.dart
-          +0: skip 1
-            Skip: some reason
-
           +0 ~1: skip 1
-          +0 ~1: skip 2
-            Skip: or another
-
           +0 ~2: skip 2
           +0 ~2: All tests skipped.''',
+        disallowedLines: ['some reason', 'or another'],
       );
     });
 
@@ -573,6 +569,7 @@ Future<void> _expectReport(
   String expected, {
   List<String> args = const [],
   bool chainStackTraces = true,
+  Iterable<String>? disallowedLines,
 }) async {
   await d.file('test.dart', '''
     import 'dart:async';
@@ -622,4 +619,7 @@ $tests
   });
 
   expect(actual, containsAllInOrder(expectedLines));
+  for (final disallowed in disallowedLines ?? const <String>[]) {
+    expect(actual, everyElement(isNot(contains(disallowed))));
+  }
 }

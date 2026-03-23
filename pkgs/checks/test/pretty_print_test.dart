@@ -23,10 +23,22 @@ void main() {
       test('in iterables', () {
         check(literal(largeList.followedBy([]))).last.equals('...)');
       });
+      test('without processing truncated elements', () {
+        final poisonedList = [...largeList, _PoisonToString()];
+        check(() {
+          literal(poisonedList);
+        }).returnsNormally();
+      });
       test('in maps', () {
         final map = Map<int, int>.fromIterables(largeList, largeList);
         check(literal(map)).last.equals('...}');
       });
     });
   });
+}
+
+class _PoisonToString {
+  @override
+  String toString() =>
+      throw StateError('Truncated entry should not be processed');
 }
