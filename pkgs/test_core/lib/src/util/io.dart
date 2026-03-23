@@ -105,18 +105,19 @@ final _tempDir =
 ///
 /// Otherwise only printable ASCII characters should be used.
 bool get canUseSpecialChars {
-  // Respect common environment variables for disabling color output.
-  // See https://no-color.org/
-  if (Platform.environment.containsKey('NO_COLOR')) return false;
-  if (Platform.environment['TERM'] == 'dumb') return false;
+  switch (Platform.environment) {
+    // Respect common environment variables for disabling color output.
+    // See https://no-color.org/
+    case {'NO_COLOR': _}:
+    case {'TERM': 'dumb'}:
+    // Respect CLICOLOR=0. See https://bixense.com/clicolors/
+    case {'CLICOLOR': '0'}:
+      return false;
 
-  // Respect CLICOLOR=0. See https://bixense.com/clicolors/
-  if (Platform.environment['CLICOLOR'] == '0') return false;
-
-  // Respect FORCE_COLOR and CLICOLOR_FORCE.
-  if (Platform.environment.containsKey('FORCE_COLOR') ||
-      Platform.environment.containsKey('CLICOLOR_FORCE')) {
-    return true;
+    // Respect FORCE_COLOR and CLICOLOR_FORCE.
+    case {'FORCE_COLOR': _}:
+    case {'CLICOLOR_FORCE': _}:
+      return true;
   }
 
   if (inTestTests) return false;
