@@ -104,34 +104,26 @@ final _tempDir =
 /// Whether [stdout] supports ANSI escape codes.
 ///
 /// Otherwise only printable ASCII characters should be used.
-bool get canUseSpecialChars {
-  switch (Platform.environment) {
-    // Respect common environment variables for disabling color output.
-    // See https://no-color.org/
-    case {'NO_COLOR': _}:
-    case {'TERM': 'dumb'}:
-    // Respect CLICOLOR=0. See https://bixense.com/clicolors/
-    case {'CLICOLOR': '0'}:
-      return false;
+bool get canUseSpecialChars => switch (Platform.environment) {
+  // Respect common environment variables for disabling color output.
+  // See https://no-color.org/
+  {'NO_COLOR': _} ||
+  {'TERM': 'dumb'} ||
+  // Respect CLICOLOR=0. See https://bixense.com/clicolors/
+  {'CLICOLOR': '0'} => false,
 
-    // Respect FORCE_COLOR and CLICOLOR_FORCE.
-    case {'FORCE_COLOR': _}:
-    case {'CLICOLOR_FORCE': _}:
-      return true;
-  }
-
-  if (inTestTests) return false;
-
-  if (Platform.isWindows) return stdout.supportsAnsiEscapes;
-
+  // Respect FORCE_COLOR and CLICOLOR_FORCE.
+  {'FORCE_COLOR': _} || {'CLICOLOR_FORCE': _} => true,
+  _ when inTestTests => false,
   // On Linux and Mac, `supportsAnsiEscapes` always returns `false` on most
   // modern terminals, see https://github.com/dart-lang/sdk/issues/31606 for
   // details.
   //
   // Instead of relying on `supportsAnsiEscapes`, we assume that all modern
   // terminals support colors and check that `stdout` is a tty.
-  return stdioType(stdout) == StdioType.terminal;
-}
+  _ when Platform.isWindows => stdout.supportsAnsiEscapes,
+  _ => stdioType(stdout) == StdioType.terminal,
+};
 
 /// Detect whether we're running in a Github Actions context.
 ///
