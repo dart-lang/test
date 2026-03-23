@@ -2,6 +2,8 @@
 
 * Ignore an error locating the SDK directory on platforms where the
   `resolvedExecutable` is unexpectedly `null`.
+* Respect `NO_COLOR`, `CLICOLOR`, `FORCE_COLOR`, `CLICOLOR_FORCE`, and `TERM=dumb`
+  environment variables for color output detection.
 
 ## 0.6.17
 
