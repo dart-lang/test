@@ -1,3 +1,8 @@
+## 0.12.20-wip
+
+* Allow exceptions from `operator ==` to bubble up and fail the test instead of
+  treating them as unequal objects.
+
 ## 0.12.19
 
 * Improve speed of pretty printing for large collections.
