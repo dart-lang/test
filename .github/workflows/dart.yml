@@ -715,7 +715,7 @@ jobs:
       - job_005
       - job_006
   job_018:
-    name: "unit_test; linux; Dart 3.7.0; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
+    name: "unit_test; linux; Dart 3.7.0; PKG: pkgs/test_api; `dart test --preset travis -x browser -c kernel,exe`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -740,8 +740,8 @@ jobs:
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test_api
-      - name: "pkgs/test_api; dart test --preset travis -x browser"
-        run: dart test --preset travis -x browser
+      - name: "pkgs/test_api; dart test --preset travis -x browser -c kernel,exe"
+        run: "dart test --preset travis -x browser -c kernel,exe"
         if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_api
     needs:
@@ -1159,7 +1159,7 @@ jobs:
       - job_005
       - job_006
   job_030:
-    name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `dart test --preset travis -x browser`"
+    name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `dart test --preset travis -x browser -c kernel,exe`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
@@ -1184,8 +1184,8 @@ jobs:
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test_api
-      - name: "pkgs/test_api; dart test --preset travis -x browser"
-        run: dart test --preset travis -x browser
+      - name: "pkgs/test_api; dart test --preset travis -x browser -c kernel,exe"
+        run: "dart test --preset travis -x browser -c kernel,exe"
         if: "always() && steps.pkgs_test_api_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test_api
     needs:

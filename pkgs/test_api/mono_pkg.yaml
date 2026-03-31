@@ -13,7 +13,7 @@ stages:
     - dev
 - unit_test:
   - group:
-    - command: dart test --preset travis -x browser
+    - command: dart test --preset travis -x browser -c kernel,exe
       os:
       - linux
       - windows
