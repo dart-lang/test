@@ -8,6 +8,7 @@ library;
 
 import 'dart:io';
 
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_api/backend.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
