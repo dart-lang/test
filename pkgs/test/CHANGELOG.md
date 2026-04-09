@@ -3,6 +3,7 @@
 * Ignore an error locating the SDK directory on platforms where the
   `resolvedExecutable` is unexpectedly `null`.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
+* Require `analyzer: ^13.0.0`
 
 ## 1.31.0
 

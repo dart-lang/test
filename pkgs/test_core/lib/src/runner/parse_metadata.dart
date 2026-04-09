@@ -144,7 +144,9 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   PlatformSelector _parseTestOn(Annotation annotation) =>
-      _parsePlatformSelector(annotation.arguments!.arguments.first);
+      _parsePlatformSelector(
+        annotation.arguments!.arguments.first.argumentExpression,
+      );
 
   /// Parses an [expression] that should contain a string representing a
   /// [PlatformSelector].
@@ -162,7 +164,7 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   int _parseRetry(Annotation annotation) =>
-      _parseInt(annotation.arguments!.arguments.first);
+      _parseInt(annotation.arguments!.arguments.first.argumentExpression);
 
   /// Parses a `@Timeout` annotation.
   ///
@@ -174,16 +176,22 @@ class _Parser {
     }
 
     var args = annotation.arguments!.arguments;
-    if (constructorName == null) return Timeout(_parseDuration(args.first));
-    return Timeout.factor(_parseNum(args.first));
+    if (constructorName == null) {
+      return Timeout(_parseDuration(args.first.argumentExpression));
+    }
+    return Timeout.factor(_parseNum(args.first.argumentExpression));
   }
 
   /// Parses a `Timeout` constructor.
   Timeout _parseTimeoutConstructor(Expression constructor) {
     var name = _findConstructorName(constructor, 'Timeout');
     var arguments = _parseArguments(constructor);
-    if (name == null) return Timeout(_parseDuration(arguments.first));
-    if (name == 'factor') return Timeout.factor(_parseNum(arguments.first));
+    if (name == null) {
+      return Timeout(_parseDuration(arguments.first.argumentExpression));
+    }
+    if (name == 'factor') {
+      return Timeout.factor(_parseNum(arguments.first.argumentExpression));
+    }
     throw SourceSpanFormatException('Invalid timeout', _spanFor(constructor));
   }
 
@@ -194,7 +202,9 @@ class _Parser {
   /// Returns either `true` or a reason string.
   dynamic _parseSkip(Annotation annotation) {
     var args = annotation.arguments!.arguments;
-    return args.isEmpty ? true : _parseString(args.first).stringValue;
+    return args.isEmpty
+        ? true
+        : _parseString(args.first.argumentExpression).stringValue;
   }
 
   /// Parses a `Skip` constructor.
@@ -203,16 +213,18 @@ class _Parser {
   dynamic _parseSkipConstructor(Expression constructor) {
     _findConstructorName(constructor, 'Skip');
     var arguments = _parseArguments(constructor);
-    return arguments.isEmpty ? true : _parseString(arguments.first).stringValue;
+    return arguments.isEmpty
+        ? true
+        : _parseString(arguments.first.argumentExpression).stringValue;
   }
 
   /// Parses a `@Tags` annotation.
   ///
   /// [annotation] is the annotation.
   Set<String> _parseTags(Annotation annotation) {
-    return _parseList(annotation.arguments!.arguments.first).map((
-      tagExpression,
-    ) {
+    return _parseList(
+      annotation.arguments!.arguments.first.argumentExpression,
+    ).map((tagExpression) {
       var name = _parseString(tagExpression).stringValue!;
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
@@ -229,7 +241,7 @@ class _Parser {
   /// [annotation] is the annotation.
   Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
     return _parseMap(
-      annotation.arguments!.arguments.first,
+      annotation.arguments!.arguments.first.argumentExpression,
       key: _parsePlatformSelector,
       value: (value) {
         var expressions = <AstNode>[];
@@ -319,12 +331,11 @@ class _Parser {
     );
   }
 
-  Map<String, Expression> _parseNamedArguments(
-    NodeList<Expression> arguments,
-  ) => {
-    for (var a in arguments.whereType<NamedExpression>())
-      a.name.label.name: a.expression,
-  };
+  Map<String, Expression> _parseNamedArguments(NodeList<Argument> arguments) =>
+      {
+        for (var a in arguments.whereType<NamedArgument>())
+          a.name.lexeme: a.argumentExpression,
+      };
 
   /// Asserts that [existing] is null.
   ///
@@ -338,7 +349,7 @@ class _Parser {
     );
   }
 
-  NodeList<Expression> _parseArguments(Expression expression) {
+  NodeList<Argument> _parseArguments(Expression expression) {
     if (expression is InstanceCreationExpression) {
       return expression.argumentList.arguments;
     }
