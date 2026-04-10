@@ -163,8 +163,9 @@ class _Parser {
   /// Parses a `@Retry` annotation.
   ///
   /// [annotation] is the annotation.
-  int _parseRetry(Annotation annotation) =>
-      _parseInt(annotation.arguments!.compatibleArguments.first.argumentExpression);
+  int _parseRetry(Annotation annotation) => _parseInt(
+    annotation.arguments!.compatibleArguments.first.argumentExpression,
+  );
 
   /// Parses a `@Timeout` annotation.
   ///
@@ -331,12 +332,12 @@ class _Parser {
     );
   }
 
-  Map<String, Expression> _parseNamedArguments(Iterable<CompatibleArgument> arguments) =>
-      {
-        for (var argument in arguments)
-          if (argument.name case String name)
-            name: argument.argumentExpression,
-      };
+  Map<String, Expression> _parseNamedArguments(
+    Iterable<CompatibleArgument> arguments,
+  ) => {
+    for (var argument in arguments)
+      if (argument.name case String name) name: argument.argumentExpression,
+  };
 
   /// Asserts that [existing] is null.
   ///
@@ -602,7 +603,6 @@ class _Parser {
       throw SourceSpanFormatException(error.message, span);
     }
   }
-
 }
 
 extension ArgumentListExt on ArgumentList {
@@ -622,7 +622,7 @@ extension type const CompatibleArgument(AstNode _node) {
     }
     // Old analyzer or positional in new analyzer.
     try {
-      var nameObj = (_node as dynamic).name;
+        var nameObj = (_node as dynamic).name;
       if (nameObj is Label) {
         return (nameObj as dynamic).label.name as String;
       }
