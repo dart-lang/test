@@ -12,23 +12,23 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
 /// The path to the root directory of the `test` package.
-final Future<String> packageDir = Isolate.resolvePackageUri(
-  Uri(scheme: 'package', path: 'test/'),
-).then((uri) {
-  var dir = p.dirname(uri!.path);
-  // If it starts with a `/C:` or other drive letter, remove the leading `/`.
-  if (dir[0] == '/' && dir[2] == ':') dir = dir.substring(1);
-  return dir;
-});
+final Future<String> packageDir =
+    Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/')).then((
+      uri,
+    ) {
+      var dir = p.dirname(uri!.path);
+      // If it starts with a `/C:` or other drive letter, remove the leading `/`.
+      if (dir[0] == '/' && dir[2] == ':') dir = dir.substring(1);
+      return dir;
+    });
 
 /// The root directory of the Dart SDK.
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
-final String noSuchFileMessage =
-    Platform.isWindows
-        ? 'The system cannot find the file specified.'
-        : 'No such file or directory';
+final String noSuchFileMessage = Platform.isWindows
+    ? 'The system cannot find the file specified.'
+    : 'No such file or directory';
 
 /// An operating system name that's different than the current operating system.
 final otherOS = Platform.isWindows ? 'mac-os' : 'windows';

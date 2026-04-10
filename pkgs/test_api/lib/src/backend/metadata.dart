@@ -228,8 +228,9 @@ final class Metadata {
        _chainStackTraces = chainStackTraces,
        _retry = retry,
        tags = UnmodifiableSetView(tags == null ? {} : tags.toSet()),
-       onPlatform =
-           onPlatform == null ? const {} : UnmodifiableMapView(onPlatform),
+       onPlatform = onPlatform == null
+           ? const {}
+           : UnmodifiableMapView(onPlatform),
        forTag = forTag == null ? const {} : UnmodifiableMapView(forTag) {
     if (retry != null) RangeError.checkNotNegative(retry, 'retry');
     _validateTags();
@@ -249,10 +250,9 @@ final class Metadata {
     Map<String, dynamic>? onPlatform,
     Object? /* String|Iterable<String> */ tags,
     this.languageVersionComment,
-  }) : testOn =
-           testOn == null
-               ? PlatformSelector.all
-               : PlatformSelector.parse(testOn),
+  }) : testOn = testOn == null
+           ? PlatformSelector.all
+           : PlatformSelector.parse(testOn),
        timeout = timeout ?? const Timeout.factor(1),
        _skip = skip == null ? null : skip != false,
        _verboseTrace = verboseTrace,
@@ -273,10 +273,9 @@ final class Metadata {
 
   /// Deserializes the result of [Metadata.serialize] into a new [Metadata].
   Metadata.deserialize(Map serialized)
-    : testOn =
-          serialized['testOn'] == null
-              ? PlatformSelector.all
-              : PlatformSelector.parse(serialized['testOn'] as String),
+    : testOn = serialized['testOn'] == null
+          ? PlatformSelector.all
+          : PlatformSelector.parse(serialized['testOn'] as String),
       timeout = _deserializeTimeout(serialized['timeout']),
       _skip = serialized['skip'] as bool?,
       skipReason = serialized['skipReason'] as String?,
@@ -311,11 +310,10 @@ final class Metadata {
   /// Throws an [ArgumentError] if any tags in [tags] aren't hyphenated
   /// identifiers.
   void _validateTags() {
-    var invalidTags =
-        tags
-            .where((tag) => !tag.contains(anchoredHyphenatedIdentifier))
-            .map((tag) => '"$tag"')
-            .toList();
+    var invalidTags = tags
+        .where((tag) => !tag.contains(anchoredHyphenatedIdentifier))
+        .map((tag) => '"$tag"')
+        .toList();
 
     if (invalidTags.isEmpty) return;
 

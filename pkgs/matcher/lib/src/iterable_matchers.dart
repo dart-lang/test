@@ -203,13 +203,15 @@ class _UnorderedMatches extends _IterableMatcher {
             .add('has no match for ')
             .addDescriptionOf(_expected[matcherIndex])
             .add(' at index $matcherIndex');
-        final remainingUnmatched =
-            matched.sublist(matcherIndex + 1).where((m) => m == null).length;
+        final remainingUnmatched = matched
+            .sublist(matcherIndex + 1)
+            .where((m) => m == null)
+            .length;
         return remainingUnmatched == 0
             ? description.toString()
             : description
-                .add(' along with $remainingUnmatched other unmatched')
-                .toString();
+                  .add(' along with $remainingUnmatched other unmatched')
+                  .toString();
       }
     }
     return null;

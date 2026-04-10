@@ -76,12 +76,9 @@ final lineSplitter = StreamTransformer<List<int>, String>(
 ///
 /// Also returns an empty stream for Fuchsia since Fuchsia components can't
 /// access stdin.
-StreamQueue<String> get stdinLines =>
-    _stdinLines ??= StreamQueue(
-      Platform.isFuchsia
-          ? const Stream<String>.empty()
-          : lineSplitter.bind(stdin),
-    );
+StreamQueue<String> get stdinLines => _stdinLines ??= StreamQueue(
+  Platform.isFuchsia ? const Stream<String>.empty() : lineSplitter.bind(stdin),
+);
 
 StreamQueue<String>? _stdinLines;
 
@@ -96,10 +93,9 @@ bool inTestTests = Platform.environment['_DART_TEST_TESTING'] == 'true';
 ///
 /// This is configurable so that the test code can validate that the runner
 /// cleans up after itself fully.
-final _tempDir =
-    Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
-        ? Platform.environment['_UNITTEST_TEMP_DIR']!
-        : Directory.systemTemp.path;
+final _tempDir = Platform.environment.containsKey('_UNITTEST_TEMP_DIR')
+    ? Platform.environment['_UNITTEST_TEMP_DIR']!
+    : Directory.systemTemp.path;
 
 /// Whether [stdout] supports ANSI escape codes.
 ///

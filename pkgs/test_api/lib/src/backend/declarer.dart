@@ -377,22 +377,18 @@ class Declarer {
     _checkNotBuilt('build');
 
     _built = true;
-    var entries =
-        _entries.map((entry) {
-          if (_solo && !_soloEntries.contains(entry)) {
-            entry = LocalTest(
-              entry.name,
-              entry.metadata.change(
-                skip: true,
-                skipReason: 'does not have "solo"',
-              ),
-              trace: entry.trace,
-              location: entry.location,
-              () {},
-            );
-          }
-          return entry;
-        }).toList();
+    var entries = _entries.map((entry) {
+      if (_solo && !_soloEntries.contains(entry)) {
+        entry = LocalTest(
+          entry.name,
+          entry.metadata.change(skip: true, skipReason: 'does not have "solo"'),
+          trace: entry.trace,
+          location: entry.location,
+          () {},
+        );
+      }
+      return entry;
+    }).toList();
 
     return Group(
       _name ?? '',
@@ -410,19 +406,18 @@ class Declarer {
   /// [name] should be the name of the method being called.
   void _checkNotBuilt(String name) {
     if (!_built) return;
-    final restrictionMessage =
-        _isStandalone
-            ? 'When running a test as an executable directly '
-                '(not as a suite by the test runner), '
-                'tests must be declared in a synchronous block.\n'
-                'If async work is required before any tests are run '
-                'use a `setUpAll` callback.\n'
-                'If async work cannot be avoided before declaring tests, '
-                'all async events must be complete before declaring the first test.'
-            : 'If async work is required before any tests are run '
-                'use a `setUpAll` callback.\n'
-                'If async work cannot be avoided before declaring tests it must '
-                'all be awaited within the Future returned from `main`.';
+    final restrictionMessage = _isStandalone
+        ? 'When running a test as an executable directly '
+              '(not as a suite by the test runner), '
+              'tests must be declared in a synchronous block.\n'
+              'If async work is required before any tests are run '
+              'use a `setUpAll` callback.\n'
+              'If async work cannot be avoided before declaring tests, '
+              'all async events must be complete before declaring the first test.'
+        : 'If async work is required before any tests are run '
+              'use a `setUpAll` callback.\n'
+              'If async work cannot be avoided before declaring tests it must '
+              'all be awaited within the Future returned from `main`.';
     throw StateError(
       "Can't call $name() once tests have begun running.\n"
       '$restrictionMessage',

@@ -37,10 +37,9 @@ void writeFailureSummary(
   sink.writeln('');
   sink.writeln('${red}Failing tests:$noColor');
 
-  final displayCount =
-      entries.length > maxFailureSummaryCount
-          ? maxFailureSummaryCount - 1
-          : entries.length;
+  final displayCount = entries.length > maxFailureSummaryCount
+      ? maxFailureSummaryCount - 1
+      : entries.length;
 
   for (var i = 0; i < displayCount; i++) {
     final entry = entries[i];

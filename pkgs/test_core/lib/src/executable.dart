@@ -61,16 +61,15 @@ Future<void> _execute(List<String> args) async {
   /// Signals will only be captured as long as this has an active subscription.
   /// Otherwise, they'll be handled by Dart's default signal handler, which
   /// terminates the program immediately.
-  final signals =
-      Platform.isWindows
-          ? ProcessSignal.sigint.watch()
-          : Platform
-              .isFuchsia // Signals don't exist on Fuchsia.
-          ? const Stream<Never>.empty()
-          : StreamGroup.merge([
-            ProcessSignal.sigterm.watch(),
-            ProcessSignal.sigint.watch(),
-          ]);
+  final signals = Platform.isWindows
+      ? ProcessSignal.sigint.watch()
+      : Platform
+            .isFuchsia // Signals don't exist on Fuchsia.
+      ? const Stream<Never>.empty()
+      : StreamGroup.merge([
+          ProcessSignal.sigterm.watch(),
+          ProcessSignal.sigint.watch(),
+        ]);
 
   Configuration configuration;
   try {
@@ -126,10 +125,9 @@ Future<void> _execute(List<String> args) async {
     return;
   }
 
-  var undefinedPresets =
-      configuration.chosenPresets
-          .where((preset) => !configuration.knownPresets.contains(preset))
-          .toList();
+  var undefinedPresets = configuration.chosenPresets
+      .where((preset) => !configuration.knownPresets.contains(preset))
+      .toList();
   if (undefinedPresets.isNotEmpty) {
     _printUsage(
       "Undefined ${pluralize('preset', undefinedPresets.length)} "

@@ -76,17 +76,16 @@ class _Parser {
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
-    _prefixes =
-        directives
-            .map((directive) {
-              if (directive is ImportDirective) {
-                return directive.prefix?.name;
-              } else {
-                return null;
-              }
-            })
-            .whereType<String>()
-            .toSet();
+    _prefixes = directives
+        .map((directive) {
+          if (directive is ImportDirective) {
+            return directive.prefix?.name;
+          } else {
+            return null;
+          }
+        })
+        .whereType<String>()
+        .toSet();
   }
 
   /// Parses the metadata.
@@ -373,10 +372,9 @@ class _Parser {
       className = identifier.prefix.name;
       namedConstructor = identifier.identifier.name;
     } else {
-      className =
-          identifier is PrefixedIdentifier
-              ? identifier.identifier.name
-              : identifier.name;
+      className = identifier is PrefixedIdentifier
+          ? identifier.identifier.name
+          : identifier.name;
       if (constructorName != null) namedConstructor = constructorName.name;
     }
     return (className, namedConstructor);
