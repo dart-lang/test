@@ -622,7 +622,7 @@ extension type const CompatibleArgument(AstNode _node) {
     }
     // Old analyzer or positional in new analyzer.
     try {
-        var nameObj = (_node as dynamic).name;
+      var nameObj = (_node as dynamic).name;
       if (nameObj is Label) {
         return (nameObj as dynamic).label.name as String;
       }
