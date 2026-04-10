@@ -230,10 +230,10 @@ fake trace''');
           (it) => it.deepEquals(['  emits an error of type StateError']),
         );
         await check(
-          (Subject<StreamQueue<void>> it) =>
-              it..emitsError<StateError>(
-                (it) => it.has((e) => e.message, 'message').equals('foo'),
-              ),
+          (Subject<StreamQueue<void>> it) => it
+            ..emitsError<StateError>(
+              (it) => it.has((e) => e.message, 'message').equals('foo'),
+            ),
         ).hasAsyncDescriptionWhich(
           (it) => it.deepEquals([
             '  emits an error of type StateError that:',

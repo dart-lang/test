@@ -239,10 +239,9 @@ class CompactReporter implements Reporter {
     liveTest.onComplete.then((_) {
       var result = liveTest.state.result;
       if (result != Result.error && result != Result.failure) return;
-      var quotedName =
-          Platform.isWindows
-              ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
-              : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
+      var quotedName = Platform.isWindows
+          ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
+          : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
       _sink.writeln('');
       _sink.writeln(
         '$_bold${_cyan}To run this test again:$_noColor '
