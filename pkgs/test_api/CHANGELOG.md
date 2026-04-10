@@ -1,10 +1,13 @@
+## 0.7.12-wip
+
+* Allow `analyzer` major version 13.
+
 ## 0.7.11
 
 * Add `vmAsan`, `vmMsan` and `vmTsan` runtimes.
 * Change return type on the `body` callback argument to `group` to `void` from
   `dynamic`. This may surface cases where the group callback was erroneously
   returning an ignored value.
-* Allow `analyzer` major version 13.
 
 ## 0.7.10
 
