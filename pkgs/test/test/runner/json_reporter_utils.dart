@@ -103,8 +103,9 @@ Map<String, Object> groupJson(
     );
   }
 
-  url ??=
-      line == null ? null : p.toUri(p.join(d.sandbox, 'test.dart')).toString();
+  url ??= line == null
+      ? null
+      : p.toUri(p.join(d.sandbox, 'test.dart')).toString();
   return {
     'type': 'group',
     'group': {
@@ -147,8 +148,9 @@ Map<String, Object> testStartJson(
     );
   }
 
-  url ??=
-      line == null ? null : p.toUri(p.join(d.sandbox, 'test.dart')).toString();
+  url ??= line == null
+      ? null
+      : p.toUri(p.join(d.sandbox, 'test.dart')).toString();
   return {
     'type': 'testStart',
     'test': {

@@ -95,8 +95,8 @@ class Chrome extends Browser {
       'Profiler.takePreciseCoverage',
       {},
     );
-    var result =
-        (response.result!['result'] as List).cast<Map<String, dynamic>>();
+    var result = (response.result!['result'] as List)
+        .cast<Map<String, dynamic>>();
     var httpClient = HttpClient();
     var coverage = await parseChromeCoverage(
       result,

@@ -58,10 +58,9 @@ void main() {
   group('.loadFile()', () {
     late RunnerSuite suite;
     setUp(() async {
-      var suites =
-          await _loader
-              .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
-              .toList();
+      var suites = await _loader
+          .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
+          .toList();
 
       expect(suites, hasLength(1));
       var loadSuite = suites.first;
@@ -121,10 +120,9 @@ Future main() {
 }
 ''');
 
-    var suites =
-        await _loader
-            .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
-            .toList();
+    var suites = await _loader
+        .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
+        .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
     var suite = (await loadSuite.getSuite())!;
@@ -137,18 +135,17 @@ Future main() {
   test('loads a suite both in the browser and the VM', () async {
     var path = p.join(d.sandbox, 'a_test.dart');
 
-    var suites =
-        await _loader
-            .loadFile(
-              path,
-              SuiteConfiguration.runtimes([
-                RuntimeSelection(Runtime.vm.identifier),
-                RuntimeSelection(Runtime.chrome.identifier),
-              ]),
-            )
-            .asyncMap((loadSuite) => loadSuite.getSuite())
-            .cast<RunnerSuite>()
-            .toList();
+    var suites = await _loader
+        .loadFile(
+          path,
+          SuiteConfiguration.runtimes([
+            RuntimeSelection(Runtime.vm.identifier),
+            RuntimeSelection(Runtime.chrome.identifier),
+          ]),
+        )
+        .asyncMap((loadSuite) => loadSuite.getSuite())
+        .cast<RunnerSuite>()
+        .toList();
     expect(suites[0].platform.runtime, equals(Runtime.vm));
     expect(suites[0].platform.compiler, equals(Runtime.vm.defaultCompiler));
     expect(suites[0].path, equals(path));
@@ -170,10 +167,9 @@ void main() {
   print('print within test');
 }
 ''');
-    var suites =
-        await _loader
-            .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
-            .toList();
+    var suites = await _loader
+        .loadFile(p.join(d.sandbox, 'a_test.dart'), _chrome)
+        .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
