@@ -162,9 +162,9 @@ Map<String, Object> testStartJson(
       'line': line,
       'column': column,
       'url': url,
-      if (rootLine != null) 'root_line': rootLine,
-      if (rootColumn != null) 'root_column': rootColumn,
-      if (rootUrl != null) 'root_url': rootUrl,
+      'root_line': ?rootLine,
+      'root_column': ?rootColumn,
+      'root_url': ?rootUrl,
     },
   };
 }
