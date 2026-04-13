@@ -158,18 +158,16 @@ class GithubReporter implements Reporter {
     // For now, we use the same icon for both tests and test-like structures
     // (loadSuite, setUpAll, tearDownAll).
     var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
-    final prefix =
-        failed
-            ? _GithubMarkup.failed
-            : skipped
-            ? _GithubMarkup.skipped
-            : defaultIcon;
-    final statusSuffix =
-        failed
-            ? ' (failed)'
-            : skipped
-            ? ' (skipped)'
-            : '';
+    final prefix = failed
+        ? _GithubMarkup.failed
+        : skipped
+        ? _GithubMarkup.skipped
+        : defaultIcon;
+    final statusSuffix = failed
+        ? ' (failed)'
+        : skipped
+        ? ' (skipped)'
+        : '';
 
     var name = test.test.name;
     if (!loadSuite) {

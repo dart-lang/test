@@ -111,20 +111,18 @@ extension BoolChecks on Subject<bool> {
   void isTrue() {
     context.expect(
       () => ['is true'],
-      (actual) =>
-          actual
-              ? null // force coverage
-              : Rejection(),
+      (actual) => actual
+          ? null // force coverage
+          : Rejection(),
     );
   }
 
   void isFalse() {
     context.expect(
       () => ['is false'],
-      (actual) =>
-          !actual
-              ? null // force coverage
-              : Rejection(),
+      (actual) => !actual
+          ? null // force coverage
+          : Rejection(),
     );
   }
 }

@@ -100,14 +100,13 @@ final _allReporters = <String, ReporterDetails>{
   ),
 };
 
-final defaultReporter =
-    inTestTests
-        ? 'expanded'
-        : inGithubContext
-        ? 'github'
-        : canUseSpecialChars
-        ? 'compact'
-        : 'expanded';
+final defaultReporter = inTestTests
+    ? 'expanded'
+    : inGithubContext
+    ? 'github'
+    : canUseSpecialChars
+    ? 'compact'
+    : 'expanded';
 
 /// **Do not call this function without express permission from the test package
 /// authors**.

@@ -197,11 +197,10 @@ class Configuration {
   /// All preset names that are known to be valid.
   ///
   /// This includes presets that have already been resolved.
-  Set<String> get knownPresets =>
-      _knownPresets ??= UnmodifiableSetView({
-        ...presets.keys,
-        for (var configuration in presets.values) ...configuration.knownPresets,
-      });
+  Set<String> get knownPresets => _knownPresets ??= UnmodifiableSetView({
+    ...presets.keys,
+    for (var configuration in presets.values) ...configuration.knownPresets,
+  });
   Set<String>? _knownPresets;
 
   /// Built-in runtimes whose settings are overridden by the user.
@@ -832,10 +831,9 @@ class Configuration {
        fileReporters = fileReporters ?? {},
        _branchCoverage = branchCoverage,
        _concurrency = concurrency,
-       _testSelections =
-           testSelections == null || testSelections.isEmpty
-               ? null
-               : Map.unmodifiable(testSelections),
+       _testSelections = testSelections == null || testSelections.isEmpty
+           ? null
+           : Map.unmodifiable(testSelections),
        _foldTraceExcept = _set(foldTraceExcept),
        _foldTraceOnly = _set(foldTraceOnly),
        _filename = filename,
@@ -846,10 +844,9 @@ class Configuration {
        _noRetry = noRetry,
        includeTags = includeTags ?? BooleanSelector.all,
        excludeTags = excludeTags ?? BooleanSelector.none,
-       globalPatterns =
-           globalPatterns == null
-               ? const {}
-               : UnmodifiableSetView(globalPatterns.toSet()),
+       globalPatterns = globalPatterns == null
+           ? const {}
+           : UnmodifiableSetView(globalPatterns.toSet()),
        _stopOnFirstFailure = stopOnFirstFailure,
        suiteDefaults = (() {
          var config = suiteDefaults ?? SuiteConfiguration.empty;
@@ -1014,12 +1011,11 @@ class Configuration {
       overrideRuntimes: mergeUnmodifiableMaps(
         overrideRuntimes,
         other.overrideRuntimes,
-        value:
-            (settings1, settings2) => RuntimeSettings(
-              settings1.identifier,
-              settings1.identifierSpan,
-              [...settings1.settings, ...settings2.settings],
-            ),
+        value: (settings1, settings2) => RuntimeSettings(
+          settings1.identifier,
+          settings1.identifierSpan,
+          [...settings1.settings, ...settings2.settings],
+        ),
       ),
       defineRuntimes: mergeUnmodifiableMaps(
         defineRuntimes,

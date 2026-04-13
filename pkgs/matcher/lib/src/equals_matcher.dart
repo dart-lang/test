@@ -15,10 +15,9 @@ import 'util.dart';
 /// For [Iterable]s and [Map]s, this will recursively match the elements. To
 /// handle cyclic structures a recursion depth [limit] can be provided. The
 /// default limit is 100. [Set]s will be compared order-independently.
-Matcher equals(Object? expected, [int limit = 100]) =>
-    expected is String
-        ? _StringEqualsMatcher(expected)
-        : _DeepMatcher(expected, limit);
+Matcher equals(Object? expected, [int limit = 100]) => expected is String
+    ? _StringEqualsMatcher(expected)
+    : _DeepMatcher(expected, limit);
 
 typedef _RecursiveMatcher = _Mismatch? Function(Object?, Object?, String, int);
 
@@ -46,10 +45,9 @@ class _StringEqualsMatcher extends FeatureMatcher<String> {
     buff.write('is different.');
     var escapedItem = escape(item);
     var escapedValue = escape(_value);
-    var minLength =
-        escapedItem.length < escapedValue.length
-            ? escapedItem.length
-            : escapedValue.length;
+    var minLength = escapedItem.length < escapedValue.length
+        ? escapedItem.length
+        : escapedValue.length;
     var start = 0;
     for (; start < minLength; start++) {
       if (escapedValue.codeUnitAt(start) != escapedItem.codeUnitAt(start)) {
@@ -249,10 +247,9 @@ class _DeepMatcher extends Matcher {
         if (actual is! Map) {
           return _Mismatch.simple(location, actual, 'expected a map');
         }
-        var err =
-            (expected.length == actual.length)
-                ? ''
-                : 'has different length and ';
+        var err = (expected.length == actual.length)
+            ? ''
+            : 'has different length and ';
         for (var key in expected.keys) {
           if (!actual.containsKey(key)) {
             return _Mismatch(
