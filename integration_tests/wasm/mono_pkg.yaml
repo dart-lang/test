@@ -15,4 +15,9 @@ stages:
     - analyze: --fatal-infos
 - unit_test:
   # The config here is a regression test for https://github.com/dart-lang/test/issues/2006
-  - test: --timeout=60s
+  - command: xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s
+    os:
+    - linux
+  - command: dart test --timeout=60s
+    os:
+    - windows
