@@ -5,6 +5,10 @@
 * Fix a bug where `-c exe` tests would hang on exit on windows.
 * Fix a bug where the web test runner would not find custom HTML files when
   using the dart2wasm compiler.
+* `GithubReporter`:
+    * Group contiguous passing and skipped tests into collapsible groups to
+      reduce log noise in GitHub Actions.
+    * Updated skipped icon to ⏭️.
 * Increase SDK constraint to ^3.10.0.
 * Allow `analyzer` version  `13.x.x`.
 

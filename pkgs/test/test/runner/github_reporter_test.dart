@@ -30,9 +30,11 @@ void main() {
         test('success 2', () {});
         test('success 3', () {});''',
       '''
+        ::group::✅ Passing tests
         ✅ success 1
         ✅ success 2
         ✅ success 3
+        ::endgroup::
         🎉 3 tests passed.''',
     );
   });
@@ -42,8 +44,10 @@ void main() {
       '''
         test('success 1', () {});''',
       [
+        '::group::✅ Passing tests',
         '✅ [VM, Kernel] success 1',
         '✅ [Chrome, Dart2Js] success 1',
+        '::endgroup::',
         '🎉 2 tests passed.',
       ],
       args: ['-p', 'vm,chrome'],
@@ -104,12 +108,16 @@ void main() {
         oh no
         test.dart 6:33  main.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ success 1
+        ::endgroup::
         ::group::❌ failure 2 (failed)
         oh no
         test.dart 8:33  main.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ success 2
+        ::endgroup::
         ::error::2 tests passed, 2 failed.''',
     );
   });
@@ -148,7 +156,9 @@ void main() {
         third error
         test.dart 12:34  main.<fn>.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ wait
+        ::endgroup::
         ::error::1 test passed, 1 failed.''',
     );
   });
@@ -164,7 +174,9 @@ void main() {
 
       test('second test so that the first failure is reported', () {});''',
       '''
+        ::group::✅ Passing tests
         ✅ fail after completion
+        ::endgroup::
         ::group::❌ fail after completion (failed after test completion)
         foo
         test.dart 8:62  main.<fn>.<fn>
@@ -175,7 +187,9 @@ void main() {
         of pending async work.
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ second test so that the first failure is reported
+        ::endgroup::
         ::error::1 test passed, 1 failed.''',
     );
   });
@@ -223,12 +237,16 @@ void main() {
           return testDone.future;
         });''',
         '''
+        ::group::✅ Passing tests
         ✅ test
+        ::endgroup::
         one
         two
         three
         four
+        ::group::✅ Passing tests
         ✅ wait
+        ::endgroup::
         🎉 2 tests passed.''',
       );
     });
@@ -242,9 +260,11 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);''',
         '''
-          ❎ skip 1 (skipped)
-          ❎ skip 2 (skipped)
-          ❎ skip 3 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ⏭️ skip 2 (skipped)
+          ⏭️ skip 3 (skipped)
+          ::endgroup::
           🎉 0 tests passed, 3 skipped.''',
       );
     });
@@ -258,9 +278,11 @@ void main() {
             test('test 3', () {});
           }, skip: true);''',
         '''
-          ❎ skip test 1 (skipped)
-          ❎ skip test 2 (skipped)
-          ❎ skip test 3 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip test 1 (skipped)
+          ⏭️ skip test 2 (skipped)
+          ⏭️ skip test 3 (skipped)
+          ::endgroup::
           🎉 0 tests passed, 3 skipped.''',
       );
     });
@@ -273,10 +295,18 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''',
         '''
-          ❎ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 1
-          ❎ skip 2 (skipped)
+          ::endgroup::
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 2 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 2
+          ::endgroup::
           🎉 2 tests passed, 2 skipped.''',
       );
     });
@@ -295,14 +325,22 @@ void main() {
           oh no
           test.dart 6:35  main.<fn>
           ::endgroup::
-          ❎ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 1
+          ::endgroup::
           ::group::❌ failure 2 (failed)
           oh no
           test.dart 9:35  main.<fn>
           ::endgroup::
-          ❎ skip 2 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 2 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 2
+          ::endgroup::
           ::error::2 tests passed, 2 failed, 2 skipped.''',
       );
     });
@@ -313,10 +351,10 @@ void main() {
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''',
         '''
-          ::group::❎ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           Skip: some reason
-          ::endgroup::
-          ::group::❎ skip 2 (skipped)
+          ⏭️ skip 2 (skipped)
           Skip: or another
           ::endgroup::
           🎉 0 tests passed, 2 skipped.''',
@@ -333,7 +371,9 @@ void main() {
             test('test 1', () {});
           });''',
       '''
+          ::group::✅ Passing tests
           ✅ one test 1
+          ::endgroup::
           🎉 1 test passed.''',
     );
   });
@@ -350,7 +390,9 @@ void main() {
           ::group::✅ one (setUpAll)
           one
           ::endgroup::
+          ::group::✅ Passing tests
           ✅ one test 1
+          ::endgroup::
           ::group::✅ one (tearDownAll)
           two
           ::endgroup::
