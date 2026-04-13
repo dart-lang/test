@@ -47,6 +47,9 @@ class GithubReporter implements Reporter {
   /// Whether the reporter is currently inside a group of passing tests.
   var _inPassingGroup = false;
 
+  /// Whether the reporter is currently inside a group of skipped tests.
+  var _inSkippedGroup = false;
+
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
     Engine engine,
@@ -119,6 +122,10 @@ class GithubReporter implements Reporter {
             _sink.writeln(_GithubMarkup.endGroup);
             _inPassingGroup = false;
           }
+          if (_inSkippedGroup) {
+            _sink.writeln(_GithubMarkup.endGroup);
+            _inSkippedGroup = false;
+          }
           _sink.writeln(message.text);
         } else {
           _testMessages.putIfAbsent(liveTest, () => []).add(message);
@@ -175,7 +182,24 @@ class GithubReporter implements Reporter {
           '[${test.suite.platform.runtime.name}, '
           '${test.suite.platform.compiler.name}] $name';
     }
-    if (messages.isEmpty && errors.isEmpty) {
+    if (skipped) {
+      if (_inPassingGroup) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _inPassingGroup = false;
+      }
+      if (!_inSkippedGroup) {
+        _sink.writeln(_GithubMarkup.startGroup('⚠️ Skipped tests'));
+        _inSkippedGroup = true;
+      }
+      _sink.writeln('$prefix $name$statusSuffix');
+      for (var message in messages) {
+        _sink.writeln(message.text);
+      }
+    } else if (messages.isEmpty && errors.isEmpty) {
+      if (_inSkippedGroup) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _inSkippedGroup = false;
+      }
       if (!_inPassingGroup) {
         _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
         _inPassingGroup = true;
@@ -185,6 +209,10 @@ class GithubReporter implements Reporter {
       if (_inPassingGroup) {
         _sink.writeln(_GithubMarkup.endGroup);
         _inPassingGroup = false;
+      }
+      if (_inSkippedGroup) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _inSkippedGroup = false;
       }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       for (var message in messages) {
@@ -222,6 +250,10 @@ class GithubReporter implements Reporter {
         _sink.writeln(_GithubMarkup.endGroup);
         _inPassingGroup = false;
       }
+      if (_inSkippedGroup) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _inSkippedGroup = false;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       _sink.writeln('$error');
       _sink.writeln(stackTrace.toString().trimRight());
@@ -235,6 +267,10 @@ class GithubReporter implements Reporter {
     if (_inPassingGroup) {
       _sink.writeln(_GithubMarkup.endGroup);
       _inPassingGroup = false;
+    }
+    if (_inSkippedGroup) {
+      _sink.writeln(_GithubMarkup.endGroup);
+      _inSkippedGroup = false;
     }
 
     _sink.writeln();
@@ -262,7 +298,7 @@ class GithubReporter implements Reporter {
 abstract class _GithubMarkup {
   // Char sets avilable at https://www.compart.com/en/unicode/.
   static const String passed = '✅';
-  static const String skipped = '❎';
+  static const String skipped = '⚠️';
   static const String failed = '❌';
   // The 'synthetic' icon is currently not used but is something to consider in
   // order to draw a distinction between user tests and test-like supporting

@@ -3,8 +3,10 @@
 * Ignore an error locating the SDK directory on platforms where the
   `resolvedExecutable` is unexpectedly `null`.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
-* In `GithubReporter`, group contiguous passing tests into a collapsible group 
-  to reduce log noise in GitHub Actions.
+* `GithubReporter`:
+    * Group contiguous passing and skipped tests into collapsible groups to
+      reduce log noise in GitHub Actions.
+    * Updated skipped icon to ⚠️.
 
 ## 1.31.0
 
