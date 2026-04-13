@@ -15,7 +15,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 /// includes the [testPid] from the test process, and ends with [done].
 Future<void> expectJsonReport(
   List<String> outputLines,
-  int testPid,
+  Matcher testPid,
   List<List<Object /*Map|Matcher*/>> expected,
   Map<Object, Object> done,
 ) async {

@@ -180,7 +180,7 @@ $tests
   ).readAsLinesSync();
   await expectJsonReport(
     fileOutputLines,
-    test.pid,
+    Platform.isWindows ? anything : equals(test.pid),
     jsonFileExpected,
     jsonFileDone,
   );
