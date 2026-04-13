@@ -7,7 +7,7 @@
 * `GithubReporter`:
     * Group contiguous passing and skipped tests into collapsible groups to
       reduce log noise in GitHub Actions.
-    * Updated skipped icon to ⚠️.
+    * Updated skipped icon to ⏭️.
 
 ## 1.31.0
 

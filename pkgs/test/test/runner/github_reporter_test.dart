@@ -260,10 +260,10 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('skip 3', () {}, skip: true);''',
         '''
-          ::group::⚠️ Skipped tests
-          ⚠️ skip 1 (skipped)
-          ⚠️ skip 2 (skipped)
-          ⚠️ skip 3 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ⏭️ skip 2 (skipped)
+          ⏭️ skip 3 (skipped)
           ::endgroup::
           🎉 0 tests passed, 3 skipped.''',
       );
@@ -278,10 +278,10 @@ void main() {
             test('test 3', () {});
           }, skip: true);''',
         '''
-          ::group::⚠️ Skipped tests
-          ⚠️ skip test 1 (skipped)
-          ⚠️ skip test 2 (skipped)
-          ⚠️ skip test 3 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip test 1 (skipped)
+          ⏭️ skip test 2 (skipped)
+          ⏭️ skip test 3 (skipped)
           ::endgroup::
           🎉 0 tests passed, 3 skipped.''',
       );
@@ -295,14 +295,14 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''',
         '''
-          ::group::⚠️ Skipped tests
-          ⚠️ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           ::endgroup::
           ::group::✅ Passing tests
           ✅ success 1
           ::endgroup::
-          ::group::⚠️ Skipped tests
-          ⚠️ skip 2 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 2 (skipped)
           ::endgroup::
           ::group::✅ Passing tests
           ✅ success 2
@@ -325,8 +325,8 @@ void main() {
           oh no
           test.dart 6:35  main.<fn>
           ::endgroup::
-          ::group::⚠️ Skipped tests
-          ⚠️ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           ::endgroup::
           ::group::✅ Passing tests
           ✅ success 1
@@ -335,8 +335,8 @@ void main() {
           oh no
           test.dart 9:35  main.<fn>
           ::endgroup::
-          ::group::⚠️ Skipped tests
-          ⚠️ skip 2 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 2 (skipped)
           ::endgroup::
           ::group::✅ Passing tests
           ✅ success 2
@@ -351,10 +351,10 @@ void main() {
           test('skip 1', () {}, skip: 'some reason');
           test('skip 2', () {}, skip: 'or another');''',
         '''
-          ::group::⚠️ Skipped tests
-          ⚠️ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           Skip: some reason
-          ⚠️ skip 2 (skipped)
+          ⏭️ skip 2 (skipped)
           Skip: or another
           ::endgroup::
           🎉 0 tests passed, 2 skipped.''',

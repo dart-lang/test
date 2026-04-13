@@ -188,7 +188,7 @@ class GithubReporter implements Reporter {
         _inPassingGroup = false;
       }
       if (!_inSkippedGroup) {
-        _sink.writeln(_GithubMarkup.startGroup('⚠️ Skipped tests'));
+        _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
         _inSkippedGroup = true;
       }
       _sink.writeln('$prefix $name$statusSuffix');
@@ -298,7 +298,7 @@ class GithubReporter implements Reporter {
 abstract class _GithubMarkup {
   // Char sets avilable at https://www.compart.com/en/unicode/.
   static const String passed = '✅';
-  static const String skipped = '⚠️';
+  static const String skipped = '⏭️';
   static const String failed = '❌';
   // The 'synthetic' icon is currently not used but is something to consider in
   // order to draw a distinction between user tests and test-like supporting
