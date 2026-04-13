@@ -44,11 +44,9 @@ class GithubReporter implements Reporter {
 
   final Set<LiveTest> _completedTests = {};
 
-  /// Whether the reporter is currently inside a group of passing tests.
-  var _inPassingGroup = false;
+  /// The github markdown `::group::` that is currently open.
+  var _activeGroup = _ReportGroup.ungrouped;
 
-  /// Whether the reporter is currently inside a group of skipped tests.
-  var _inSkippedGroup = false;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
@@ -118,13 +116,9 @@ class GithubReporter implements Reporter {
         if (_completedTests.contains(liveTest)) {
           // The test has already completed and it's previous messages were
           // written out; ensure this post-completion output is not lost.
-          if (_inPassingGroup) {
+          if (!_activeGroup.isUngrouped) {
             _sink.writeln(_GithubMarkup.endGroup);
-            _inPassingGroup = false;
-          }
-          if (_inSkippedGroup) {
-            _sink.writeln(_GithubMarkup.endGroup);
-            _inSkippedGroup = false;
+            _activeGroup = _ReportGroup.ungrouped;
           }
           _sink.writeln(message.text);
         } else {
@@ -181,36 +175,30 @@ class GithubReporter implements Reporter {
           '${test.suite.platform.compiler.name}] $name';
     }
     if (skipped) {
-      if (_inPassingGroup) {
+      if (_activeGroup.isPassing) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _inPassingGroup = false;
       }
-      if (!_inSkippedGroup) {
+      if (!_activeGroup.isSkipped) {
         _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
-        _inSkippedGroup = true;
+        _activeGroup = _ReportGroup.skipped;
       }
       _sink.writeln('$prefix $name$statusSuffix');
       for (var message in messages) {
         _sink.writeln(message.text);
       }
     } else if (messages.isEmpty && errors.isEmpty) {
-      if (_inSkippedGroup) {
+      if (_activeGroup.isSkipped) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _inSkippedGroup = false;
       }
-      if (!_inPassingGroup) {
+      if (!_activeGroup.isPassing) {
         _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
-        _inPassingGroup = true;
+        _activeGroup = _ReportGroup.passing;
       }
       _sink.writeln('$prefix $name$statusSuffix');
     } else {
-      if (_inPassingGroup) {
+      if (!_activeGroup.isUngrouped) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _inPassingGroup = false;
-      }
-      if (_inSkippedGroup) {
-        _sink.writeln(_GithubMarkup.endGroup);
-        _inSkippedGroup = false;
+        _activeGroup = _ReportGroup.ungrouped;
       }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       for (var message in messages) {
@@ -244,13 +232,9 @@ class GithubReporter implements Reporter {
             '${test.suite.platform.compiler.name}] $name';
       }
 
-      if (_inPassingGroup) {
+      if (!_activeGroup.isUngrouped) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _inPassingGroup = false;
-      }
-      if (_inSkippedGroup) {
-        _sink.writeln(_GithubMarkup.endGroup);
-        _inSkippedGroup = false;
+        _activeGroup = _ReportGroup.ungrouped;
       }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       _sink.writeln('$error');
@@ -262,13 +246,9 @@ class GithubReporter implements Reporter {
   void _onDone(bool? success) {
     _cancel();
 
-    if (_inPassingGroup) {
+    if (!_activeGroup.isUngrouped) {
       _sink.writeln(_GithubMarkup.endGroup);
-      _inPassingGroup = false;
-    }
-    if (_inSkippedGroup) {
-      _sink.writeln(_GithubMarkup.endGroup);
-      _inSkippedGroup = false;
+      _activeGroup = _ReportGroup.ungrouped;
     }
 
     _sink.writeln();
@@ -310,4 +290,14 @@ abstract class _GithubMarkup {
   static final String endGroup = '::endgroup::';
 
   static String error(String message) => '::error::$message';
+}
+
+enum _ReportGroup {
+  passing,
+  skipped,
+  ungrouped;
+
+  bool get isPassing => this == _ReportGroup.passing;
+  bool get isSkipped => this == _ReportGroup.skipped;
+  bool get isUngrouped => this == _ReportGroup.ungrouped;
 }
