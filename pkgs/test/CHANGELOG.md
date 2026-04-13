@@ -3,6 +3,7 @@
 * Ignore an error locating the SDK directory on platforms where the
   `resolvedExecutable` is unexpectedly `null`.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
+* Allow `analyzer` version  `13.x.x`.
 * Fix a bug where the web test runner would not find custom HTML files when
   using the dart2wasm compiler.
 
