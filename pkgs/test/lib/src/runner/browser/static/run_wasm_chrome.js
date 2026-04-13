@@ -7,10 +7,20 @@
 // affect chrome.
 (async () => {
   // Fetch and compile Wasm binary.
-  let data = document.getElementById("WasmBootstrapInfo").dataset;
+  let wasmUrl, jsRuntimeUrl;
+  let dataElement = document.getElementById("WasmBootstrapInfo");
+  if (dataElement) {
+    wasmUrl = dataElement.dataset.wasmurl;
+    jsRuntimeUrl = "./" + dataElement.dataset.jsruntimeurl;
+  } else {
+    // Infer from current script
+    let scriptSrc = document.currentScript.src;
+    wasmUrl = scriptSrc.replace(/\.js$/, '.wasm');
+    jsRuntimeUrl = scriptSrc.replace(/\.js$/, '.mjs');
+  }
 
   // Instantiate the Dart module, importing from the global scope.
-  let dart2wasmJsRuntime = await import("./" + data.jsruntimeurl);
+  let dart2wasmJsRuntime = await import(jsRuntimeUrl);
 
   // Support three versions of dart2wasm:
   //
@@ -27,7 +37,7 @@
   if (dart2wasmJsRuntime.compileStreaming !== undefined) {
     // Version (2) or (3).
     let compiledModule = await dart2wasmJsRuntime.compileStreaming(
-      fetch(data.wasmurl),
+      fetch(wasmUrl),
     );
     if (compiledModule.instantiate !== undefined) {
       // Version (3).
@@ -40,7 +50,7 @@
     }
   } else {
     // Version (1).
-    let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
+    let modulePromise = WebAssembly.compileStreaming(fetch(wasmUrl));
     let dartInstance = await dart2wasmJsRuntime.instantiate(modulePromise, {});
     await dart2wasmJsRuntime.invoke(dartInstance);
   }
