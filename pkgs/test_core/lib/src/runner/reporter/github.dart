@@ -44,6 +44,9 @@ class GithubReporter implements Reporter {
 
   final Set<LiveTest> _completedTests = {};
 
+  /// Whether the reporter is currently inside a group of passing tests.
+  var _inPassingGroup = false;
+
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
     Engine engine,
@@ -112,6 +115,10 @@ class GithubReporter implements Reporter {
         if (_completedTests.contains(liveTest)) {
           // The test has already completed and it's previous messages were
           // written out; ensure this post-completion output is not lost.
+          if (_inPassingGroup) {
+            _sink.writeln(_GithubMarkup.endGroup);
+            _inPassingGroup = false;
+          }
           _sink.writeln(message.text);
         } else {
           _testMessages.putIfAbsent(liveTest, () => []).add(message);
@@ -169,8 +176,16 @@ class GithubReporter implements Reporter {
           '${test.suite.platform.compiler.name}] $name';
     }
     if (messages.isEmpty && errors.isEmpty) {
+      if (!_inPassingGroup) {
+        _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
+        _inPassingGroup = true;
+      }
       _sink.writeln('$prefix $name$statusSuffix');
     } else {
+      if (_inPassingGroup) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _inPassingGroup = false;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       for (var message in messages) {
         _sink.writeln(message.text);
@@ -203,6 +218,10 @@ class GithubReporter implements Reporter {
             '${test.suite.platform.compiler.name}] $name';
       }
 
+      if (_inPassingGroup) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _inPassingGroup = false;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       _sink.writeln('$error');
       _sink.writeln(stackTrace.toString().trimRight());
@@ -212,6 +231,11 @@ class GithubReporter implements Reporter {
 
   void _onDone(bool? success) {
     _cancel();
+
+    if (_inPassingGroup) {
+      _sink.writeln(_GithubMarkup.endGroup);
+      _inPassingGroup = false;
+    }
 
     _sink.writeln();
 

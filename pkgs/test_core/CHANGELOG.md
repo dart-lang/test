@@ -5,6 +5,8 @@
 * Respect `NO_COLOR`, `CLICOLOR`, `FORCE_COLOR`, `CLICOLOR_FORCE`, and `TERM=dumb`
   environment variables for color output detection.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
+* In `GithubReporter`, group contiguous passing tests into a collapsible group 
+  to reduce log noise in GitHub Actions.
 
 ## 0.6.17
 
