@@ -51,7 +51,8 @@ void main() {
 
 final _defaultConcurrency = math.max(1, Platform.numberOfProcessors ~/ 2);
 
-final _usage = '''
+final _usage =
+    '''
 Usage: dart test [files or directories...]
 
 -h, --help                            Show this usage information.

@@ -11,10 +11,9 @@ void main() {
   group('softCheck', () {
     test('returns the first failure', () {
       check(0).isRejectedBy(
-        (it) =>
-            it
-              ..isGreaterThan(1)
-              ..isGreaterThan(2),
+        (it) => it
+          ..isGreaterThan(1)
+          ..isGreaterThan(2),
         which: ['is not greater than <1>'],
       );
     });
@@ -22,10 +21,9 @@ void main() {
   group('softCheckAsync', () {
     test('returns the first failure', () async {
       await check(Future.value(0)).isRejectedByAsync(
-        (it) =>
-            it
-              ..completes((it) => it.isGreaterThan(1))
-              ..completes((it) => it.isGreaterThan(2)),
+        (it) => it
+          ..completes((it) => it.isGreaterThan(1))
+          ..completes((it) => it.isGreaterThan(2)),
         actual: ['<0>'],
         which: ['is not greater than <1>'],
       );

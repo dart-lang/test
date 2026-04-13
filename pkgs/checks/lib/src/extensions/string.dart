@@ -166,10 +166,12 @@ Rejection? _findDifference(
   if (actual == expected) return null;
   final escapedActual = escape(actual);
   final escapedExpected = escape(expected);
-  final escapedActualDisplay =
-      actualDisplay != null ? escape(actualDisplay) : escapedActual;
-  final escapedExpectedDisplay =
-      expectedDisplay != null ? escape(expectedDisplay) : escapedExpected;
+  final escapedActualDisplay = actualDisplay != null
+      ? escape(actualDisplay)
+      : escapedActual;
+  final escapedExpectedDisplay = expectedDisplay != null
+      ? escape(expectedDisplay)
+      : escapedExpected;
   final minLength = math.min(escapedActual.length, escapedExpected.length);
   var i = 0;
   for (; i < minLength; i++) {
@@ -225,10 +227,9 @@ String _leading(String s, int end) =>
     (end > 10) ? '... ${s.substring(end - 10, end)}' : s.substring(0, end);
 
 /// The truncated remainder of [s] starting at the [start] character.
-String _trailing(String s, int start) =>
-    (start + 10 > s.length)
-        ? s.substring(start)
-        : '${s.substring(start, start + 10)} ...';
+String _trailing(String s, int start) => (start + 10 > s.length)
+    ? s.substring(start)
+    : '${s.substring(start, start + 10)} ...';
 
 /// Utility function to collapse whitespace runs to single spaces
 /// and strip leading/trailing whitespace.

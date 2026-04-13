@@ -337,10 +337,9 @@ main();
         await File(mapPath).readAsString(),
         mapUrl: p.toUri(mapPath),
         sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-        packageMap:
-            (await findPackageConfig(
-              Directory(precompiledPath),
-            ))!.toPackageMap(),
+        packageMap: (await findPackageConfig(
+          Directory(precompiledPath),
+        ))!.toPackageMap(),
       );
     }
 

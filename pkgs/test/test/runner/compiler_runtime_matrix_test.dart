@@ -142,10 +142,9 @@ void main() {
                 expect(test.stderr, emits('world'));
                 await test.shouldExit(0);
               },
-              skip:
-                  Platform.isWindows && compiler == Compiler.exe
-                      ? 'https://github.com/dart-lang/test/issues/2150'
-                      : null,
+              skip: Platform.isWindows && compiler == Compiler.exe
+                  ? 'https://github.com/dart-lang/test/issues/2150'
+                  : null,
             );
           }
         },

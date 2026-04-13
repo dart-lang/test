@@ -15,10 +15,9 @@ void main() {
   });
   test('entries', () {
     check(_testMap).entries.any(
-      (it) =>
-          it
-            ..has((p0) => p0.key, 'key').equals('a')
-            ..has((p0) => p0.value, 'value').equals(1),
+      (it) => it
+        ..has((p0) => p0.key, 'key').equals('a')
+        ..has((p0) => p0.value, 'value').equals(1),
     );
   });
   test('keys', () {

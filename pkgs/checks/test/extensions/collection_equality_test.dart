@@ -67,10 +67,9 @@ void main() {
           ['a', 'b'],
           [
             (Subject<dynamic> it) => it.isA<String>().which(
-              (it) =>
-                  it
-                    ..startsWith('a')
-                    ..length.isLessThan(2),
+              (it) => it
+                ..startsWith('a')
+                ..length.isLessThan(2),
             ),
             (Subject<dynamic> it) => it.isA<String>().startsWith('b'),
           ],

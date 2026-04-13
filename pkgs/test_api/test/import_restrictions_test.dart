@@ -73,8 +73,9 @@ class _ImportCheck {
     final libPath = await _pathForUri(libUri);
     final packagePath = p.dirname(libPath);
 
-    final contexts =
-        AnalysisContextCollection(includedPaths: [packagePath]).contexts;
+    final contexts = AnalysisContextCollection(
+      includedPaths: [packagePath],
+    ).contexts;
     if (contexts.length != 1) {
       throw StateError('Expected to find exactly one context, got $contexts');
     }

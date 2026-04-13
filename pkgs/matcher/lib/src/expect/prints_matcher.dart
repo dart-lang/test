@@ -60,10 +60,9 @@ class _Prints extends AsyncMatcher {
     var matchState = <Object?, Object?>{};
     if (_matcher.matches(actual, matchState)) return null;
 
-    var result =
-        _matcher
-            .describeMismatch(actual, StringDescription(), matchState, false)
-            .toString();
+    var result = _matcher
+        .describeMismatch(actual, StringDescription(), matchState, false)
+        .toString();
 
     var buffer = StringBuffer();
     if (actual.isEmpty) {

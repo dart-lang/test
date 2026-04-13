@@ -67,12 +67,11 @@ Iterable<String> _prettyPrint(
     );
   } else if (object is String) {
     if (object.isEmpty) return ["''"];
-    final escaped =
-        const LineSplitter()
-            .convert(object)
-            .map(escape)
-            .map((line) => line.replaceAll("'", r"\'"))
-            .toList();
+    final escaped = const LineSplitter()
+        .convert(object)
+        .map(escape)
+        .map((line) => line.replaceAll("'", r"\'"))
+        .toList();
     return prefixFirst("'", postfixLast("'", escaped));
   } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];

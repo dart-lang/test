@@ -597,11 +597,8 @@ final class Extracted<T> {
 
   Extracted<T> _fillActual(Object? actual) =>
       _rejection == null || _rejection.actual.isNotEmpty
-          ? this
-          : Extracted.rejection(
-            actual: literal(actual),
-            which: _rejection.which,
-          );
+      ? this
+      : Extracted.rejection(actual: literal(actual), which: _rejection.which);
 }
 
 abstract interface class _Optional<T> {
@@ -1051,10 +1048,9 @@ final class Rejection {
   /// the output for the failure message.
   final Iterable<String>? which;
 
-  Rejection _fillActual(Object? value) =>
-      actual.isNotEmpty
-          ? this
-          : Rejection(actual: literal(value), which: which);
+  Rejection _fillActual(Object? value) => actual.isNotEmpty
+      ? this
+      : Rejection(actual: literal(value), which: which);
 
   Rejection({this.actual = const [], this.which});
 }

@@ -110,10 +110,9 @@ final class SuiteConfiguration {
   final List<CompilerSelection>? compilerSelections;
 
   /// The set of runtimes on which to run tests.
-  List<String> get runtimes =>
-      _runtimes == null
-          ? const ['vm']
-          : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
+  List<String> get runtimes => _runtimes == null
+      ? const ['vm']
+      : List.unmodifiable(_runtimes.map((runtime) => runtime.name));
   final List<RuntimeSelection>? _runtimes;
 
   /// Configuration for particular tags.
@@ -362,8 +361,9 @@ final class SuiteConfiguration {
       jsTrace: other._jsTrace ?? _jsTrace,
       runSkipped: other._runSkipped ?? _runSkipped,
       dart2jsArgs: dart2jsArgs.toList()..addAll(other.dart2jsArgs),
-      testSelections:
-          testSelections.isEmpty ? other.testSelections : testSelections,
+      testSelections: testSelections.isEmpty
+          ? other.testSelections
+          : testSelections,
       precompiledPath: other.precompiledPath ?? precompiledPath,
       compilerSelections: other.compilerSelections ?? compilerSelections,
       runtimes: other._runtimes ?? _runtimes,
@@ -463,8 +463,9 @@ final class SuiteConfiguration {
 
   /// Throws a [FormatException] if this refers to any undefined runtimes.
   void validateRuntimes(List<Runtime> allRuntimes) {
-    var validVariables =
-        allRuntimes.map((runtime) => runtime.identifier).toSet();
+    var validVariables = allRuntimes
+        .map((runtime) => runtime.identifier)
+        .toSet();
     _metadata.validatePlatformSelectors(validVariables);
 
     var runtimes = _runtimes;

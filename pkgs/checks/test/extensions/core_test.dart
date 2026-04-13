@@ -20,13 +20,12 @@ void main() {
       check(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
       check(null).isRejectedBy(
-        (it) =>
-            it.has((v) {
-              Error.throwWithStackTrace(
-                UnimplementedError(),
-                StackTrace.fromString('fake trace'),
-              );
-            }, 'foo').isNotNull(),
+        (it) => it.has((v) {
+          Error.throwWithStackTrace(
+            UnimplementedError(),
+            StackTrace.fromString('fake trace'),
+          );
+        }, 'foo').isNotNull(),
         which: [
           'threw while trying to read foo: <UnimplementedError>',
           'fake trace',

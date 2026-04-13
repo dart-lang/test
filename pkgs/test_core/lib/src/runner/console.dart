@@ -107,5 +107,8 @@ class Console {
   }
 }
 
-typedef _Command =
-    ({String name, String description, FutureOr<void> Function() body});
+typedef _Command = ({
+  String name,
+  String description,
+  FutureOr<void> Function() body,
+});
