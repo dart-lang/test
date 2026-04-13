@@ -47,7 +47,6 @@ class GithubReporter implements Reporter {
   /// The github markdown `::group::` that is currently open.
   var _activeGroup = _ReportGroup.ungrouped;
 
-
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
     Engine engine,
