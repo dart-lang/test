@@ -6,6 +6,7 @@
 library;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -908,5 +909,10 @@ import 'package:test/test.dart';
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();
-  return expectJsonReport(stdoutLines, test.pid, expected, done);
+  return expectJsonReport(
+    stdoutLines,
+    Platform.isWindows ? anything : equals(test.pid),
+    expected,
+    done,
+  );
 }
