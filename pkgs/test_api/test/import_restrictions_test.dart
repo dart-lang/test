@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn('!exe')
+library;
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -70,8 +73,9 @@ class _ImportCheck {
     final libPath = await _pathForUri(libUri);
     final packagePath = p.dirname(libPath);
 
-    final contexts =
-        AnalysisContextCollection(includedPaths: [packagePath]).contexts;
+    final contexts = AnalysisContextCollection(
+      includedPaths: [packagePath],
+    ).contexts;
     if (contexts.length != 1) {
       throw StateError('Expected to find exactly one context, got $contexts');
     }

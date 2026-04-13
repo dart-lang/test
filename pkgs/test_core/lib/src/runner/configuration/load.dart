@@ -134,21 +134,17 @@ class _ConfigurationLoader {
     var jsTrace = _getBool('js_trace');
 
     var timeout = _parseValue('timeout', Timeout.parse);
+    var suiteLoadTimeout = _parseValue('suite_load_timeout', Timeout.parse);
 
     var onPlatform = _getMap(
       'on_platform',
-      key:
-          (keyNode) => _parseNode(
-            keyNode,
-            'on_platform key',
-            (value) => PlatformSelector.parse(value, keyNode.span),
-          ),
-      value:
-          (valueNode) => _nestedConfig(
-            valueNode,
-            'on_platform value',
-            runnerConfig: false,
-          ),
+      key: (keyNode) => _parseNode(
+        keyNode,
+        'on_platform key',
+        (value) => PlatformSelector.parse(value, keyNode.span),
+      ),
+      value: (valueNode) =>
+          _nestedConfig(valueNode, 'on_platform value', runnerConfig: false),
     );
 
     var onOS = _getMap(
@@ -178,17 +174,22 @@ class _ConfigurationLoader {
       value: (valueNode) => _nestedConfig(valueNode, 'presets value'),
     );
 
-    var config = Configuration.globalTest(
-      verboseTrace: verboseTrace,
-      jsTrace: jsTrace,
-      timeout: timeout,
-      presets: presets,
-      chainStackTraces: chainStackTraces,
-      foldTraceExcept: foldStackFrames['except'],
-      foldTraceOnly: foldStackFrames['only'],
-    ).merge(
-      _extractPresets<PlatformSelector>(onPlatform, Configuration.onPlatform),
-    );
+    var config =
+        Configuration.globalTest(
+          verboseTrace: verboseTrace,
+          jsTrace: jsTrace,
+          timeout: timeout,
+          suiteLoadTimeout: suiteLoadTimeout,
+          presets: presets,
+          chainStackTraces: chainStackTraces,
+          foldTraceExcept: foldStackFrames['except'],
+          foldTraceOnly: foldStackFrames['only'],
+        ).merge(
+          _extractPresets<PlatformSelector>(
+            onPlatform,
+            Configuration.onPlatform,
+          ),
+        );
 
     var osConfig = onOS[currentOS];
     return osConfig == null ? config : config.merge(osConfig);
@@ -235,9 +236,8 @@ class _ConfigurationLoader {
     var tags = _getMap(
       'tags',
       key: (keyNode) => _parseNode(keyNode, 'tags key', BooleanSelector.parse),
-      value:
-          (valueNode) =>
-              _nestedConfig(valueNode, 'tag value', runnerConfig: false),
+      value: (valueNode) =>
+          _nestedConfig(valueNode, 'tag value', runnerConfig: false),
     );
 
     var retry = _getNonNegativeInt('retry');
@@ -401,19 +401,24 @@ class _ConfigurationLoader {
       return Configuration.empty;
     }
 
-    var patterns = _getList('names', (nameNode) {
-      _validate(nameNode, 'Names must be strings.', (value) => value is String);
-      return _parseNode(nameNode, 'name', RegExp.new);
-    })..addAll(
-      _getList('plain_names', (nameNode) {
-        _validate(
-          nameNode,
-          'Names must be strings.',
-          (value) => value is String,
+    var patterns =
+        _getList('names', (nameNode) {
+          _validate(
+            nameNode,
+            'Names must be strings.',
+            (value) => value is String,
+          );
+          return _parseNode(nameNode, 'name', RegExp.new);
+        })..addAll(
+          _getList('plain_names', (nameNode) {
+            _validate(
+              nameNode,
+              'Names must be strings.',
+              (value) => value is String,
+            );
+            return _parseNode(nameNode, 'name', RegExp.new);
+          }),
         );
-        return _parseNode(nameNode, 'name', RegExp.new);
-      }),
-    );
 
     var paths = _getList('paths', (pathNode) {
       _validate(pathNode, 'Paths must be strings.', (value) => value is String);

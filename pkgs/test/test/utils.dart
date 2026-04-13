@@ -181,6 +181,7 @@ SuiteConfiguration suiteConfiguration({
   Map<BooleanSelector, SuiteConfiguration>? tags,
   Map<PlatformSelector, SuiteConfiguration>? onPlatform,
   bool? ignoreTimeouts,
+  Timeout? suiteLoadTimeout,
 
   // Test-level configuration
   Timeout? timeout,
@@ -203,6 +204,7 @@ SuiteConfiguration suiteConfiguration({
   tags: tags,
   onPlatform: onPlatform,
   ignoreTimeouts: ignoreTimeouts,
+  suiteLoadTimeout: suiteLoadTimeout,
   timeout: timeout,
   verboseTrace: verboseTrace,
   chainStackTraces: chainStackTraces,
@@ -226,6 +228,7 @@ Configuration configuration({
   String? coverage,
   String? coverageLcov,
   bool? branchCoverage,
+  List<RegExp>? coveragePackages,
   int? concurrency,
   int? shardIndex,
   int? totalShards,
@@ -255,6 +258,7 @@ Configuration configuration({
   Map<BooleanSelector, SuiteConfiguration>? tags,
   Map<PlatformSelector, SuiteConfiguration>? onPlatform,
   int? testRandomizeOrderingSeed,
+  Timeout? suiteLoadTimeout,
 
   // Test-level configuration
   Timeout? timeout,
@@ -278,6 +282,7 @@ Configuration configuration({
   coverage: coverage,
   coverageLcov: coverageLcov,
   branchCoverage: branchCoverage,
+  coveragePackages: coveragePackages,
   concurrency: concurrency,
   shardIndex: shardIndex,
   totalShards: totalShards,
@@ -305,6 +310,7 @@ Configuration configuration({
   tags: tags,
   onPlatform: onPlatform,
   testRandomizeOrderingSeed: testRandomizeOrderingSeed,
+  suiteLoadTimeout: suiteLoadTimeout,
   stopOnFirstFailure: false,
   timeout: timeout,
   verboseTrace: verboseTrace,

@@ -296,7 +296,7 @@ const { PassThrough } = require('stream');
 const main = async () => {
   const { instantiate, invoke } = await import("./$loader");
 
-  const wasmContents = createReadStream("$wasmPath.wasm");
+  const wasmContents = createReadStream(String.raw`$wasmPath.wasm`);
   const stream = new PassThrough();
   wasmContents.pipe(stream);
 
@@ -337,10 +337,9 @@ main();
         await File(mapPath).readAsString(),
         mapUrl: p.toUri(mapPath),
         sdkRoot: Uri.parse('org-dartlang-sdk:///sdk'),
-        packageMap:
-            (await findPackageConfig(
-              Directory(precompiledPath),
-            ))!.toPackageMap(),
+        packageMap: (await findPackageConfig(
+          Directory(precompiledPath),
+        ))!.toPackageMap(),
       );
     }
 

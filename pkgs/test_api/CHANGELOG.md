@@ -1,9 +1,28 @@
-## 0.7.8-wip
+## 0.7.12-wip
+
+* Allow `analyzer` major version 13.
+
+## 0.7.11
+
+* Add `vmAsan`, `vmMsan` and `vmTsan` runtimes.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+
+## 0.7.10
+
+* Fix missing locations on tests skipped due to the use of `solo`.
+
+## 0.7.9
+
+* Allow `analyzer` major version 10.
+
+## 0.7.8
 
 * Add a zone function available from the test suite `main` that allows creating
   channels to the test runner.
-* Restrict to latest version of analyzer package.
 * Require Dart 3.7
+* Allow `analyzer` major version 9.
 
 ## 0.7.7
 

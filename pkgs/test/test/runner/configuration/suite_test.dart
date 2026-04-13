@@ -125,37 +125,42 @@ void main() {
 
     group('for config maps', () {
       test('merges each nested configuration', () {
-        var merged = suiteConfiguration(
-          tags: {
-            BooleanSelector.parse('foo'): suiteConfiguration(
-              precompiledPath: 'path/',
-            ),
-            BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: true),
-          },
-          onPlatform: {
-            PlatformSelector.parse('vm'): suiteConfiguration(
-              precompiledPath: 'path/',
-            ),
-            PlatformSelector.parse('chrome'): suiteConfiguration(jsTrace: true),
-          },
-        ).merge(
-          suiteConfiguration(
-            tags: {
-              BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: false),
-              BooleanSelector.parse('baz'): suiteConfiguration(
-                runSkipped: true,
+        var merged =
+            suiteConfiguration(
+              tags: {
+                BooleanSelector.parse('foo'): suiteConfiguration(
+                  precompiledPath: 'path/',
+                ),
+                BooleanSelector.parse('bar'): suiteConfiguration(jsTrace: true),
+              },
+              onPlatform: {
+                PlatformSelector.parse('vm'): suiteConfiguration(
+                  precompiledPath: 'path/',
+                ),
+                PlatformSelector.parse('chrome'): suiteConfiguration(
+                  jsTrace: true,
+                ),
+              },
+            ).merge(
+              suiteConfiguration(
+                tags: {
+                  BooleanSelector.parse('bar'): suiteConfiguration(
+                    jsTrace: false,
+                  ),
+                  BooleanSelector.parse('baz'): suiteConfiguration(
+                    runSkipped: true,
+                  ),
+                },
+                onPlatform: {
+                  PlatformSelector.parse('chrome'): suiteConfiguration(
+                    jsTrace: false,
+                  ),
+                  PlatformSelector.parse('firefox'): suiteConfiguration(
+                    runSkipped: true,
+                  ),
+                },
               ),
-            },
-            onPlatform: {
-              PlatformSelector.parse('chrome'): suiteConfiguration(
-                jsTrace: false,
-              ),
-              PlatformSelector.parse('firefox'): suiteConfiguration(
-                runSkipped: true,
-              ),
-            },
-          ),
-        );
+            );
 
         expect(
           merged.tags[BooleanSelector.parse('foo')]!.precompiledPath,

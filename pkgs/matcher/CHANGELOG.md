@@ -1,4 +1,14 @@
-## 0.12.18-wip
+## 0.12.20-wip
+
+* Allow exceptions from `operator ==` to bubble up and fail the test instead of
+  treating them as unequal objects.
+
+## 0.12.19
+
+* Improve speed of pretty printing for large collections.
+* Improve output of pairwiseCompare with mismatched types.
+
+## 0.12.18
 
 * Add `isSorted` and related matchers for iterables.
 * Consider `NaN` to be equal to itself in `equals`.

@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:matcher/matcher.dart';
-import 'package:test/test.dart' show group, test;
+import 'package:matcher/expect.dart';
+import 'package:test/test.dart' show TestFailure, group, test;
 
 import 'test_utils.dart';
 
@@ -118,6 +118,21 @@ void main() {
       equals(a),
       'Expected: Set:[NaN] Actual: Set:[0] '
       'Which: does not contain <NaN>',
+    );
+  });
+
+  test('equals that throw expose the exception', () {
+    expect(
+      () {
+        expect(0, isNot(equals(_ThrowingEquals())));
+      },
+      throwsA(
+        isA<TestFailure>().having(
+          (e) => e.message,
+          'message',
+          contains(_ThrowingEquals.message),
+        ),
+      ),
     );
   });
 
@@ -300,4 +315,18 @@ void main() {
       shouldPass(1, matcher);
     });
   });
+}
+
+class _ThrowingEquals implements Exception {
+  static const message = 'Exception thrown in operator ==';
+  @override
+  bool operator ==(Object other) {
+    throw this;
+  }
+
+  @override
+  int get hashCode => super.hashCode + 1;
+
+  @override
+  String toString() => message;
 }

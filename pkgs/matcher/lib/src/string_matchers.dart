@@ -153,12 +153,11 @@ class _MatchesRegExp extends FeatureMatcher<String> {
   final RegExp _regexp;
 
   _MatchesRegExp(Pattern re)
-    : _regexp =
-          (re is String)
-              ? RegExp(re)
-              : (re is RegExp)
-              ? re
-              : throw ArgumentError('matches requires a regexp or string');
+    : _regexp = (re is String)
+          ? RegExp(re)
+          : (re is RegExp)
+          ? re
+          : throw ArgumentError('matches requires a regexp or string');
 
   @override
   bool typedMatches(String item, Map matchState) => _regexp.hasMatch(item);

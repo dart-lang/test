@@ -203,13 +203,15 @@ class _UnorderedMatches extends _IterableMatcher {
             .add('has no match for ')
             .addDescriptionOf(_expected[matcherIndex])
             .add(' at index $matcherIndex');
-        final remainingUnmatched =
-            matched.sublist(matcherIndex + 1).where((m) => m == null).length;
+        final remainingUnmatched = matched
+            .sublist(matcherIndex + 1)
+            .where((m) => m == null)
+            .length;
         return remainingUnmatched == 0
             ? description.toString()
             : description
-                .add(' along with $remainingUnmatched other unmatched')
-                .toString();
+                  .add(' along with $remainingUnmatched other unmatched')
+                  .toString();
       }
     }
     return null;
@@ -297,7 +299,8 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
     var i = 0;
     for (var e in _expected) {
       iterator.moveNext();
-      if (!_comparator(e, iterator.current as T)) {
+      var current = iterator.current;
+      if (current is! T || !_comparator(e, current)) {
         addStateInfo(matchState, {
           'index': i,
           'expected': e,

@@ -49,13 +49,12 @@ void main() {
     group('with empty configuration', () {
       setUp(() async {
         await d.file('a_test.dart', _tests).create();
-        var suites =
-            await _loader
-                .loadFile(
-                  p.join(d.sandbox, 'a_test.dart'),
-                  SuiteConfiguration.empty,
-                )
-                .toList();
+        var suites = await _loader
+            .loadFile(
+              p.join(d.sandbox, 'a_test.dart'),
+              SuiteConfiguration.empty,
+            )
+            .toList();
         expect(suites, hasLength(1));
         var loadSuite = suites.first;
         suite = (await loadSuite.getSuite())!;
@@ -240,11 +239,10 @@ void main() {
         await d.file('another_test.dart', _tests).create();
         await d.dir('dir', [d.file('sub_test.dart', _tests)]).create();
 
-        suites =
-            await _loader
-                .loadDir(d.sandbox, SuiteConfiguration.empty)
-                .asyncMap((loadSuite) async => (await loadSuite.getSuite())!)
-                .toList();
+        suites = await _loader
+            .loadDir(d.sandbox, SuiteConfiguration.empty)
+            .asyncMap((loadSuite) async => (await loadSuite.getSuite())!)
+            .toList();
       });
 
       test('gives those suites the correct paths', () {
@@ -275,13 +273,9 @@ void main() {
         print('print within test');
       }
     ''').create();
-    var suites =
-        await _loader
-            .loadFile(
-              p.join(d.sandbox, 'a_test.dart'),
-              SuiteConfiguration.empty,
-            )
-            .toList();
+    var suites = await _loader
+        .loadFile(p.join(d.sandbox, 'a_test.dart'), SuiteConfiguration.empty)
+        .toList();
     expect(suites, hasLength(1));
     var loadSuite = suites.first;
 
@@ -317,13 +311,12 @@ void main() {
 
       await runZoned(
         () async {
-          var suites =
-              await _loader
-                  .loadFile(
-                    p.join(d.sandbox, 'a_test.dart'),
-                    suiteConfiguration(retry: numRetries),
-                  )
-                  .toList();
+          var suites = await _loader
+              .loadFile(
+                p.join(d.sandbox, 'a_test.dart'),
+                suiteConfiguration(retry: numRetries),
+              )
+              .toList();
           expect(suites, hasLength(1));
           var loadSuite = suites.first;
           var suite = (await loadSuite.getSuite())!;

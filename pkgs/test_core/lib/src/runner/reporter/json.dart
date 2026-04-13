@@ -136,10 +136,9 @@ class JsonReporter implements Reporter {
 
     // Don't emit groups for load suites. They're always empty and they provide
     // unnecessary clutter.
-    var groupIDs =
-        liveTest.suite is LoadSuite
-            ? <int>[]
-            : _idsForGroups(liveTest.groups, liveTest.suite);
+    var groupIDs = liveTest.suite is LoadSuite
+        ? <int>[]
+        : _idsForGroups(liveTest.groups, liveTest.suite);
 
     var suiteConfig = _configFor(liveTest.suite);
     var id = _nextID++;
@@ -207,8 +206,8 @@ class JsonReporter implements Reporter {
         _emit('debug', {
           'suiteID': id,
           'observatory': runnerSuite.environment.observatoryUrl?.toString(),
-          'remoteDebugger':
-              runnerSuite.environment.remoteDebuggerUrl?.toString(),
+          'remoteDebugger': runnerSuite.environment.remoteDebuggerUrl
+              ?.toString(),
         });
       });
     }
@@ -264,8 +263,8 @@ class JsonReporter implements Reporter {
   /// Serializes [metadata] into a JSON-protocol-compatible map.
   Map _serializeMetadata(SuiteConfiguration suiteConfig, Metadata metadata) =>
       suiteConfig.runSkipped
-          ? {'skip': false, 'skipReason': null}
-          : {'skip': metadata.skip, 'skipReason': metadata.skipReason};
+      ? {'skip': false, 'skipReason': null}
+      : {'skip': metadata.skip, 'skipReason': metadata.skipReason};
 
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest liveTest) {

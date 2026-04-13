@@ -7,8 +7,8 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import '../../util/io.dart';
 import '../../util/pretty_print.dart';
@@ -228,23 +228,20 @@ class CompactReporter implements Reporter {
 
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
+        if (liveTest.test.metadata.skip) return;
         _progressLine(_description(liveTest), truncate: false);
         if (!_printedNewline) _sink.writeln('');
         _printedNewline = true;
-
-        var text = message.text;
-        if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-        _sink.writeln(text);
+        _sink.writeln(message.text);
       }),
     );
 
     liveTest.onComplete.then((_) {
       var result = liveTest.state.result;
       if (result != Result.error && result != Result.failure) return;
-      var quotedName =
-          Platform.isWindows
-              ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
-              : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
+      var quotedName = Platform.isWindows
+          ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
+          : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
       _sink.writeln('');
       _sink.writeln(
         '$_bold${_cyan}To run this test again:$_noColor '
@@ -345,10 +342,20 @@ class CompactReporter implements Reporter {
       _progressLine('Some tests failed.', color: _red);
       _sink.writeln('');
     } else if (_engine.passed.isEmpty) {
-      _progressLine('All tests skipped.');
+      _progressLine('${_yellow}All tests skipped.$_noColor');
+      _sink.writeln('');
+    } else if (_engine.skipped.isEmpty) {
+      _progressLine('All tests passed!');
       _sink.writeln('');
     } else {
-      _progressLine('All tests passed!');
+      final skippedCount = _engine.skipped.length;
+      _progressLine(
+        '$_yellow'
+        '$skippedCount skipped ${pluralize('test', skippedCount)}.'
+        '$_noColor',
+      );
+      _sink.writeln('');
+      _progressLine('All other tests passed!');
       _sink.writeln('');
     }
 

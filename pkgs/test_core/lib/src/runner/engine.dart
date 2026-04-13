@@ -7,7 +7,6 @@ import 'dart:math';
 
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
-import 'package:coverage/coverage.dart';
 import 'package:pool/pool.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
@@ -68,7 +67,7 @@ class Engine {
   final String? _coverageLcov;
 
   /// The merged coverage data from all tests.
-  final Map<String, HitMap> _allCoverageData = {};
+  final Coverage _allCoverageData = {};
 
   /// The seed used to generate randomness for test case shuffling.
   ///

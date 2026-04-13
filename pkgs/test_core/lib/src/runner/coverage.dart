@@ -12,7 +12,7 @@ import '../util/package_config.dart';
 import 'live_suite_controller.dart';
 
 /// Collects coverage and outputs to the [coveragePath] path.
-Future<Map<String, HitMap>> writeCoverage(
+Future<Coverage> writeCoverage(
   String? coveragePath,
   LiveSuiteController controller,
 ) async {
@@ -30,12 +30,21 @@ Future<Map<String, HitMap>> writeCoverage(
     await out.flush();
     await out.close();
   }
-  return HitMap.parseJson(coverage['coverage'] as List<Map<String, dynamic>>);
+  return switch (coverage['coverage']) {
+    // Matching on `List<dynamic>` the runtime type of `List` in JSON is
+    // never `Map<String, dynamic>`. The `cast` below ensures the runtime type
+    // is correct for `HitMap.parseJson`.
+    List<dynamic> hitMapJson => HitMap.parseJson(
+      hitMapJson.cast<Map<String, dynamic>>(),
+    ),
+    null => const {},
+    _ => throw StateError('Invalid coverage data'),
+  };
 }
 
 Future<void> writeCoverageLcov(
   String coverageLcov,
-  Map<String, HitMap> allCoverageData,
+  Coverage allCoverageData,
 ) async {
   final resolver = await Resolver.create(
     packagePath: (await currentPackage).root.toFilePath(),
@@ -50,4 +59,10 @@ Future<void> writeCoverageLcov(
   out.write(lcovData);
   await out.flush();
   await out.close();
+}
+
+typedef Coverage = Map<String, HitMap>;
+
+extension Merge on Coverage {
+  void merge(Coverage other) => FileHitMaps(this).merge(other);
 }

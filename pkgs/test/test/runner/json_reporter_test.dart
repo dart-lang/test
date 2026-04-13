@@ -6,6 +6,7 @@
 library;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -415,6 +416,36 @@ void main() {
             testStartJson(4, 'skip 2', skip: true, line: 7, column: 9),
             testDoneJson(4, skipped: true),
             testStartJson(5, 'skip 3', skip: true, line: 8, column: 9),
+            testDoneJson(5, skipped: true),
+          ],
+        ],
+        doneJson(),
+      );
+    });
+
+    test('reports skipped tests due to solo', () {
+      const reason = 'does not have "solo"';
+      return _expectReport(
+        '''
+        test('skip 1', () {});
+        test('solo 2', () {}, solo: true);
+        test('skip 3', () {});
+      ''',
+        [
+          [
+            suiteJson(0),
+            testStartJson(1, 'loading test.dart', groupIDs: []),
+            testDoneJson(1, hidden: true),
+          ],
+          [
+            groupJson(2, testCount: 3),
+            testStartJson(3, 'skip 1', skip: reason, line: 6, column: 9),
+            printJson(3, 'Skip: $reason', type: 'skip'),
+            testDoneJson(3, skipped: true),
+            testStartJson(4, 'solo 2', skip: false, line: 7, column: 9),
+            testDoneJson(4, skipped: false),
+            testStartJson(5, 'skip 3', skip: reason, line: 8, column: 9),
+            printJson(5, 'Skip: $reason', type: 'skip'),
             testDoneJson(5, skipped: true),
           ],
         ],
@@ -878,5 +909,10 @@ import 'package:test/test.dart';
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();
-  return expectJsonReport(stdoutLines, test.pid, expected, done);
+  return expectJsonReport(
+    stdoutLines,
+    Platform.isWindows ? anything : equals(test.pid),
+    expected,
+    done,
+  );
 }

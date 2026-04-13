@@ -20,7 +20,7 @@ import '../util/dart.dart';
 /// allowed everywhere.
 ///
 /// Throws an [AnalysisError] if parsing fails or a [FormatException] if the
-/// test annotations are incorrect.
+/// test suite is unrunnable due to incorrect annotations or a missing main.
 Metadata parseMetadata(
   String path,
   String contents,
@@ -48,6 +48,17 @@ class _Parser {
   /// The language version override comment if one was present, otherwise null.
   String? _languageVersionComment;
 
+  /// Whether any member of the compilation unit is named 'main'.
+  ///
+  /// When main is missing a call to [parse] will throw a [FormatException] with
+  /// a descriptive message.
+  ///
+  /// An empty file may indicate an atypical use of the test runner in
+  /// precompiled mode without the test source available. In these cases the
+  /// definition is not required and it is assumed it is checked by whatever
+  /// compilation approach is used.
+  late final bool _hasMainOrEmpty;
+
   _Parser(this._path, this._contents, this._platformVariables) {
     var result = parseString(
       content: _contents,
@@ -57,24 +68,31 @@ class _Parser {
     var directives = result.unit.directives;
     _annotations = directives.isEmpty ? [] : directives.first.metadata;
     _languageVersionComment = result.unit.languageVersionToken?.value();
+    _hasMainOrEmpty =
+        _contents.isEmpty ||
+        result.unit.declarations.any(
+          (d) => d is FunctionDeclaration && d.name.lexeme == 'main',
+        );
 
     // We explicitly *don't* just look for "package:test" imports here,
     // because it could be re-exported from another library.
-    _prefixes =
-        directives
-            .map((directive) {
-              if (directive is ImportDirective) {
-                return directive.prefix?.name;
-              } else {
-                return null;
-              }
-            })
-            .whereType<String>()
-            .toSet();
+    _prefixes = directives
+        .map((directive) {
+          if (directive is ImportDirective) {
+            return directive.prefix?.name;
+          } else {
+            return null;
+          }
+        })
+        .whereType<String>()
+        .toSet();
   }
 
   /// Parses the metadata.
   Metadata parse() {
+    if (!_hasMainOrEmpty) {
+      throw const FormatException('Missing definition of `main` method.');
+    }
     Timeout? timeout;
     PlatformSelector? testOn;
     Object? /*String|bool*/ skip;
@@ -125,7 +143,9 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   PlatformSelector _parseTestOn(Annotation annotation) =>
-      _parsePlatformSelector(annotation.arguments!.arguments.first);
+      _parsePlatformSelector(
+        annotation.arguments!.compatibleArguments.first.argumentExpression,
+      );
 
   /// Parses an [expression] that should contain a string representing a
   /// [PlatformSelector].
@@ -142,8 +162,9 @@ class _Parser {
   /// Parses a `@Retry` annotation.
   ///
   /// [annotation] is the annotation.
-  int _parseRetry(Annotation annotation) =>
-      _parseInt(annotation.arguments!.arguments.first);
+  int _parseRetry(Annotation annotation) => _parseInt(
+    annotation.arguments!.compatibleArguments.first.argumentExpression,
+  );
 
   /// Parses a `@Timeout` annotation.
   ///
@@ -154,17 +175,23 @@ class _Parser {
       return Timeout.none;
     }
 
-    var args = annotation.arguments!.arguments;
-    if (constructorName == null) return Timeout(_parseDuration(args.first));
-    return Timeout.factor(_parseNum(args.first));
+    var args = annotation.arguments!.compatibleArguments;
+    if (constructorName == null) {
+      return Timeout(_parseDuration(args.first.argumentExpression));
+    }
+    return Timeout.factor(_parseNum(args.first.argumentExpression));
   }
 
   /// Parses a `Timeout` constructor.
   Timeout _parseTimeoutConstructor(Expression constructor) {
     var name = _findConstructorName(constructor, 'Timeout');
     var arguments = _parseArguments(constructor);
-    if (name == null) return Timeout(_parseDuration(arguments.first));
-    if (name == 'factor') return Timeout.factor(_parseNum(arguments.first));
+    if (name == null) {
+      return Timeout(_parseDuration(arguments.first.argumentExpression));
+    }
+    if (name == 'factor') {
+      return Timeout.factor(_parseNum(arguments.first.argumentExpression));
+    }
     throw SourceSpanFormatException('Invalid timeout', _spanFor(constructor));
   }
 
@@ -174,8 +201,10 @@ class _Parser {
   ///
   /// Returns either `true` or a reason string.
   dynamic _parseSkip(Annotation annotation) {
-    var args = annotation.arguments!.arguments;
-    return args.isEmpty ? true : _parseString(args.first).stringValue;
+    var args = annotation.arguments!.compatibleArguments;
+    return args.isEmpty
+        ? true
+        : _parseString(args.first.argumentExpression).stringValue;
   }
 
   /// Parses a `Skip` constructor.
@@ -184,16 +213,18 @@ class _Parser {
   dynamic _parseSkipConstructor(Expression constructor) {
     _findConstructorName(constructor, 'Skip');
     var arguments = _parseArguments(constructor);
-    return arguments.isEmpty ? true : _parseString(arguments.first).stringValue;
+    return arguments.isEmpty
+        ? true
+        : _parseString(arguments.first.argumentExpression).stringValue;
   }
 
   /// Parses a `@Tags` annotation.
   ///
   /// [annotation] is the annotation.
   Set<String> _parseTags(Annotation annotation) {
-    return _parseList(annotation.arguments!.arguments.first).map((
-      tagExpression,
-    ) {
+    return _parseList(
+      annotation.arguments!.compatibleArguments.first.argumentExpression,
+    ).map((tagExpression) {
       var name = _parseString(tagExpression).stringValue!;
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
 
@@ -210,7 +241,7 @@ class _Parser {
   /// [annotation] is the annotation.
   Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
     return _parseMap(
-      annotation.arguments!.arguments.first,
+      annotation.arguments!.compatibleArguments.first.argumentExpression,
       key: _parsePlatformSelector,
       value: (value) {
         var expressions = <AstNode>[];
@@ -301,10 +332,10 @@ class _Parser {
   }
 
   Map<String, Expression> _parseNamedArguments(
-    NodeList<Expression> arguments,
+    Iterable<CompatibleArgument> arguments,
   ) => {
-    for (var a in arguments.whereType<NamedExpression>())
-      a.name.label.name: a.expression,
+    for (var argument in arguments)
+      if (argument.name case String name) name: argument.argumentExpression,
   };
 
   /// Asserts that [existing] is null.
@@ -319,12 +350,12 @@ class _Parser {
     );
   }
 
-  NodeList<Expression> _parseArguments(Expression expression) {
+  Iterable<CompatibleArgument> _parseArguments(Expression expression) {
     if (expression is InstanceCreationExpression) {
-      return expression.argumentList.arguments;
+      return expression.argumentList.compatibleArguments;
     }
     if (expression is MethodInvocation) {
-      return expression.argumentList.arguments;
+      return expression.argumentList.compatibleArguments;
     }
     throw SourceSpanFormatException(
       'Expected an instantiation',
@@ -354,10 +385,9 @@ class _Parser {
       className = identifier.prefix.name;
       namedConstructor = identifier.identifier.name;
     } else {
-      className =
-          identifier is PrefixedIdentifier
-              ? identifier.identifier.name
-              : identifier.name;
+      className = identifier is PrefixedIdentifier
+          ? identifier.identifier.name
+          : identifier.name;
       if (constructorName != null) namedConstructor = constructorName.name;
     }
     return (className, namedConstructor);
@@ -569,6 +599,46 @@ class _Parser {
       var span = contextualizeSpan(error.span!, literal, file);
       if (span == null) rethrow;
       throw SourceSpanFormatException(error.message, span);
+    }
+  }
+}
+
+extension ArgumentListExt on ArgumentList {
+  Iterable<CompatibleArgument> get compatibleArguments =>
+      arguments.map(CompatibleArgument.new);
+}
+
+/// A zero-cost wrapper to provide a compatible interface for arguments
+/// across different analyzer versions.
+/// TODO(scheglov): Simplify to `Argument` when ready for `analyzer 13`.
+extension type const CompatibleArgument(AstNode _node) {
+  /// Returns the name of the named argument, or null if not a named argument.
+  String? get name {
+    if (_node is! Expression) {
+      // New analyzer: `NamedArgument.name` is a Token.
+      return (_node as dynamic).name.lexeme as String;
+    }
+    // Old analyzer or positional in new analyzer.
+    try {
+      var nameObj = (_node as dynamic).name;
+      if (nameObj is Label) {
+        return (nameObj as dynamic).label.name as String;
+      }
+    } catch (_) {
+      // Ignore
+    }
+    return null;
+  }
+
+  /// Returns the evaluation value of the argument.
+  Expression get argumentExpression {
+    if (_node is Expression) {
+      if (name != null) {
+        return (_node as dynamic).expression as Expression;
+      }
+      return _node;
+    } else {
+      return (_node as dynamic).argumentExpression as Expression;
     }
   }
 }

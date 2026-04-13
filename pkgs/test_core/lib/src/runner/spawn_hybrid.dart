@@ -36,7 +36,8 @@ StreamChannel spawnHybridUri(String url, Object? message, Suite suite) {
     var port = ReceivePort();
     var onExitPort = ReceivePort();
     try {
-      var code = '''
+      var code =
+          '''
         ${await _languageVersionCommentFor(url)}
 
         import "package:test_core/src/runner/hybrid_listener.dart";
@@ -178,10 +179,9 @@ Future<String> _languageVersionCommentFor(String url) async {
 Future<String> _readUri(Uri uri) async => switch (uri.scheme) {
   '' || 'file' => await File.fromUri(uri).readAsString(),
   'data' => uri.data!.contentAsString(),
-  _ =>
-    throw ArgumentError.value(
-      uri,
-      'uri',
-      'Only data and file uris (as well as relative paths) are supported',
-    ),
+  _ => throw ArgumentError.value(
+    uri,
+    'uri',
+    'Only data and file uris (as well as relative paths) are supported',
+  ),
 };

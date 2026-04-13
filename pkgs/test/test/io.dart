@@ -12,20 +12,23 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
 
 /// The path to the root directory of the `test` package.
-final Future<String> packageDir = Isolate.resolvePackageUri(
-  Uri(scheme: 'package', path: 'test/'),
-).then((uri) {
-  var dir = p.dirname(uri!.path);
-  // If it starts with a `/C:` or other drive letter, remove the leading `/`.
-  if (dir[0] == '/' && dir[2] == ':') dir = dir.substring(1);
-  return dir;
-});
+final Future<String> packageDir =
+    Isolate.resolvePackageUri(Uri(scheme: 'package', path: 'test/')).then((
+      uri,
+    ) {
+      var dir = p.dirname(uri!.path);
+      // If it starts with a `/C:` or other drive letter, remove the leading `/`.
+      if (dir[0] == '/' && dir[2] == ':') dir = dir.substring(1);
+      return dir;
+    });
+
+/// The root directory of the Dart SDK.
+final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
-final String noSuchFileMessage =
-    Platform.isWindows
-        ? 'The system cannot find the file specified.'
-        : 'No such file or directory';
+final String noSuchFileMessage = Platform.isWindows
+    ? 'The system cannot find the file specified.'
+    : 'No such file or directory';
 
 /// An operating system name that's different than the current operating system.
 final otherOS = Platform.isWindows ? 'mac-os' : 'windows';
@@ -100,6 +103,7 @@ Future<TestProcess> runTest(
   bool forwardStdio = false,
   String? packageConfig,
   Iterable<String>? vmArgs,
+  String? workingDirectory,
 }) async {
   concurrency ??= 1;
   var testExecutablePath = _testExecutablePath;
@@ -127,6 +131,7 @@ Future<TestProcess> runTest(
     description: 'dart bin/test.dart',
     forwardStdio: forwardStdio,
     packageConfig: packageConfig,
+    workingDirectory: workingDirectory,
   );
 }
 
@@ -140,6 +145,7 @@ Future<TestProcess> runDart(
   String? description,
   bool forwardStdio = false,
   String? packageConfig,
+  String? workingDirectory,
 }) async {
   var allArgs = <String>[
     '--packages=${packageConfig ?? await Isolate.packageConfig}',
@@ -149,7 +155,7 @@ Future<TestProcess> runDart(
   return await TestProcess.start(
     p.absolute(Platform.resolvedExecutable),
     allArgs,
-    workingDirectory: d.sandbox,
+    workingDirectory: workingDirectory ?? d.sandbox,
     environment: environment,
     description: description,
     forwardStdio: forwardStdio,
@@ -160,11 +166,12 @@ Future<TestProcess> runDart(
 Future<TestProcess> runPub(
   Iterable<String> args, {
   Map<String, String>? environment,
+  String? workingDirectory,
 }) {
   return TestProcess.start(
     p.absolute(Platform.resolvedExecutable),
     ['pub', ...args],
-    workingDirectory: d.sandbox,
+    workingDirectory: workingDirectory ?? d.sandbox,
     environment: environment,
     description: 'pub ${args.first}',
   );

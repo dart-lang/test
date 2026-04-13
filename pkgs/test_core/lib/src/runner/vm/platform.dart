@@ -62,6 +62,7 @@ class VMPlatform extends PlatformPlugin {
       Process process;
       try {
         process = await _spawnExecutable(
+          platform,
           path,
           suiteConfig.metadata,
           serverSocket,
@@ -70,11 +71,11 @@ class VMPlatform extends PlatformPlugin {
         unawaited(serverSocket.close());
         rethrow;
       }
-      process.stdout.listen(stdout.add);
-      process.stderr.listen(stderr.add);
+
       var socket = await serverSocket.first;
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
+        ..add(socket.destroy)
         ..add(serverSocket.close)
         ..add(process.kill);
     } else {
@@ -186,11 +187,40 @@ class VMPlatform extends PlatformPlugin {
     () => Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]),
   );
 
+  String _aotRuntimeFor(SuitePlatform platform) {
+    final sanSuffix = switch (platform.runtime) {
+      Runtime.vmAsan => '_asan',
+      Runtime.vmMsan => '_msan',
+      Runtime.vmTsan => '_tsan',
+      _ => '',
+    };
+    final exeSuffix = Platform.isWindows ? '.exe' : '';
+    return p.join(
+      p.dirname(Platform.resolvedExecutable),
+      'dartaotruntime$sanSuffix$exeSuffix',
+    );
+  }
+
+  Map<String, String> _environmentFor(SuitePlatform platform) {
+    // The sanitizers have inconsistent default options, so provide some
+    // better defaults if our caller hasn't provided any. SIGABRT=6
+    final envKey = switch (platform.runtime) {
+      Runtime.vmAsan => 'ASAN_OPTIONS',
+      Runtime.vmMsan => 'MSAN_OPTIONS',
+      Runtime.vmTsan => 'TSAN_OPTIONS',
+      _ => null,
+    };
+    return envKey == null || Platform.environment.containsKey(envKey)
+        ? const {}
+        : {envKey: 'halt_on_error=1:exitcode=6:symbolize=1'};
+  }
+
   /// Compiles [path] to a native executable and spawns it as a process.
   ///
   /// Sets up a communication channel as well by passing command line arguments
   /// for the host and port of [socket].
   Future<Process> _spawnExecutable(
+    SuitePlatform platform,
     String path,
     Metadata suiteMetadata,
     ServerSocket socket,
@@ -200,29 +230,44 @@ class VMPlatform extends PlatformPlugin {
         'Precompiled native executable tests are not supported at this time',
       );
     }
-    var executable = await _compileToNative(path, suiteMetadata);
-    return await Process.start(executable, [
-      socket.address.host,
-      socket.port.toString(),
-    ]);
+
+    var sharedLibrary = await _compileToNative(platform, path, suiteMetadata);
+    return await Process.start(
+      _aotRuntimeFor(platform),
+      [sharedLibrary, socket.address.host, socket.port.toString()],
+      environment: _environmentFor(platform),
+      mode: ProcessStartMode.inheritStdio,
+    );
   }
 
-  /// Compiles [path] to a native executable using `dart compile exe`.
-  Future<String> _compileToNative(String path, Metadata suiteMetadata) async {
+  /// Compiles [path] to a native shared library using
+  /// `dart compile aot-snapshot`.
+  ///
+  /// Preferable to `dart compile exe` because embedded snapshots are invisible
+  /// to native profilers and symbolizers. This should eventually be replaced
+  /// with something that supports build hooks.
+  Future<String> _compileToNative(
+    SuitePlatform platform,
+    String path,
+    Metadata suiteMetadata,
+  ) async {
     var bootstrapPath = await _bootstrapNativeTestFile(
       path,
       suiteMetadata.languageVersionComment ??
           await rootPackageLanguageVersionComment,
     );
-    var output = File(p.setExtension(bootstrapPath, '.exe'));
+    var output = File(p.setExtension(bootstrapPath, '.so'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
       'compile',
-      'exe',
+      'aot-snapshot',
       bootstrapPath,
       '--output',
       output.path,
       '--packages',
       (await packageConfigUri).toFilePath(),
+      if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
+      if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
+      if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
     ]);
     if (processResult.exitCode != 0 || !(await output.exists())) {
       throw LoadException(path, '''
@@ -268,10 +313,9 @@ stderr: ${processResult.stderr}''');
           ),
           message,
         ),
-        _ =>
-          throw StateError(
-            'Unsupported compiler $compiler for the VM platform',
-          ),
+        _ => throw StateError(
+          'Unsupported compiler $compiler for the VM platform',
+        ),
       };
     } catch (_) {
       if (_closeMemo.hasRun) return null;
@@ -318,14 +362,13 @@ stderr: ${processResult.stderr}''');
     switch (compiler) {
       case Compiler.kernel:
         // Load `.dill` files from their absolute file path.
-        var dillUri =
-            (await Isolate.resolvePackageUri(
-              testUri.replace(
-                path:
-                    '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
-                    '.vm.app.dill',
-              ),
-            ))!;
+        var dillUri = (await Isolate.resolvePackageUri(
+          testUri.replace(
+            path:
+                '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
+                '.vm.app.dill',
+          ),
+        ))!;
         if (await File.fromUri(dillUri).exists()) {
           testUri = dillUri;
         }
@@ -418,16 +461,15 @@ Future<Map<String, dynamic>> _gatherCoverage(
   Environment environment,
   Configuration config,
 ) async {
-  final isolateId =
-      Uri.parse(
-        environment.observatoryUrl!.fragment,
-      ).queryParameters['isolateId'];
+  final isolateId = Uri.parse(
+    environment.observatoryUrl!.fragment,
+  ).queryParameters['isolateId'];
   return await collect(
     environment.observatoryUrl!,
     false,
     false,
     false,
-    {(await currentPackage).name},
+    await _filterCoveragePackages(config.coveragePackages, config.coverageLcov),
     isolateIds: {isolateId!},
     branchCoverage: config.branchCoverage,
   );
@@ -437,11 +479,10 @@ Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
 Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-  fragment:
-      Uri(
-        path: '/inspect',
-        queryParameters: {'isolateId': isolateId, 'objectId': id},
-      ).toString(),
+  fragment: Uri(
+    path: '/inspect',
+    queryParameters: {'isolateId': isolateId, 'objectId': id},
+  ).toString(),
 );
 
 var _hasRegistered = false;
@@ -452,4 +493,26 @@ void _setupPauseAfterTests() {
     _shouldPauseAfterTests = true;
     return ServiceExtensionResponse.result(jsonEncode({}));
   });
+}
+
+Future<Set<String>> _filterCoveragePackages(
+  List<RegExp>? coveragePackages,
+  String? coverageLcov,
+) async {
+  if (coverageLcov == null && coveragePackages == null) {
+    // If no filters were provided and the JSON workflow is used, report all
+    // coverage. This is required to maintain backward compatibility
+    // particularly in cases where coverage is required for files outside of the
+    // lib directory.
+    // See https://github.com/dart-lang/test/issues/2581.
+    return {};
+  }
+  if (coveragePackages == null || coveragePackages.isEmpty) {
+    return workspacePackageNames(await currentPackage);
+  } else {
+    return (await currentPackageConfig).packages
+        .map((package) => package.name)
+        .where((name) => coveragePackages.any((re) => re.hasMatch(name)))
+        .toSet();
+  }
 }

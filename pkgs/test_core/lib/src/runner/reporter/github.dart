@@ -44,6 +44,9 @@ class GithubReporter implements Reporter {
 
   final Set<LiveTest> _completedTests = {};
 
+  /// The github markdown `::group::` that is currently open.
+  var _activeGroup = _ReportGroup.ungrouped;
+
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
     Engine engine,
@@ -112,6 +115,10 @@ class GithubReporter implements Reporter {
         if (_completedTests.contains(liveTest)) {
           // The test has already completed and it's previous messages were
           // written out; ensure this post-completion output is not lost.
+          if (!_activeGroup.isUngrouped) {
+            _sink.writeln(_GithubMarkup.endGroup);
+            _activeGroup = _ReportGroup.ungrouped;
+          }
           _sink.writeln(message.text);
         } else {
           _testMessages.putIfAbsent(liveTest, () => []).add(message);
@@ -144,18 +151,16 @@ class GithubReporter implements Reporter {
     // For now, we use the same icon for both tests and test-like structures
     // (loadSuite, setUpAll, tearDownAll).
     var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
-    final prefix =
-        failed
-            ? _GithubMarkup.failed
-            : skipped
-            ? _GithubMarkup.skipped
-            : defaultIcon;
-    final statusSuffix =
-        failed
-            ? ' (failed)'
-            : skipped
-            ? ' (skipped)'
-            : '';
+    final prefix = failed
+        ? _GithubMarkup.failed
+        : skipped
+        ? _GithubMarkup.skipped
+        : defaultIcon;
+    final statusSuffix = failed
+        ? ' (failed)'
+        : skipped
+        ? ' (skipped)'
+        : '';
 
     var name = test.test.name;
     if (!loadSuite) {
@@ -168,9 +173,32 @@ class GithubReporter implements Reporter {
           '[${test.suite.platform.runtime.name}, '
           '${test.suite.platform.compiler.name}] $name';
     }
-    if (messages.isEmpty && errors.isEmpty) {
+    if (skipped) {
+      if (_activeGroup.isPassing) {
+        _sink.writeln(_GithubMarkup.endGroup);
+      }
+      if (!_activeGroup.isSkipped) {
+        _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
+        _activeGroup = _ReportGroup.skipped;
+      }
+      _sink.writeln('$prefix $name$statusSuffix');
+      for (var message in messages) {
+        _sink.writeln(message.text);
+      }
+    } else if (messages.isEmpty && errors.isEmpty) {
+      if (_activeGroup.isSkipped) {
+        _sink.writeln(_GithubMarkup.endGroup);
+      }
+      if (!_activeGroup.isPassing) {
+        _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
+        _activeGroup = _ReportGroup.passing;
+      }
       _sink.writeln('$prefix $name$statusSuffix');
     } else {
+      if (!_activeGroup.isUngrouped) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _activeGroup = _ReportGroup.ungrouped;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       for (var message in messages) {
         _sink.writeln(message.text);
@@ -203,6 +231,10 @@ class GithubReporter implements Reporter {
             '${test.suite.platform.compiler.name}] $name';
       }
 
+      if (!_activeGroup.isUngrouped) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _activeGroup = _ReportGroup.ungrouped;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       _sink.writeln('$error');
       _sink.writeln(stackTrace.toString().trimRight());
@@ -212,6 +244,11 @@ class GithubReporter implements Reporter {
 
   void _onDone(bool? success) {
     _cancel();
+
+    if (!_activeGroup.isUngrouped) {
+      _sink.writeln(_GithubMarkup.endGroup);
+      _activeGroup = _ReportGroup.ungrouped;
+    }
 
     _sink.writeln();
 
@@ -238,7 +275,7 @@ class GithubReporter implements Reporter {
 abstract class _GithubMarkup {
   // Char sets avilable at https://www.compart.com/en/unicode/.
   static const String passed = '✅';
-  static const String skipped = '❎';
+  static const String skipped = '⏭️';
   static const String failed = '❌';
   // The 'synthetic' icon is currently not used but is something to consider in
   // order to draw a distinction between user tests and test-like supporting
@@ -252,4 +289,14 @@ abstract class _GithubMarkup {
   static final String endGroup = '::endgroup::';
 
   static String error(String message) => '::error::$message';
+}
+
+enum _ReportGroup {
+  passing,
+  skipped,
+  ungrouped;
+
+  bool get isPassing => this == _ReportGroup.passing;
+  bool get isSkipped => this == _ReportGroup.skipped;
+  bool get isUngrouped => this == _ReportGroup.ungrouped;
 }
