@@ -6,6 +6,10 @@
   environment variables for color output detection.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
 * Update `parse_metadata.dart` to be compatible with `analyzer >=8.0.0 <14.0.0`.
+* `GithubReporter`:
+    * Group contiguous passing and skipped tests into collapsible groups to
+      reduce log noise in GitHub Actions.
+    * Updated skipped icon to ⏭️.
 
 ## 0.6.17
 

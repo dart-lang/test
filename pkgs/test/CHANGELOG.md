@@ -3,8 +3,12 @@
 * Ignore an error locating the SDK directory on platforms where the
   `resolvedExecutable` is unexpectedly `null`.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
-* Allow `analyzer` version  `13.x.x`.
+* `GithubReporter`:
+    * Group contiguous passing and skipped tests into collapsible groups to
+      reduce log noise in GitHub Actions.
+    * Updated skipped icon to ⏭️.
 * Increase SDK constraint to ^3.10.0.
+* Allow `analyzer` version  `13.x.x`.
 
 ## 1.31.0
 
