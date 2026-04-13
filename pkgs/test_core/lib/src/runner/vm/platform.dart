@@ -313,10 +313,9 @@ stderr: ${processResult.stderr}''');
           ),
           message,
         ),
-        _ =>
-          throw StateError(
-            'Unsupported compiler $compiler for the VM platform',
-          ),
+        _ => throw StateError(
+          'Unsupported compiler $compiler for the VM platform',
+        ),
       };
     } catch (_) {
       if (_closeMemo.hasRun) return null;
@@ -363,14 +362,13 @@ stderr: ${processResult.stderr}''');
     switch (compiler) {
       case Compiler.kernel:
         // Load `.dill` files from their absolute file path.
-        var dillUri =
-            (await Isolate.resolvePackageUri(
-              testUri.replace(
-                path:
-                    '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
-                    '.vm.app.dill',
-              ),
-            ))!;
+        var dillUri = (await Isolate.resolvePackageUri(
+          testUri.replace(
+            path:
+                '${testUri.path.substring(0, testUri.path.length - '.dart'.length)}'
+                '.vm.app.dill',
+          ),
+        ))!;
         if (await File.fromUri(dillUri).exists()) {
           testUri = dillUri;
         }
@@ -463,10 +461,9 @@ Future<Map<String, dynamic>> _gatherCoverage(
   Environment environment,
   Configuration config,
 ) async {
-  final isolateId =
-      Uri.parse(
-        environment.observatoryUrl!.fragment,
-      ).queryParameters['isolateId'];
+  final isolateId = Uri.parse(
+    environment.observatoryUrl!.fragment,
+  ).queryParameters['isolateId'];
   return await collect(
     environment.observatoryUrl!,
     false,
@@ -482,11 +479,10 @@ Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
 Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-  fragment:
-      Uri(
-        path: '/inspect',
-        queryParameters: {'isolateId': isolateId, 'objectId': id},
-      ).toString(),
+  fragment: Uri(
+    path: '/inspect',
+    queryParameters: {'isolateId': isolateId, 'objectId': id},
+  ).toString(),
 );
 
 var _hasRegistered = false;

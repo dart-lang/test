@@ -112,11 +112,10 @@ void main() {
       late void Function() callback;
       final monitor = await TestCaseMonitor.run(() {
         check(null).context.expectUnawaited(() => [''], (actual, reject) {
-          final completer =
-              Completer<void>()
-                ..future.then((_) {
-                  reject(Rejection(which: ['foo']));
-                });
+          final completer = Completer<void>()
+            ..future.then((_) {
+              reject(Rejection(which: ['foo']));
+            });
           callback = completer.complete;
         });
       });

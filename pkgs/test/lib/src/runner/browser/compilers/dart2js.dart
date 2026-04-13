@@ -122,7 +122,8 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
     return _compileFutures.putIfAbsent(dartPath, () async {
       var dir = Directory(_compiledDir).createTempSync('test_').path;
       var jsPath = p.join(dir, '${p.basename(dartPath)}.browser_test.dart.js');
-      var bootstrapContent = '''
+      var bootstrapContent =
+          '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'dart:js_interop';
         import 'package:test/src/bootstrap/browser.dart';

@@ -108,12 +108,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         var expectedIndex = 0;
         for (final element in actual) {
           final currentExpected = expected[expectedIndex];
-          final matches =
-              currentExpected is Condition<T>
-                  ? softCheck(element, currentExpected) == null
-                  : currentExpected is Condition<dynamic>
-                  ? softCheck(element, currentExpected) == null
-                  : currentExpected == element;
+          final matches = currentExpected is Condition<T>
+              ? softCheck(element, currentExpected) == null
+              : currentExpected is Condition<dynamic>
+              ? softCheck(element, currentExpected) == null
+              : currentExpected == element;
           if (matches && ++expectedIndex >= expected.length) return null;
         }
         return Rejection(

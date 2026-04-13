@@ -227,22 +227,20 @@ final class RemoteListener {
       'type': 'group',
       'name': group.name,
       'metadata': group.metadata.serialize(),
-      'trace':
-          group.trace == null
-              ? null
-              : StackTraceFormatter.current
-                      ?.formatStackTrace(group.trace!)
-                      .toString() ??
-                  group.trace?.toString(),
+      'trace': group.trace == null
+          ? null
+          : StackTraceFormatter.current
+                    ?.formatStackTrace(group.trace!)
+                    .toString() ??
+                group.trace?.toString(),
       'location': group.location?.serialize(),
       'setUpAll': _serializeTest(channel, group.setUpAll, parents),
       'tearDownAll': _serializeTest(channel, group.tearDownAll, parents),
-      'entries':
-          group.entries.map((entry) {
-            return entry is Group
-                ? _serializeGroup(channel, entry, parents)
-                : _serializeTest(channel, entry as Test, parents);
-          }).toList(),
+      'entries': group.entries.map((entry) {
+        return entry is Group
+            ? _serializeGroup(channel, entry, parents)
+            : _serializeTest(channel, entry as Test, parents);
+      }).toList(),
     };
   }
 
@@ -270,13 +268,12 @@ final class RemoteListener {
       'type': 'test',
       'name': test.name,
       'metadata': test.metadata.serialize(),
-      'trace':
-          test.trace == null
-              ? null
-              : StackTraceFormatter.current
-                      ?.formatStackTrace(test.trace!)
-                      .toString() ??
-                  test.trace?.toString(),
+      'trace': test.trace == null
+          ? null
+          : StackTraceFormatter.current
+                    ?.formatStackTrace(test.trace!)
+                    .toString() ??
+                test.trace?.toString(),
       'location': test.location?.serialize(),
       'channel': testChannel.id,
     };

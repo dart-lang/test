@@ -275,10 +275,9 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
     conditions = conditions.toList();
     final descriptions = <String>[];
     await _expectAsync(
-      () =>
-          descriptions.isEmpty
-              ? ['satisfies ${conditions.length} conditions in order']
-              : descriptions,
+      () => descriptions.isEmpty
+          ? ['satisfies ${conditions.length} conditions in order']
+          : descriptions,
       (actual) async {
         var satisfiedCount = 0;
         for (var condition in conditions) {
@@ -337,16 +336,15 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
     }
     final descriptions = <Iterable<String>>[];
     await context.expectAsync(
-      () =>
-          descriptions.isEmpty
-              ? ['satisfies any of ${conditions.length} conditions']
-              : [
-                'satisfies one of:',
-                for (var i = 0; i < descriptions.length; i++) ...[
-                  ...descriptions[i],
-                  if (i < descriptions.length - 1) 'or,',
-                ],
+      () => descriptions.isEmpty
+          ? ['satisfies any of ${conditions.length} conditions']
+          : [
+              'satisfies one of:',
+              for (var i = 0; i < descriptions.length; i++) ...[
+                ...descriptions[i],
+                if (i < descriptions.length - 1) 'or,',
               ],
+            ],
       (actual) async {
         final transaction = actual.startTransaction();
         StreamQueue<T>? longestAccepted;

@@ -98,7 +98,7 @@ class _TestCompilerForLanguageVersion {
     this._languageVersionComment,
   ) : _dillCachePath =
           '$dillCachePrefix.'
-              '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
+          '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
   Future<CompilationResponse> compile(Uri mainUri) =>
       _compilePool.withResource(() => _compile(mainUri));
@@ -192,17 +192,16 @@ class _TestCompilerForLanguageVersion {
       }
     }
 
-    var client =
-        _frontendServerClient = await FrontendServerClient.start(
-          testUri.toString(),
-          _outputDill.path,
-          platformDill,
-          enabledExperiments: enabledExperiments,
-          sdkRoot: sdkRoot,
-          packagesJson: packageConfigUriAwaited.toFilePath(),
-          nativeAssets: nativeAssetsYaml?.toFilePath(),
-          printIncrementalDependencies: false,
-        );
+    var client = _frontendServerClient = await FrontendServerClient.start(
+      testUri.toString(),
+      _outputDill.path,
+      platformDill,
+      enabledExperiments: enabledExperiments,
+      sdkRoot: sdkRoot,
+      packagesJson: packageConfigUriAwaited.toFilePath(),
+      nativeAssets: nativeAssetsYaml?.toFilePath(),
+      printIncrementalDependencies: false,
+    );
     return client.compile();
   }
 

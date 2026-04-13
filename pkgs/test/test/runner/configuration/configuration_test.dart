@@ -179,19 +179,20 @@ void main() {
 
     group('for presets', () {
       test('merges each nested configuration', () {
-        var merged = configuration(
-          presets: {
-            'bang': configuration(pauseAfterLoad: true),
-            'qux': configuration(color: true),
-          },
-        ).merge(
-          configuration(
-            presets: {
-              'qux': configuration(color: false),
-              'zap': configuration(help: true),
-            },
-          ),
-        );
+        var merged =
+            configuration(
+              presets: {
+                'bang': configuration(pauseAfterLoad: true),
+                'qux': configuration(color: true),
+              },
+            ).merge(
+              configuration(
+                presets: {
+                  'qux': configuration(color: false),
+                  'zap': configuration(help: true),
+                },
+              ),
+            );
 
         expect(merged.presets['bang']!.pauseAfterLoad, isTrue);
         expect(merged.presets['qux']!.color, isFalse);

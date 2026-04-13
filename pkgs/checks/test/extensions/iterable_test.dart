@@ -243,14 +243,22 @@ void main() {
   group('unorderedMatches', () {
     test('success for happy case', () {
       check(_testIterable).unorderedMatches(
-        _testIterable.toList().reversed.map((i) => (it) => it.equals(i)),
+        _testIterable.toList().reversed.map(
+          (i) =>
+              (it) => it.equals(i),
+        ),
       );
     });
 
     test('reports unmatched elements', () {
       check(_testIterable).isRejectedBy(
         (it) => it.unorderedMatches(
-          _testIterable.followedBy([42, 100]).map((i) => (it) => it.equals(i)),
+          _testIterable
+              .followedBy([42, 100])
+              .map(
+                (i) =>
+                    (it) => it.equals(i),
+              ),
         ),
         which: [
           'has no element matching the condition at index 2:',
@@ -262,8 +270,12 @@ void main() {
 
     test('reports unexpected elements', () {
       check(_testIterable.followedBy([42, 100])).isRejectedBy(
-        (it) =>
-            it.unorderedMatches(_testIterable.map((i) => (it) => it.equals(i))),
+        (it) => it.unorderedMatches(
+          _testIterable.map(
+            (i) =>
+                (it) => it.equals(i),
+          ),
+        ),
         which: [
           'has an unmatched element at index 2: <42>',
           'and 1 other unmatched elements',
@@ -276,7 +288,8 @@ void main() {
     test('succeeds for the happy path', () {
       check(_testIterable).pairwiseMatches(
         [1, 2],
-        (expected) => (it) => it.isLessThan(expected),
+        (expected) =>
+            (it) => it.isLessThan(expected),
         'is less than',
       );
     });
@@ -284,7 +297,8 @@ void main() {
       check(_testIterable).isRejectedBy(
         (it) => it.pairwiseMatches(
           [1, 1],
-          (expected) => (it) => it.isLessThan(expected),
+          (expected) =>
+              (it) => it.isLessThan(expected),
           'is less than',
         ),
         which: [
@@ -299,7 +313,8 @@ void main() {
       check(_testIterable).isRejectedBy(
         (it) => it.pairwiseMatches(
           [1, 2, 3],
-          (expected) => (it) => it.isLessThan(expected),
+          (expected) =>
+              (it) => it.isLessThan(expected),
           'is less than',
         ),
         which: [
@@ -311,7 +326,8 @@ void main() {
       check(_testIterable).isRejectedBy(
         (it) => it.pairwiseMatches(
           [1],
-          (expected) => (it) => it.isLessThan(expected),
+          (expected) =>
+              (it) => it.isLessThan(expected),
           'is less than',
         ),
         which: ['has too many elements, expected exactly 1'],
