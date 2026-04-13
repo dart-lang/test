@@ -10,7 +10,6 @@
     * Group contiguous passing and skipped tests into collapsible groups to
       reduce log noise in GitHub Actions.
     * Updated skipped icon to ⏭️.
-* Add support for reading test package version within pub workspaces.
 
 ## 0.6.17
 
