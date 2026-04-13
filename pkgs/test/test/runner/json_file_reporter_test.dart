@@ -175,8 +175,9 @@ $tests
   expect(actual, equals(stdoutExpected));
 
   // ---- file reporter verification ----
-  var fileOutputLines =
-      File(p.join(d.sandbox, 'reports', 'tests.json')).readAsLinesSync();
+  var fileOutputLines = File(
+    p.join(d.sandbox, 'reports', 'tests.json'),
+  ).readAsLinesSync();
   await expectJsonReport(
     fileOutputLines,
     test.pid,

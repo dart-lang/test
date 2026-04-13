@@ -124,10 +124,9 @@ class Throws extends AsyncMatcher {
     var matchState = <Object?, Object?>{};
     if (_matcher.matches(error, matchState)) return null;
 
-    var result =
-        _matcher
-            .describeMismatch(error, StringDescription(), matchState, false)
-            .toString();
+    var result = _matcher
+        .describeMismatch(error, StringDescription(), matchState, false)
+        .toString();
 
     var buffer = StringBuffer();
     buffer.writeln(indent(prettyPrint(error), first: 'threw '));

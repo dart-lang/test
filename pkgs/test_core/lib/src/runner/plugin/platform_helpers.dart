@@ -148,18 +148,18 @@ class _Deserializer {
   /// Deserializes [group] into a concrete [Group].
   Group deserializeGroup(Map group) {
     var metadata = Metadata.deserialize(group['metadata'] as Map);
-    var trace =
-        group['trace'] == null ? null : Trace.parse(group['trace'] as String);
+    var trace = group['trace'] == null
+        ? null
+        : Trace.parse(group['trace'] as String);
     var location = switch (group['location']) {
       Map map => TestLocation.deserialize(map),
       _ => null,
     };
-    var entries =
-        (group['entries'] as List).map((entry) {
-          var map = entry as Map;
-          if (map['type'] == 'group') return deserializeGroup(map);
-          return _deserializeTest(map)!;
-        }).toList();
+    var entries = (group['entries'] as List).map((entry) {
+      var map = entry as Map;
+      if (map['type'] == 'group') return deserializeGroup(map);
+      return _deserializeTest(map)!;
+    }).toList();
 
     return Group(
       group['name'] as String,
@@ -179,8 +179,9 @@ class _Deserializer {
     if (test == null) return null;
 
     var metadata = Metadata.deserialize(test['metadata'] as Map);
-    var trace =
-        test['trace'] == null ? null : Trace.parse(test['trace'] as String);
+    var trace = test['trace'] == null
+        ? null
+        : Trace.parse(test['trace'] as String);
     var location = switch (test['location']) {
       Map map => TestLocation.deserialize(map),
       _ => null,

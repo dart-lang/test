@@ -139,7 +139,8 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
       var jsRuntimeUrl = '$baseUrl.mjs';
       var htmlUrl = '$baseUrl.html';
 
-      var bootstrapContent = '''
+      var bootstrapContent =
+          '''
         ${suiteConfig.metadata.languageVersionComment ?? await rootPackageLanguageVersionComment}
         import 'package:test/src/bootstrap/browser.dart';
 

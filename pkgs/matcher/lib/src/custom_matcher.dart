@@ -55,16 +55,15 @@ class CustomMatcher extends Matcher {
     } catch (exception, stack) {
       addStateInfo(matchState, {
         'custom.exception': exception.toString(),
-        'custom.stack':
-            Chain.forTrace(stack)
-                .foldFrames(
-                  (frame) =>
-                      frame.package == 'test' ||
-                      frame.package == 'stream_channel' ||
-                      frame.package == 'matcher',
-                  terse: true,
-                )
-                .toString(),
+        'custom.stack': Chain.forTrace(stack)
+            .foldFrames(
+              (frame) =>
+                  frame.package == 'test' ||
+                  frame.package == 'stream_channel' ||
+                  frame.package == 'matcher',
+              terse: true,
+            )
+            .toString(),
       });
     }
     return false;

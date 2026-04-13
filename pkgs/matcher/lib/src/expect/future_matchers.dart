@@ -61,10 +61,9 @@ class _Completes extends AsyncMatcher {
       } else {
         var matchState = <Object?, Object?>{};
         if (_matcher.matches(value, matchState)) return null;
-        result =
-            _matcher
-                .describeMismatch(value, StringDescription(), matchState, false)
-                .toString();
+        result = _matcher
+            .describeMismatch(value, StringDescription(), matchState, false)
+            .toString();
       }
 
       var buffer = StringBuffer();

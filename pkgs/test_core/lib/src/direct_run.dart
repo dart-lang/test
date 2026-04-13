@@ -69,14 +69,13 @@ Future<bool> _directRunTests(
   String? fullTestName,
   required bool allowDuplicateTestNames,
 }) async {
-  reporterFactory ??=
-      (engine) => ExpandedReporter.watch(
-        engine,
-        PrintSink(),
-        color: Configuration.empty.color,
-        printPath: false,
-        printPlatform: false,
-      );
+  reporterFactory ??= (engine) => ExpandedReporter.watch(
+    engine,
+    PrintSink(),
+    color: Configuration.empty.color,
+    printPath: false,
+    printPlatform: false,
+  );
   final declarer = Declarer(
     fullTestName: fullTestName,
     allowDuplicateTestNames: allowDuplicateTestNames,
@@ -91,10 +90,9 @@ Future<bool> _directRunTests(
     path: p.prettyUri(Uri.base),
   );
 
-  final engine =
-      Engine()
-        ..suiteSink.add(suite)
-        ..suiteSink.close();
+  final engine = Engine()
+    ..suiteSink.add(suite)
+    ..suiteSink.close();
 
   reporterFactory(engine);
 

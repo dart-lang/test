@@ -125,8 +125,9 @@ class Runner {
     if (_config.pauseAfterLoad) {
       success = await _loadThenPause(suites);
     } else {
-      var subscription =
-          _suiteSubscription = suites.listen(_engine.suiteSink.add);
+      var subscription = _suiteSubscription = suites.listen(
+        _engine.suiteSink.add,
+      );
       var results = await Future.wait(<Future>[
         subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
         _engine.run(),
@@ -142,10 +143,9 @@ class Runner {
       if (_config.globalPatterns.isNotEmpty) {
         var patterns = toSentence(
           _config.globalPatterns.map(
-            (pattern) =>
-                pattern is RegExp
-                    ? 'regular expression "${pattern.pattern}"'
-                    : '"$pattern"',
+            (pattern) => pattern is RegExp
+                ? 'regular expression "${pattern.pattern}"'
+                : '"$pattern"',
           ),
         );
         throw NoTestsFoundException('No tests match $patterns.');
@@ -171,14 +171,11 @@ class Runner {
     var testOn = _config.suiteDefaults.metadata.testOn;
     if (testOn == PlatformSelector.all) return;
 
-    var unsupportedRuntimes =
-        _config.suiteDefaults.runtimes
-            .map(_loader.findRuntime)
-            .whereType<Runtime>()
-            .where(
-              (runtime) => !testOn.evaluate(currentPlatform(runtime, null)),
-            )
-            .toList();
+    var unsupportedRuntimes = _config.suiteDefaults.runtimes
+        .map(_loader.findRuntime)
+        .whereType<Runtime>()
+        .where((runtime) => !testOn.evaluate(currentPlatform(runtime, null)))
+        .toList();
 
     if (unsupportedRuntimes.isEmpty) return;
 
@@ -422,13 +419,12 @@ class Runner {
     var bold = _config.color ? '\u001b[1m' : '';
     var noColor = _config.color ? '\u001b[0m' : '';
 
-    var buffer =
-        StringBuffer()
-          ..write('${yellow}Warning:$noColor ')
-          ..write(unknownTags.length == 1 ? 'A tag was ' : 'Tags were ')
-          ..write('used that ')
-          ..write(unknownTags.length == 1 ? "wasn't " : "weren't ")
-          ..writeln('specified in dart_test.yaml.');
+    var buffer = StringBuffer()
+      ..write('${yellow}Warning:$noColor ')
+      ..write(unknownTags.length == 1 ? 'A tag was ' : 'Tags were ')
+      ..write('used that ')
+      ..write(unknownTags.length == 1 ? "wasn't " : "weren't ")
+      ..writeln('specified in dart_test.yaml.');
 
     unknownTags.forEach((tag, entries) {
       buffer.write('  $bold$tag$noColor was used in');
@@ -513,14 +509,16 @@ class Runner {
   /// Loads each suite in [suites] in order, pausing after load for runtimes
   /// that support debugging.
   Future<bool> _loadThenPause(Stream<LoadSuite> suites) async {
-    var subscription =
-        _suiteSubscription = suites
-            .asyncMap((loadSuite) async {
-              var operation =
-                  _debugOperation = debug(_engine, _reporter, loadSuite);
-              await operation.valueOrCancellation();
-            })
-            .listen(null);
+    var subscription = _suiteSubscription = suites
+        .asyncMap((loadSuite) async {
+          var operation = _debugOperation = debug(
+            _engine,
+            _reporter,
+            loadSuite,
+          );
+          await operation.valueOrCancellation();
+        })
+        .listen(null);
 
     var results = await Future.wait(<Future>[
       subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),

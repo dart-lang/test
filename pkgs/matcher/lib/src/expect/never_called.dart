@@ -54,24 +54,22 @@ get neverCalled {
     a9 = placeholder,
     a10 = placeholder,
   ]) {
-    var arguments =
-        [
-          a1,
-          a2,
-          a3,
-          a4,
-          a5,
-          a6,
-          a7,
-          a8,
-          a9,
-          a10,
-        ].where((argument) => argument != placeholder).toList();
+    var arguments = [
+      a1,
+      a2,
+      a3,
+      a4,
+      a5,
+      a6,
+      a7,
+      a8,
+      a9,
+      a10,
+    ].where((argument) => argument != placeholder).toList();
 
-    var argsText =
-        arguments.isEmpty
-            ? ' no arguments.'
-            : ':\n${bullet(arguments.map(prettyPrint))}';
+    var argsText = arguments.isEmpty
+        ? ' no arguments.'
+        : ':\n${bullet(arguments.map(prettyPrint))}';
     zone.handleUncaughtError(
       TestFailure(
         'Callback should never have been called, but it was called with'

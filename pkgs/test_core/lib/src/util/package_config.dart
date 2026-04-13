@@ -28,8 +28,9 @@ final _originalWorkingDirectory = Directory.current.uri;
 /// returns an absolute file URI.
 Future<Uri> absoluteUri(String path) async {
   final uri = p.toUri(path);
-  final absoluteUri =
-      uri.isAbsolute ? uri : _originalWorkingDirectory.resolveUri(uri);
+  final absoluteUri = uri.isAbsolute
+      ? uri
+      : _originalWorkingDirectory.resolveUri(uri);
   try {
     final packageConfig = await currentPackageConfig;
     return packageConfig.toPackageUri(absoluteUri) ?? absoluteUri;

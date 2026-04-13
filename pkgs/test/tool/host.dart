@@ -136,16 +136,14 @@ void main() {
       });
 
       _jsApi = _JSApi(
-        resume:
-            () {
-              if (!dom.document.body!.classList.contains('paused')) return;
-              dom.document.body!.classList.remove('paused');
-              serverChannel.sink.add({'command': 'resume'});
-            }.toJS,
-        restartCurrent:
-            () {
-              serverChannel.sink.add({'command': 'restart'});
-            }.toJS,
+        resume: () {
+          if (!dom.document.body!.classList.contains('paused')) return;
+          dom.document.body!.classList.remove('paused');
+          serverChannel.sink.add({'command': 'resume'});
+        }.toJS,
+        restartCurrent: () {
+          serverChannel.sink.add({'command': 'restart'});
+        }.toJS,
       );
     },
     (error, stackTrace) {

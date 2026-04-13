@@ -122,10 +122,9 @@ class BrowserManager {
     // tests complete.
     browser.onExit
         .then<void>(
-          (_) =>
-              throw ApplicationException(
-                '${runtime.name} exited before connecting.',
-              ),
+          (_) => throw ApplicationException(
+            '${runtime.name} exited before connecting.',
+          ),
         )
         .onError<Object>((error, stackTrace) {
           if (!completer.isCompleted) {
@@ -322,13 +321,12 @@ class BrowserManager {
   CancelableOperation<void> _displayPause() {
     if (_pauseCompleter != null) return _pauseCompleter!.operation;
 
-    final pauseCompleter =
-        _pauseCompleter = CancelableCompleter(
-          onCancel: () {
-            _channel.sink.add({'command': 'resume'});
-            _pauseCompleter = null;
-          },
-        );
+    final pauseCompleter = _pauseCompleter = CancelableCompleter(
+      onCancel: () {
+        _channel.sink.add({'command': 'resume'});
+        _pauseCompleter = null;
+      },
+    );
 
     pauseCompleter.operation.value.whenComplete(() {
       _pauseCompleter = null;
