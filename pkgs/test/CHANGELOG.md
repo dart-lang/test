@@ -4,6 +4,7 @@
   `resolvedExecutable` is unexpectedly `null`.
 * Fix a bug where `-c exe` tests would hang on exit on windows.
 * Allow `analyzer` version  `13.x.x`.
+* Increase SDK constraint to ^3.10.0.
 
 ## 1.31.0
 
