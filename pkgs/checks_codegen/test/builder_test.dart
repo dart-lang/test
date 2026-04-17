@@ -51,10 +51,10 @@ abstract class Bar {}
         outputs: {
           'a|test/some_test.checks.dart': decodedMatches(
             stringContainsInOrder([
-              "import 'package:checks/context.dart' as _i1;",
-              "import 'foo.dart' as _i2;",
-              "import 'bar.dart' as _i3;",
               "import 'package:checks/checks.dart';",
+              "import 'package:checks/context.dart' as _i1;",
+              "import 'bar.dart' as _i3;",
+              "import 'foo.dart' as _i2;",
               'extension FooChecks on _i1.Subject<_i2.Foo> {',
               "  _i1.Subject<_i3.Bar> get barField => has((v) => v.barField, 'barField');",
               "  _i1.Subject<int> get intField => has((v) => v.intField, 'intField');",
