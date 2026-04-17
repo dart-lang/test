@@ -13,6 +13,27 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
+  ///
+  /// ```dart
+  /// check(RegExp('^abc'))
+  ///   .has((s) => s.pattern, 'pattern')
+  ///   .equals('^abc');
+  /// ```
+  ///
+  /// For checking properties of custom types it's common define extension
+  /// methods using `has`:
+  /// ```dart
+  /// extension RegExpChecks on Subject<RegExp> {
+  ///   Subject<String> get pattern => has((s) => s.pattern, 'pattern');
+  ///   Subject<bool> get isUnicode => has((s) => s.isUnicode, 'isUnicode');
+  /// }
+  ///
+  /// void main() {
+  ///   check(RegExp('^abc'))
+  ///     ..pattern.contains('abc')
+  ///     ..isUnicode.isTrue();
+  /// }
+  /// ```
   @meta.useResult
   Subject<R> has<R>(R Function(T) extract, String name) {
     return context.nest(() => ['has $name'], (value) {
