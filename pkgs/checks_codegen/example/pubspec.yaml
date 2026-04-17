@@ -1,0 +1,12 @@
+name: checks_codegen_example
+publish_to: none
+
+resolution: workspace
+
+environment:
+  sdk: ^3.10.0
+
+dev_dependencies:
+  checks: any
+  checks_codegen: any
+  test: ^1.31.0
