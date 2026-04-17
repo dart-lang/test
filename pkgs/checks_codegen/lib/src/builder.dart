@@ -70,7 +70,10 @@ class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
           ),
         ),
     );
-    final emitter = DartEmitter.scoped(useNullSafetySyntax: true);
+    final emitter = DartEmitter.scoped(
+      useNullSafetySyntax: true,
+      orderDirectives: true,
+    );
     return library.accept(emitter).toString();
   }
 

@@ -6,9 +6,10 @@
 // **************************************************************************
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'package:checks/context.dart' as _i1;
 import 'dart:typed_data' as _i2;
+
 import 'package:checks/checks.dart';
+import 'package:checks/context.dart' as _i1;
 
 extension TypedDataChecks on _i1.Subject<_i2.TypedData> {
   _i1.Subject<int> get elementSizeInBytes =>
