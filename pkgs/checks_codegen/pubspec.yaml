@@ -1,5 +1,5 @@
 name: checks_codegen
-version: 0.1.0-wip
+version: 0.1.0
 description: >-
   A companion to `package:checks` to generate type-specific subject extensions
   to read fields.
