@@ -4,6 +4,7 @@
 
 import 'dart:collection';
 
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/declarer.dart';
 import 'package:test_api/src/backend/group_entry.dart';
