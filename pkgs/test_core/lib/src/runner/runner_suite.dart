@@ -64,14 +64,8 @@ class RunnerSuite extends Suite {
     return suite;
   }
 
-  RunnerSuite._(
-    this._controller,
-    super.group,
-    super.platform, {
-    super.path,
-  }) : super(
-         ignoreTimeouts: _controller._config.ignoreTimeouts,
-       );
+  RunnerSuite._(this._controller, super.group, super.platform, {super.path})
+    : super(ignoreTimeouts: _controller._config.ignoreTimeouts);
 
   @override
   RunnerSuite filter(bool Function(Test) callback) {
