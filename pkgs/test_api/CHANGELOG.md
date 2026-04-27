@@ -1,4 +1,4 @@
-## 0.7.12-wip
+## 0.7.12
 
 * Allow `analyzer` major version 13.
 

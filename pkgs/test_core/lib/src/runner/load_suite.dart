@@ -164,15 +164,13 @@ class LoadSuite extends Suite implements RunnerSuite {
     SuitePlatform platform,
     void Function() body,
     this._suiteAndZone, {
-    required bool ignoreTimeouts,
-    String? path,
+    required super.ignoreTimeouts,
+    super.path,
   }) : super(
          Group.root([
            LocalTest(name, Metadata(timeout: config.suiteLoadTimeout), body),
          ]),
          platform,
-         path: path,
-         ignoreTimeouts: ignoreTimeouts,
        );
 
   /// A constructor used by [changeSuite].
