@@ -20,8 +20,10 @@ Future pumpEventQueue({int times = 20}) {
 }
 
 /// Registers an exception that was caught for the current test.
-void registerException(Object error,
-    [StackTrace stackTrace = StackTrace.empty]) {
+void registerException(
+  Object error, [
+  StackTrace stackTrace = StackTrace.empty,
+]) {
   // This will usually forward directly to [Invoker.current.handleError], but
   // going through the zone API allows other zones to consistently see errors.
   Zone.current.handleUncaughtError(error, stackTrace);
@@ -47,5 +49,6 @@ void markTestSkipped(String message) => _currentInvoker..skip(message);
 Invoker get _currentInvoker =>
     Invoker.current ??
     (throw StateError(
-        'There is no current invoker. Please make sure that you are making the '
-        'call inside a test zone.'));
+      'There is no current invoker. Please make sure that you are making the '
+      'call inside a test zone.',
+    ));

@@ -36,7 +36,7 @@ class Suite {
   ///
   /// If [os] is passed without [platform], throws an [ArgumentError].
   Suite(Group group, this.platform, {this.ignoreTimeouts = false, this.path})
-      : group = _filterGroup(group, platform);
+    : group = _filterGroup(group, platform);
 
   /// Returns [entries] filtered according to [platform] and [os].
   ///
@@ -54,8 +54,12 @@ class Suite {
   Suite filter(bool Function(Test) callback) {
     var filtered = group.filter(callback);
     filtered ??= Group.root([], metadata: metadata);
-    return Suite(filtered, platform,
-        ignoreTimeouts: ignoreTimeouts, path: path);
+    return Suite(
+      filtered,
+      platform,
+      ignoreTimeouts: ignoreTimeouts,
+      path: path,
+    );
   }
 
   bool get isLoadSuite => false;

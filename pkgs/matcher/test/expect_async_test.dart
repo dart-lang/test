@@ -171,13 +171,14 @@ void main() {
       });
 
       expectTestFailed(
-          monitor, 'Callback called more times than expected (1).');
+        monitor,
+        'Callback called more times than expected (1).',
+      );
     });
   });
 
   group('with count', () {
-    test(
-        "won't allow the test to complete until it's called at least that "
+    test("won't allow the test to complete until it's called at least that "
         'many times', () async {
       late void Function() callback;
       final monitor = TestCaseMonitor.start(() {
@@ -201,19 +202,23 @@ void main() {
       expectTestPassed(monitor);
     });
 
-    test("will throw an error if it's called more than that many times",
-        () async {
-      var monitor = await TestCaseMonitor.run(() {
-        var callback = expectAsync0(() {}, count: 3);
-        callback();
-        callback();
-        callback();
-        callback();
-      });
+    test(
+      "will throw an error if it's called more than that many times",
+      () async {
+        var monitor = await TestCaseMonitor.run(() {
+          var callback = expectAsync0(() {}, count: 3);
+          callback();
+          callback();
+          callback();
+          callback();
+        });
 
-      expectTestFailed(
-          monitor, 'Callback called more times than expected (3).');
-    });
+        expectTestFailed(
+          monitor,
+          'Callback called more times than expected (3).',
+        );
+      },
+    );
 
     group('0,', () {
       test("won't block the test's completion", () {
@@ -226,7 +231,9 @@ void main() {
         });
 
         expectTestFailed(
-            monitor, 'Callback called more times than expected (0).');
+          monitor,
+          'Callback called more times than expected (0).',
+        );
       });
     });
   });
@@ -244,19 +251,23 @@ void main() {
       callback();
     });
 
-    test("will throw an error if it's called more than that many times",
-        () async {
-      var monitor = await TestCaseMonitor.run(() {
-        var callback = expectAsync0(() {}, max: 3);
-        callback();
-        callback();
-        callback();
-        callback();
-      });
+    test(
+      "will throw an error if it's called more than that many times",
+      () async {
+        var monitor = await TestCaseMonitor.run(() {
+          var callback = expectAsync0(() {}, max: 3);
+          callback();
+          callback();
+          callback();
+          callback();
+        });
 
-      expectTestFailed(
-          monitor, 'Callback called more times than expected (3).');
-    });
+        expectTestFailed(
+          monitor,
+          'Callback called more times than expected (3).',
+        );
+      },
+    );
 
     test('-1, will allow the callback to be called any number of times', () {
       var callback = expectAsync0(() {}, max: -1);
@@ -271,31 +282,33 @@ void main() {
   });
 
   group('expectAsyncUntil()', () {
-    test("won't allow the test to complete until isDone returns true",
-        () async {
-      late TestCaseMonitor monitor;
-      late Future future;
-      monitor = TestCaseMonitor.start(() {
-        var done = false;
-        var callback = expectAsyncUntil0(() {}, () => done);
+    test(
+      "won't allow the test to complete until isDone returns true",
+      () async {
+        late TestCaseMonitor monitor;
+        late Future future;
+        monitor = TestCaseMonitor.start(() {
+          var done = false;
+          var callback = expectAsyncUntil0(() {}, () => done);
 
-        future = () async {
-          await pumpEventQueue();
-          expect(monitor.state, equals(State.running));
-          callback();
-          await pumpEventQueue();
-          expect(monitor.state, equals(State.running));
-          done = true;
-          callback();
-        }();
-      });
-      await monitor.onDone;
+          future = () async {
+            await pumpEventQueue();
+            expect(monitor.state, equals(State.running));
+            callback();
+            await pumpEventQueue();
+            expect(monitor.state, equals(State.running));
+            done = true;
+            callback();
+          }();
+        });
+        await monitor.onDone;
 
-      expectTestPassed(monitor);
-      // Ensure that the outer test doesn't complete until the inner future
-      // completes.
-      await future;
-    });
+        expectTestPassed(monitor);
+        // Ensure that the outer test doesn't complete until the inner future
+        // completes.
+        await future;
+      },
+    );
 
     test("doesn't call isDone until after the callback is called", () {
       var callbackRun = false;

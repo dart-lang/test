@@ -32,39 +32,45 @@ void main() {
       }
     ''').create();
 
-    var test =
-        await runTest(['test.dart', '--shard-index=0', '--total-shards=3']);
+    var test = await runTest([
+      'test.dart',
+      '--shard-index=0',
+      '--total-shards=3',
+    ]);
     expect(
-        test.stdout,
-        containsInOrder([
-          '+0: test 1',
-          '+1: test 2',
-          '+2: test 3',
-          '+3: All tests passed!'
-        ]));
+      test.stdout,
+      containsInOrder([
+        '+0: test 1',
+        '+1: test 2',
+        '+2: test 3',
+        '+3: All tests passed!',
+      ]),
+    );
     await test.shouldExit(0);
 
     test = await runTest(['test.dart', '--shard-index=1', '--total-shards=3']);
     expect(
-        test.stdout,
-        containsInOrder([
-          '+0: test 4',
-          '+1: test 5',
-          '+2: test 6',
-          '+3: test 7',
-          '+4: All tests passed!'
-        ]));
+      test.stdout,
+      containsInOrder([
+        '+0: test 4',
+        '+1: test 5',
+        '+2: test 6',
+        '+3: test 7',
+        '+4: All tests passed!',
+      ]),
+    );
     await test.shouldExit(0);
 
     test = await runTest(['test.dart', '--shard-index=2', '--total-shards=3']);
     expect(
-        test.stdout,
-        containsInOrder([
-          '+0: test 8',
-          '+1: test 9',
-          '+2: test 10',
-          '+3: All tests passed!'
-        ]));
+      test.stdout,
+      containsInOrder([
+        '+0: test 8',
+        '+1: test 9',
+        '+2: test 10',
+        '+3: All tests passed!',
+      ]),
+    );
     await test.shouldExit(0);
   });
 
@@ -91,44 +97,59 @@ void main() {
 
     var test = await runTest(['.', '--shard-index=0', '--total-shards=3']);
     expect(
-        test.stdout,
-        emitsInOrder([
-          emitsAnyOf([
-            containsInOrder(
-                ['+0: ./1_test.dart: test 1.1', '+1: ./2_test.dart: test 2.1']),
-            containsInOrder(
-                ['+0: ./2_test.dart: test 2.1', '+1: ./1_test.dart: test 1.1'])
+      test.stdout,
+      emitsInOrder([
+        emitsAnyOf([
+          containsInOrder([
+            '+0: ./1_test.dart: test 1.1',
+            '+1: ./2_test.dart: test 2.1',
           ]),
-          contains('+2: All tests passed!')
-        ]));
+          containsInOrder([
+            '+0: ./2_test.dart: test 2.1',
+            '+1: ./1_test.dart: test 1.1',
+          ]),
+        ]),
+        contains('+2: All tests passed!'),
+      ]),
+    );
     await test.shouldExit(0);
 
     test = await runTest(['.', '--shard-index=1', '--total-shards=3']);
     expect(
-        test.stdout,
-        emitsInOrder([
-          emitsAnyOf([
-            containsInOrder(
-                ['+0: ./1_test.dart: test 1.2', '+1: ./2_test.dart: test 2.2']),
-            containsInOrder(
-                ['+0: ./2_test.dart: test 2.2', '+1: ./1_test.dart: test 1.2'])
+      test.stdout,
+      emitsInOrder([
+        emitsAnyOf([
+          containsInOrder([
+            '+0: ./1_test.dart: test 1.2',
+            '+1: ./2_test.dart: test 2.2',
           ]),
-          contains('+2: All tests passed!')
-        ]));
+          containsInOrder([
+            '+0: ./2_test.dart: test 2.2',
+            '+1: ./1_test.dart: test 1.2',
+          ]),
+        ]),
+        contains('+2: All tests passed!'),
+      ]),
+    );
     await test.shouldExit(0);
 
     test = await runTest(['.', '--shard-index=2', '--total-shards=3']);
     expect(
-        test.stdout,
-        emitsInOrder([
-          emitsAnyOf([
-            containsInOrder(
-                ['+0: ./1_test.dart: test 1.3', '+1: ./2_test.dart: test 2.3']),
-            containsInOrder(
-                ['+0: ./2_test.dart: test 2.3', '+1: ./1_test.dart: test 1.3'])
+      test.stdout,
+      emitsInOrder([
+        emitsAnyOf([
+          containsInOrder([
+            '+0: ./1_test.dart: test 1.3',
+            '+1: ./2_test.dart: test 2.3',
           ]),
-          contains('+2: All tests passed!')
-        ]));
+          containsInOrder([
+            '+0: ./2_test.dart: test 2.3',
+            '+1: ./1_test.dart: test 1.3',
+          ]),
+        ]),
+        contains('+2: All tests passed!'),
+      ]),
+    );
     await test.shouldExit(0);
   });
 
@@ -142,8 +163,11 @@ void main() {
       }
     ''').create();
 
-    var test =
-        await runTest(['test.dart', '--shard-index=1', '--total-shards=3']);
+    var test = await runTest([
+      'test.dart',
+      '--shard-index=1',
+      '--total-shards=3',
+    ]);
     expect(test.stdout, emitsThrough('No tests ran.'));
     await test.shouldExit(79);
   });
@@ -152,18 +176,18 @@ void main() {
     test('--shard-index is provided alone', () async {
       var test = await runTest(['--shard-index=1']);
       expect(
-          test.stderr,
-          emits(
-              '--shard-index and --total-shards may only be passed together.'));
+        test.stderr,
+        emits('--shard-index and --total-shards may only be passed together.'),
+      );
       await test.shouldExit(exit_codes.usage);
     });
 
     test('--total-shards is provided alone', () async {
       var test = await runTest(['--total-shards=5']);
       expect(
-          test.stderr,
-          emits(
-              '--shard-index and --total-shards may only be passed together.'));
+        test.stderr,
+        emits('--shard-index and --total-shards may only be passed together.'),
+      );
       await test.shouldExit(exit_codes.usage);
     });
 
@@ -175,8 +199,10 @@ void main() {
 
     test('--shard-index is equal to --total-shards', () async {
       var test = await runTest(['--shard-index=5', '--total-shards=5']);
-      expect(test.stderr,
-          emits('--shard-index must be less than --total-shards.'));
+      expect(
+        test.stderr,
+        emits('--shard-index must be less than --total-shards.'),
+      );
       await test.shouldExit(exit_codes.usage);
     });
   });

@@ -50,9 +50,7 @@ final class Timeout {
   /// Declares a relative timeout that scales the default.
   const Timeout.factor(this.scaleFactor) : duration = null;
 
-  const Timeout._none()
-      : scaleFactor = null,
-        duration = null;
+  const Timeout._none() : scaleFactor = null, duration = null;
 
   /// Parse the timeout from a user-provided string.
   ///
@@ -107,14 +105,14 @@ final class Timeout {
 
   /// Returns the number of microseconds in [number] [unit]s.
   static double _microsecondsFor(double number, String unit) => switch (unit) {
-        'd' => number * 24 * 60 * 60 * 1000000,
-        'h' => number * 60 * 60 * 1000000,
-        'm' => number * 60 * 1000000,
-        's' => number * 1000000,
-        'ms' => number * 1000,
-        'us' => number,
-        _ => throw ArgumentError('Unknown unit $unit.'),
-      };
+    'd' => number * 24 * 60 * 60 * 1000000,
+    'h' => number * 60 * 60 * 1000000,
+    'm' => number * 60 * 1000000,
+    's' => number * 1000000,
+    'ms' => number * 1000,
+    'us' => number,
+    _ => throw ArgumentError('Unknown unit $unit.'),
+  };
 
   /// Returns a new [Timeout] that merges [this] with [other].
   ///

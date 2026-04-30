@@ -15,13 +15,16 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   Subject<int> get length => has((m) => m.length, 'length');
   Subject<V> operator [](K key) {
     return context.nest(
-        () => prefixFirst('contains a value for ', literal(key)), (actual) {
-      if (!actual.containsKey(key)) {
-        return Extracted.rejection(
-            which: prefixFirst('does not contain the key ', literal(key)));
-      }
-      return Extracted.value(actual[key] as V);
-    });
+      () => prefixFirst('contains a value for ', literal(key)),
+      (actual) {
+        if (!actual.containsKey(key)) {
+          return Extracted.rejection(
+            which: prefixFirst('does not contain the key ', literal(key)),
+          );
+        }
+        return Extracted.value(actual[key] as V);
+      },
+    );
   }
 
   void isEmpty() {
@@ -43,67 +46,71 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     context.expect(() => prefixFirst('contains key ', literal(key)), (actual) {
       if (actual.containsKey(key)) return null;
       return Rejection(
-          which: prefixFirst('does not contain key ', literal(key)));
+        which: prefixFirst('does not contain key ', literal(key)),
+      );
     });
   }
 
   /// Expects that the map contains some key such that [keyCondition] is
   /// satisfied.
   void containsKeyThat(Condition<K> keyCondition) {
-    context.expect(() {
-      final conditionDescription = describe(keyCondition);
-      assert(conditionDescription.isNotEmpty);
-      return [
-        'contains a key that:',
-        ...conditionDescription,
-      ];
-    }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: ['an empty map']);
-      for (var k in actual.keys) {
-        if (softCheck(k, keyCondition) == null) return null;
-      }
-      return Rejection(which: ['Contains no matching key']);
-    });
+    context.expect(
+      () {
+        final conditionDescription = describe(keyCondition);
+        assert(conditionDescription.isNotEmpty);
+        return ['contains a key that:', ...conditionDescription];
+      },
+      (actual) {
+        if (actual.isEmpty) return Rejection(actual: ['an empty map']);
+        for (var k in actual.keys) {
+          if (softCheck(k, keyCondition) == null) return null;
+        }
+        return Rejection(which: ['Contains no matching key']);
+      },
+    );
   }
 
   /// Expects that the map contains [value] according to [Map.containsValue].
   void containsValue(V value) {
-    context.expect(() => prefixFirst('contains value ', literal(value)),
-        (actual) {
+    context.expect(() => prefixFirst('contains value ', literal(value)), (
+      actual,
+    ) {
       if (actual.containsValue(value)) return null;
       return Rejection(
-          which: prefixFirst('does not contain value ', literal(value)));
+        which: prefixFirst('does not contain value ', literal(value)),
+      );
     });
   }
 
   /// Expects that the map contains some value such that [valueCondition] is
   /// satisfied.
   void containsValueThat(Condition<V> valueCondition) {
-    context.expect(() {
-      final conditionDescription = describe(valueCondition);
-      assert(conditionDescription.isNotEmpty);
-      return [
-        'contains a value that:',
-        ...conditionDescription,
-      ];
-    }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: ['an empty map']);
-      for (var v in actual.values) {
-        if (softCheck(v, valueCondition) == null) return null;
-      }
-      return Rejection(which: ['Contains no matching value']);
-    });
+    context.expect(
+      () {
+        final conditionDescription = describe(valueCondition);
+        assert(conditionDescription.isNotEmpty);
+        return ['contains a value that:', ...conditionDescription];
+      },
+      (actual) {
+        if (actual.isEmpty) return Rejection(actual: ['an empty map']);
+        for (var v in actual.values) {
+          if (softCheck(v, valueCondition) == null) return null;
+        }
+        return Rejection(which: ['Contains no matching value']);
+      },
+    );
   }
 
   /// Expects that the map contains entries that are deeply equal to the entries
   /// of [expected].
   ///
   /// {@macro deep_collection_equals}
-  void deepEquals(Map<Object?, Object?> expected) => context
-          .expect(() => prefixFirst('is deeply equal to ', literal(expected)),
-              (actual) {
-        final which = deepCollectionEquals(actual, expected);
-        if (which == null) return null;
-        return Rejection(which: which);
-      });
+  void deepEquals(Map<Object?, Object?> expected) => context.expect(
+    () => prefixFirst('is deeply equal to ', literal(expected)),
+    (actual) {
+      final which = deepCollectionEquals(actual, expected);
+      if (which == null) return null;
+      return Rejection(which: which);
+    },
+  );
 }

@@ -30,7 +30,7 @@ final class TestCaseMonitor {
   final LiveTest _liveTest;
   final _done = Completer<void>();
   TestCaseMonitor._(FutureOr<void> Function() body)
-      : _liveTest = _createTest(body);
+    : _liveTest = _createTest(body);
 
   /// Run [body] as a test case and return a [TestCaseMonitor] with the result.
   ///
@@ -124,8 +124,10 @@ LiveTest _createTest(FutureOr<void> Function() body) {
 }
 
 /// A dummy suite platform to use for testing suites.
-final _suitePlatform =
-    SuitePlatform(Runtime.vm, compiler: Runtime.vm.defaultCompiler);
+final _suitePlatform = SuitePlatform(
+  Runtime.vm,
+  compiler: Runtime.vm.defaultCompiler,
+);
 
 /// The running and success state of a test monitored by a [TestCaseMonitor].
 enum State {

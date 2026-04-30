@@ -60,7 +60,10 @@ const _maxDepth = 1000;
 class _ExceededDepthError extends Error {}
 
 Iterable<String>? _deepCollectionEquals(
-    Object actual, Object expected, int depth) {
+  Object actual,
+  Object expected,
+  int depth,
+) {
   assert(actual is Iterable || actual is Map);
   assert(expected is Iterable || expected is Map);
 
@@ -74,56 +77,88 @@ Iterable<String>? _deepCollectionEquals(
     Iterable<String>? rejectionWhich;
     if (currentExpected is Set) {
       rejectionWhich = _findSetDifference(
-          currentActual, currentExpected, path, currentDepth);
+        currentActual,
+        currentExpected,
+        path,
+        currentDepth,
+      );
     } else if (currentExpected is Iterable) {
       rejectionWhich = _findIterableDifference(
-          currentActual, currentExpected, path, queue, currentDepth);
+        currentActual,
+        currentExpected,
+        path,
+        queue,
+        currentDepth,
+      );
     } else {
       currentExpected as Map;
       rejectionWhich = _findMapDifference(
-          currentActual, currentExpected, path, queue, currentDepth);
+        currentActual,
+        currentExpected,
+        path,
+        queue,
+        currentDepth,
+      );
     }
     if (rejectionWhich != null) return rejectionWhich;
   }
   return null;
 }
 
-List<String>? _findIterableDifference(Object? actual,
-    Iterable<Object?> expected, _Path path, Queue<_Search> queue, int depth) {
+List<String>? _findIterableDifference(
+  Object? actual,
+  Iterable<Object?> expected,
+  _Path path,
+  Queue<_Search> queue,
+  int depth,
+) {
   if (actual is! Iterable) {
     return ['${path}is not an Iterable'];
   }
   var actualIterator = actual.iterator;
   var expectedIterator = expected.iterator;
-  for (var index = 0;; index++) {
+  for (var index = 0; ; index++) {
     var actualNext = actualIterator.moveNext();
     var expectedNext = expectedIterator.moveNext();
     if (!expectedNext && !actualNext) break;
     if (!expectedNext) {
       return [
         '${path}has more elements than expected',
-        'expected an iterable with $index element(s)'
+        'expected an iterable with $index element(s)',
       ];
     }
     if (!actualNext) {
       return [
         '${path}has too few elements',
-        'expected an iterable with at least ${index + 1} element(s)'
+        'expected an iterable with at least ${index + 1} element(s)',
       ];
     }
-    final difference = _compareValue(actualIterator.current,
-        expectedIterator.current, path, index, queue, depth);
+    final difference = _compareValue(
+      actualIterator.current,
+      expectedIterator.current,
+      path,
+      index,
+      queue,
+      depth,
+    );
     if (difference != null) return difference;
   }
   return null;
 }
 
-List<String>? _compareValue(Object? actualValue, Object? expectedValue,
-    _Path path, Object? pathAppend, Queue<_Search> queue, int depth) {
+List<String>? _compareValue(
+  Object? actualValue,
+  Object? expectedValue,
+  _Path path,
+  Object? pathAppend,
+  Queue<_Search> queue,
+  int depth,
+) {
   if (expectedValue is Iterable || expectedValue is Map) {
     if (depth + 1 > _maxDepth) throw _ExceededDepthError();
-    queue.addLast(_Search(
-        path.append(pathAppend), actualValue, expectedValue, depth + 1));
+    queue.addLast(
+      _Search(path.append(pathAppend), actualValue, expectedValue, depth + 1),
+    );
   } else if (expectedValue is Condition) {
     final failure = softCheck(actualValue, expectedValue);
     if (failure != null) {
@@ -131,17 +166,19 @@ List<String>? _compareValue(Object? actualValue, Object? expectedValue,
       return [
         'has an element ${path.append(pathAppend)}that:',
         ...indent(failure.detail.actual.skip(1)),
-        ...indent(prefixFirst('Actual: ', failure.rejection.actual),
-            failure.detail.depth + 1),
+        ...indent(
+          prefixFirst('Actual: ', failure.rejection.actual),
+          failure.detail.depth + 1,
+        ),
         if (which != null)
-          ...indent(prefixFirst('which ', which), failure.detail.depth + 1)
+          ...indent(prefixFirst('which ', which), failure.detail.depth + 1),
       ];
     }
   } else {
     if (actualValue != expectedValue) {
       return [
         ...prefixFirst('${path.append(pathAppend)}is ', literal(actualValue)),
-        ...prefixFirst('which does not equal ', literal(expectedValue))
+        ...prefixFirst('which does not equal ', literal(expectedValue)),
       ];
     }
   }
@@ -162,7 +199,11 @@ bool _elementMatches(Object? actual, Object? expected, int depth) {
 }
 
 Iterable<String>? _findSetDifference(
-    Object? actual, Set<Object?> expected, _Path path, int depth) {
+  Object? actual,
+  Set<Object?> expected,
+  _Path path,
+  int depth,
+) {
   if (actual is! Set) {
     return ['${path}is not a Set'];
   }
@@ -182,16 +223,18 @@ Iterable<String>? _findSetDifference(
 }
 
 Iterable<String>? _findMapDifference(
-    Object? actual,
-    Map<Object?, Object?> expected,
-    _Path path,
-    Queue<_Search> queue,
-    int depth) {
+  Object? actual,
+  Map<Object?, Object?> expected,
+  _Path path,
+  Queue<_Search> queue,
+  int depth,
+) {
   if (actual is! Map) {
     return ['${path}is not a Map'];
   }
-  if (expected.keys
-      .any((key) => key is Condition || key is Iterable || key is Map)) {
+  if (expected.keys.any(
+    (key) => key is Condition || key is Iterable || key is Map,
+  )) {
     return _findAmbiguousMapDifference(actual, expected, path, depth);
   } else {
     return _findUnambiguousMapDifference(actual, expected, path, queue, depth);
@@ -204,7 +247,7 @@ Iterable<String> _describeEntry(MapEntry<Object?, Object?> entry) {
   return [
     ...key.take(key.length - 1),
     '${key.last}: ${value.first}',
-    ...value.skip(1)
+    ...value.skip(1),
   ];
 }
 
@@ -212,59 +255,72 @@ Iterable<String> _describeEntry(MapEntry<Object?, Object?> entry) {
 /// when [expected] has only direct key values and there is a 1:1 mapping
 /// between an expected value and a checked value in the map.
 Iterable<String>? _findUnambiguousMapDifference(
-    Map<Object?, Object?> actual,
-    Map<Object?, Object?> expected,
-    _Path path,
-    Queue<_Search> queue,
-    int depth) {
+  Map<Object?, Object?> actual,
+  Map<Object?, Object?> expected,
+  _Path path,
+  Queue<_Search> queue,
+  int depth,
+) {
   for (final entry in expected.entries) {
     assert(entry.key is! Condition);
     assert(entry.key is! Iterable);
     assert(entry.key is! Map);
     if (!actual.containsKey(entry.key)) {
       return prefixFirst(
-          '${path}has no key matching expected entry ', _describeEntry(entry));
+        '${path}has no key matching expected entry ',
+        _describeEntry(entry),
+      );
     }
     final difference = _compareValue(
-        actual[entry.key], entry.value, path, entry.key, queue, depth);
+      actual[entry.key],
+      entry.value,
+      path,
+      entry.key,
+      queue,
+      depth,
+    );
     if (difference != null) return difference;
   }
   for (final entry in actual.entries) {
     if (!expected.containsKey(entry.key)) {
       return prefixFirst(
-          '${path}has an unexpected key for entry ', _describeEntry(entry));
+        '${path}has an unexpected key for entry ',
+        _describeEntry(entry),
+      );
     }
   }
   return null;
 }
 
-Iterable<String>? _findAmbiguousMapDifference(Map<Object?, Object?> actual,
-        Map<Object?, Object?> expected, _Path path, int depth) =>
-    unorderedCompare(
-      actual.entries,
-      expected.entries,
-      (actual, expected) =>
-          _elementMatches(actual.key, expected.key, depth) &&
-          _elementMatches(actual.value, expected.value, depth),
-      (expectedEntry, _, count) => [
-        ...prefixFirst(
-            '${path}has no entry to match ', _describeEntry(expectedEntry)),
-        if (count > 1) 'or ${count - 1} other entries',
-      ],
-      (actualEntry, _, count) => [
-        ...prefixFirst(
-            '${path}has unexpected entry ', _describeEntry(actualEntry)),
-        if (count > 1) 'and ${count - 1} other unexpected entries',
-      ],
-    );
+Iterable<String>? _findAmbiguousMapDifference(
+  Map<Object?, Object?> actual,
+  Map<Object?, Object?> expected,
+  _Path path,
+  int depth,
+) => unorderedCompare(
+  actual.entries,
+  expected.entries,
+  (actual, expected) =>
+      _elementMatches(actual.key, expected.key, depth) &&
+      _elementMatches(actual.value, expected.value, depth),
+  (expectedEntry, _, count) => [
+    ...prefixFirst(
+      '${path}has no entry to match ',
+      _describeEntry(expectedEntry),
+    ),
+    if (count > 1) 'or ${count - 1} other entries',
+  ],
+  (actualEntry, _, count) => [
+    ...prefixFirst('${path}has unexpected entry ', _describeEntry(actualEntry)),
+    if (count > 1) 'and ${count - 1} other unexpected entries',
+  ],
+);
 
 class _Path {
   final _Path? parent;
   final Object? index;
   _Path._(this.parent, this.index);
-  _Path.root()
-      : parent = null,
-        index = '';
+  _Path.root() : parent = null, index = '';
   _Path append(Object? index) => _Path._(this, index);
 
   @override
@@ -312,11 +368,12 @@ class _Search {
 /// elements which compare as equal the runtime can reach
 /// `O((|actual| + |expected|)^2.5)`.
 Iterable<String>? unorderedCompare<T, E>(
-    Iterable<T> actual,
-    Iterable<E> expected,
-    bool Function(T, E) elementsEqual,
-    Iterable<String> Function(E, int index, int count) unmatchedExpected,
-    Iterable<String> Function(T, int index, int count) unmatchedActual) {
+  Iterable<T> actual,
+  Iterable<E> expected,
+  bool Function(T, E) elementsEqual,
+  Iterable<String> Function(E, int index, int count) unmatchedExpected,
+  Iterable<String> Function(T, int index, int count) unmatchedActual,
+) {
   final indexedExpected = expected.toList();
   final indexedActual = actual.toList();
   final adjacency = <List<int>>[];
@@ -324,7 +381,7 @@ Iterable<String>? unorderedCompare<T, E>(
     final expectedElement = indexedExpected[i];
     final pairs = [
       for (var j = 0; j < indexedActual.length; j++)
-        if (elementsEqual(indexedActual[j], expectedElement)) j
+        if (elementsEqual(indexedActual[j], expectedElement)) j,
     ];
     adjacency.add(pairs);
   }
@@ -332,12 +389,18 @@ Iterable<String>? unorderedCompare<T, E>(
   if (unpaired.first.isNotEmpty) {
     final firstUnmatched = indexedExpected[unpaired.first.first];
     return unmatchedExpected(
-        firstUnmatched, unpaired.first.first, unpaired.first.length);
+      firstUnmatched,
+      unpaired.first.first,
+      unpaired.first.length,
+    );
   }
   if (unpaired.last.isNotEmpty) {
     final firstUnmatched = indexedActual[unpaired.last.first];
     return unmatchedActual(
-        firstUnmatched, unpaired.last.first, unpaired.last.length);
+      firstUnmatched,
+      unpaired.last.first,
+      unpaired.last.length,
+    );
   }
   return null;
 }
@@ -421,11 +484,11 @@ List<List<int>> _findUnpaired(List<List<int>> adjacency, int rightVertexCount) {
   return [
     [
       for (int i = 0; i < leftLength; i++)
-        if (leftPairs[i] == rightLength) i
+        if (leftPairs[i] == rightLength) i,
     ],
     [
       for (int i = 0; i < rightLength; i++)
-        if (rightPairs[i] == leftLength) i
-    ]
+        if (rightPairs[i] == leftLength) i,
+    ],
   ];
 }

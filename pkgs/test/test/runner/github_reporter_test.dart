@@ -24,33 +24,43 @@ void main() {
   });
 
   test('runs several successful tests and reports when each completes', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('success 1', () {});
         test('success 2', () {});
-        test('success 3', () {});''', '''
+        test('success 3', () {});''',
+      '''
+        ::group::✅ Passing tests
         ✅ success 1
         ✅ success 2
         ✅ success 3
-        🎉 3 tests passed.''');
+        ::endgroup::
+        🎉 3 tests passed.''',
+    );
   });
 
   test('includes the platform name when multiple platforms are run', () {
-    return _expectReportLines('''
-        test('success 1', () {});''', [
-      '✅ [VM, Kernel] success 1',
-      '✅ [Chrome, Dart2Js] success 1',
-      '🎉 2 tests passed.',
-    ], args: [
-      '-p',
-      'vm,chrome'
-    ]);
+    return _expectReportLines(
+      '''
+        test('success 1', () {});''',
+      [
+        '::group::✅ Passing tests',
+        '✅ [VM, Kernel] success 1',
+        '✅ [Chrome, Dart2Js] success 1',
+        '::endgroup::',
+        '🎉 2 tests passed.',
+      ],
+      args: ['-p', 'vm,chrome'],
+    );
   });
 
   test('runs several failing tests and reports when each fails', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('failure 2', () => throw TestFailure('oh no'));
-        test('failure 3', () => throw TestFailure('oh no'));''', '''
+        test('failure 3', () => throw TestFailure('oh no'));''',
+      '''
         ::group::❌ failure 1 (failed)
         oh no
         test.dart 6:33  main.<fn>
@@ -63,7 +73,8 @@ void main() {
         oh no
         test.dart 8:33  main.<fn>
         ::endgroup::
-        ::error::0 tests passed, 3 failed.''');
+        ::error::0 tests passed, 3 failed.''',
+    );
   });
 
   test('includes the full stack trace with --verbose-trace', () async {
@@ -77,29 +88,38 @@ void main() {
 }
 ''').create();
 
-    var test =
-        await runTest(['--verbose-trace', 'test.dart'], reporter: 'github');
+    var test = await runTest([
+      '--verbose-trace',
+      'test.dart',
+    ], reporter: 'github');
     expect(test.stdout, emitsThrough(contains('dart:async')));
     await test.shouldExit(1);
   });
 
   test('runs failing tests along with successful tests', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         test('failure 1', () => throw TestFailure('oh no'));
         test('success 1', () {});
         test('failure 2', () => throw TestFailure('oh no'));
-        test('success 2', () {});''', '''
+        test('success 2', () {});''',
+      '''
         ::group::❌ failure 1 (failed)
         oh no
         test.dart 6:33  main.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ success 1
+        ::endgroup::
         ::group::❌ failure 2 (failed)
         oh no
         test.dart 8:33  main.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ success 2
-        ::error::2 tests passed, 2 failed.''');
+        ::endgroup::
+        ::error::2 tests passed, 2 failed.''',
+    );
   });
 
   test('always prints the full test name', () {
@@ -115,7 +135,8 @@ void main() {
   });
 
   test('gracefully handles multiple test failures in a row', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
         // This completer ensures that the test isolate isn't killed until all
         // errors have been thrown.
         var completer = Completer();
@@ -125,7 +146,8 @@ void main() {
           Future.microtask(() => throw 'third error');
           Future.microtask(completer.complete);
         });
-        test('wait', () => completer.future);''', '''
+        test('wait', () => completer.future);''',
+      '''
         ::group::❌ failures (failed)
         first error
         test.dart 10:34  main.<fn>.<fn>
@@ -134,8 +156,11 @@ void main() {
         third error
         test.dart 12:34  main.<fn>.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ wait
-        ::error::1 test passed, 1 failed.''');
+        ::endgroup::
+        ::error::1 test passed, 1 failed.''',
+    );
   });
 
   test('displays failures occuring after a test completes', () {
@@ -149,7 +174,9 @@ void main() {
 
       test('second test so that the first failure is reported', () {});''',
       '''
+        ::group::✅ Passing tests
         ✅ fail after completion
+        ::endgroup::
         ::group::❌ fail after completion (failed after test completion)
         foo
         test.dart 8:62  main.<fn>.<fn>
@@ -160,7 +187,9 @@ void main() {
         of pending async work.
         test.dart 8:62  main.<fn>.<fn>
         ::endgroup::
+        ::group::✅ Passing tests
         ✅ second test so that the first failure is reported
+        ::endgroup::
         ::error::1 test passed, 1 failed.''',
     );
   });
@@ -187,7 +216,8 @@ void main() {
     });
 
     test('handles a print after the test completes', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
         // This completer ensures that the test isolate isn't killed until all
         // prints have happened.
         var testDone = Completer();
@@ -205,118 +235,169 @@ void main() {
         test('wait', () {
           waitStarted.complete();
           return testDone.future;
-        });''', '''
+        });''',
+        '''
+        ::group::✅ Passing tests
         ✅ test
+        ::endgroup::
         one
         two
         three
         four
+        ::group::✅ Passing tests
         ✅ wait
-        🎉 2 tests passed.''');
+        ::endgroup::
+        🎉 2 tests passed.''',
+      );
     });
   });
 
   group('skip:', () {
     test('displays skipped tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('skip 2', () {}, skip: true);
-          test('skip 3', () {}, skip: true);''', '''
-          ❎ skip 1 (skipped)
-          ❎ skip 2 (skipped)
-          ❎ skip 3 (skipped)
-          🎉 0 tests passed, 3 skipped.''');
+          test('skip 3', () {}, skip: true);''',
+        '''
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ⏭️ skip 2 (skipped)
+          ⏭️ skip 3 (skipped)
+          ::endgroup::
+          🎉 0 tests passed, 3 skipped.''',
+      );
     });
 
     test('displays a skipped group', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           group('skip', () {
             test('test 1', () {});
             test('test 2', () {});
             test('test 3', () {});
-          }, skip: true);''', '''
-          ❎ skip test 1 (skipped)
-          ❎ skip test 2 (skipped)
-          ❎ skip test 3 (skipped)
-          🎉 0 tests passed, 3 skipped.''');
+          }, skip: true);''',
+        '''
+          ::group::⏭️ Skipped tests
+          ⏭️ skip test 1 (skipped)
+          ⏭️ skip test 2 (skipped)
+          ⏭️ skip test 3 (skipped)
+          ::endgroup::
+          🎉 0 tests passed, 3 skipped.''',
+      );
     });
 
     test('runs skipped tests along with successful tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
-          ❎ skip 1 (skipped)
+          test('success 2', () {});''',
+        '''
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 1
-          ❎ skip 2 (skipped)
+          ::endgroup::
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 2 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 2
-          🎉 2 tests passed, 2 skipped.''');
+          ::endgroup::
+          🎉 2 tests passed, 2 skipped.''',
+      );
     });
 
     test('runs skipped tests along with successful and failing tests', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('failure 1', () => throw TestFailure('oh no'));
           test('skip 1', () {}, skip: true);
           test('success 1', () {});
           test('failure 2', () => throw TestFailure('oh no'));
           test('skip 2', () {}, skip: true);
-          test('success 2', () {});''', '''
+          test('success 2', () {});''',
+        '''
           ::group::❌ failure 1 (failed)
           oh no
           test.dart 6:35  main.<fn>
           ::endgroup::
-          ❎ skip 1 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 1
+          ::endgroup::
           ::group::❌ failure 2 (failed)
           oh no
           test.dart 9:35  main.<fn>
           ::endgroup::
-          ❎ skip 2 (skipped)
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 2 (skipped)
+          ::endgroup::
+          ::group::✅ Passing tests
           ✅ success 2
-          ::error::2 tests passed, 2 failed, 2 skipped.''');
+          ::endgroup::
+          ::error::2 tests passed, 2 failed, 2 skipped.''',
+      );
     });
 
     test('displays the skip reason if available', () {
-      return _expectReport('''
+      return _expectReport(
+        '''
           test('skip 1', () {}, skip: 'some reason');
-          test('skip 2', () {}, skip: 'or another');''', '''
-          ::group::❎ skip 1 (skipped)
+          test('skip 2', () {}, skip: 'or another');''',
+        '''
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           Skip: some reason
-          ::endgroup::
-          ::group::❎ skip 2 (skipped)
+          ⏭️ skip 2 (skipped)
           Skip: or another
           ::endgroup::
-          🎉 0 tests passed, 2 skipped.''');
+          🎉 0 tests passed, 2 skipped.''',
+      );
     });
   });
 
   test('loadSuite, setUpAll, and tearDownAll hidden if no content', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
           group('one', () {
             setUpAll(() {/* nothing to do here */});
             tearDownAll(() {/* nothing to do here */});
             test('test 1', () {});
-          });''', '''
+          });''',
+      '''
+          ::group::✅ Passing tests
           ✅ one test 1
-          🎉 1 test passed.''');
+          ::endgroup::
+          🎉 1 test passed.''',
+    );
   });
 
   test('setUpAll and tearDownAll show when they have content', () {
-    return _expectReport('''
+    return _expectReport(
+      '''
           group('one', () {
             setUpAll(() { print('one'); });
             tearDownAll(() { print('two'); });
             test('test 1', () {});
-          });''', '''
+          });''',
+      '''
           ::group::✅ one (setUpAll)
           one
           ::endgroup::
+          ::group::✅ Passing tests
           ✅ one test 1
+          ::endgroup::
           ::group::✅ one (tearDownAll)
           two
           ::endgroup::
-          🎉 1 test passed.''');
+          🎉 1 test passed.''',
+    );
   });
 }
 
@@ -360,10 +441,7 @@ $tests
     }
   ''').create();
 
-  var test = await runTest([
-    'test.dart',
-    ...args,
-  ], reporter: 'github');
+  var test = await runTest(['test.dart', ...args], reporter: 'github');
   await test.shouldExit();
 
   var stdoutLines = await test.stdoutStream().toList();

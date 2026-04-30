@@ -59,13 +59,15 @@ class TypeMatcher<T> extends Matcher {
   /// Create a matcher matches instances of type [T].
   ///
   /// For a fluent API to create TypeMatchers see [isA].
-  const TypeMatcher(
-      [@Deprecated('Provide a type argument to TypeMatcher and omit the name. '
-          'This argument will be removed in the next release.')
-      String? name])
-      : _name =
-            // ignore: deprecated_member_use_from_same_package
-            name;
+  const TypeMatcher([
+    @Deprecated(
+      'Provide a type argument to TypeMatcher and omit the name. '
+      'This argument will be removed in the next release.',
+    )
+    String? name,
+  ]) : _name =
+           // ignore: deprecated_member_use_from_same_package
+           name;
 
   /// Returns a new [TypeMatcher] that validates the existing type as well as
   /// a specific [feature] of the object with the provided [matcher].
@@ -83,8 +85,10 @@ class TypeMatcher<T> extends Matcher {
   /// ```
   @useResult
   TypeMatcher<T> having(
-          Object? Function(T) feature, String description, dynamic matcher) =>
-      HavingMatcher(this, description, feature, matcher);
+    Object? Function(T) feature,
+    String description,
+    dynamic matcher,
+  ) => HavingMatcher(this, description, feature, matcher);
 
   @override
   Description describe(Description description) {
@@ -96,8 +100,12 @@ class TypeMatcher<T> extends Matcher {
   bool matches(Object? item, Map matchState) => item is T;
 
   @override
-  Description describeMismatch(dynamic item, Description mismatchDescription,
-      Map matchState, bool verbose) {
+  Description describeMismatch(
+    dynamic item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     var name = _name ?? _stripDynamic(T);
     return mismatchDescription.add("is not an instance of '$name'");
   }

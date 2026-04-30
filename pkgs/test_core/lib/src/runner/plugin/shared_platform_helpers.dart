@@ -16,6 +16,9 @@ StreamChannel<Object?> jsonSocketStreamChannel(Socket socket) =>
         .cast<List<int>>()
         .transform(StreamChannelTransformer.fromCodec(utf8))
         .transformStream(const LineSplitter())
-        .transformSink(StreamSinkTransformer.fromHandlers(
-            handleData: (original, sink) => sink.add('$original\n')))
+        .transformSink(
+          StreamSinkTransformer.fromHandlers(
+            handleData: (original, sink) => sink.add('$original\n'),
+          ),
+        )
         .transform(jsonDocument);

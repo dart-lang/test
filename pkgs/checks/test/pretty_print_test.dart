@@ -10,8 +10,10 @@ void main() {
   group('literal', () {
     group('truncates large collections', () {
       const maxUntruncatedCollection = 25;
-      final largeList =
-          List<int>.generate(maxUntruncatedCollection + 1, (i) => i);
+      final largeList = List<int>.generate(
+        maxUntruncatedCollection + 1,
+        (i) => i,
+      );
       test('in lists', () {
         check(literal(largeList)).last.equals('...]');
       });
@@ -21,10 +23,22 @@ void main() {
       test('in iterables', () {
         check(literal(largeList.followedBy([]))).last.equals('...)');
       });
+      test('without processing truncated elements', () {
+        final poisonedList = [...largeList, _PoisonToString()];
+        check(() {
+          literal(poisonedList);
+        }).returnsNormally();
+      });
       test('in maps', () {
         final map = Map<int, int>.fromIterables(largeList, largeList);
         check(literal(map)).last.equals('...}');
       });
     });
   });
+}
+
+class _PoisonToString {
+  @override
+  String toString() =>
+      throw StateError('Truncated entry should not be processed');
 }

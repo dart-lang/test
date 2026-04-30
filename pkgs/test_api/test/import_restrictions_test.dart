@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn('!exe')
+library;
+
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
@@ -26,13 +29,18 @@ void main() {
       final entryPoints = [
         _testApiLibrary('backend.dart'),
         ...await _ImportCheck.findEntrypointsUnder(
-            _testApiLibrary('src/backend'))
+          _testApiLibrary('src/backend'),
+        ),
       ];
-      await for (final source
-          in importCheck.transitiveSamePackageSources(entryPoints)) {
+      await for (final source in importCheck.transitiveSamePackageSources(
+        entryPoints,
+      )) {
         for (final import in source.imports) {
-          expect(import.pathSegments.skip(1).take(2), ['src', 'backend'],
-              reason: 'Invalid import from ${source.uri} : $import');
+          expect(
+            import.pathSegments.skip(1).take(2),
+            ['src', 'backend'],
+            reason: 'Invalid import from ${source.uri} : $import',
+          );
         }
       }
     });
@@ -65,8 +73,9 @@ class _ImportCheck {
     final libPath = await _pathForUri(libUri);
     final packagePath = p.dirname(libPath);
 
-    final contexts =
-        AnalysisContextCollection(includedPaths: [packagePath]).contexts;
+    final contexts = AnalysisContextCollection(
+      includedPaths: [packagePath],
+    ).contexts;
     if (contexts.length != 1) {
       throw StateError('Expected to find exactly one context, got $contexts');
     }
@@ -88,17 +97,20 @@ class _ImportCheck {
     final package = entryPoints.first.pathSegments.first;
     assert(entryPoints.skip(1).every((e) => e.pathSegments.first == package));
     return crawlAsync<Uri, _Source>(
-        entryPoints,
-        (uri) async => _Source(uri, await _findImports(uri, package)),
-        (_, source) => source.imports);
+      entryPoints,
+      (uri) async => _Source(uri, await _findImports(uri, package)),
+      (_, source) => source.imports,
+    );
   }
 
   Future<Set<Uri>> _findImports(Uri uri, String restrictToPackage) async {
     var path = await _pathForUri(uri);
     var analysisSession = _context.currentSession;
     var parseResult = analysisSession.getParsedUnit(path) as ParsedUnitResult;
-    assert(parseResult.content.isNotEmpty,
-        'Tried to read an invalid library $uri');
+    assert(
+      parseResult.content.isNotEmpty,
+      'Tried to read an invalid library $uri',
+    );
     return parseResult.unit.directives
         .whereType<UriBasedDirective>()
         .map((d) => d.uri.stringValue!)

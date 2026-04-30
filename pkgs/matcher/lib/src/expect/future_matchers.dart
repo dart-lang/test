@@ -36,9 +36,10 @@ final Matcher completes = const _Completes(null);
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
-Matcher completion(Object? matcher,
-        [@Deprecated('this parameter is ignored') String? description]) =>
-    _Completes(wrapMatcher(matcher));
+Matcher completion(
+  Object? matcher, [
+  @Deprecated('this parameter is ignored') String? description,
+]) => _Completes(wrapMatcher(matcher));
 
 class _Completes extends AsyncMatcher {
   final Matcher? _matcher;
@@ -103,8 +104,10 @@ class _DoesNotComplete extends Matcher {
   bool matches(Object? item, Map matchState) {
     if (item is! Future) return false;
     item.then((value) {
-      fail('Future was not expected to complete but completed with a value of '
-          '$value');
+      fail(
+        'Future was not expected to complete but completed with a value of '
+        '$value',
+      );
     });
     expect(pumpEventQueue(), completes);
     return true;
@@ -112,7 +115,11 @@ class _DoesNotComplete extends Matcher {
 
   @override
   Description describeMismatch(
-      Object? item, Description description, Map matchState, bool verbose) {
+    Object? item,
+    Description description,
+    Map matchState,
+    bool verbose,
+  ) {
     if (item is! Future) return description.add('$item is not a Future');
     return description;
   }

@@ -61,7 +61,13 @@ class Engine {
   bool? _closedBeforeDone;
 
   /// The coverage output directory.
-  String? _coverage;
+  final String? _coverage;
+
+  /// The coverage output lcov file.
+  final String? _coverageLcov;
+
+  /// The merged coverage data from all tests.
+  final Coverage _allCoverageData = {};
 
   /// The seed used to generate randomness for test case shuffling.
   ///
@@ -92,11 +98,12 @@ class Engine {
   /// This will be `null` if [close] was called before all the tests finished
   /// running.
   Future<bool?> get success async {
-    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
-    if (_closedBeforeDone!) return null;
-    return liveTests.every((liveTest) =>
-        liveTest.state.result.isPassing &&
-        liveTest.state.status == Status.complete);
+    if (!await _done) return null;
+    return liveTests.every(
+      (liveTest) =>
+          liveTest.state.result.isPassing &&
+          liveTest.state.status == Status.complete,
+    );
   }
 
   /// A group of futures for each test suite.
@@ -150,9 +157,12 @@ class Engine {
   /// [skipped], [failed], and [active].
   ///
   /// [LiveTest.run] must not be called on these tests.
-  Set<LiveTest> get liveTests =>
-      UnionSet.from([passed, skipped, failed, IterableSet(active)],
-          disjoint: true);
+  Set<LiveTest> get liveTests => UnionSet.from([
+    passed,
+    skipped,
+    failed,
+    IterableSet(active),
+  ], disjoint: true);
 
   /// A stream that emits each [LiveTest] as it's about to start running.
   ///
@@ -211,18 +221,22 @@ class Engine {
   Engine({
     int? concurrency,
     String? coverage,
+    String? coverageLcov,
     this.testRandomizeOrderingSeed,
     bool stopOnFirstFailure = false,
-  })  : _runPool = Pool(concurrency ?? 1),
-        _stopOnFirstFailure = stopOnFirstFailure,
-        _coverage = coverage {
-    _group.future.then((_) {
-      _onTestStartedGroup.close();
-      _onSuiteStartedController.close();
-      _closedBeforeDone ??= false;
-    }).onError((_, __) {
-      // Don't top-level errors. They'll be thrown via [success] anyway.
-    });
+  }) : _runPool = Pool(concurrency ?? 1),
+       _stopOnFirstFailure = stopOnFirstFailure,
+       _coverage = coverage,
+       _coverageLcov = coverageLcov {
+    _group.future
+        .then((_) {
+          _onTestStartedGroup.close();
+          _onSuiteStartedController.close();
+          _closedBeforeDone ??= false;
+        })
+        .onError((_, _) {
+          // Don't top-level errors. They'll be thrown via [success] anyway.
+        });
   }
 
   /// Creates an [Engine] that will run all tests in [suites].
@@ -232,11 +246,17 @@ class Engine {
   ///
   /// [concurrency] controls how many suites are run at once. If [runSkipped] is
   /// `true`, skipped tests will be run as though they weren't skipped.
-  factory Engine.withSuites(List<RunnerSuite> suites,
-      {int? concurrency, String? coverage, bool stopOnFirstFailure = false}) {
+  factory Engine.withSuites(
+    List<RunnerSuite> suites, {
+    int? concurrency,
+    String? coverage,
+    String? coverageLcov,
+    bool stopOnFirstFailure = false,
+  }) {
     var engine = Engine(
       concurrency: concurrency,
       coverage: coverage,
+      coverageLcov: coverageLcov,
       stopOnFirstFailure: stopOnFirstFailure,
     );
     for (var suite in suites) {
@@ -282,17 +302,25 @@ class Engine {
             if (_closed) return;
             await _runGroup(controller, controller.liveSuite.suite.group, []);
             controller.noMoreLiveTests();
-            if (_coverage != null) await writeCoverage(_coverage!, controller);
+            if (_coverage != null || _coverageLcov != null) {
+              _allCoverageData.merge(
+                await writeCoverage(_coverage, controller),
+              );
+            }
           } finally {
             resource.allowRelease(() => controller?.close());
           }
         }());
       })
-      ..onDone(() {
+      ..onDone(() async {
         _subscriptions.remove(subscription);
         _onSuiteAddedController.close();
         _group.close();
         _runPool.close();
+
+        if (_coverageLcov != null && await _done) {
+          await writeCoverageLcov(_coverageLcov, _allCoverageData);
+        }
       });
     _subscriptions.add(subscription);
 
@@ -305,16 +333,21 @@ class Engine {
   /// [parents] is a list of groups that contain [group]. It may be modified,
   /// but it's guaranteed to be in its original state once this function has
   /// finished.
-  Future _runGroup(LiveSuiteController suiteController, Group group,
-      List<Group> parents) async {
+  Future _runGroup(
+    LiveSuiteController suiteController,
+    Group group,
+    List<Group> parents,
+  ) async {
     parents.add(group);
     try {
       var suiteConfig = suiteController.liveSuite.suite.config;
       var skipGroup = !suiteConfig.runSkipped && group.metadata.skip;
       var setUpAllSucceeded = true;
       if (!skipGroup && group.setUpAll != null) {
-        var liveTest = group.setUpAll!
-            .load(suiteController.liveSuite.suite, groups: parents);
+        var liveTest = group.setUpAll!.load(
+          suiteController.liveSuite.suite,
+          groups: parents,
+        );
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
         setUpAllSucceeded = liveTest.state.result.isPassing;
       }
@@ -337,8 +370,10 @@ class Engine {
             await _runSkippedTest(suiteController, entry as Test, parents);
           } else {
             var test = entry as Test;
-            await _runLiveTest(suiteController,
-                test.load(suiteController.liveSuite.suite, groups: parents));
+            await _runLiveTest(
+              suiteController,
+              test.load(suiteController.liveSuite.suite, groups: parents),
+            );
           }
         }
       }
@@ -346,8 +381,10 @@ class Engine {
       // Even if we're closed or setUpAll failed, we want to run all the
       // teardowns to ensure that any state is properly cleaned up.
       if (!skipGroup && group.tearDownAll != null) {
-        var liveTest = group.tearDownAll!
-            .load(suiteController.liveSuite.suite, groups: parents);
+        var liveTest = group.tearDownAll!.load(
+          suiteController.liveSuite.suite,
+          groups: parents,
+        );
         await _runLiveTest(suiteController, liveTest, countSuccess: false);
         if (_closed) await liveTest.close();
       }
@@ -360,8 +397,11 @@ class Engine {
   ///
   /// If [countSuccess] is `true` (the default), the test is put into [passed]
   /// if it succeeds. Otherwise, it's removed from [liveTests] entirely.
-  Future _runLiveTest(LiveSuiteController suiteController, LiveTest liveTest,
-      {bool countSuccess = true}) async {
+  Future _runLiveTest(
+    LiveSuiteController suiteController,
+    LiveTest liveTest, {
+    bool countSuccess = true,
+  }) async {
     await _onUnpaused;
     _active.add(liveTest);
 
@@ -392,8 +432,11 @@ class Engine {
       }
       return;
     }
-    await _runLiveTest(suiteController, liveTest.copy(),
-        countSuccess: countSuccess);
+    await _runLiveTest(
+      suiteController,
+      liveTest.copy(),
+      countSuccess: countSuccess,
+    );
     _restarted.remove(liveTest);
   }
 
@@ -401,25 +444,40 @@ class Engine {
   ///
   /// [suiteController] is the controller for the suite that contains [test].
   /// [parents] is a list of groups that contain [test].
-  Future _runSkippedTest(LiveSuiteController suiteController, Test test,
-      List<Group> parents) async {
+  Future _runSkippedTest(
+    LiveSuiteController suiteController,
+    Test test,
+    List<Group> parents,
+  ) async {
     await _onUnpaused;
-    var skipped = LocalTest(test.name, test.metadata, () {}, trace: test.trace);
+    var skipped = LocalTest(
+      test.name,
+      test.metadata,
+      () {},
+      trace: test.trace,
+      location: test.location,
+    );
 
     late LiveTestController controller;
-    controller =
-        LiveTestController(suiteController.liveSuite.suite, skipped, () {
-      controller.setState(const State(Status.running, Result.success));
-      controller.setState(const State(Status.running, Result.skipped));
+    controller = LiveTestController(
+      suiteController.liveSuite.suite,
+      skipped,
+      () {
+        controller.setState(const State(Status.running, Result.success));
+        controller.setState(const State(Status.running, Result.skipped));
 
-      if (skipped.metadata.skipReason != null) {
-        controller
-            .message(Message.skip('Skip: ${skipped.metadata.skipReason}'));
-      }
+        if (skipped.metadata.skipReason != null) {
+          controller.message(
+            Message.skip('Skip: ${skipped.metadata.skipReason}'),
+          );
+        }
 
-      controller.setState(const State(Status.complete, Result.skipped));
-      controller.completer.complete();
-    }, () {}, groups: parents);
+        controller.setState(const State(Status.complete, Result.skipped));
+        controller.completer.complete();
+      },
+      () {},
+      groups: parents,
+    );
 
     return await _runLiveTest(suiteController, controller);
   }
@@ -434,8 +492,10 @@ class Engine {
     }
 
     if (!_active.contains(liveTest)) {
-      throw StateError("Can't restart inactive test "
-          '"${liveTest.test.name}".');
+      throw StateError(
+        "Can't restart inactive test "
+        '"${liveTest.test.name}".',
+      );
     }
 
     _restarted.add(liveTest);
@@ -475,14 +535,16 @@ class Engine {
     if (innerSuite == null) return null;
 
     var innerController = LiveSuiteController(innerSuite);
-    unawaited(innerController.liveSuite.onClose.whenComplete(() {
-      // When the main suite is closed, close the load suite and its test as
-      // well. This doesn't release any resources, but it does close streams
-      // which indicates that the load test won't experience an error in the
-      // future.
-      liveTest.close();
-      controller.close();
-    }));
+    unawaited(
+      innerController.liveSuite.onClose.whenComplete(() {
+        // When the main suite is closed, close the load suite and its test as
+        // well. This doesn't release any resources, but it does close streams
+        // which indicates that the load test won't experience an error in the
+        // future.
+        liveTest.close();
+        controller.close();
+      }),
+    );
 
     return innerController;
   }
@@ -549,5 +611,10 @@ class Engine {
     // to wait for tearDowns or tearDownAlls to run.
     futures.add(_runPool.close());
     await Future.wait(futures, eagerError: true);
+  }
+
+  Future<bool> get _done async {
+    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
+    return !_closedBeforeDone!;
   }
 }

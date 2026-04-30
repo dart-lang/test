@@ -1,4 +1,13 @@
-## 1.3.3-wip
+## 1.3.3
+
+* Make the zone `create*Timer` and `scheduleMicrotask`
+  be responsible for running callbacks in the zone they're
+  scheduled in, matching (new) standard zone behavior.
+  (The `Timer` constructors and top-level `scheduleMicrotask`
+  used to bind their callback, but now only registers it,
+  leaving the zone to run in the correct zone and handle errors.)
+* Make periodic timers increment their `tick` by more than one
+  if `elapseBlocking` advanced time past multiple ticks.
 
 ## 1.3.2
 
@@ -7,7 +16,6 @@
   the callback of a periodic timer would immediately invoke
   the same timer.
 * Move to `dart-lang/test` monorepo.
-* Require Dart 3.5.
 
 ## 1.3.1
 

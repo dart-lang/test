@@ -2,6 +2,7 @@ name: test_descriptor
 version: 2.0.2
 description: An API for defining and verifying files and directory structures.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_descriptor
+issue_tracker: https://github.com/dart-lang/test/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Atest_descriptor
 
 environment:
   sdk: ^3.1.0

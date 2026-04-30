@@ -33,7 +33,10 @@ class WasmCompilerPool extends CompilerPool {
   /// *and* all its output has been printed to the command line.
   @override
   Future compileInternal(
-      String code, String path, SuiteConfiguration suiteConfig) {
+    String code,
+    String path,
+    SuiteConfiguration suiteConfig,
+  ) {
     return withTempDir((dir) async {
       final wrapperPath = p.join(dir, 'main.dart');
       File(wrapperPath).writeAsStringSync(code);
@@ -88,9 +91,11 @@ class WasmCompilerPool extends CompilerPool {
   /// have been killed and all resources released.
   @override
   Future<void> closeInternal() async {
-    await Future.wait(_processes.map((process) async {
-      process.kill();
-      await process.exitCode;
-    }));
+    await Future.wait(
+      _processes.map((process) async {
+        process.kill();
+        await process.exitCode;
+      }),
+    );
   }
 }

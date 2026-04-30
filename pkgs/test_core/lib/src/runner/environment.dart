@@ -51,5 +51,6 @@ class PluginEnvironment implements Environment {
 
   @override
   CancelableOperation displayPause() => throw UnsupportedError(
-      'PluginEnvironment.displayPause is not supported.');
+    'PluginEnvironment.displayPause is not supported.',
+  );
 }

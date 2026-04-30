@@ -5,8 +5,8 @@
 import 'dart:async';
 
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import '../../util/pretty_print.dart';
 import '../engine.dart';
@@ -89,26 +89,35 @@ class FailuresOnlyReporter implements Reporter {
   /// won't. If [printPath] is `true`, this will print the path name as part of
   /// the test description. Likewise, if [printPlatform] is `true`, this will
   /// print the platform as part of the test description.
-  static FailuresOnlyReporter watch(Engine engine, StringSink sink,
-          {required bool color,
-          required bool printPath,
-          required bool printPlatform}) =>
-      FailuresOnlyReporter._(engine, sink,
-          color: color, printPath: printPath, printPlatform: printPlatform);
+  static FailuresOnlyReporter watch(
+    Engine engine,
+    StringSink sink, {
+    required bool color,
+    required bool printPath,
+    required bool printPlatform,
+  }) => FailuresOnlyReporter._(
+    engine,
+    sink,
+    color: color,
+    printPath: printPath,
+    printPlatform: printPlatform,
+  );
 
-  FailuresOnlyReporter._(this._engine, this._sink,
-      {required bool color,
-      required bool printPath,
-      required bool printPlatform})
-      : _printPath = printPath,
-        _printPlatform = printPlatform,
-        _color = color,
-        _green = color ? '\u001b[32m' : '',
-        _red = color ? '\u001b[31m' : '',
-        _yellow = color ? '\u001b[33m' : '',
-        _gray = color ? '\u001b[90m' : '',
-        _bold = color ? '\u001b[1m' : '',
-        _noColor = color ? '\u001b[0m' : '' {
+  FailuresOnlyReporter._(
+    this._engine,
+    this._sink, {
+    required bool color,
+    required bool printPath,
+    required bool printPlatform,
+  }) : _printPath = printPath,
+       _printPlatform = printPlatform,
+       _color = color,
+       _green = color ? '\u001b[32m' : '',
+       _red = color ? '\u001b[31m' : '',
+       _yellow = color ? '\u001b[33m' : '',
+       _gray = color ? '\u001b[90m' : '',
+       _bold = color ? '\u001b[1m' : '',
+       _noColor = color ? '\u001b[0m' : '' {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
@@ -144,16 +153,20 @@ class FailuresOnlyReporter implements Reporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
-    _subscriptions.add(liveTest.onError
-        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(
+      liveTest.onError.listen(
+        (error) => _onError(liveTest, error.error, error.stackTrace),
+      ),
+    );
 
-    _subscriptions.add(liveTest.onMessage.listen((message) {
-      // TODO - Should this suppress output? Behave like printOnFailure?
-      _progressLine(_description(liveTest));
-      var text = message.text;
-      if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-      _sink.writeln(text);
-    }));
+    _subscriptions.add(
+      liveTest.onMessage.listen((message) {
+        if (liveTest.test.metadata.skip) return;
+        // TODO - Should this suppress output? Behave like printOnFailure?
+        _progressLine(_description(liveTest));
+        _sink.writeln(message.text);
+      }),
+    );
   }
 
   /// A callback called when [liveTest] throws [error].
@@ -198,22 +211,34 @@ class FailuresOnlyReporter implements Reporter {
       _sink.writeln('No tests ran.');
     } else if (!success) {
       for (var liveTest in _engine.active) {
-        _progressLine(_description(liveTest),
-            suffix: ' - did not complete $_bold$_red[E]$_noColor');
+        _progressLine(
+          _description(liveTest),
+          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+        );
       }
       _progressLine('Some tests failed.', color: _red);
     } else if (_engine.passed.isEmpty) {
-      _progressLine('All tests skipped.');
-    } else {
+      _progressLine('${_yellow}All tests skipped.$_noColor');
+    } else if (_engine.skipped.isEmpty) {
       _progressLine('All tests passed!');
+    } else {
+      final skippedCount = _engine.skipped.length;
+      _progressLine(
+        '$_yellow'
+        '$skippedCount skipped ${pluralize('test', skippedCount)}.'
+        '$_noColor',
+      );
+      _progressLine('All other tests passed!');
     }
 
     if (_shouldPrintStackTraceChainingNotice) {
       _sink
         ..writeln('')
-        ..writeln('Consider enabling the flag chain-stack-traces to '
-            'receive more detailed exceptions.\n'
-            "For example, 'dart test --chain-stack-traces'.");
+        ..writeln(
+          'Consider enabling the flag chain-stack-traces to '
+          'receive more detailed exceptions.\n'
+          "For example, 'dart test --chain-stack-traces'.",
+        );
     }
   }
 
@@ -284,7 +309,8 @@ class FailuresOnlyReporter implements Reporter {
     }
 
     if (_printPlatform) {
-      name = '[${liveTest.suite.platform.runtime.name}, '
+      name =
+          '[${liveTest.suite.platform.runtime.name}, '
           '${liveTest.suite.platform.compiler.name}] $name';
     }
 

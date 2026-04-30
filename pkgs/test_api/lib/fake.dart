@@ -6,8 +6,10 @@
 // do so until Mockito stops implementing its own version of `Fake`, because
 // there is code in the wild that imports both test_api.dart and Mockito.
 
-@Deprecated('package:test_api is not intended for general use. '
-    'Please use package:test.')
+@Deprecated(
+  'package:test_api is not intended for general use. '
+  'Please use package:test.',
+)
 library;
 
 export 'src/frontend/fake.dart';

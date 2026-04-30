@@ -8,4 +8,5 @@ import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementa
 
 SuitePlatform currentPlatform(Runtime runtime, Compiler? compiler) =>
     throw UnsupportedError(
-        'Getting the current platform is only supported where dart:io exists');
+      'Getting the current platform is only supported where dart:io exists',
+    );

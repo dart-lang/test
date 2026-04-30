@@ -20,15 +20,19 @@ void main() {
         expect(() => throw Exception(), throwsArgumentError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'ArgumentError'>"));
+      expectTestFailed(
+        liveTest,
+        startsWith("Expected: throws <Instance of 'ArgumentError'>"),
+      );
     });
   });
 
   group('[throwsConcurrentModificationError]', () {
     test('passes when a ConcurrentModificationError is thrown', () {
-      expect(() => throw ConcurrentModificationError(''),
-          throwsConcurrentModificationError);
+      expect(
+        () => throw ConcurrentModificationError(''),
+        throwsConcurrentModificationError,
+      );
     });
 
     test('fails when a non-ConcurrentModificationError is thrown', () async {
@@ -37,18 +41,21 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest,
-          startsWith(
-              "Expected: throws <Instance of 'ConcurrentModificationError'>"));
+        liveTest,
+        startsWith(
+          "Expected: throws <Instance of 'ConcurrentModificationError'>",
+        ),
+      );
     });
   });
 
   group('[throwsCyclicInitializationError]', () {
     test('passes when a CyclicInitializationError is thrown', () {
       expect(
-          () => _CyclicInitializationFailure().x,
-          // ignore: deprecated_member_use_from_same_package
-          throwsCyclicInitializationError);
+        () => _CyclicInitializationFailure().x,
+        // ignore: deprecated_member_use_from_same_package
+        throwsCyclicInitializationError,
+      );
     });
 
     test('fails when a non-CyclicInitializationError is thrown', () async {
@@ -58,7 +65,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, startsWith("Expected: throws <Instance of 'Error'>"));
+        liveTest,
+        startsWith("Expected: throws <Instance of 'Error'>"),
+      );
     });
   });
 
@@ -73,7 +82,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, startsWith("Expected: throws <Instance of 'Exception'>"));
+        liveTest,
+        startsWith("Expected: throws <Instance of 'Exception'>"),
+      );
     });
   });
 
@@ -87,8 +98,10 @@ void main() {
         expect(() => throw Exception(), throwsFormatException);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'FormatException'>"));
+      expectTestFailed(
+        liveTest,
+        startsWith("Expected: throws <Instance of 'FormatException'>"),
+      );
     });
   });
 
@@ -105,8 +118,10 @@ void main() {
         expect(() => throw Exception(), throwsNoSuchMethodError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'NoSuchMethodError'>"));
+      expectTestFailed(
+        liveTest,
+        startsWith("Expected: throws <Instance of 'NoSuchMethodError'>"),
+      );
     });
   });
 
@@ -121,7 +136,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, startsWith("Expected: throws <Instance of 'RangeError'>"));
+        liveTest,
+        startsWith("Expected: throws <Instance of 'RangeError'>"),
+      );
     });
   });
 
@@ -136,7 +153,9 @@ void main() {
       });
 
       expectTestFailed(
-          liveTest, startsWith("Expected: throws <Instance of 'StateError'>"));
+        liveTest,
+        startsWith("Expected: throws <Instance of 'StateError'>"),
+      );
     });
   });
 
@@ -150,8 +169,10 @@ void main() {
         expect(() => throw Exception(), throwsUnimplementedError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'UnimplementedError'>"));
+      expectTestFailed(
+        liveTest,
+        startsWith("Expected: throws <Instance of 'UnimplementedError'>"),
+      );
     });
   });
 
@@ -165,8 +186,10 @@ void main() {
         expect(() => throw Exception(), throwsUnsupportedError);
       });
 
-      expectTestFailed(liveTest,
-          startsWith("Expected: throws <Instance of 'UnsupportedError'>"));
+      expectTestFailed(
+        liveTest,
+        startsWith("Expected: throws <Instance of 'UnsupportedError'>"),
+      );
     });
   });
 }

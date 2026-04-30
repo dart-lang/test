@@ -28,10 +28,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=6']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -48,10 +45,41 @@ void main() {
 
       var test = await runTest(['test.dart?line=4']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+2: All tests passed!')),
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+
+      await test.shouldExit(0);
+    });
+
+    test('additionally selects test with matching custom location', () async {
+      await d.dir('test').create();
+      var testFileUri = Uri.file(d.file('test/aaa_test.dart').io.path);
+      var notTestFileUri = Uri.file(d.file('test/bbb.dart').io.path);
+      var testFilePackageRelativeUri = Uri.parse(
+        'org-dartlang-app:///test/aaa_test.dart',
       );
+      await d.file('test/aaa_test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("a", () {}); // Line 4 from stack trace (match)
+
+          // Custom line 4 (match)
+          test("b", location: TestLocation(Uri.parse('$testFileUri'), 4, 0), () {});
+
+          // Custom line 4 match but using org-dartlang-app (match)
+          test("c", location: TestLocation(Uri.parse('$testFilePackageRelativeUri'), 4, 0), () {});
+
+          // Custom different line, same file (no match)
+          test("d", location: TestLocation(Uri.parse('$testFileUri'), 5, 0), () => throw TestFailure("oh no"));
+
+          // Custom line 4 match but different file (no match)
+          test("e", location: TestLocation(Uri.parse('$notTestFileUri'), 4, 0), () => throw TestFailure("oh no"));
+        }
+      ''').create();
+
+      var test = await runTest(['test/aaa_test.dart?line=4']);
+
+      expect(test.stdout, emitsThrough(contains('+3: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -62,7 +90,7 @@ void main() {
 
         void main() {
           group("a", () {
-            test("b", () {});
+            test("a", () {});
           });
           group("b", () {
             test("b", () => throw TestFailure("oh no"));
@@ -72,13 +100,57 @@ void main() {
 
       var test = await runTest(['test.dart?line=4']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
+
+    test(
+      'additionally selects groups with a matching custom location',
+      () async {
+        await d.dir('test').create();
+        var testFileUri = Uri.file(d.file('test/aaa_test.dart').io.path);
+        var notTestFileUri = Uri.file(d.file('test/bbb.dart').io.path);
+        var testFilePackageRelativeUri = Uri.parse(
+          'org-dartlang-app:///test/aaa_test.dart',
+        );
+        await d.file('test/aaa_test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          group("a", () { // Line 4 from stack trace (match)
+            test("a", () {});
+          });
+
+          // Custom line 4 (match)
+          group("b", location: TestLocation(Uri.parse('$testFileUri'), 4, 0), () {
+            test("b", () {});
+          });
+
+          // Custom line 4 match but using org-dartlang-app (match)
+          group("c", location: TestLocation(Uri.parse('$testFilePackageRelativeUri'), 4, 0), () {
+            test("c", () {});
+          });
+
+          // Custom different line, same file (no match)
+          group("d", location: TestLocation(Uri.parse('$testFileUri'), 5, 0), () {
+            test("d", () => throw TestFailure("oh no"));
+          });
+
+          // Custom line 4 match but different file (no match)
+          group("e", location: TestLocation(Uri.parse('$notTestFileUri'), 4, 0), () {
+            test("e", () => throw TestFailure("oh no"));
+          });
+        }
+      ''').create();
+
+        var test = await runTest(['test/aaa_test.dart?line=4']);
+
+        expect(test.stdout, emitsThrough(contains('+3: All tests passed!')));
+
+        await test.shouldExit(0);
+      },
+    );
 
     test('No matching tests', () async {
       await d.file('test.dart', '''
@@ -91,10 +163,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=1']);
 
-      expect(
-        test.stderr,
-        emitsThrough(contains('No tests were found.')),
-      );
+      expect(test.stderr, emitsThrough(contains('No tests were found.')));
 
       await test.shouldExit(exit_codes.noTestsRan);
     });
@@ -115,10 +184,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=8']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -137,10 +203,7 @@ void main() {
 
       var test = await runTest(['test.dart?col=11']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -158,10 +221,7 @@ void main() {
 
       var test = await runTest(['test.dart?col=11']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+2: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -182,10 +242,7 @@ void main() {
 
       var test = await runTest(['test.dart?col=11']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -201,10 +258,7 @@ void main() {
 
       var test = await runTest(['test.dart?col=1']);
 
-      expect(
-        test.stderr,
-        emitsThrough(contains('No tests were found.')),
-      );
+      expect(test.stderr, emitsThrough(contains('No tests were found.')));
 
       await test.shouldExit(exit_codes.noTestsRan);
     });
@@ -225,19 +279,17 @@ void main() {
 
       var test = await runTest(['test.dart?col=13']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
   });
 
   group('with test.dart?line=<line>&col=<col> query', () {
-    test('selects test with the matching line and col in the same frame',
-        () async {
-      await d.file('test.dart', '''
+    test(
+      'selects test with the matching line and col in the same frame',
+      () async {
+        await d.file('test.dart', '''
         import 'package:test/test.dart';
 
         void main() {
@@ -249,15 +301,13 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest(['test.dart?line=5&col=11']);
+        var test = await runTest(['test.dart?line=5&col=11']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
-      await test.shouldExit(0);
-    });
+        await test.shouldExit(0);
+      },
+    );
 
     test('selects group with the matching line and col', () async {
       await d.file('test.dart', '''
@@ -276,10 +326,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=4&col=11']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+2: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -295,10 +342,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=4&col=1']);
 
-      expect(
-        test.stderr,
-        emitsThrough(contains('No tests were found.')),
-      );
+      expect(test.stderr, emitsThrough(contains('No tests were found.')));
 
       await test.shouldExit(exit_codes.noTestsRan);
     });
@@ -314,10 +358,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=1&col=11']);
 
-      expect(
-        test.stderr,
-        emitsThrough(contains('No tests were found.')),
-      );
+      expect(test.stderr, emitsThrough(contains('No tests were found.')));
 
       await test.shouldExit(exit_codes.noTestsRan);
     });
@@ -334,10 +375,7 @@ void main() {
 
       var test = await runTest(['test.dart?line=4&col=11', '-p', 'chrome']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     });
@@ -354,18 +392,16 @@ void main() {
 
       var test = await runTest(['test.dart?line=4&col=11', '-p', 'node']);
 
-      expect(
-        test.stdout,
-        emitsThrough(contains('+1: All tests passed!')),
-      );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
     }, retry: 3);
   });
 
-  test('bundles runs by suite, deduplicates tests that match multiple times',
-      () async {
-    await d.file('test.dart', '''
+  test(
+    'bundles runs by suite, deduplicates tests that match multiple times',
+    () async {
+      await d.file('test.dart', '''
         import 'package:test/test.dart';
 
         void main() {
@@ -374,13 +410,11 @@ void main() {
         }
       ''').create();
 
-    var test = await runTest(['test.dart?line=4', 'test.dart?full-name=a']);
+      var test = await runTest(['test.dart?line=4', 'test.dart?full-name=a']);
 
-    expect(
-      test.stdout,
-      emitsThrough(contains('+1: All tests passed!')),
-    );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
-    await test.shouldExit(0);
-  });
+      await test.shouldExit(0);
+    },
+  );
 }

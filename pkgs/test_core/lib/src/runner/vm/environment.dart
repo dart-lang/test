@@ -7,7 +7,7 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:vm_service/vm_service.dart';
 
-import '../environment.dart'; // ignore: implementation_imports
+import '../environment.dart';
 
 /// The environment in which VM tests are loaded.
 class VMEnvironment implements Environment {
@@ -30,12 +30,19 @@ class VMEnvironment implements Environment {
 
   @override
   CancelableOperation<void> displayPause() {
-    var completer =
-        CancelableCompleter<void>(onCancel: () => _client.resume(_isolate.id!));
+    var completer = CancelableCompleter<void>(
+      onCancel: () => _client.resume(_isolate.id!),
+    );
 
-    completer.complete(_client.pause(_isolate.id!).then((_) => _client
-        .onDebugEvent
-        .firstWhere((event) => event.kind == EventKind.kResume)));
+    completer.complete(
+      _client
+          .pause(_isolate.id!)
+          .then(
+            (_) => _client.onDebugEvent.firstWhere(
+              (event) => event.kind == EventKind.kResume,
+            ),
+          ),
+    );
 
     return completer.operation;
   }

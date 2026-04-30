@@ -21,8 +21,14 @@ import 'util/pretty_print.dart';
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
-typedef ErrorFormatter = String Function(Object? actual, Matcher matcher,
-    String? reason, Map matchState, bool verbose);
+typedef ErrorFormatter =
+    String Function(
+      Object? actual,
+      Matcher matcher,
+      String? reason,
+      Map matchState,
+      bool verbose,
+    );
 
 /// Assert that [actual] matches [matcher].
 ///
@@ -48,13 +54,22 @@ typedef ErrorFormatter = String Function(Object? actual, Matcher matcher,
 /// the test doesn't complete until the matcher has either matched or failed. If
 /// you want to wait for the matcher to complete before continuing the test, you
 /// can call [expectLater] instead and `await` the result.
-void expect(dynamic actual, dynamic matcher,
-    {String? reason,
-    Object? /* String|bool */ skip,
-    @Deprecated('Will be removed in 0.13.0.') bool verbose = false,
-    @Deprecated('Will be removed in 0.13.0.') ErrorFormatter? formatter}) {
-  _expect(actual, matcher,
-      reason: reason, skip: skip, verbose: verbose, formatter: formatter);
+void expect(
+  dynamic actual,
+  dynamic matcher, {
+  String? reason,
+  Object? /* String|bool */ skip,
+  @Deprecated('Will be removed in 0.13.0.') bool verbose = false,
+  @Deprecated('Will be removed in 0.13.0.') ErrorFormatter? formatter,
+}) {
+  _expect(
+    actual,
+    matcher,
+    reason: reason,
+    skip: skip,
+    verbose: verbose,
+    formatter: formatter,
+  );
 }
 
 /// Just like [expect], but returns a [Future] that completes when the matcher
@@ -68,23 +83,33 @@ void expect(dynamic actual, dynamic matcher,
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
-Future expectLater(dynamic actual, dynamic matcher,
-        {String? reason, Object? /* String|bool */ skip}) =>
-    _expect(actual, matcher, reason: reason, skip: skip);
+Future expectLater(
+  dynamic actual,
+  dynamic matcher, {
+  String? reason,
+  Object? /* String|bool */ skip,
+}) => _expect(actual, matcher, reason: reason, skip: skip);
 
 /// The implementation of [expect] and [expectLater].
-Future _expect(Object? actual, Object? matcher,
-    {String? reason,
-    Object? skip,
-    bool verbose = false,
-    ErrorFormatter? formatter}) {
+Future _expect(
+  Object? actual,
+  Object? matcher, {
+  String? reason,
+  Object? skip,
+  bool verbose = false,
+  ErrorFormatter? formatter,
+}) {
   final test = TestHandle.current;
   formatter ??= (actual, matcher, reason, matchState, verbose) {
     var mismatchDescription = StringDescription();
     matcher.describeMismatch(actual, mismatchDescription, matchState, verbose);
 
-    return formatFailure(matcher, actual, mismatchDescription.toString(),
-        reason: reason);
+    return formatFailure(
+      matcher,
+      actual,
+      mismatchDescription.toString(),
+      reason: reason,
+    );
   };
 
   if (skip != null && skip is! bool && skip is! String) {
@@ -111,26 +136,36 @@ Future _expect(Object? actual, Object? matcher,
     // Avoid async/await so that expect() throws synchronously when possible.
     var result = matcher.matchAsync(actual);
     expect(
-        result,
-        anyOf([
-          equals(null),
-          const TypeMatcher<Future>(),
-          const TypeMatcher<String>()
-        ]),
-        reason: 'matchAsync() may only return a String, a Future, or null.');
+      result,
+      anyOf([
+        equals(null),
+        const TypeMatcher<Future>(),
+        const TypeMatcher<String>(),
+      ]),
+      reason: 'matchAsync() may only return a String, a Future, or null.',
+    );
 
     if (result is String) {
       fail(formatFailure(matcher, actual, result, reason: reason));
     } else if (result is Future) {
       final outstandingWork = test.markPending();
-      return result.then((realResult) {
-        if (realResult == null) return;
-        fail(formatFailure(matcher as Matcher, actual, realResult as String,
-            reason: reason));
-      }).whenComplete(
-          // Always remove this, in case the failure is caught and handled
-          // gracefully.
-          outstandingWork.complete);
+      return result
+          .then((realResult) {
+            if (realResult == null) return;
+            fail(
+              formatFailure(
+                matcher as Matcher,
+                actual,
+                realResult as String,
+                reason: reason,
+              ),
+            );
+          })
+          .whenComplete(
+            // Always remove this, in case the failure is caught and handled
+            // gracefully.
+            outstandingWork.complete,
+          );
     }
 
     return Future.sync(() {});
@@ -153,8 +188,12 @@ Never fail(String message) => throw TestFailure(message);
 
 // The default error formatter.
 @Deprecated('Will be removed in 0.13.0.')
-String formatFailure(Matcher expected, Object? actual, String which,
-    {String? reason}) {
+String formatFailure(
+  Matcher expected,
+  Object? actual,
+  String which, {
+  String? reason,
+}) {
   var buffer = StringBuffer();
   buffer.writeln(indent(prettyPrint(expected), first: 'Expected: '));
   buffer.writeln(indent(prettyPrint(actual), first: '  Actual: '));

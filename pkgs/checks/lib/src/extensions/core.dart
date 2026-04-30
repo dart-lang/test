@@ -13,16 +13,39 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
+  ///
+  /// ```dart
+  /// check(RegExp('^abc'))
+  ///   .has((s) => s.pattern, 'pattern')
+  ///   .equals('^abc');
+  /// ```
+  ///
+  /// For checking properties of custom types it's common define extension
+  /// methods using `has`:
+  /// ```dart
+  /// extension RegExpChecks on Subject<RegExp> {
+  ///   Subject<String> get pattern => has((s) => s.pattern, 'pattern');
+  ///   Subject<bool> get isUnicode => has((s) => s.isUnicode, 'isUnicode');
+  /// }
+  ///
+  /// void main() {
+  ///   check(RegExp('^abc'))
+  ///     ..pattern.contains('abc')
+  ///     ..isUnicode.isTrue();
+  /// }
+  /// ```
   @meta.useResult
   Subject<R> has<R>(R Function(T) extract, String name) {
     return context.nest(() => ['has $name'], (value) {
       try {
         return Extracted.value(extract(value));
       } catch (e, st) {
-        return Extracted.rejection(which: [
-          ...prefixFirst('threw while trying to read $name: ', literal(e)),
-          ...const LineSplitter().convert(st.toString())
-        ]);
+        return Extracted.rejection(
+          which: [
+            ...prefixFirst('threw while trying to read $name: ', literal(e)),
+            ...const LineSplitter().convert(st.toString()),
+          ],
+        );
       }
     });
   }
@@ -64,13 +87,14 @@ extension CoreChecks<T> on Subject<T> {
   /// Asynchronous expectations are not allowed in [conditions].
   void anyOf(Iterable<Condition<T>> conditions) {
     context.expect(
-        () => prefixFirst('matches any condition in ', literal(conditions)),
-        (actual) {
-      for (final condition in conditions) {
-        if (softCheck(actual, condition) == null) return null;
-      }
-      return Rejection(which: ['did not match any condition']);
-    });
+      () => prefixFirst('matches any condition in ', literal(conditions)),
+      (actual) {
+        for (final condition in conditions) {
+          if (softCheck(actual, condition) == null) return null;
+        }
+        return Rejection(which: ['did not match any condition']);
+      },
+    );
   }
 
   /// Expects that the value is assignable to type [T].
@@ -95,8 +119,9 @@ extension CoreChecks<T> on Subject<T> {
 
   /// Expects that the value is [identical] to [other].
   void identicalTo(T other) {
-    context.expect(() => prefixFirst('is identical to ', literal(other)),
-        (actual) {
+    context.expect(() => prefixFirst('is identical to ', literal(other)), (
+      actual,
+    ) {
       if (identical(actual, other)) return null;
       return Rejection(which: ['is not identical']);
     });
@@ -142,30 +167,37 @@ extension NullableChecks<T> on Subject<T?> {
 extension ComparableChecks<T> on Subject<Comparable<T>> {
   /// Expects that this value is greater than [other].
   void isGreaterThan(T other) {
-    context.expect(() => prefixFirst('is greater than ', literal(other)),
-        (actual) {
+    context.expect(() => prefixFirst('is greater than ', literal(other)), (
+      actual,
+    ) {
       if (actual.compareTo(other) > 0) return null;
       return Rejection(
-          which: prefixFirst('is not greater than ', literal(other)));
+        which: prefixFirst('is not greater than ', literal(other)),
+      );
     });
   }
 
   /// Expects that this value is greater than or equal to [other].
   void isGreaterOrEqual(T other) {
     context.expect(
-        () => prefixFirst('is greater than or equal to ', literal(other)),
-        (actual) {
-      if (actual.compareTo(other) >= 0) return null;
-      return Rejection(
-          which:
-              prefixFirst('is not greater than or equal to ', literal(other)));
-    });
+      () => prefixFirst('is greater than or equal to ', literal(other)),
+      (actual) {
+        if (actual.compareTo(other) >= 0) return null;
+        return Rejection(
+          which: prefixFirst(
+            'is not greater than or equal to ',
+            literal(other),
+          ),
+        );
+      },
+    );
   }
 
   /// Expects that this value is less than [other].
   void isLessThan(T other) {
-    context.expect(() => prefixFirst('is less than ', literal(other)),
-        (actual) {
+    context.expect(() => prefixFirst('is less than ', literal(other)), (
+      actual,
+    ) {
       if (actual.compareTo(other) < 0) return null;
       return Rejection(which: prefixFirst('is not less than ', literal(other)));
     });
@@ -173,12 +205,14 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
 
   /// Expects that this value is less than or equal to [other].
   void isLessOrEqual(T other) {
-    context
-        .expect(() => prefixFirst('is less than or equal to ', literal(other)),
-            (actual) {
-      if (actual.compareTo(other) <= 0) return null;
-      return Rejection(
-          which: prefixFirst('is not less than or equal to ', literal(other)));
-    });
+    context.expect(
+      () => prefixFirst('is less than or equal to ', literal(other)),
+      (actual) {
+        if (actual.compareTo(other) <= 0) return null;
+        return Rejection(
+          which: prefixFirst('is not less than or equal to ', literal(other)),
+        );
+      },
+    );
   }
 }

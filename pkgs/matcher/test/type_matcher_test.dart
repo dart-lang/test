@@ -21,8 +21,11 @@ void main() {
   _test(isUnsupportedError, UnsupportedError('oops'));
   _test(isConcurrentModificationError, ConcurrentModificationError());
   _test(isCyclicInitializationError, Error());
-  _test<NoSuchMethodError?>(isNoSuchMethodError, null,
-      name: 'NoSuchMethodError');
+  _test<NoSuchMethodError?>(
+    isNoSuchMethodError,
+    null,
+    name: 'NoSuchMethodError',
+  );
   _test(isNullThrownError, TypeError());
 
   group('custom `TypeMatcher`', () {
