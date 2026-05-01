@@ -60,7 +60,7 @@ SuitePlatform currentPlatform(Runtime runtime, [Compiler? compiler]) =>
     SuitePlatform(
       runtime,
       compiler: compiler,
-      os: runtime.isBrowser ? OperatingSystem.none : currentOS,
+      os: currentOS,
       inGoogle: inGoogle,
     );
 

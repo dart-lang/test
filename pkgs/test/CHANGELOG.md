@@ -1,5 +1,16 @@
 ## 1.31.2-wip
 
+* **Impacts Configuration** Support using the OS platform selector to configure
+  browser tests.
+  Previously tests loaded for the browser would have an operating system of
+  "none", now they will have an operating system matching the system the browser
+  is running on. This allows more specific configuration, such as skipping a
+  particular browser test on a particular platform. This may impact existing
+  configuration which relied on the configuration for browser tests being
+  independent from any OS specific configuration. For instance a wide skip of
+  all tests with OS `'windows'` would previously still run browser tests on
+  windows, but will now skip all tests including browser tests.
+
 ## 1.31.1
 
 * Ignore an error locating the SDK directory on platforms where the
