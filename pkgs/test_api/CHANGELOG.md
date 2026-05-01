@@ -1,6 +1,7 @@
 ## 0.7.13-wip
 
 * Expose several more backend APIs for use in `flutter_test`.
+* Allow using browser platforms with a specified OS.
 
 ## 0.7.12
 
