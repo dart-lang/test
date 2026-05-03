@@ -1,0 +1,10 @@
+builders:
+
+  copyBuilder:
+    import: "package:checks_codegen/src/builder.dart"
+    builder_factories: ["checksBuilder"]
+    build_extensions: {".dart": [".checks.dart"]}
+    build_to: source
+    auto_apply: root_package
+    defaults:
+      generate_for: ["test/**"]

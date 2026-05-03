@@ -7,6 +7,8 @@ workspace:
   - integration_tests/spawn_hybrid
   - integration_tests/wasm
   - pkgs/checks
+  - pkgs/checks_codegen
+  - pkgs/checks_codegen/example
   - pkgs/test
   - pkgs/test_api
   - pkgs/test_core
