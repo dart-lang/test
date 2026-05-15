@@ -6,7 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:checks/checks.dart';
-import 'package:checks/io_checks.dart';
+import 'package:checks/io.dart';
 import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
@@ -41,7 +41,7 @@ void main() {
       });
       test('succeeds for synchronous exit', () async {
         Future<void> syncExit() {
-          exit(43);
+          exit(42);
         }
 
         await check(syncExit).exits((it) => it.equals(42));
