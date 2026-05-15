@@ -12,4 +12,10 @@ export 'src/extensions/function.dart' show FunctionChecks;
 export 'src/extensions/iterable.dart' show IterableChecks;
 export 'src/extensions/map.dart' show MapChecks;
 export 'src/extensions/math.dart' show NumChecks;
-export 'src/extensions/string.dart' show StringChecks;
+export 'src/extensions/string.dart'
+    show
+        MatchChecks,
+        PatternChecks,
+        RegExpChecks,
+        RegExpMatchChecks,
+        StringChecks;

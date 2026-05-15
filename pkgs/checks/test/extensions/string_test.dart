@@ -221,4 +221,140 @@ void main() {
       });
     });
   });
+
+  group('PatternChecks', () {
+    final pattern = RegExp('a+');
+    test('hasAllMatchesFor', () {
+      check(
+        pattern,
+      ).hasAllMatchesFor('a aa aaa').has((it) => it.length, 'length').equals(3);
+      check(pattern).hasAllMatchesFor('b').isEmpty();
+    });
+
+    test('hasPrefixMatchFor', () {
+      check(pattern)
+          .hasPrefixMatchFor('ab')
+          .has((it) => it.group(0), 'group(0)')
+          .equals('a');
+      check(pattern).isRejectedBy(
+        (it) => it.hasPrefixMatchFor('ba'),
+        which: ['did not match as prefix'],
+      );
+    });
+  });
+
+  group('RegExpChecks', () {
+    final regExp = RegExp('a+', caseSensitive: false);
+    test('getters', () {
+      check(regExp)
+        ..isCaseSensitive.isFalse()
+        ..isDotAll.isFalse()
+        ..isMultiLine.isFalse()
+        ..isUnicode.isFalse()
+        ..pattern.equals('a+');
+    });
+
+    test('hasFirstMatchFor', () {
+      check(
+        regExp,
+      ).hasFirstMatchFor('ba').has((it) => it.group(0), 'group(0)').equals('a');
+      check(regExp).isRejectedBy(
+        (it) => it.hasFirstMatchFor('b'),
+        which: ['did not match'],
+      );
+    });
+
+    test('hasStringMatchFor', () {
+      check(regExp).hasStringMatchFor('ba').equals('a');
+      check(regExp).isRejectedBy(
+        (it) => it.hasStringMatchFor('b'),
+        which: ['did not match'],
+      );
+    });
+
+    test('hasMatchFor', () {
+      check(regExp).hasMatchFor('ba');
+      check(
+        regExp,
+      ).isRejectedBy((it) => it.hasMatchFor('b'), which: ['did not match']);
+    });
+
+    test('hasNoMatchFor', () {
+      check(regExp).hasNoMatchFor('b');
+      check(
+        regExp,
+      ).isRejectedBy((it) => it.hasNoMatchFor('ba'), which: ['matched']);
+    });
+  });
+
+  group('MatchChecks', () {
+    final match = RegExp('a(b)?(c)?').firstMatch('zabz')!;
+    test('getters', () {
+      check(match)
+        ..end.equals(3)
+        ..groupCount.equals(2)
+        ..input.equals('zabz')
+        ..pattern.isA<RegExp>()
+        ..start.equals(1);
+    });
+    test('hasGroup', () {
+      check(match).hasGroup(0).isNotNull().equals('ab');
+      check(match).hasGroup(1).isNotNull().equals('b');
+      check(match).hasGroup(2).isNull();
+    });
+    test('hasGroups', () {
+      check(match).hasGroups([0, 1, 2]).deepEquals(['ab', 'b', null]);
+    });
+  });
+
+  group('RegExpMatchChecks', () {
+    final match = RegExp('a(?<foo>b)').firstMatch('zabz') as RegExpMatch;
+    test('getters', () {
+      check(match)
+        ..groupNames.deepEquals(['foo'])
+        ..pattern.isA<RegExp>();
+    });
+    test('hasNamedGroup', () {
+      check(match).hasNamedGroup('foo').isNotNull().equals('b');
+      final fakeMatch = _FakeRegExpMatch();
+      check(fakeMatch).isRejectedBy(
+        (it) => it.hasNamedGroup('bar'),
+        which: [
+          'threw while trying to read named group "bar": <Invalid argument(s): Invalid group name>',
+          'fake trace',
+        ],
+      );
+    });
+  });
+}
+
+class _FakeRegExpMatch implements RegExpMatch {
+  @override
+  String? namedGroup(String name) {
+    if (name == 'foo') return 'b';
+    Error.throwWithStackTrace(
+      ArgumentError('Invalid group name'),
+      StackTrace.fromString('fake trace'),
+    );
+  }
+
+  @override
+  String? operator [](int group) => throw UnimplementedError();
+
+  @override
+  int get end => throw UnimplementedError();
+  @override
+  String? group(int group) => throw UnimplementedError();
+  @override
+  int get groupCount => throw UnimplementedError();
+  @override
+  Iterable<String> get groupNames => throw UnimplementedError();
+  @override
+  List<String?> groups(List<int> groupIndices) => throw UnimplementedError();
+  @override
+  String get input => throw UnimplementedError();
+  @override
+  RegExp get pattern => throw UnimplementedError();
+  @override
+  int get start => throw UnimplementedError();
 }
