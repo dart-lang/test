@@ -36,11 +36,10 @@ void main() {
         entryPoints,
       )) {
         for (final import in source.imports) {
-          expect(
-            import.pathSegments.skip(1).take(2),
-            ['src', 'backend'],
-            reason: 'Invalid import from ${source.uri} : $import',
-          );
+          expect(import.pathSegments.skip(1).take(2), [
+            'src',
+            'backend',
+          ], reason: 'Invalid import from ${source.uri} : $import');
         }
       }
     });

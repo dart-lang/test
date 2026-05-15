@@ -30,24 +30,14 @@ void main() {
     test('in a VM test', () async {
       var test = await runTest(['test.dart']);
 
-      expect(
-        test.stdout,
-        containsInOrder([
-          'exit(0) was called.',
-        ]),
-      );
+      expect(test.stdout, containsInOrder(['exit(0) was called.']));
       await test.shouldExit(1);
     });
 
     test('in a native test', () async {
       var test = await runTest(['--compiler', 'exe', 'test.dart']);
 
-      expect(
-        test.stdout,
-        containsInOrder([
-          'exit(0) was called.',
-        ]),
-      );
+      expect(test.stdout, containsInOrder(['exit(0) was called.']));
       await test.shouldExit(1);
     });
   });
