@@ -13,8 +13,9 @@ import '../../io.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('fails gracefully if a test file calls exit(0)', () async {
-    await d.file('test.dart', '''
+  group('fails gracefully if a test file calls exit(0)', () {
+    setUp(() async {
+      await d.file('test.dart', '''
 import 'dart:io';
 import 'package:test/test.dart';
 
@@ -24,38 +25,30 @@ void main() {
   });
 }
 ''').create();
+    });
 
-    var test = await runTest(['test.dart']);
+    test('in a VM test', () async {
+      var test = await runTest(['test.dart']);
 
-    expect(
-      test.stdout,
-      containsInOrder([
-        'exit(0) was called.',
-      ]),
-    );
-    await test.shouldExit(1);
-  });
+      expect(
+        test.stdout,
+        containsInOrder([
+          'exit(0) was called.',
+        ]),
+      );
+      await test.shouldExit(1);
+    });
 
-  test('fails gracefully if a native test file calls exit(0)', () async {
-    await d.file('test.dart', '''
-import 'dart:io';
-import 'package:test/test.dart';
+    test('in a native test', () async {
+      var test = await runTest(['--compiler', 'exe', 'test.dart']);
 
-void main() {
-  test('exits', () {
-    exit(0);
-  });
-}
-''').create();
-
-    var test = await runTest(['--compiler', 'exe', 'test.dart']);
-
-    expect(
-      test.stdout,
-      containsInOrder([
-        'exit(0) was called.',
-      ]),
-    );
-    await test.shouldExit(1);
+      expect(
+        test.stdout,
+        containsInOrder([
+          'exit(0) was called.',
+        ]),
+      );
+      await test.shouldExit(1);
+    });
   });
 }
