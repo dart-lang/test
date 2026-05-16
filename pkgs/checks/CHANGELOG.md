@@ -2,6 +2,8 @@
 
 - Require Dart 3.7
 - Improve speed of pretty printing for large collections.
+- Add extensions for reading fields and invoking methods of `RegExp` and related
+  classes.
 
 ## 0.3.1
 

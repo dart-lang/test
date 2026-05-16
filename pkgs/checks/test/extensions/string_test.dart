@@ -221,4 +221,140 @@ void main() {
       });
     });
   });
+
+  group('PatternChecks', () {
+    final pattern = RegExp('a+');
+    test('hasAllMatchesFor', () {
+      check(pattern).hasAllMatchesFor('a aa aaa').length.equals(3);
+      check(pattern).hasAllMatchesFor('b').isEmpty();
+    });
+
+    test('hasPrefixMatchFor', () {
+      check(pattern).hasPrefixMatchFor('ab').hasGroup(0).equals('a');
+      check(pattern).isRejectedBy(
+        (it) => it.hasPrefixMatchFor('ba'),
+        which: ['did not match as prefix'],
+      );
+    });
+  });
+
+  group('RegExpChecks', () {
+    final regExp = RegExp('a+', caseSensitive: false);
+    test('getters', () {
+      check(regExp)
+        ..isCaseSensitive.isFalse()
+        ..isDotAll.isFalse()
+        ..isMultiLine.isFalse()
+        ..isUnicode.isFalse()
+        ..pattern.equals('a+');
+    });
+
+    test('hasFirstMatchFor', () {
+      check(regExp).hasFirstMatchFor('ba').hasGroup(0).equals('a');
+      check(regExp).isRejectedBy(
+        (it) => it.hasFirstMatchFor('b'),
+        which: ['did not match'],
+      );
+    });
+
+    test('hasStringMatchFor', () {
+      check(regExp).hasStringMatchFor('ba').equals('a');
+      check(regExp).isRejectedBy(
+        (it) => it.hasStringMatchFor('b'),
+        which: ['did not match'],
+      );
+    });
+
+    test('hasMatchFor', () {
+      check(regExp).hasMatchFor('ba');
+      check(
+        regExp,
+      ).isRejectedBy((it) => it.hasMatchFor('b'), which: ['did not match']);
+    });
+
+    test('hasNoMatchFor', () {
+      check(regExp).hasNoMatchFor('b');
+      check(
+        regExp,
+      ).isRejectedBy((it) => it.hasNoMatchFor('ba'), which: ['matched']);
+    });
+  });
+
+  group('MatchChecks', () {
+    final match = RegExp('a(b)?(c)?').firstMatch('zabz')!;
+    test('getters', () {
+      check(match)
+        ..end.equals(3)
+        ..groupCount.equals(2)
+        ..input.equals('zabz')
+        ..pattern.isA<RegExp>()
+        ..start.equals(1);
+    });
+    test('hasGroup', () {
+      check(match).hasGroup(0).isNotNull().equals('ab');
+      check(match).hasGroup(1).isNotNull().equals('b');
+      check(match).hasGroup(2).isNull();
+
+      check(match).isRejectedBy(
+        (it) => it.hasGroup(0).equals('wrong'),
+        actual: ['\'ab\''],
+        which: ['are not equal'],
+      );
+      check(
+        match,
+      ).isRejectedBy((it) => it.hasGroup(2).isNotNull(), actual: ['<null>']);
+    });
+    test('hasGroups', () {
+      check(match).hasGroups([0, 1, 2]).deepEquals(['ab', 'b', null]);
+
+      check(match).isRejectedBy(
+        (it) => it.hasGroups([0, 1]).deepEquals(['ab', 'wrong']),
+        actual: ['[\'ab\', \'b\']'],
+        which: ['at [<1>] is \'b\'', 'which does not equal \'wrong\''],
+      );
+
+      check(match).isRejectedBy(
+        (it) => it.hasGroups([10]),
+        actual: ['Match[ab]'],
+        which: [
+          'threw while trying to read groups: <RangeError: Value not in range: 10>',
+        ],
+      );
+    });
+  });
+
+  group('RegExpMatchChecks', () {
+    final match = RegExp('a(?<foo>b)').firstMatch('zabz') as RegExpMatch;
+    test('getters', () {
+      check(match)
+        ..groupNames.deepEquals(['foo'])
+        ..pattern.isA<RegExp>();
+    });
+    test('hasNamedGroup', () {
+      check(match).hasNamedGroup('foo').isNotNull().equals('b');
+
+      check(match).isRejectedBy(
+        (it) => it.hasNamedGroup('foo').equals('wrong'),
+        actual: ['\'b\''],
+        which: ['are not equal'],
+      );
+    });
+  });
+
+  group('ConditionChecks', () {
+    test('descriptions', () {
+      check(
+        (Subject<Match> it) => it.hasGroup(1).equals('b'),
+      ).description.deepEquals(['  has group 1 that:', '    equals \'b\'']);
+      check(
+        (Subject<Match> it) => it.hasGroups([0, 1]).deepEquals(['ab', 'b']),
+      ).description.deepEquals([
+        '  has groups [0, 1] that:',
+        '    is deeply equal to [\'ab\', \'b\']',
+      ]);
+      check((Subject<RegExpMatch> it) => it.hasNamedGroup('foo').equals('b'))
+          .description
+          .deepEquals(['  has named group "foo" that:', '    equals \'b\'']);
+    });
+  });
 }
