@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/checks.dart';
+import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
@@ -301,9 +302,23 @@ void main() {
       check(match).hasGroup(0).isNotNull().equals('ab');
       check(match).hasGroup(1).isNotNull().equals('b');
       check(match).hasGroup(2).isNull();
+
+      final failure = softCheck(match, (it) => it.hasGroup(3));
+      check(failure)
+          .isNotNull()
+          .has((f) => f.rejection.which, 'which')
+          .isNotNull()
+          .any((line) => line.contains('threw while trying to read group 3:'));
     });
     test('hasGroups', () {
       check(match).hasGroups([0, 1, 2]).deepEquals(['ab', 'b', null]);
+
+      final failure = softCheck(match, (it) => it.hasGroups([3]));
+      check(failure)
+          .isNotNull()
+          .has((f) => f.rejection.which, 'which')
+          .isNotNull()
+          .any((line) => line.contains('threw while trying to read groups:'));
     });
   });
 
@@ -316,45 +331,14 @@ void main() {
     });
     test('hasNamedGroup', () {
       check(match).hasNamedGroup('foo').isNotNull().equals('b');
-      final fakeMatch = _FakeRegExpMatch();
-      check(fakeMatch).isRejectedBy(
-        (it) => it.hasNamedGroup('bar'),
-        which: [
-          'threw while trying to read named group "bar": <Invalid argument(s): Invalid group name>',
-          'fake trace',
-        ],
-      );
+
+      final failure = softCheck(match, (it) => it.hasNamedGroup('bar'));
+      check(failure)
+          .isNotNull()
+          .has((f) => f.rejection.which, 'which')
+          .isNotNull()
+          .any((line) => line
+              .contains('threw while trying to read named group "bar":'));
     });
   });
-}
-
-class _FakeRegExpMatch implements RegExpMatch {
-  @override
-  String? namedGroup(String name) {
-    if (name == 'foo') return 'b';
-    Error.throwWithStackTrace(
-      ArgumentError('Invalid group name'),
-      StackTrace.fromString('fake trace'),
-    );
-  }
-
-  @override
-  String? operator [](int group) => throw UnimplementedError();
-
-  @override
-  int get end => throw UnimplementedError();
-  @override
-  String? group(int group) => throw UnimplementedError();
-  @override
-  int get groupCount => throw UnimplementedError();
-  @override
-  Iterable<String> get groupNames => throw UnimplementedError();
-  @override
-  List<String?> groups(List<int> groupIndices) => throw UnimplementedError();
-  @override
-  String get input => throw UnimplementedError();
-  @override
-  RegExp get pattern => throw UnimplementedError();
-  @override
-  int get start => throw UnimplementedError();
 }

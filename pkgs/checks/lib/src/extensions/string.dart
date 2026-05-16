@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:math' as math;
 
 import '../../context.dart';
@@ -384,10 +385,20 @@ extension MatchChecks on Subject<Match> {
   /// Extracts the groups at [indices] found by [groups] for further
   /// expectations.
   Subject<List<String?>> hasGroups(List<int> indices) {
-    return context.nest(
-      () => prefixFirst('has groups ', literal(indices)),
-      (actual) => Extracted.value(actual.groups(indices)),
-    );
+    return context.nest(() => prefixFirst('has groups ', literal(indices)), (
+      actual,
+    ) {
+      try {
+        return Extracted.value(actual.groups(indices));
+      } catch (e, st) {
+        return Extracted.rejection(
+          which: [
+            ...prefixFirst('threw while trying to read groups: ', literal(e)),
+            ...const LineSplitter().convert(st.toString()),
+          ],
+        );
+      }
+    });
   }
 }
 
