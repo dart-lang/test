@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:checks/checks.dart';
-import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 import '../test_shared.dart';
@@ -226,17 +225,12 @@ void main() {
   group('PatternChecks', () {
     final pattern = RegExp('a+');
     test('hasAllMatchesFor', () {
-      check(
-        pattern,
-      ).hasAllMatchesFor('a aa aaa').has((it) => it.length, 'length').equals(3);
+      check(pattern).hasAllMatchesFor('a aa aaa').length.equals(3);
       check(pattern).hasAllMatchesFor('b').isEmpty();
     });
 
     test('hasPrefixMatchFor', () {
-      check(pattern)
-          .hasPrefixMatchFor('ab')
-          .has((it) => it.group(0), 'group(0)')
-          .equals('a');
+      check(pattern).hasPrefixMatchFor('ab').hasGroup(0).equals('a');
       check(pattern).isRejectedBy(
         (it) => it.hasPrefixMatchFor('ba'),
         which: ['did not match as prefix'],
@@ -256,9 +250,7 @@ void main() {
     });
 
     test('hasFirstMatchFor', () {
-      check(
-        regExp,
-      ).hasFirstMatchFor('ba').has((it) => it.group(0), 'group(0)').equals('a');
+      check(regExp).hasFirstMatchFor('ba').hasGroup(0).equals('a');
       check(regExp).isRejectedBy(
         (it) => it.hasFirstMatchFor('b'),
         which: ['did not match'],
