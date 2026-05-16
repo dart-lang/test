@@ -312,6 +312,14 @@ void main() {
         actual: ['[\'ab\', \'b\']'],
         which: ['at [<1>] is \'b\'', 'which does not equal \'wrong\''],
       );
+
+      check(match).isRejectedBy(
+        (it) => it.hasGroups([10]),
+        actual: ['Match[ab]'],
+        which: [
+          'threw while trying to read groups: <RangeError: Value not in range: 10>',
+        ],
+      );
     });
   });
 
