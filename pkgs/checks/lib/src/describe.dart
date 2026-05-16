@@ -75,6 +75,13 @@ Iterable<String> _prettyPrint(
     return prefixFirst("'", postfixLast("'", escaped));
   } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];
+  } else if (object is Match) {
+    final escaped = const LineSplitter()
+        .convert(object[0] ?? 'null')
+        .map(escape)
+        .map((line) => line.replaceAll("'", r"\'"))
+        .toList();
+    return prefixFirst('Match[', postfixLast(']', escaped));
   } else {
     final value = const LineSplitter().convert(object.toString());
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
