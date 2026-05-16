@@ -303,22 +303,23 @@ void main() {
       check(match).hasGroup(1).isNotNull().equals('b');
       check(match).hasGroup(2).isNull();
 
-      final failure = softCheck(match, (it) => it.hasGroup(3));
-      check(failure)
-          .isNotNull()
-          .has((f) => f.rejection.which, 'which')
-          .isNotNull()
-          .any((line) => line.contains('threw while trying to read group 3:'));
+      check(match).isRejectedBy(
+        (it) => it.hasGroup(0).equals('wrong'),
+        actual: ['\'ab\''],
+        which: ['are not equal'],
+      );
+      check(
+        match,
+      ).isRejectedBy((it) => it.hasGroup(2).isNotNull(), actual: ['<null>']);
     });
     test('hasGroups', () {
       check(match).hasGroups([0, 1, 2]).deepEquals(['ab', 'b', null]);
 
-      final failure = softCheck(match, (it) => it.hasGroups([3]));
-      check(failure)
-          .isNotNull()
-          .has((f) => f.rejection.which, 'which')
-          .isNotNull()
-          .any((line) => line.contains('threw while trying to read groups:'));
+      check(match).isRejectedBy(
+        (it) => it.hasGroups([0, 1]).deepEquals(['ab', 'wrong']),
+        actual: ['[\'ab\', \'b\']'],
+        which: ['at [<1>] is \'b\'', 'which does not equal \'wrong\''],
+      );
     });
   });
 
@@ -332,13 +333,28 @@ void main() {
     test('hasNamedGroup', () {
       check(match).hasNamedGroup('foo').isNotNull().equals('b');
 
-      final failure = softCheck(match, (it) => it.hasNamedGroup('bar'));
-      check(failure)
-          .isNotNull()
-          .has((f) => f.rejection.which, 'which')
-          .isNotNull()
-          .any((line) => line
-              .contains('threw while trying to read named group "bar":'));
+      check(match).isRejectedBy(
+        (it) => it.hasNamedGroup('foo').equals('wrong'),
+        actual: ['\'b\''],
+        which: ['are not equal'],
+      );
+    });
+  });
+
+  group('ConditionChecks', () {
+    test('descriptions', () {
+      check(
+        (Subject<Match> it) => it.hasGroup(1).equals('b'),
+      ).description.deepEquals(['  has group 1 that:', '    equals \'b\'']);
+      check(
+        (Subject<Match> it) => it.hasGroups([0, 1]).deepEquals(['ab', 'b']),
+      ).description.deepEquals([
+        '  has groups [0, 1] that:',
+        '    is deeply equal to [\'ab\', \'b\']',
+      ]);
+      check((Subject<RegExpMatch> it) => it.hasNamedGroup('foo').equals('b'))
+          .description
+          .deepEquals(['  has named group "foo" that:', '    equals \'b\'']);
     });
   });
 }
