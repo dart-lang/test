@@ -46,7 +46,7 @@ extension CoreChecks<T> on Subject<T> {
               'threw while trying to read $name: ',
               postfixLast(' at:', literal(e)),
             ),
-            ...indent(const LineSplitter().convert(st.toString())),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }

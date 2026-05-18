@@ -31,7 +31,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
           actual: prefixFirst('a function that threw error ', literal(e)),
           which: [
             'threw an exception that is not a $E at:',
-            ...indent(const LineSplitter().convert(st.toString())),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }
@@ -53,7 +53,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
           actual: ['a function that throws'],
           which: [
             ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(const LineSplitter().convert(st.toString())),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }
