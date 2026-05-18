@@ -2,6 +2,7 @@
 
 - Require Dart 3.7
 - Improve speed of pretty printing for large collections.
+- Improve formatting for failures involving unexpected exceptions.
 
 ## 0.3.1
 
