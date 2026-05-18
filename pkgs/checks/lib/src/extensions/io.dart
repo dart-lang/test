@@ -16,6 +16,12 @@ extension IoFunctionChecks<T> on Subject<T Function()> {
   ///
   /// If the function does not call [exit] synchronously, or if it throws an
   /// error, this expectation will fail.
+  ///
+  /// WARNING: This check relies on throwing an [Error] internally to detect
+  /// the call to [exit]. If the code under test has a catch-all block that
+  /// catches [Error] (e.g. `catch (e)` where `e` is not restricted to
+  /// [Exception]), it may intercept this error and prevent the check from
+  /// working correctly.
   Subject<int> exits() {
     return context.nest<int>(() => ['exits the process'], (actual) {
       try {
@@ -27,7 +33,7 @@ extension IoFunctionChecks<T> on Subject<T Function()> {
           actual: prefixFirst('a function that returned ', literal(result)),
           which: ['did not exit'],
         );
-      } on _ExitException catch (e) {
+      } on _ExitError catch (e) {
         return Extracted.value(e.code);
       } catch (e) {
         return Extracted.rejection(
@@ -48,6 +54,12 @@ extension IoAsyncFunctionChecks<T> on Subject<Future<T> Function()> {
   ///
   /// If the future completes normally or completes to an error, this
   /// expectation will fail.
+  ///
+  /// WARNING: This check relies on throwing an [Error] internally to detect
+  /// the call to [exit]. If the code under test has a catch-all block that
+  /// catches [Error] (e.g. `catch (e)` where `e` is not restricted to
+  /// [Exception]), it may intercept this error and prevent the check from
+  /// working correctly.
   Future<void> exits([AsyncCondition<int>? exitCodeCondition]) async {
     await context.nestAsync<int>(() => ['exits the process'], (actual) async {
       try {
@@ -59,7 +71,7 @@ extension IoAsyncFunctionChecks<T> on Subject<Future<T> Function()> {
           actual: prefixFirst('completed to ', literal(result)),
           which: ['did not exit'],
         );
-      } on _ExitException catch (e) {
+      } on _ExitError catch (e) {
         return Extracted.value(e.code);
       } catch (e, st) {
         return Extracted.rejection(
@@ -74,14 +86,23 @@ extension IoAsyncFunctionChecks<T> on Subject<Future<T> Function()> {
   }
 }
 
-final class _ExitException implements Exception {
+/// An [Error] thrown by [_ExitIOOverrides] to detect calls to [exit].
+///
+/// We use [Error] instead of [Exception] because catch-all exception handlers
+/// (e.g. `on Exception catch (e)`) are more common than catch-all error
+/// handlers, and we want to avoid our exit signal being caught by the code
+/// under test.
+///
+/// However, catch-all handlers that catch everything (e.g. `catch (e)`) will
+/// still catch this error.
+final class _ExitError extends Error {
   final int code;
-  _ExitException(this.code);
+  _ExitError(this.code);
 }
 
 final class _ExitIOOverrides extends IOOverrides {
   @override
   Never exit(int code) {
-    throw _ExitException(code);
+    throw _ExitError(code);
   }
 }
