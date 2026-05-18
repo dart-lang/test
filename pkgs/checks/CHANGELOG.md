@@ -2,6 +2,8 @@
 
 - Require Dart 3.7
 - Improve speed of pretty printing for large collections.
+- Add `package:checks/io.dart` with expectations that a synchronous or
+  asynchronous callback calls `exit()`.
 
 ## 0.3.1
 
