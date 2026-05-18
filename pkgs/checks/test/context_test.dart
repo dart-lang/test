@@ -171,7 +171,7 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
           Rejection(
             which: [
               ...prefixFirst('threw late error', literal(error.error)),
-              ...const LineSplitter().convert(
+              ...LineSplitter.split(
                 TestHandle.current
                     .formatStackTrace(error.stackTrace)
                     .toString(),

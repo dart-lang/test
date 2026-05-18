@@ -27,8 +27,8 @@ void main() {
           );
         }, 'foo').isNotNull(),
         which: [
-          'threw while trying to read foo: <UnimplementedError>',
-          'fake trace',
+          'threw while trying to read foo: <UnimplementedError> at:',
+          '  fake trace',
         ],
       );
     });

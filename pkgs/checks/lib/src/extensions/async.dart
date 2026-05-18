@@ -27,7 +27,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
           actual: ['a future that completes as an error'],
           which: [
             ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...const LineSplitter().convert(st.toString()),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }
@@ -57,10 +57,10 @@ extension FutureChecks<T> on Subject<Future<T>> {
           onError: (Object e, StackTrace st) {
             reject(
               Rejection(
-                actual: ['a future that completed as an error:'],
+                actual: ['a future that completed as an error'],
                 which: [
-                  ...prefixFirst('threw ', literal(e)),
-                  ...const LineSplitter().convert(st.toString()),
+                  ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+                  ...indent(LineSplitter.split(st.toString())),
                 ],
               ),
             );
@@ -97,7 +97,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
             actual: prefixFirst('completed to error ', literal(e)),
             which: [
               'threw an exception that is not a $E at:',
-              ...const LineSplitter().convert(st.toString()),
+              ...indent(LineSplitter.split(st.toString())),
             ],
           );
         }
@@ -160,7 +160,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           actual: prefixFirst('a stream with error ', literal(e)),
           which: [
             'emitted an error instead of a value at:',
-            ...const LineSplitter().convert(st.toString()),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }
@@ -208,7 +208,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
             actual: prefixFirst('a stream with error ', literal(e)),
             which: [
               'emitted an error which is not $E at:',
-              ...const LineSplitter().convert(st.toString()),
+              ...indent(LineSplitter.split(st.toString())),
             ],
           );
         }
@@ -510,8 +510,11 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         return Rejection(
           actual: ['a stream'],
           which: [
-            ...prefixFirst('emitted an unexpected error: ', literal(e)),
-            ...const LineSplitter().convert(st.toString()),
+            ...prefixFirst(
+              'emitted an unexpected error: ',
+              postfixLast(' at:', literal(e)),
+            ),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }

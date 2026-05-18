@@ -22,7 +22,7 @@ void main() {
         await check(_futureFail()).isRejectedByAsync(
           (it) => it.completes((it) => it.equals(1)),
           actual: ['a future that completes as an error'],
-          which: ['threw <UnimplementedError> at:', 'fake trace'],
+          which: ['threw <UnimplementedError> at:', '  fake trace'],
         );
       });
       test('can be described', () async {
@@ -66,7 +66,7 @@ void main() {
             actual: ['completed to error <UnimplementedError>'],
             which: [
               'threw an exception that is not a StateError at:',
-              'fake trace',
+              '  fake trace',
             ],
           );
         },
@@ -134,9 +134,9 @@ Actual: a future that completed to 'value\'''');
             .equals('''
 Expected: a Future<String> that:
   does not complete
-Actual: a future that completed as an error:
-Which: threw 'error'
-fake trace''');
+Actual: a future that completed as an error
+Which: threw 'error' at:
+  fake trace''');
       });
       test('can be described', () async {
         await check(
@@ -164,7 +164,7 @@ fake trace''');
         await check(_countingStream(1, errorAt: 0)).isRejectedByAsync(
           (it) => it.emits(),
           actual: ['a stream with error <UnimplementedError: Error at 1>'],
-          which: ['emitted an error instead of a value at:', 'fake trace'],
+          which: ['emitted an error instead of a value at:', '  fake trace'],
         );
       });
       test('can be described', () async {
@@ -215,7 +215,7 @@ fake trace''');
             actual: ['a stream with error <UnimplementedError: Error at 1>'],
             which: [
               'emitted an error which is not StateError at:',
-              'fake trace',
+              '  fake trace',
             ],
           );
         },
@@ -494,7 +494,7 @@ fake trace''');
         await check(StreamQueue(controller.stream)).isRejectedByAsync(
           (it) => it.isDone(),
           actual: ['a stream'],
-          which: ['emitted an unexpected error: \'sad\'', 'fake trace'],
+          which: ['emitted an unexpected error: \'sad\' at:', '  fake trace'],
         );
       });
       test('uses a transaction', () async {

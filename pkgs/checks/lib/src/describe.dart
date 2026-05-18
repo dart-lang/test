@@ -76,7 +76,7 @@ Iterable<String> _prettyPrint(
   } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];
   } else {
-    final value = const LineSplitter().convert(object.toString());
+    final value = LineSplitter.split(object.toString());
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
   }
 }
