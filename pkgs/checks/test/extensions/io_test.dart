@@ -25,9 +25,36 @@ void main() {
         );
       });
       test('fails for functions that throw', () {
-        check(() => throw StateError('oops!')).isRejectedBy(
+        check(() {
+          Error.throwWithStackTrace(
+            StateError('oops!'),
+            StackTrace.fromString('fake trace'),
+          );
+        }).isRejectedBy(
           (it) => it.exits(),
           actual: ['a function that threw error <Bad state: oops!>'],
+          which: ['threw an exception at:', '  fake trace'],
+        );
+      });
+      test('succeeds even if function catches Exception', () {
+        check(() {
+          try {
+            exit(42);
+          } on Exception catch (_) {
+            // should not catch _ExitError
+          }
+        }).exits().equals(42);
+      });
+      test('fails if function catches Error', () {
+        check(() {
+          try {
+            exit(42);
+          } on Error catch (_) {
+            // swallows _ExitError
+          }
+        }).isRejectedBy(
+          (it) => it.exits(),
+          actual: ['a function that returned <null>'],
           which: ['did not exit'],
         );
       });
@@ -57,7 +84,7 @@ void main() {
         await check(_futureFail).isRejectedByAsync(
           (it) => it.exits(),
           actual: ['completed to error <UnimplementedError>'],
-          which: ['threw an exception at:', 'fake trace'],
+          which: ['threw an exception at:', '  fake trace'],
         );
       });
       test('can be described', () async {

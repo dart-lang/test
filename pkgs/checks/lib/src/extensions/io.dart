@@ -35,10 +35,13 @@ extension IoFunctionChecks<T> on Subject<T Function()> {
         );
       } on _ExitError catch (e) {
         return Extracted.value(e.code);
-      } catch (e) {
+      } catch (e, st) {
         return Extracted.rejection(
           actual: prefixFirst('a function that threw error ', literal(e)),
-          which: ['did not exit'],
+          which: [
+            'threw an exception at:',
+            ...indent(const LineSplitter().convert(st.toString())),
+          ],
         );
       }
     });
@@ -78,7 +81,7 @@ extension IoAsyncFunctionChecks<T> on Subject<Future<T> Function()> {
           actual: prefixFirst('completed to error ', literal(e)),
           which: [
             'threw an exception at:',
-            ...const LineSplitter().convert(st.toString()),
+            ...indent(const LineSplitter().convert(st.toString())),
           ],
         );
       }
