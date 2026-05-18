@@ -11,6 +11,7 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Treat calls to `exit` as test failures in VM tests.
+* Recompiled browser test host.
 
 ## 1.31.1
 
