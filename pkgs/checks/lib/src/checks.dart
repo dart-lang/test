@@ -860,7 +860,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           assert(foundDepth == -1);
           assert(foundOverlap == -1);
           foundDepth = details.depth + 1;
-          foundOverlap = details._actualOverlap + successfulOverlap + labelLines;
+          foundOverlap =
+              details._actualOverlap + successfulOverlap + labelLines;
         } else {
           if (foundDepth == -1) {
             successfulOverlap += details.expected.length;

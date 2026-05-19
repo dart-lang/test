@@ -30,7 +30,9 @@ Actual: a List<dynamic> that:
     test('includes matching portions of actual when label is multiline', () {
       final largeKey = Iterable.generate(30, (i) => i).toList();
       check(() {
-        check({largeKey: [1]})[largeKey].first.identicalTo(2);
+        check({
+          largeKey: [1],
+        })[largeKey].first.identicalTo(2);
       }).throwsFailure().equals('''
 Expected: a Map<List<int>, List<int>> that:
   contains a value for [0,
