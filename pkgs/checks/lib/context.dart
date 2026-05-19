@@ -5,6 +5,7 @@
 export 'src/checks.dart'
     show
         AsyncCondition,
+        AsyncConditionDisallowed,
         CheckFailure,
         Condition,
         Context,

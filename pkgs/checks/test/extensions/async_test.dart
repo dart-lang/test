@@ -417,6 +417,14 @@ Which: threw 'error' at:
         );
         await check(queue).emits((it) => it.equals(1));
       });
+      test('consumes a matching async event', () async {
+        final queue = StreamQueue(Stream.value(Future.value(1)));
+        await softCheckAsync<StreamQueue<Future<int>>>(
+          queue,
+          (it) => it.mayEmit((it) => it.completes((it) => it.equals(1))),
+        );
+        await check(queue).isDone();
+      });
       test('does not consume a non-matching event', () async {
         final queue = _countingStream(2);
         await softCheckAsync<StreamQueue<int>>(
@@ -433,6 +441,16 @@ Which: threw 'error' at:
         );
         await check(queue).emitsError<UnimplementedError>(
           (it) => it.has((e) => e.message, 'message').equals('Error at 1'),
+        );
+      });
+      test('can be described when condition is async', () async {
+        await check(
+          (Subject<StreamQueue<Future<int>>> it) =>
+              it.mayEmit((it) => it.completes()),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals([
+            '  may emit a value satisfying an asynchronous condition',
+          ]),
         );
       });
     });
@@ -473,6 +491,25 @@ Which: threw 'error' at:
         );
         await check(queue).emitsError<UnimplementedError>(
           (it) => it.has((e) => e.message, 'message').equals('Error at 1'),
+        );
+      });
+      test('consumes a matching async event', () async {
+        final queue = StreamQueue(Stream.value(Future.value(1)));
+        await softCheckAsync<StreamQueue<Future<int>>>(
+          queue,
+          (it) =>
+              it.mayEmitMultiple((it) => it.completes((it) => it.equals(1))),
+        );
+        await check(queue).isDone();
+      });
+      test('can be described when condition is async', () async {
+        await check(
+          (Subject<StreamQueue<Future<int>>> it) =>
+              it.mayEmitMultiple((it) => it.completes()),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals([
+            '  may emit a value satisfying an asynchronous condition',
+          ]),
         );
       });
     });
