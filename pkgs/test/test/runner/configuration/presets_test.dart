@@ -21,12 +21,13 @@ void main() {
     test("don't do anything by default", () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'}
-                }
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -45,12 +46,13 @@ void main() {
     test('can be selected on the command line', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'}
-                }
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -64,23 +66,26 @@ void main() {
       ''').create();
 
       var test = await runTest(['-P', 'foo', 'test.dart']);
-      expect(test.stdout,
-          containsInOrder(['-1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['-1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
     });
 
     test('multiple presets can be selected', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'},
-                  'bar': {
-                    'paths': ['test.dart']
-                  }
-                }
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+                'bar': {
+                  'paths': ['test.dart'],
+                },
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -94,21 +99,24 @@ void main() {
       ''').create();
 
       var test = await runTest(['-P', 'foo,bar']);
-      expect(test.stdout,
-          containsInOrder(['-1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['-1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
     });
 
     test('the latter preset takes precedence', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'},
-                  'bar': {'timeout': '30s'}
-                }
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+                'bar': {'timeout': '30s'},
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -124,21 +132,24 @@ void main() {
       await (await runTest(['-P', 'foo,bar', 'test.dart'])).shouldExit(0);
 
       var test = await runTest(['-P', 'bar,foo', 'test.dart']);
-      expect(test.stdout,
-          containsInOrder(['-1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['-1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
     });
 
     test('a preset takes precedence over the base configuration', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'}
-                },
-                'timeout': '30s'
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+              },
+              'timeout': '30s',
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -152,19 +163,22 @@ void main() {
       ''').create();
 
       var test = await runTest(['-P', 'foo', 'test.dart']);
-      expect(test.stdout,
-          containsInOrder(['-1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['-1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
 
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '30s'}
-                },
-                'timeout': '00s'
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '30s'},
+              },
+              'timeout': '00s',
+            }),
+          )
           .create();
 
       await (await runTest(['-P', 'foo', 'test.dart'])).shouldExit(0);
@@ -173,16 +187,17 @@ void main() {
     test('a nested preset is activated', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'tags': {
-                  'foo': {
-                    'presets': {
-                      'bar': {'timeout': '0s'}
-                    },
+            'dart_test.yaml',
+            jsonEncode({
+              'tags': {
+                'foo': {
+                  'presets': {
+                    'bar': {'timeout': '0s'},
                   },
-                }
-              }))
+                },
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -197,19 +212,22 @@ void main() {
       ''').create();
 
       var test = await runTest(['-P', 'bar', 'test.dart']);
-      expect(test.stdout,
-          containsInOrder(['+0 -1: test 1 [E]', '+1 -1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['+0 -1: test 1 [E]', '+1 -1: Some tests failed.']),
+      );
       await test.shouldExit(1);
 
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '30s'}
-                },
-                'timeout': '00s'
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '30s'},
+              },
+              'timeout': '00s',
+            }),
+          )
           .create();
 
       await (await runTest(['-P', 'foo', 'test.dart'])).shouldExit(0);
@@ -220,13 +238,14 @@ void main() {
     test('selects a preset', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'}
-                },
-                'add_presets': ['foo']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+              },
+              'add_presets': ['foo'],
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -240,22 +259,25 @@ void main() {
       ''').create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stdout,
-          containsInOrder(['-1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['-1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
     });
 
     test('applies presets in selection order', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'},
-                  'bar': {'timeout': '30s'}
-                },
-                'add_presets': ['foo', 'bar']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+                'bar': {'timeout': '30s'},
+              },
+              'add_presets': ['foo', 'bar'],
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -272,34 +294,38 @@ void main() {
 
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {'timeout': '0s'},
-                  'bar': {'timeout': '30s'}
-                },
-                'add_presets': ['bar', 'foo']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {'timeout': '0s'},
+                'bar': {'timeout': '30s'},
+              },
+              'add_presets': ['bar', 'foo'],
+            }),
+          )
           .create();
 
       var test = await runTest(['test.dart']);
-      expect(test.stdout,
-          containsInOrder(['-1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['-1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
     });
 
     test('allows preset inheritance via add_presets', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {
-                    'add_presets': ['bar']
-                  },
-                  'bar': {'timeout': '0s'}
-                }
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {
+                  'add_presets': ['bar'],
+                },
+                'bar': {'timeout': '0s'},
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -313,25 +339,28 @@ void main() {
       ''').create();
 
       var test = await runTest(['-P', 'foo', 'test.dart']);
-      expect(test.stdout,
-          containsInOrder(['+0 -1: test [E]', '-1: Some tests failed.']));
+      expect(
+        test.stdout,
+        containsInOrder(['+0 -1: test [E]', '-1: Some tests failed.']),
+      );
       await test.shouldExit(1);
     });
 
     test('allows circular preset inheritance via add_presets', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'presets': {
-                  'foo': {
-                    'add_presets': ['bar']
-                  },
-                  'bar': {
-                    'add_presets': ['foo']
-                  }
-                }
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'presets': {
+                'foo': {
+                  'add_presets': ['bar'],
+                },
+                'bar': {
+                  'add_presets': ['foo'],
+                },
+              },
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -354,27 +383,31 @@ void main() {
         await d.file('dart_test.yaml', '{"presets": {12: null}}').create();
 
         var test = await runTest([]);
-        expect(test.stderr,
-            containsInOrder(['presets key must be a string', '^^']));
+        expect(
+          test.stderr,
+          containsInOrder(['presets key must be a string', '^^']),
+        );
         await test.shouldExit(exit_codes.data);
       });
 
       test('rejects an invalid preset name', () async {
         await d
             .file(
-                'dart_test.yaml',
-                jsonEncode({
-                  'presets': {'foo bar': null}
-                }))
+              'dart_test.yaml',
+              jsonEncode({
+                'presets': {'foo bar': null},
+              }),
+            )
             .create();
 
         var test = await runTest([]);
         expect(
-            test.stderr,
-            containsInOrder([
-              'presets key must be an (optionally hyphenated) Dart identifier.',
-              '^^^^^^^^^'
-            ]));
+          test.stderr,
+          containsInOrder([
+            'presets key must be an (optionally hyphenated) Dart identifier.',
+            '^^^^^^^^^',
+          ]),
+        );
         await test.shouldExit(exit_codes.data);
       });
 
@@ -389,38 +422,44 @@ void main() {
       test('rejects an invalid preset configuration', () async {
         await d
             .file(
-                'dart_test.yaml',
-                jsonEncode({
-                  'presets': {
-                    'foo': {'timeout': '12p'}
-                  }
-                }))
+              'dart_test.yaml',
+              jsonEncode({
+                'presets': {
+                  'foo': {'timeout': '12p'},
+                },
+              }),
+            )
             .create();
 
         var test = await runTest([]);
-        expect(test.stderr,
-            containsInOrder(['Invalid timeout: expected unit', '^^^^']));
+        expect(
+          test.stderr,
+          containsInOrder(['Invalid timeout: expected unit', '^^^^']),
+        );
         await test.shouldExit(exit_codes.data);
       });
 
       test('rejects runner configuration in a non-runner context', () async {
         await d
             .file(
-                'dart_test.yaml',
-                jsonEncode({
-                  'tags': {
-                    'foo': {
-                      'presets': {
-                        'bar': {'filename': '*_blorp.dart'}
-                      }
-                    }
-                  }
-                }))
+              'dart_test.yaml',
+              jsonEncode({
+                'tags': {
+                  'foo': {
+                    'presets': {
+                      'bar': {'filename': '*_blorp.dart'},
+                    },
+                  },
+                },
+              }),
+            )
             .create();
 
         var test = await runTest([]);
-        expect(test.stderr,
-            containsInOrder(["filename isn't supported here.", '^^^^^^^^^^']));
+        expect(
+          test.stderr,
+          containsInOrder(["filename isn't supported here.", '^^^^^^^^^^']),
+        );
         await test.shouldExit(exit_codes.data);
       });
 
@@ -433,36 +472,45 @@ void main() {
       test('fails if an undefined preset is added', () async {
         await d
             .file(
-                'dart_test.yaml',
-                jsonEncode({
-                  'add_presets': ['foo', 'bar']
-                }))
+              'dart_test.yaml',
+              jsonEncode({
+                'add_presets': ['foo', 'bar'],
+              }),
+            )
             .create();
 
         var test = await runTest([]);
-        expect(test.stderr,
-            emitsThrough(contains('Undefined presets "foo" and "bar".')));
+        expect(
+          test.stderr,
+          emitsThrough(contains('Undefined presets "foo" and "bar".')),
+        );
         await test.shouldExit(exit_codes.usage);
       });
 
-      test('fails if an undefined preset is added in a nested context',
-          () async {
-        await d
-            .file(
+      test(
+        'fails if an undefined preset is added in a nested context',
+        () async {
+          await d
+              .file(
                 'dart_test.yaml',
                 jsonEncode({
                   'on_os': {
                     currentOS.identifier: {
-                      'add_presets': ['bar']
-                    }
-                  }
-                }))
-            .create();
+                      'add_presets': ['bar'],
+                    },
+                  },
+                }),
+              )
+              .create();
 
-        var test = await runTest([]);
-        expect(test.stderr, emitsThrough(contains('Undefined preset "bar".')));
-        await test.shouldExit(exit_codes.usage);
-      });
+          var test = await runTest([]);
+          expect(
+            test.stderr,
+            emitsThrough(contains('Undefined preset "bar".')),
+          );
+          await test.shouldExit(exit_codes.usage);
+        },
+      );
     });
 
     group('add_presets', () {
@@ -472,42 +520,49 @@ void main() {
             .create();
 
         var test = await runTest(['test.dart']);
-        expect(test.stderr,
-            containsInOrder(['add_presets must be a list', '^^^^']));
+        expect(
+          test.stderr,
+          containsInOrder(['add_presets must be a list', '^^^^']),
+        );
         await test.shouldExit(exit_codes.data);
       });
 
       test('rejects an invalid preset type', () async {
         await d
             .file(
-                'dart_test.yaml',
-                jsonEncode({
-                  'add_presets': [12]
-                }))
+              'dart_test.yaml',
+              jsonEncode({
+                'add_presets': [12],
+              }),
+            )
             .create();
 
         var test = await runTest(['test.dart']);
-        expect(test.stderr,
-            containsInOrder(['Preset name must be a string', '^^']));
+        expect(
+          test.stderr,
+          containsInOrder(['Preset name must be a string', '^^']),
+        );
         await test.shouldExit(exit_codes.data);
       });
 
       test('rejects an invalid preset name', () async {
         await d
             .file(
-                'dart_test.yaml',
-                jsonEncode({
-                  'add_presets': ['foo bar']
-                }))
+              'dart_test.yaml',
+              jsonEncode({
+                'add_presets': ['foo bar'],
+              }),
+            )
             .create();
 
         var test = await runTest(['test.dart']);
         expect(
-            test.stderr,
-            containsInOrder([
-              'Preset name must be an (optionally hyphenated) Dart identifier.',
-              '^^^^^^^^^'
-            ]));
+          test.stderr,
+          containsInOrder([
+            'Preset name must be an (optionally hyphenated) Dart identifier.',
+            '^^^^^^^^^',
+          ]),
+        );
         await test.shouldExit(exit_codes.data);
       });
     });

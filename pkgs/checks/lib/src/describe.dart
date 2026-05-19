@@ -20,7 +20,11 @@ const _maxLineLength = 80;
 const _maxItems = 25;
 
 Iterable<String> _prettyPrint(
-    Object? object, int indentSize, Set<Object?> seen, bool isTopLevel) {
+  Object? object,
+  int indentSize,
+  Set<Object?> seen,
+  bool isTopLevel,
+) {
   if (seen.contains(object)) return ['(recursive)'];
   seen = seen.union({object});
   Iterable<String> prettyPrintNested(Object? child) =>
@@ -38,9 +42,13 @@ Iterable<String> _prettyPrint(
       open = '(';
       close = ')';
     }
-    final elements = object.map(prettyPrintNested).toList();
+    final elements = object.map(prettyPrintNested);
     return _prettyPrintCollection(
-        open, close, elements, _maxLineLength - indentSize);
+      open,
+      close,
+      elements,
+      _maxLineLength - indentSize,
+    );
   } else if (object is Map) {
     final entries = object.entries.map((entry) {
       final key = prettyPrintNested(entry.key);
@@ -48,11 +56,15 @@ Iterable<String> _prettyPrint(
       return [
         ...key.take(key.length - 1),
         '${key.last}: ${value.first}',
-        ...value.skip(1)
+        ...value.skip(1),
       ];
-    }).toList();
+    });
     return _prettyPrintCollection(
-        '{', '}', entries, _maxLineLength - indentSize);
+      '{',
+      '}',
+      entries,
+      _maxLineLength - indentSize,
+    );
   } else if (object is String) {
     if (object.isEmpty) return ["''"];
     final escaped = const LineSplitter()
@@ -61,21 +73,30 @@ Iterable<String> _prettyPrint(
         .map((line) => line.replaceAll("'", r"\'"))
         .toList();
     return prefixFirst("'", postfixLast("'", escaped));
-  } else if (object is Condition) {
+  } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];
   } else {
-    final value = const LineSplitter().convert(object.toString());
+    final value = LineSplitter.split(object.toString());
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
   }
 }
 
 Iterable<String> _prettyPrintCollection(
-    String open, String close, List<Iterable<String>> elements, int maxLength) {
-  if (elements.length > _maxItems) {
-    elements.replaceRange(_maxItems - 1, elements.length, [
-      ['...']
-    ]);
+  String open,
+  String close,
+  Iterable<Iterable<String>> elements,
+  int maxLength,
+) {
+  final trimmedElements = <Iterable<String>>[];
+  for (var element in elements) {
+    if (trimmedElements.length >= _maxItems) {
+      trimmedElements[_maxItems - 1] = ['...'];
+      break;
+    }
+    trimmedElements.add(element);
   }
+  elements = trimmedElements;
+
   if (elements.every((e) => e.length == 1)) {
     final singleLine = '$open${elements.map((e) => e.single).join(', ')}$close';
     if (singleLine.length <= maxLength) {
@@ -143,7 +164,8 @@ String escape(String output) {
 
 /// A [RegExp] that matches whitespace characters that should be escaped.
 final _escapeRegExp = RegExp(
-    '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_hexLiteral).join()}]');
+  '[\\x00-\\x07\\x0E-\\x1F${_escapeMap.keys.map(_hexLiteral).join()}]',
+);
 
 /// A [Map] between whitespace characters and their escape sequences.
 const _escapeMap = {

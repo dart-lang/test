@@ -7,15 +7,27 @@
 // affect chrome.
 (async () => {
   // Fetch and compile Wasm binary.
-  let data = document.getElementById('WasmBootstrapInfo').dataset;
-  let modulePromise = WebAssembly.compileStreaming(fetch(data.wasmurl));
+  let wasmUrl, jsRuntimeUrl;
+  let dataElement = document.getElementById("WasmBootstrapInfo");
+  if (dataElement) {
+    wasmUrl = dataElement.dataset.wasmurl;
+    jsRuntimeUrl = "./" + dataElement.dataset.jsruntimeurl;
+  } else {
+    // Infer from current script
+    let scriptSrc = document.currentScript.src;
+    wasmUrl = scriptSrc.replace(/\.js$/, '.wasm');
+    jsRuntimeUrl = scriptSrc.replace(/\.js$/, '.mjs');
+  }
 
   // Instantiate the Dart module, importing from the global scope.
-  let dart2wasm = await import('./' + data.jsruntimeurl);
-  let dartInstance = await dart2wasm.instantiate(modulePromise, {});
+  let dart2wasmJsRuntime = await import(jsRuntimeUrl);
 
-  // Call `main`. If tasks are placed into the event loop (by scheduling tasks
-  // explicitly or awaiting Futures), these will automatically keep the script
-  // alive even after `main` returns.
-  await dart2wasm.invoke(dartInstance);
+  // dart2wasm versions starting with 3.6.0-212.0.dev return a new type that
+  // comes with instantiation and invoke methods. Since the min SDK is 3.7,
+  // we only need to support this version.
+  let compiledModule = await dart2wasmJsRuntime.compileStreaming(
+    fetch(wasmUrl),
+  );
+  let instantiatedModule = await compiledModule.instantiate();
+  instantiatedModule.invokeMain();
 })();

@@ -49,7 +49,9 @@ void main() {
 
       var test = await _runTest(['-p', 'chrome', 'test.dart']);
       await expectLater(
-          test.stdout, emitsThrough(endsWith('loading test.dart')));
+        test.stdout,
+        emitsThrough(endsWith('loading test.dart')),
+      );
       await signalAndQuit(test);
 
       expectTempDirEmpty(skip: 'Failing on Travis.');
@@ -221,9 +223,11 @@ void main() {
 }
 
 Future<TestProcess> _runTest(List<String> args, {bool forwardStdio = false}) =>
-    runTest(args,
-        environment: {'_UNITTEST_TEMP_DIR': _tempDir},
-        forwardStdio: forwardStdio);
+    runTest(
+      args,
+      environment: {'_UNITTEST_TEMP_DIR': _tempDir},
+      forwardStdio: forwardStdio,
+    );
 
 Future<void> signalAndQuit(TestProcess test) async {
   test.signal(ProcessSignal.sigterm);

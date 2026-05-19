@@ -1,0 +1,13 @@
+# Below are suggested reviewers for PRs to packages in this repository.
+#
+# These are suggestions; it is fine to have your changes reviewed by someone
+# else.
+
+/pkgs/checks/          @dart-lang/core-package-admins
+/pkgs/fake_async/
+/pkgs/matcher/         @dart-lang/core-package-admins
+/pkgs/test/            @dart-lang/core-package-admins
+/pkgs/test_api/        @dart-lang/core-package-admins
+/pkgs/test_core/       @dart-lang/core-package-admins
+/pkgs/test_descriptor/
+/pkgs/test_process/

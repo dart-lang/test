@@ -319,7 +319,7 @@ class DoneEvent extends Event {
 
   // Whether all tests succeeded (or were skipped).
   //
-  // Will be `null` if the test runner was close before all tests completed
+  // Will be `null` if the test runner was closed before all tests completed
   // running.
   bool? success;
 }
@@ -362,7 +362,7 @@ class Test {
   // Will only be present if `root_url` is different from `url`.
   int? root_line;
 
-  // The (1-based) line on in the original test suite from which the test
+  // The (1-based) line in the original test suite from which the test
   // originated.
   //
   // Will only be present if `root_url` is different from `url`.
@@ -395,7 +395,7 @@ and may be a `package:` URL.
 
 ```
 class Suite {
-  // An opaque ID for the group.
+  // An opaque ID for the suite.
   int id;
 
   // The platform on which the suite is running.

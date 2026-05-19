@@ -1,7 +1,129 @@
-## 1.25.9-wip
+## 1.31.2-wip
 
+* **Impacts Configuration** Support using the OS platform selector to configure
+  browser tests.
+  Previously tests loaded for the browser would have an operating system of
+  "none", now they will have an operating system matching the system the browser
+  is running on. This allows more specific configuration, such as skipping a
+  particular browser test on a particular platform. This may impact existing
+  configuration which relied on the configuration for browser tests being
+  independent from any OS specific configuration. For instance a wide skip of
+  all tests with OS `'windows'` would previously still run browser tests on
+  windows, but will now skip all tests including browser tests.
+* Treat calls to `exit` as test failures in VM tests.
+
+## 1.31.1
+
+* Ignore an error locating the SDK directory on platforms where the
+  `resolvedExecutable` is unexpectedly `null`.
+* Fix a bug where `-c exe` tests would hang on exit on windows.
+* Fix a bug where the web test runner would not find custom HTML files when
+  using the dart2wasm compiler.
+* `GithubReporter`:
+    * Group contiguous passing and skipped tests into collapsible groups to
+      reduce log noise in GitHub Actions.
+    * Updated skipped icon to ⏭️.
+* Increase SDK constraint to ^3.10.0.
+* Allow `analyzer` version  `13.x.x`.
+
+## 1.31.0
+
+* Print a summary of failed tests at the end of the expanded reporter output.
+* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
+  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
+  useful for finding issues when using foreign libraries through dart:ffi, such
+  as use-after-free, use of initialized memory and data races, or for detecting
+  data races in Dart code using shared fields.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+* Fix a hang when a test run with `--compiler exe` crashes.
+* Require `analyzer: '>=8.0.0 <13.0.0'`
+
+## 1.30.0
+
+* Add a `--suite-load-timeout` argument to allow configuring a timeout for
+  compiling and loading individual test suites.
+* Remove the default 12 minute timeout to compile and load test suites.
+* Bump `test_core` to 0.6.16
+* Add comments to the top-level libraries in the package.
+* Bump `test_api` to 0.7.10 to fix missing locations on tests skipped due to
+  the use of `solo`.
+
+## 1.29.0
+
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
+* Suppress skip reason messages in the compact and failures-only reporters.
+* Allow `analyzer` major version 10.
+
+## 1.28.0
+
+* Add `isSorted` and related matchers for iterables.
+* Consider `NaN` to be equal to itself in `equals`.
+* Bump `test_core` to 0.6.14
+* Removed unused `js` dependency
+
+## 1.27.0
+
+* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Serve dart2wasm source map files.
+* Fix Node.js dart2wasm tests on windows.
+* Doc edit: clarify in README that a platform selector includes the compiler.
+* Allow `analyzer` major version 9.
+* Require Dart 3.7
+
+## 1.26.3
+
+* Expand pub constraint to allow the latest `analyzer`.
+
+## 1.26.2
+
+* Graduate native assets from experiment to preview.
+
+## 1.26.1
+
+* Set a debug name for test isolates.
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
+## 1.26.0
+
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
+## 1.25.15
+
+* Allow the latest version of `package:shelf_web_socket`.
+
+## 1.25.14
+
+* Use secure random for url secrets.
+
+## 1.25.13
+
+* Allow the latest version of `package:matcher`.
+
+## 1.25.12
+
+* Fix hang when running multiple precompiled browser tests.
+
+## 1.25.11
+
+* Update to be forward compatible with `package:shelf_web_socket` version `3.x`.
+
+## 1.25.10
+
+* Update the `package:vm_service` constraint to allow version `15.x`.
+
+## 1.25.9
+
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
 * Fix dart2wasm tests on windows.
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 * Allow `firefox` or `firefox-bin` executable name on macOS.
 * Use a DevTools URL instead of a defunct observatory URL.

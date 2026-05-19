@@ -1,6 +1,53 @@
-## 0.7.4-wip
+## 0.7.13-wip
 
-* Increase SDK constraint to ^3.5.0-311.0.dev.
+* Expose several more backend APIs for use in `flutter_test`.
+* Allow using browser platforms with a specified OS.
+
+## 0.7.12
+
+* Allow `analyzer` major version 13.
+
+## 0.7.11
+
+* Add `vmAsan`, `vmMsan` and `vmTsan` runtimes.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+
+## 0.7.10
+
+* Fix missing locations on tests skipped due to the use of `solo`.
+
+## 0.7.9
+
+* Allow `analyzer` major version 10.
+
+## 0.7.8
+
+* Add a zone function available from the test suite `main` that allows creating
+  channels to the test runner.
+* Require Dart 3.7
+* Allow `analyzer` major version 9.
+
+## 0.7.7
+
+* Expand pub constraint to allow the latest `analyzer`.
+
+## 0.7.6
+
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
+## 0.7.5
+
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
+## 0.7.4
+
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
+* Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 
 ## 0.7.3

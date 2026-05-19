@@ -5,20 +5,64 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
 
+import '../util/package_config.dart';
 import 'live_suite_controller.dart';
 
 /// Collects coverage and outputs to the [coveragePath] path.
-Future<void> writeCoverage(
-    String coveragePath, LiveSuiteController controller) async {
-  var suite = controller.liveSuite.suite;
-  var coverage = await controller.liveSuite.suite.gatherCoverage();
-  final outfile = File(p.join(coveragePath,
-      '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json'))
-    ..createSync(recursive: true);
+Future<Coverage> writeCoverage(
+  String? coveragePath,
+  LiveSuiteController controller,
+) async {
+  final suite = controller.liveSuite.suite;
+  final coverage = await controller.liveSuite.suite.gatherCoverage();
+  if (coveragePath != null) {
+    final outfile = File(
+      p.join(
+        coveragePath,
+        '${suite.path}.${suite.platform.runtime.name.toLowerCase()}.json',
+      ),
+    )..createSync(recursive: true);
+    final out = outfile.openWrite();
+    out.write(json.encode(coverage));
+    await out.flush();
+    await out.close();
+  }
+  return switch (coverage['coverage']) {
+    // Matching on `List<dynamic>` the runtime type of `List` in JSON is
+    // never `Map<String, dynamic>`. The `cast` below ensures the runtime type
+    // is correct for `HitMap.parseJson`.
+    List<dynamic> hitMapJson => HitMap.parseJson(
+      hitMapJson.cast<Map<String, dynamic>>(),
+    ),
+    null => const {},
+    _ => throw StateError('Invalid coverage data'),
+  };
+}
+
+Future<void> writeCoverageLcov(
+  String coverageLcov,
+  Coverage allCoverageData,
+) async {
+  final resolver = await Resolver.create(
+    packagePath: (await currentPackage).root.toFilePath(),
+  );
+  final filteredCoverageData = allCoverageData.filterIgnored(
+    ignoredLinesInFilesCache: {},
+    resolver: resolver,
+  );
+  final lcovData = filteredCoverageData.formatLcov(resolver);
+  final outfile = File(coverageLcov)..createSync(recursive: true);
   final out = outfile.openWrite();
-  out.write(json.encode(coverage));
+  out.write(lcovData);
   await out.flush();
   await out.close();
+}
+
+typedef Coverage = Map<String, HitMap>;
+
+extension Merge on Coverage {
+  void merge(Coverage other) => FileHitMaps(this).merge(other);
 }

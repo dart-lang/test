@@ -34,14 +34,26 @@ class BrowserPlatform extends PlatformPlugin
   static Future<BrowserPlatform> start({String? root}) async {
     var packageConfig = await currentPackageConfig;
     return BrowserPlatform._(
-        Configuration.current,
-        p.fromUri(packageConfig.resolve(
-            Uri.parse('package:test/src/runner/browser/static/favicon.ico'))),
-        p.fromUri(packageConfig.resolve(Uri.parse(
-            'package:test/src/runner/browser/static/default.html.tpl'))),
-        p.fromUri(packageConfig.resolve(Uri.parse(
-            'package:test/src/runner/browser/static/run_wasm_chrome.js'))),
-        root: root);
+      Configuration.current,
+      p.fromUri(
+        packageConfig.resolve(
+          Uri.parse('package:test/src/runner/browser/static/favicon.ico'),
+        ),
+      ),
+      p.fromUri(
+        packageConfig.resolve(
+          Uri.parse('package:test/src/runner/browser/static/default.html.tpl'),
+        ),
+      ),
+      p.fromUri(
+        packageConfig.resolve(
+          Uri.parse(
+            'package:test/src/runner/browser/static/run_wasm_chrome.js',
+          ),
+        ),
+      ),
+      root: root,
+    );
   }
 
   /// The test runner configuration.
@@ -63,24 +75,27 @@ class BrowserPlatform extends PlatformPlugin
       _compilerSupport.putIfAbsent(compiler, () {
         if (_config.suiteDefaults.precompiledPath != null) {
           return PrecompiledSupport.start(
-              compiler: compiler,
-              config: _config,
-              defaultTemplatePath: _defaultTemplatePath,
-              root: _config.suiteDefaults.precompiledPath!,
-              faviconPath: _faviconPath);
+            compiler: compiler,
+            config: _config,
+            defaultTemplatePath: _defaultTemplatePath,
+            root: _config.suiteDefaults.precompiledPath!,
+            faviconPath: _faviconPath,
+          );
         }
         return switch (compiler) {
           Compiler.dart2js => Dart2JsSupport.start(
-              config: _config,
-              defaultTemplatePath: _defaultTemplatePath,
-              root: _root,
-              faviconPath: _faviconPath),
+            config: _config,
+            defaultTemplatePath: _defaultTemplatePath,
+            root: _root,
+            faviconPath: _faviconPath,
+          ),
           Compiler.dart2wasm => Dart2WasmSupport.start(
-              config: _config,
-              defaultTemplatePath: _defaultTemplatePath,
-              jsRuntimeWrapper: _jsRuntimeWrapper,
-              root: _root,
-              faviconPath: _faviconPath),
+            config: _config,
+            defaultTemplatePath: _defaultTemplatePath,
+            jsRuntimeWrapper: _jsRuntimeWrapper,
+            root: _root,
+            faviconPath: _faviconPath,
+          ),
           _ => throw StateError('Unexpected compiler $compiler'),
         };
       });
@@ -100,19 +115,23 @@ class BrowserPlatform extends PlatformPlugin
   /// Settings for invoking each browser.
   ///
   /// This starts out with the default settings, which may be overridden by user settings.
-  final _browserSettings =
-      Map<Runtime, ExecutableSettings>.from(defaultSettings);
+  final _browserSettings = Map<Runtime, ExecutableSettings>.from(
+    defaultSettings,
+  );
 
   /// The default template for html tests.
   final String _defaultTemplatePath;
 
   final String _faviconPath;
 
-  BrowserPlatform._(Configuration config, this._faviconPath,
-      this._defaultTemplatePath, this._jsRuntimeWrapper,
-      {String? root})
-      : _config = config,
-        _root = root ?? p.current;
+  BrowserPlatform._(
+    Configuration config,
+    this._faviconPath,
+    this._defaultTemplatePath,
+    this._jsRuntimeWrapper, {
+    String? root,
+  }) : _config = config,
+       _root = root ?? p.current;
 
   @override
   ExecutableSettings parsePlatformSettings(YamlMap settings) =>
@@ -120,8 +139,9 @@ class BrowserPlatform extends PlatformPlugin
 
   @override
   ExecutableSettings mergePlatformSettings(
-          ExecutableSettings settings1, ExecutableSettings settings2) =>
-      settings1.merge(settings2);
+    ExecutableSettings settings1,
+    ExecutableSettings settings2,
+  ) => settings1.merge(settings2);
 
   @override
   void customizePlatform(Runtime runtime, ExecutableSettings settings) {
@@ -136,8 +156,12 @@ class BrowserPlatform extends PlatformPlugin
   /// This will start a browser to load the suite if one isn't already running.
   /// Throws an [ArgumentError] if `platform.platform` isn't a browser.
   @override
-  Future<RunnerSuite?> load(String path, SuitePlatform platform,
-      SuiteConfiguration suiteConfig, Map<String, Object?> message) async {
+  Future<RunnerSuite?> load(
+    String path,
+    SuitePlatform platform,
+    SuiteConfiguration suiteConfig,
+    Map<String, Object?> message,
+  ) async {
     var browser = platform.runtime;
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
@@ -154,22 +178,27 @@ class BrowserPlatform extends PlatformPlugin
           p.basename(htmlPathFromTestPath) ==
               p.basename(_config.customHtmlTemplatePath!)) {
         throw LoadException(
-            path,
-            'template file "${p.basename(_config.customHtmlTemplatePath!)}" cannot be named '
-            'like the test file.');
+          path,
+          'template file "${p.basename(_config.customHtmlTemplatePath!)}" cannot be named '
+          'like the test file.',
+        );
       }
       _checkHtmlCorrectness(htmlPathFromTestPath, path);
     } else if (_config.customHtmlTemplatePath != null) {
       var htmlTemplatePath = _config.customHtmlTemplatePath!;
       if (!File(htmlTemplatePath).existsSync()) {
         throw LoadException(
-            path, '"$htmlTemplatePath" does not exist or is not readable');
+          path,
+          '"$htmlTemplatePath" does not exist or is not readable',
+        );
       }
 
       final templateFileContents = File(htmlTemplatePath).readAsStringSync();
       if ('{{testScript}}'.allMatches(templateFileContents).length != 1) {
-        throw LoadException(path,
-            '"$htmlTemplatePath" must contain exactly one {{testScript}} placeholder');
+        throw LoadException(
+          path,
+          '"$htmlTemplatePath" must contain exactly one {{testScript}} placeholder',
+        );
       }
       _checkHtmlCorrectness(htmlTemplatePath, path);
     }
@@ -178,7 +207,8 @@ class BrowserPlatform extends PlatformPlugin
     await support.compileSuite(path, suiteConfig, platform);
 
     var suiteUrl = support.serverUrl.resolveUri(
-        p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'));
+      p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'),
+    );
 
     if (_closed) return null;
 
@@ -191,9 +221,14 @@ class BrowserPlatform extends PlatformPlugin
       timeout = suiteTimeout;
     }
     var suite = await browserManager.load(
-        path, suiteUrl, suiteConfig, message, platform.compiler,
-        mapper: (await compilerSupport(compiler)).stackTraceMapperForPath(path),
-        timeout: timeout);
+      path,
+      suiteUrl,
+      suiteConfig,
+      message,
+      platform.compiler,
+      mapper: (await compilerSupport(compiler)).stackTraceMapperForPath(path),
+      timeout: timeout,
+    );
     if (_closed) return null;
     return suite;
   }
@@ -201,9 +236,10 @@ class BrowserPlatform extends PlatformPlugin
   void _checkHtmlCorrectness(String htmlPath, String path) {
     if (!File(htmlPath).readAsStringSync().contains('packages/test/dart.js')) {
       throw LoadException(
-          path,
-          '"$htmlPath" must contain <script src="packages/test/dart.js">'
-          '</script>.');
+        path,
+        '"$htmlPath" must contain <script src="packages/test/dart.js">'
+        '</script>.',
+      );
     }
   }
 
@@ -211,28 +247,44 @@ class BrowserPlatform extends PlatformPlugin
   ///
   /// If no browser manager is running yet, starts one.
   Future<BrowserManager?> _browserManagerFor(
-      Runtime browser, Compiler compiler) async {
+    Runtime browser,
+    Compiler compiler,
+  ) {
     var managerFuture = _browserManagers[(browser, compiler)];
     if (managerFuture != null) return managerFuture;
 
+    var future = _createBrowserManager(browser, compiler);
+    // Store null values for browsers that error out so we know not to load them
+    // again.
+    _browserManagers[(browser, compiler)] = future
+        .then<BrowserManager?>((value) => value)
+        .onError((_, _) => null);
+
+    return future;
+  }
+
+  Future<BrowserManager> _createBrowserManager(
+    Runtime browser,
+    Compiler compiler,
+  ) async {
     var support = await compilerSupport(compiler);
     var (webSocketUrl, socketFuture) = support.webSocket;
     var hostUrl = support.serverUrl
         .resolve('packages/test/src/runner/browser/static/index.html')
-        .replace(queryParameters: {
-      'managerUrl': webSocketUrl.toString(),
-      'debug': _config.debug.toString()
-    });
+        .replace(
+          queryParameters: {
+            'managerUrl': webSocketUrl.toString(),
+            'debug': _config.debug.toString(),
+          },
+        );
 
-    var future = BrowserManager.start(
-        browser, hostUrl, socketFuture, _browserSettings[browser]!, _config);
-
-    // Store null values for browsers that error out so we know not to load them
-    // again.
-    _browserManagers[(browser, compiler)] =
-        future.then<BrowserManager?>((value) => value).onError((_, __) => null);
-
-    return future;
+    return BrowserManager.start(
+      browser,
+      hostUrl,
+      socketFuture,
+      _browserSettings[browser]!,
+      _config,
+    );
   }
 
   /// Close all the browsers that the server currently has open.
@@ -243,11 +295,13 @@ class BrowserPlatform extends PlatformPlugin
   Future<List<void>> closeEphemeral() {
     var managers = _browserManagers.values.toList();
     _browserManagers.clear();
-    return Future.wait(managers.map((manager) async {
-      var result = await manager;
-      if (result == null) return;
-      await result.close();
-    }));
+    return Future.wait(
+      managers.map((manager) async {
+        var result = await manager;
+        if (result == null) return;
+        await result.close();
+      }),
+    );
   }
 
   /// Closes the server and releases all its resources.
@@ -255,11 +309,13 @@ class BrowserPlatform extends PlatformPlugin
   /// Returns a [Future] that completes once the server is closed and its
   /// resources have been fully released.
   @override
-  Future<void> close() async => _closeMemo.runOnce(() => Future.wait([
-        for (var browser in _browserManagers.values)
-          browser.then((b) => b?.close()),
-        for (var support in _compilerSupport.values)
-          support.then((s) => s.close()),
-      ]));
+  Future<void> close() async => _closeMemo.runOnce(
+    () => Future.wait([
+      for (var browser in _browserManagers.values)
+        browser.then((b) => b?.close()),
+      for (var support in _compilerSupport.values)
+        support.then((s) => s.close()),
+    ]),
+  );
   final _closeMemo = AsyncMemoizer<void>();
 }

@@ -27,8 +27,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
@@ -46,8 +48,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, emitsThrough(contains('dart:async')));
     await test.shouldExit(1);
   });
@@ -63,8 +67,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, emitsThrough(contains('"testStart"')));
     await test.shouldExit(0);
   });
@@ -86,8 +92,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, neverEmits(contains('dart:isolate-patch')));
     await test.shouldExit(1);
   });
@@ -109,12 +117,17 @@ void main() {
           }
         ''').create();
 
-        var test = await runTest(['test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(
-            test.stderr,
-            containsInOrder(
-                ["of global_test.yaml: $field isn't supported here.", '^^']));
+          test.stderr,
+          containsInOrder([
+            "of global_test.yaml: $field isn't supported here.",
+            '^^',
+          ]),
+        );
         await test.shouldExit(exit_codes.data);
       });
     }

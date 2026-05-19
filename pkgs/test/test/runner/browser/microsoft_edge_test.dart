@@ -36,15 +36,23 @@ webSocket.addEventListener("open", function() {
   }, timeout: const Timeout.factor(2));
 
   test('reports an error in onExit', () {
-    var edge = MicrosoftEdge(Uri.parse('https://dart.dev'), configuration(),
-        settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+    var edge = MicrosoftEdge(
+      Uri.parse('https://dart.dev'),
+      configuration(),
+      settings: ExecutableSettings(
+        linuxExecutable: '_does_not_exist',
+        macOSExecutable: '_does_not_exist',
+        windowsExecutable: '_does_not_exist',
+      ),
+    );
     expect(
-        edge.onExit,
-        throwsA(isApplicationException(
-            startsWith('Failed to run Edge: $noSuchFileMessage'))));
+      edge.onExit,
+      throwsA(
+        isApplicationException(
+          startsWith('Failed to run Edge: $noSuchFileMessage'),
+        ),
+      ),
+    );
   });
 
   test('can run successful tests', () async {
@@ -83,8 +91,10 @@ void main() {
   test("success", () {});
 }
 ''').create();
-    var test = await runTest(['-p', 'edge', 'test.dart'],
-        environment: {'MS_EDGE_EXECUTABLE': '/some/bad/path'});
+    var test = await runTest(
+      ['-p', 'edge', 'test.dart'],
+      environment: {'MS_EDGE_EXECUTABLE': '/some/bad/path'},
+    );
     expect(test.stdout, emitsThrough(contains('Failed to run Edge:')));
     await test.shouldExit(1);
   });

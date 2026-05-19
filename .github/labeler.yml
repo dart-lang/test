@@ -1,0 +1,31 @@
+# Configuration for .github/workflows/pull_request_label.yml.
+
+'type-infra':
+  - changed-files:
+    - any-glob-to-any-file: '.github/**'
+
+'package:checks':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/checks/**'
+
+'package:fake_async':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/fake_async/**'
+
+'package:matcher':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/matcher/**'
+
+'package:test':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/test/**'
+    - any-glob-to-any-file: 'pkgs/test_api/**'
+    - any-glob-to-any-file: 'pkgs/test_core/**'
+
+'package:test_descriptor':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/test_descriptor/**'
+
+'package:test_process':
+  - changed-files:
+    - any-glob-to-any-file: 'pkgs/test_process/**'

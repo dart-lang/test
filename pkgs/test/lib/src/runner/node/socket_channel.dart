@@ -38,6 +38,7 @@ Future<StreamChannel<Object?>> socketChannel() async {
   );
 
   return StreamChannel.withCloseGuarantee(
-      socketStream.stream.transform(const LineSplitter()).map(jsonDecode),
-      socketSink);
+    socketStream.stream.transform(const LineSplitter()).map(jsonDecode),
+    socketSink,
+  );
 }

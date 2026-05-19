@@ -4,21 +4,28 @@
 `package:checks` is a library for expressing test expectations and it features
 a literate API.
 
-## package:checks preview
+## package:checks (experimental)
 
-`package:checks` is in preview; to provide feedback on the API, please file
-[an issue][] with questions, suggestions, feature requests, or general
-feedback.
+`package:checks` is still experimental. For production use cases, please use
+`package:test` and `package:matcher`.
 
-For documentation about migrating from `package:matcher` to `checks`, see the
-[migration guide][].
+For packages in the `labs.dart.dev` publisher we generally plan to either
+graduate the package into a supported publisher (`dart.dev`, `tools.dart.dev`)
+after a period of feedback and iteration, or discontinue the package. These
+packages have a much higher expected rate of API and breaking changes.
+
+To provide feedback on the API, please file [an issue][] with questions,
+suggestions, feature requests, or general feedback.
+
+For documentation about converting your usage of `package:matcher` to `checks`,
+see the [migration guide][].
 
 [an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
 [migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
 
 ## Quickstart
 
-1. Add a `dev_dependency` on `checks: ^0.2.0`.
+1. Add a `dev_dependency` on `checks` (`dart pub add dev:checks`).
 
 1. Add an import for `package:checks/checks.dart`.
 
@@ -115,7 +122,7 @@ check(someValue)
 
 Some expectations take arguments which are themselves expectations to apply to
 other values. These expectations take `Condition` arguments which have the
-signature void Function(Subject)`. The conditions check expectations when they
+signature `void Function(Subject)`. The conditions check expectations when they
 are called with a `Subject` argument.
 
 ```dart
@@ -128,7 +135,7 @@ Expectation extension methods checking asynchronous behavior return a `Future`.
 The future should typically be awaited within the test body, however
 asynchronous expectations will also ensure that the test is not considered
 complete before the expectation is complete.
-Expectations with no concrete end conditions, such as an expectation that a
+Expectations with no concrete end conditions, such as any expectation that a
 future never completes, cannot be awaited and may cause a failure after the test
 has already appeared to complete.
 

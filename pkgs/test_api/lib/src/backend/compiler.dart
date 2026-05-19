@@ -41,8 +41,9 @@ enum Compiler {
   /// [Compiler].
   ///
   /// Note that custom [Compiler] implementations are not supported.
-  factory Compiler.deserialize(Object serialized) => builtIn
-      .firstWhere((compiler) => compiler.identifier == serialized as String);
+  factory Compiler.deserialize(Object serialized) => builtIn.firstWhere(
+    (compiler) => compiler.identifier == serialized as String,
+  );
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
   /// [Compiler] using [Compiler.deserialize].

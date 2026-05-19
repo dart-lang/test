@@ -39,19 +39,24 @@ class CodeServer {
   /// HTML page with a script tag that will run [javaScript].
   void handleJavaScript(String javaScript) {
     _handler.expect('GET', '/', (_) {
-      return shelf.Response.ok('''
+      return shelf.Response.ok(
+        '''
 <!doctype html>
 <html>
 <head>
   <script src="index.js"></script>
 </head>
 </html>
-''', headers: {'content-type': 'text/html'});
+''',
+        headers: {'content-type': 'text/html'},
+      );
     });
 
     _handler.expect('GET', '/index.js', (_) {
-      return shelf.Response.ok(javaScript,
-          headers: {'content-type': 'application/javascript'});
+      return shelf.Response.ok(
+        javaScript,
+        headers: {'content-type': 'application/javascript'},
+      );
     });
   }
 
@@ -59,7 +64,15 @@ class CodeServer {
   /// future that will complete to the WebSocket.
   Future<WebSocketChannel> handleWebSocket() {
     var completer = Completer<WebSocketChannel>();
-    _handler.expect('GET', '/', webSocketHandler(completer.complete));
+    // Note: the WebSocketChannel type below is needed for compatibility with
+    // package:shelf_web_socket v2.
+    _handler.expect(
+      'GET',
+      '/',
+      webSocketHandler((WebSocketChannel ws, _) {
+        completer.complete(ws);
+      }),
+    );
     return completer.future;
   }
 }
@@ -101,7 +114,8 @@ class _Handler {
     try {
       if (_expectations.isEmpty) {
         throw TestFailure(
-            '$description received unexpected request $requestInfo.');
+          '$description received unexpected request $requestInfo.',
+        );
       }
 
       var expectation = _expectations.removeFirst();

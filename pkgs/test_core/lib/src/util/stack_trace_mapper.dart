@@ -25,18 +25,25 @@ class JSStackTraceMapper implements StackTraceMapper {
   /// The URL of the source map.
   final Uri? _mapUrl;
 
-  JSStackTraceMapper(this._mapContents,
-      {Uri? mapUrl, Map<String, Uri>? packageMap, Uri? sdkRoot})
-      : _mapUrl = mapUrl,
-        _packageMap = packageMap,
-        _sdkRoot = sdkRoot;
+  JSStackTraceMapper(
+    this._mapContents, {
+    Uri? mapUrl,
+    Map<String, Uri>? packageMap,
+    Uri? sdkRoot,
+  }) : _mapUrl = mapUrl,
+       _packageMap = packageMap,
+       _sdkRoot = sdkRoot;
 
   /// Converts [trace] into a Dart stack trace.
   @override
   StackTrace mapStackTrace(StackTrace trace) {
     var mapping = _mapping ??= parseExtended(_mapContents, mapUrl: _mapUrl);
-    return mapper.mapStackTrace(mapping, trace,
-        packageMap: _packageMap, sdkRoot: _sdkRoot);
+    return mapper.mapStackTrace(
+      mapping,
+      trace,
+      packageMap: _packageMap,
+      sdkRoot: _sdkRoot,
+    );
   }
 
   /// Returns a Map representation which is suitable for JSON serialization.
@@ -55,18 +62,22 @@ class JSStackTraceMapper implements StackTraceMapper {
   static StackTraceMapper? deserialize(Map? serialized) {
     if (serialized == null) return null;
     var deserialized = _deserializePackageConfigMap(
-        (serialized['packageConfigMap'] as Map).cast<String, String>());
+      (serialized['packageConfigMap'] as Map).cast<String, String>(),
+    );
 
-    return JSStackTraceMapper(serialized['mapContents'] as String,
-        sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
-        packageMap: deserialized,
-        mapUrl: Uri.parse(serialized['mapUrl'] as String));
+    return JSStackTraceMapper(
+      serialized['mapContents'] as String,
+      sdkRoot: Uri.parse(serialized['sdkRoot'] as String),
+      packageMap: deserialized,
+      mapUrl: Uri.parse(serialized['mapUrl'] as String),
+    );
   }
 
   /// Converts a [packageConfigMap] into a format suitable for JSON
   /// serialization.
   static Map<String, String>? _serializePackageConfigMap(
-      Map<String, Uri>? packageConfigMap) {
+    Map<String, Uri>? packageConfigMap,
+  ) {
     if (packageConfigMap == null) return null;
     return packageConfigMap.map((key, value) => MapEntry(key, '$value'));
   }
@@ -74,7 +85,8 @@ class JSStackTraceMapper implements StackTraceMapper {
   /// Converts a serialized package config map into a format suitable for
   /// the [PackageResolver]
   static Map<String, Uri>? _deserializePackageConfigMap(
-      Map<String, String>? serialized) {
+    Map<String, String>? serialized,
+  ) {
     if (serialized == null) return null;
     return serialized.map((key, value) => MapEntry(key, Uri.parse(value)));
   }

@@ -14,8 +14,9 @@ import 'compiler_pool.dart';
 import 'suite.dart';
 
 /// A regular expression matching the first status line printed by dart2js.
-final _dart2jsStatus =
-    RegExp(r'^Dart file \(.*\) compiled to JavaScript: .*\n?');
+final _dart2jsStatus = RegExp(
+  r'^Dart file \(.*\) compiled to JavaScript: .*\n?',
+);
 
 /// A pool of `dart2js` instances.
 ///
@@ -29,7 +30,7 @@ class Dart2JsCompilerPool extends CompilerPool {
 
   /// Creates a compiler pool that multiple instances of `dart2js` at once.
   Dart2JsCompilerPool([Iterable<String>? extraArgs])
-      : _extraArgs = extraArgs?.toList() ?? const [];
+    : _extraArgs = extraArgs?.toList() ?? const [];
 
   /// Compiles [code] to [path].
   ///
@@ -39,7 +40,10 @@ class Dart2JsCompilerPool extends CompilerPool {
   /// *and* all its output has been printed to the command line.
   @override
   Future compileInternal(
-      String code, String path, SuiteConfiguration suiteConfig) {
+    String code,
+    String path,
+    SuiteConfiguration suiteConfig,
+  ) {
     return withTempDir((dir) async {
       var wrapperPath = p.join(dir, 'runInBrowser.dart');
       File(wrapperPath).writeAsStringSync(code);
@@ -55,7 +59,7 @@ class Dart2JsCompilerPool extends CompilerPool {
         '--packages=${await packageConfigUri}',
         '--disable-program-split',
         ..._extraArgs,
-        ...suiteConfig.dart2jsArgs
+        ...suiteConfig.dart2jsArgs,
       ];
 
       if (config.color) args.add('--enable-diagnostic-colors');
@@ -101,16 +105,16 @@ class Dart2JsCompilerPool extends CompilerPool {
 
     final mapUri = p.toUri(mapPath);
     map.cast<String, List<Object?>>().update(
-          'sources',
-          (sources) => [
-            for (var source in sources)
-              switch (Uri.parse('$root$source')) {
-                Uri(hasScheme: true) && final uri => uri.toString(),
-                Uri(:final path) when path.endsWith('/runInBrowser.dart') => '',
-                final uri => mapUri.resolveUri(uri).toString(),
-              }
-          ],
-        );
+      'sources',
+      (sources) => [
+        for (var source in sources)
+          switch (Uri.parse('$root$source')) {
+            Uri(hasScheme: true) && final uri => uri.toString(),
+            Uri(:final path) when path.endsWith('/runInBrowser.dart') => '',
+            final uri => mapUri.resolveUri(uri).toString(),
+          },
+      ],
+    );
 
     File(mapPath).writeAsStringSync(jsonEncode(map));
   }
@@ -122,9 +126,11 @@ class Dart2JsCompilerPool extends CompilerPool {
   /// have been killed and all resources released.
   @override
   Future<void> closeInternal() async {
-    await Future.wait(_processes.map((process) async {
-      process.kill();
-      await process.exitCode;
-    }));
+    await Future.wait(
+      _processes.map((process) async {
+        process.kill();
+        await process.exitCode;
+      }),
+    );
   }
 }

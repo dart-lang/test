@@ -17,9 +17,10 @@ import '../io.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('pauses the test runner for each file until the user presses enter',
-      () async {
-    await d.file('test1.dart', '''
+  test(
+    'pauses the test runner for each file until the user presses enter',
+    () async {
+      await d.file('test1.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -29,7 +30,7 @@ void main() {
 }
 ''').create();
 
-    await d.file('test2.dart', '''
+      await d.file('test2.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -39,55 +40,83 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(
-        ['--pause-after-load', '-p', 'chrome', 'test1.dart', 'test2.dart']);
-    await expectLater(test.stdout, emitsThrough('loaded test 1!'));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace('''
+      var test = await runTest([
+        '--pause-after-load',
+        '-p',
+        'chrome',
+        'test1.dart',
+        'test2.dart',
+      ]);
+      await expectLater(test.stdout, emitsThrough('loaded test 1!'));
+      await expectLater(
+        test.stdout,
+        emitsThrough(
+          equalsIgnoringWhitespace('''
       The test runner is paused. Open the dev console in Chrome and set
       breakpoints. Once you're finished, return to this terminal and press
       Enter.
-    ''')));
+    '''),
+        ),
+      );
 
-    var nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: test1.dart: success'));
-      nextLineFired = true;
-    })));
+      var nextLineFired = false;
+      unawaited(
+        test.stdout.next.then(
+          expectAsync1((line) {
+            expect(line, contains('+0: test1.dart: success'));
+            nextLineFired = true;
+          }),
+        ),
+      );
 
-    // Wait a little bit to be sure that the tests don't start running without
-    // our input.
-    await Future<void>.delayed(const Duration(seconds: 2));
-    expect(nextLineFired, isFalse);
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
 
-    test.stdin.writeln();
+      test.stdin.writeln();
 
-    await expectLater(test.stdout, emitsThrough('loaded test 2!'));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace('''
+      await expectLater(test.stdout, emitsThrough('loaded test 2!'));
+      await expectLater(
+        test.stdout,
+        emitsThrough(
+          equalsIgnoringWhitespace('''
       The test runner is paused. Open the dev console in Chrome and set
       breakpoints. Once you're finished, return to this terminal and press
       Enter.
-    ''')));
+    '''),
+        ),
+      );
 
-    nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+1: test2.dart: success'));
-      nextLineFired = true;
-    })));
+      nextLineFired = false;
+      unawaited(
+        test.stdout.next.then(
+          expectAsync1((line) {
+            expect(line, contains('+1: test2.dart: success'));
+            nextLineFired = true;
+          }),
+        ),
+      );
 
-    // Wait a little bit to be sure that the tests don't start running without
-    // our input.
-    await Future<void>.delayed(const Duration(seconds: 2));
-    expect(nextLineFired, isFalse);
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
 
-    test.stdin.writeln();
-    await expectLater(
-        test.stdout, emitsThrough(contains('+2: All tests passed!')));
-    await test.shouldExit(0);
-  }, tags: 'chrome');
+      test.stdin.writeln();
+      await expectLater(
+        test.stdout,
+        emitsThrough(contains('+2: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    },
+    tags: 'chrome',
+  );
 
-  test('pauses the test runner for each platform until the user presses enter',
-      () async {
-    await d.file('test.dart', '''
+  test(
+    'pauses the test runner for each platform until the user presses enter',
+    () async {
+      await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -97,86 +126,115 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest([
-      '--pause-after-load',
-      '-p',
-      'firefox',
-      '-p',
-      'chrome',
-      '-p',
-      'vm',
-      'test.dart'
-    ]);
-    await expectLater(test.stdout, emitsThrough('loaded test!'));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace('''
+      var test = await runTest([
+        '--pause-after-load',
+        '-p',
+        'firefox',
+        '-p',
+        'chrome',
+        '-p',
+        'vm',
+        'test.dart',
+      ]);
+      await expectLater(test.stdout, emitsThrough('loaded test!'));
+      await expectLater(
+        test.stdout,
+        emitsThrough(
+          equalsIgnoringWhitespace('''
       The test runner is paused. Open the dev console in Firefox and set
       breakpoints. Once you're finished, return to this terminal and press
       Enter.
-    ''')));
+    '''),
+        ),
+      );
 
-    var nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: [Firefox, Dart2Js] success'));
-      nextLineFired = true;
-    })));
+      var nextLineFired = false;
+      unawaited(
+        test.stdout.next.then(
+          expectAsync1((line) {
+            expect(line, contains('+0: [Firefox, Dart2Js] success'));
+            nextLineFired = true;
+          }),
+        ),
+      );
 
-    // Wait a little bit to be sure that the tests don't start running without
-    // our input.
-    await Future<void>.delayed(const Duration(seconds: 2));
-    expect(nextLineFired, isFalse);
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
 
-    test.stdin.writeln();
+      test.stdin.writeln();
 
-    await expectLater(test.stdout, emitsThrough('loaded test!'));
-    await expectLater(
+      await expectLater(test.stdout, emitsThrough('loaded test!'));
+      await expectLater(
         test.stdout,
-        emitsThrough(emitsInOrder([
-          'The test runner is paused. Open the dev console in Chrome and set '
-              "breakpoints. Once you're finished, return to this terminal and "
-              'press Enter.'
-        ])));
+        emitsThrough(
+          emitsInOrder([
+            'The test runner is paused. Open the dev console in Chrome and set '
+                "breakpoints. Once you're finished, return to this terminal and "
+                'press Enter.',
+          ]),
+        ),
+      );
 
-    nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+1: [Chrome, Dart2Js] success'));
-      nextLineFired = true;
-    })));
+      nextLineFired = false;
+      unawaited(
+        test.stdout.next.then(
+          expectAsync1((line) {
+            expect(line, contains('+1: [Chrome, Dart2Js] success'));
+            nextLineFired = true;
+          }),
+        ),
+      );
 
-    // Wait a little bit to be sure that the tests don't start running without
-    // our input.
-    await Future<void>.delayed(const Duration(seconds: 2));
-    expect(nextLineFired, isFalse);
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
 
-    test.stdin.writeln();
-    await expectLater(test.stdout, emitsThrough('loaded test!'));
-    await expectLater(
+      test.stdin.writeln();
+      await expectLater(test.stdout, emitsThrough('loaded test!'));
+      await expectLater(
         test.stdout,
-        emitsThrough(emitsInOrder([
-          'The test runner is paused. Open the Observatory and set '
-              "breakpoints. Once you're finished, return to this terminal "
-              'and press Enter.'
-        ])));
+        emitsThrough(
+          emitsInOrder([
+            'The test runner is paused. Open the Observatory and set '
+                "breakpoints. Once you're finished, return to this terminal "
+                'and press Enter.',
+          ]),
+        ),
+      );
 
-    nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+2: [VM, Kernel] success'));
-      nextLineFired = true;
-    })));
+      nextLineFired = false;
+      unawaited(
+        test.stdout.next.then(
+          expectAsync1((line) {
+            expect(line, contains('+2: [VM, Kernel] success'));
+            nextLineFired = true;
+          }),
+        ),
+      );
 
-    // Wait a little bit to be sure that the tests don't start running without
-    // our input.
-    await Future<void>.delayed(const Duration(seconds: 2));
-    expect(nextLineFired, isFalse);
+      // Wait a little bit to be sure that the tests don't start running without
+      // our input.
+      await Future<void>.delayed(const Duration(seconds: 2));
+      expect(nextLineFired, isFalse);
 
-    test.stdin.writeln();
+      test.stdin.writeln();
 
-    await expectLater(
-        test.stdout, emitsThrough(contains('+3: All tests passed!')));
-    await test.shouldExit(0);
-  }, tags: ['firefox', 'chrome', 'vm']);
+      await expectLater(
+        test.stdout,
+        emitsThrough(contains('+3: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    },
+    tags: ['firefox', 'chrome', 'vm'],
+  );
 
-  test('stops immediately if killed while paused', () async {
-    await d.file('test.dart', '''
+  test(
+    'stops immediately if killed while paused',
+    () async {
+      await d.file('test.dart', '''
 import 'package:test/test.dart';
 
 void main() {
@@ -186,19 +244,31 @@ void main() {
 }
 ''').create();
 
-    var test =
-        await runTest(['--pause-after-load', '-p', 'chrome', 'test.dart']);
-    await expectLater(test.stdout, emitsThrough('loaded test!'));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace('''
+      var test = await runTest([
+        '--pause-after-load',
+        '-p',
+        'chrome',
+        'test.dart',
+      ]);
+      await expectLater(test.stdout, emitsThrough('loaded test!'));
+      await expectLater(
+        test.stdout,
+        emitsThrough(
+          equalsIgnoringWhitespace('''
       The test runner is paused. Open the dev console in Chrome and set
       breakpoints. Once you're finished, return to this terminal and press
       Enter.
-    ''')));
+    '''),
+        ),
+      );
 
-    test.signal(ProcessSignal.sigterm);
-    await test.shouldExit();
-    await expectLater(test.stderr, emitsDone);
-  }, tags: 'chrome', testOn: '!windows');
+      test.signal(ProcessSignal.sigterm);
+      await test.shouldExit();
+      await expectLater(test.stderr, emitsDone);
+    },
+    tags: 'chrome',
+    testOn: '!windows',
+  );
 
   test('disables timeouts', () async {
     await d.file('test.dart', '''
@@ -215,20 +285,35 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(
-        ['--pause-after-load', '-p', 'chrome', '-n', 'success', 'test.dart']);
+    var test = await runTest([
+      '--pause-after-load',
+      '-p',
+      'chrome',
+      '-n',
+      'success',
+      'test.dart',
+    ]);
     await expectLater(test.stdout, emitsThrough('loaded test 1!'));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace('''
+    await expectLater(
+      test.stdout,
+      emitsThrough(
+        equalsIgnoringWhitespace('''
       The test runner is paused. Open the dev console in Chrome and set
       breakpoints. Once you're finished, return to this terminal and press
       Enter.
-    ''')));
+    '''),
+      ),
+    );
 
     var nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: success'));
-      nextLineFired = true;
-    })));
+    unawaited(
+      test.stdout.next.then(
+        expectAsync1((line) {
+          expect(line, contains('+0: success'));
+          nextLineFired = true;
+        }),
+      ),
+    );
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -237,7 +322,9 @@ void main() {
 
     test.stdin.writeln();
     await expectLater(
-        test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      test.stdout,
+      emitsThrough(contains('+1: All tests passed!')),
+    );
     await test.shouldExit(0);
   }, tags: 'chrome');
 
@@ -255,20 +342,35 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(
-        ['--pause-after-load', '-p', 'chrome', '-n', 'success', 'test.dart']);
+    var test = await runTest([
+      '--pause-after-load',
+      '-p',
+      'chrome',
+      '-n',
+      'success',
+      'test.dart',
+    ]);
     await expectLater(test.stdout, emitsThrough('loaded test 1!'));
-    await expectLater(test.stdout, emitsThrough(equalsIgnoringWhitespace('''
+    await expectLater(
+      test.stdout,
+      emitsThrough(
+        equalsIgnoringWhitespace('''
       The test runner is paused. Open the dev console in Chrome and set
       breakpoints. Once you're finished, return to this terminal and press
       Enter.
-    ''')));
+    '''),
+      ),
+    );
 
     var nextLineFired = false;
-    unawaited(test.stdout.next.then(expectAsync1((line) {
-      expect(line, contains('+0: success'));
-      nextLineFired = true;
-    })));
+    unawaited(
+      test.stdout.next.then(
+        expectAsync1((line) {
+          expect(line, contains('+0: success'));
+          nextLineFired = true;
+        }),
+      ),
+    );
 
     // Wait a little bit to be sure that the tests don't start running without
     // our input.
@@ -277,7 +379,9 @@ void main() {
 
     test.stdin.writeln();
     await expectLater(
-        test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      test.stdout,
+      emitsThrough(contains('+1: All tests passed!')),
+    );
     await test.shouldExit(0);
   }, tags: 'chrome');
 }

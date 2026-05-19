@@ -18,8 +18,10 @@ void main() {
         testType: VmTestType.isolate,
       );
       final lines = LineSplitter.split(template).map((line) => line.trim());
-      expect(lines,
-          contains("const packageConfigLocation = 'package_config.json';"));
+      expect(
+        lines,
+        contains("const packageConfigLocation = 'package_config.json';"),
+      );
     });
   });
 }

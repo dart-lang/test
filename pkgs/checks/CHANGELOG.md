@@ -1,7 +1,23 @@
-## 0.3.1-wip
+## 0.3.2-wip
 
--   Update min SDK constraint to 3.4.0.
+- Require Dart 3.7
+- Improve speed of pretty printing for large collections.
+- Improve formatting for failures involving unexpected exceptions.
+
+## 0.3.1
+
+-   Directly compare keys across actual and expected `Map` instances when
+    checking deep collection equality and all the keys can be directly compared
+    for equality. This maintains the path into a nested collection for typical
+    cases of checking for equality against a purely value collection.
 -   Always wrap Condition descriptions in angle brackets.
+-   Add `containsMatchingInOrder` and `containsEqualInOrder` to replace the
+    combined functionality in `containsInOrder`.
+-   Replace `pairwiseComparesTo` with `pairwiseMatches`.
+-   Fix a bug where printing the result of a failed deep quality check would
+    fail with a `TypeError` when comparing large `Map` instances.
+-   Increase SDK constraint to ^3.5.0.
+-   Clarify this package is experimental.
 
 ## 0.3.0
 

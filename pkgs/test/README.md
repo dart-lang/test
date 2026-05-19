@@ -257,36 +257,25 @@ The available options for the `--reporter` flag are:
 
 ### Collecting Code Coverage
 
-To collect code coverage, you can run tests with the `--coverage <directory>`
-argument. The directory specified can be an absolute or relative path.
-If a directory does not exist at the path specified, a directory will be
-created. If a directory does exist, files may be overwritten with the latest
-coverage data, if they conflict.
-
-This option will enable code coverage collection on a suite-by-suite basis,
-and the resulting coverage files will be outputted in the directory specified.
-The files can then be formatted using the `package:coverage`
-`format_coverage` executable.
+To collect code coverage, you can run tests with the `--coverage-path <file>`
+argument, which outputs a LCOV report to the given file path. The file
+specified can be an absolute or relative path. If a directory does not exist at
+the path specified, a directory will be created. If a directory does exist,
+files may be overwritten with the latest coverage data, if they conflict.
 
 Coverage gathering is currently only implemented for tests run on the Dart VM or
 Chrome.
 
-Here's an example of how to run tests and format the collected coverage to LCOV:
+Here's an example of how to run tests and collect coverage:
 
 ```shell
-## Run Dart tests and output them at directory `./coverage`:
-dart run test --coverage=./coverage
+## Run Dart tests and output coverage info to `./coverage/lcov.info`:
+dart run test --coverage-path=./coverage/lcov.info
 
-## Activate package `coverage` (if needed):
-dart pub global activate coverage
-
-## Format collected coverage to LCOV (only for directory "lib")
-dart pub global run coverage:format_coverage --packages=.dart_tool/package_config.json --report-on=lib --lcov -o ./coverage/lcov.info -i ./coverage
-
-## Generate LCOV report:
+## Generate a human readable report:
 genhtml -o ./coverage/report ./coverage/lcov.info
 
-## Open the HTML coverage report:
+## Open the coverage report:
 open ./coverage/report/index.html
 ```
 
@@ -333,11 +322,14 @@ adding a [`test_on` field] to your package config file.
 
 Platform selectors use the [boolean selector syntax] defined in the
 [`boolean_selector`] package, which is a subset of Dart's expression syntax that
-only supports boolean operations. The following identifiers are defined:
+only supports boolean operations. The platform selectors identify overlapping
+subsets of the ways that Dart code can be compiled and run.
 
 [boolean selector syntax]: https://github.com/dart-lang/boolean_selector/blob/master/README.md
 
 [`boolean_selector`]: https://pub.dev/packages/boolean_selector
+
+The following identifiers are defined:
 
 * `vm`: Whether the test is running on the command-line Dart VM.
 
@@ -390,8 +382,9 @@ only supports boolean operations. The following identifiers are defined:
 
 * `source`: Whether the test has been run with no compiler (from source).
 
-For example, if you wanted to run a test on every browser but Chrome, you would
-write `@TestOn('browser && !chrome')`.
+For example, if you wanted to run a test on every browser but Chrome compiled
+with dart2js (in opposition to dart2wasm), you would write
+`@TestOn('browser && !chrome && dart2js')`.
 
 ### Running Tests on Node.js
 
@@ -798,7 +791,7 @@ import 'package:stream_channel/stream_channel.dart';
 // returned spawnHybridCode().
 hybridMain(StreamChannel channel) async {
   // Start a WebSocket server that just sends "hello!" to its clients.
-  var server = await io.serve(webSocketHandler((webSocket) {
+  var server = await io.serve(webSocketHandler((webSocket, _) {
     webSocket.sink.add('hello!');
   }), 'localhost', 0);
 

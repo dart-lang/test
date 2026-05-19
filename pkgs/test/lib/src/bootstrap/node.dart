@@ -9,10 +9,13 @@ import '../runner/node/socket_channel.dart';
 
 /// Bootstraps a browser test to communicate with the test runner.
 void internalBootstrapNodeTest(Function Function() getMain) {
-  var channel = serializeSuite(getMain, beforeLoad: (suiteChannel) async {
-    var serialized = await suiteChannel('test.node.mapper').stream.first;
-    if (serialized is! Map) return;
-    setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
-  });
+  var channel = serializeSuite(
+    getMain,
+    beforeLoad: (suiteChannel) async {
+      var serialized = await suiteChannel('test.node.mapper').stream.first;
+      if (serialized is! Map) return;
+      setStackTraceMapper(JSStackTraceMapper.deserialize(serialized)!);
+    },
+  );
   socketChannel().then((socket) => socket.pipe(channel));
 }

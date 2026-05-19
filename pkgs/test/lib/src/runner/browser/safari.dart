@@ -22,13 +22,16 @@ class Safari extends Browser {
   final name = 'Safari';
 
   Safari(Uri url, {ExecutableSettings? settings})
-      : super(() =>
-            _startBrowser(url, settings ?? defaultSettings[Runtime.safari]!));
+    : super(
+        () => _startBrowser(url, settings ?? defaultSettings[Runtime.safari]!),
+      );
 
   /// Starts a new instance of Safari open to the given [url], which may be a
   /// [Uri] or a [String].
   static Future<Process> _startBrowser(
-      Uri url, ExecutableSettings settings) async {
+    Uri url,
+    ExecutableSettings settings,
+  ) async {
     var dir = createTempDir();
 
     // Safari will only open files (not general URLs) via the command-line
@@ -36,10 +39,13 @@ class Safari extends Browser {
     // want it to load.
     var redirect = p.join(dir, 'redirect.html');
     File(redirect).writeAsStringSync(
-        '<script>location = ${jsonEncode(url.toString())}</script>');
+      '<script>location = ${jsonEncode(url.toString())}</script>',
+    );
 
     var process = await Process.start(
-        settings.executable, settings.arguments.toList()..add(redirect));
+      settings.executable,
+      settings.arguments.toList()..add(redirect),
+    );
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 

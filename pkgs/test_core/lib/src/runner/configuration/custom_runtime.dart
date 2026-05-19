@@ -29,6 +29,13 @@ final class CustomRuntime {
   /// The user's settings for this runtime.
   final YamlMap settings;
 
-  CustomRuntime(this.name, this.nameSpan, this.identifier, this.identifierSpan,
-      this.parent, this.parentSpan, this.settings);
+  CustomRuntime(
+    this.name,
+    this.nameSpan,
+    this.identifier,
+    this.identifierSpan,
+    this.parent,
+    this.parentSpan,
+    this.settings,
+  );
 }

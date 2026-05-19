@@ -19,10 +19,11 @@ void main() {
     test('uses specified compilers for supporting platforms', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'compilers': ['source']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'compilers': ['source'],
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -35,22 +36,24 @@ void main() {
 
       var test = await runTest(['-p', 'chrome,vm', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: [Chrome, Dart2Js]',
-            '+1: [VM, Source]',
-            '+2: All tests passed!',
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: [Chrome, Dart2Js]',
+          '+1: [VM, Source]',
+          '+2: All tests passed!',
+        ]),
+      );
       await test.shouldExit(0);
     });
 
     test('supports platform selectors with compilers', () async {
       await d
           .file(
-              'dart_test.yaml',
-              jsonEncode({
-                'compilers': ['vm:source', 'browser:kernel']
-              }))
+            'dart_test.yaml',
+            jsonEncode({
+              'compilers': ['vm:source', 'browser:kernel'],
+            }),
+          )
           .create();
 
       await d.file('test.dart', '''
@@ -63,12 +66,13 @@ void main() {
 
       var test = await runTest(['-p', 'chrome,vm', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: [Chrome, Dart2Js]',
-            '+1: [VM, Source]',
-            '+2: All tests passed!',
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: [Chrome, Dart2Js]',
+          '+1: [VM, Source]',
+          '+2: All tests passed!',
+        ]),
+      );
       await test.shouldExit(0);
     });
   });

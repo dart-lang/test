@@ -13,7 +13,9 @@ void main() {
   group('tags', () {
     test('parses an Iterable', () {
       expect(
-          Metadata.parse(tags: ['a', 'b']).tags, unorderedEquals(['a', 'b']));
+        Metadata.parse(tags: ['a', 'b']).tags,
+        unorderedEquals(['a', 'b']),
+      );
     });
 
     test('parses a String', () {
@@ -52,8 +54,9 @@ void main() {
 
     test("returns the normal metadata if there's no tags", () {
       var metadata = Metadata(
-          verboseTrace: true,
-          forTag: {BooleanSelector.parse('foo'): Metadata(skip: true)});
+        verboseTrace: true,
+        forTag: {BooleanSelector.parse('foo'): Metadata(skip: true)},
+      );
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
       expect(metadata.forTag, contains(BooleanSelector.parse('foo')));
@@ -62,9 +65,10 @@ void main() {
 
     test("returns the normal metadata if forTag doesn't match tags", () {
       var metadata = Metadata(
-          verboseTrace: true,
-          tags: ['bar', 'baz'],
-          forTag: {BooleanSelector.parse('foo'): Metadata(skip: true)});
+        verboseTrace: true,
+        tags: ['bar', 'baz'],
+        forTag: {BooleanSelector.parse('foo'): Metadata(skip: true)},
+      );
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isFalse);
@@ -74,15 +78,15 @@ void main() {
     });
 
     test('resolves forTags that match tags', () {
-      var metadata = Metadata(verboseTrace: true, tags: [
-        'foo',
-        'bar',
-        'baz'
-      ], forTag: {
-        BooleanSelector.parse('foo'): Metadata(skip: true),
-        BooleanSelector.parse('baz'): Metadata(timeout: Timeout.none),
-        BooleanSelector.parse('qux'): Metadata(skipReason: 'blah')
-      });
+      var metadata = Metadata(
+        verboseTrace: true,
+        tags: ['foo', 'bar', 'baz'],
+        forTag: {
+          BooleanSelector.parse('foo'): Metadata(skip: true),
+          BooleanSelector.parse('baz'): Metadata(timeout: Timeout.none),
+          BooleanSelector.parse('qux'): Metadata(skipReason: 'blah'),
+        },
+      );
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isTrue);
@@ -93,14 +97,17 @@ void main() {
     });
 
     test('resolves forTags that adds a behavioral tag', () {
-      var metadata = Metadata(tags: [
-        'foo'
-      ], forTag: {
-        BooleanSelector.parse('baz'): Metadata(skip: true),
-        BooleanSelector.parse('bar'):
-            Metadata(verboseTrace: true, tags: ['baz']),
-        BooleanSelector.parse('foo'): Metadata(tags: ['bar'])
-      });
+      var metadata = Metadata(
+        tags: ['foo'],
+        forTag: {
+          BooleanSelector.parse('baz'): Metadata(skip: true),
+          BooleanSelector.parse('bar'): Metadata(
+            verboseTrace: true,
+            tags: ['baz'],
+          ),
+          BooleanSelector.parse('foo'): Metadata(tags: ['bar']),
+        },
+      );
 
       expect(metadata.verboseTrace, isTrue);
       expect(metadata.skip, isTrue);
@@ -109,24 +116,25 @@ void main() {
     });
 
     test('resolves forTags that adds circular tags', () {
-      var metadata = Metadata(tags: [
-        'foo'
-      ], forTag: {
-        BooleanSelector.parse('foo'): Metadata(tags: ['bar']),
-        BooleanSelector.parse('bar'): Metadata(tags: ['baz']),
-        BooleanSelector.parse('baz'): Metadata(tags: ['foo'])
-      });
+      var metadata = Metadata(
+        tags: ['foo'],
+        forTag: {
+          BooleanSelector.parse('foo'): Metadata(tags: ['bar']),
+          BooleanSelector.parse('bar'): Metadata(tags: ['baz']),
+          BooleanSelector.parse('baz'): Metadata(tags: ['foo']),
+        },
+      );
 
       expect(metadata.tags, unorderedEquals(['foo', 'bar', 'baz']));
       expect(metadata.forTag, isEmpty);
     });
 
     test('base metadata takes precedence over forTags', () {
-      var metadata = Metadata(verboseTrace: true, tags: [
-        'foo'
-      ], forTag: {
-        BooleanSelector.parse('foo'): Metadata(verboseTrace: false)
-      });
+      var metadata = Metadata(
+        verboseTrace: true,
+        tags: ['foo'],
+        forTag: {BooleanSelector.parse('foo'): Metadata(verboseTrace: false)},
+      );
 
       expect(metadata.verboseTrace, isTrue);
     });
@@ -134,14 +142,18 @@ void main() {
 
   group('onPlatform', () {
     test('parses a valid map', () {
-      var metadata = Metadata.parse(onPlatform: {
-        'chrome': const Timeout.factor(2),
-        'vm': [const Skip(), const Timeout.factor(3)]
-      });
+      var metadata = Metadata.parse(
+        onPlatform: {
+          'chrome': const Timeout.factor(2),
+          'vm': [const Skip(), const Timeout.factor(3)],
+        },
+      );
 
       var key = metadata.onPlatform.keys.first;
       expect(
-          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isTrue);
+        key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)),
+        isTrue,
+      );
       expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isFalse);
       var value = metadata.onPlatform.values.first;
       expect(value.timeout.scaleFactor, equals(2));
@@ -149,7 +161,9 @@ void main() {
       key = metadata.onPlatform.keys.last;
       expect(key.evaluate(SuitePlatform(Runtime.vm, compiler: null)), isTrue);
       expect(
-          key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)), isFalse);
+        key.evaluate(SuitePlatform(Runtime.chrome, compiler: null)),
+        isFalse,
+      );
       value = metadata.onPlatform.values.last;
       expect(value.skip, isTrue);
       expect(value.timeout.scaleFactor, equals(3));
@@ -163,9 +177,11 @@ void main() {
 
     test('refuses an invalid value in a list', () {
       expect(() {
-        Metadata.parse(onPlatform: {
-          'chrome': [const TestOn('chrome')]
-        });
+        Metadata.parse(
+          onPlatform: {
+            'chrome': [const TestOn('chrome')],
+          },
+        );
       }, throwsArgumentError);
     });
 
@@ -177,25 +193,30 @@ void main() {
 
     test('refuses multiple Timeouts', () {
       expect(() {
-        Metadata.parse(onPlatform: {
-          'chrome': [const Timeout.factor(2), const Timeout.factor(3)]
-        });
+        Metadata.parse(
+          onPlatform: {
+            'chrome': [const Timeout.factor(2), const Timeout.factor(3)],
+          },
+        );
       }, throwsArgumentError);
     });
 
     test('refuses multiple Skips', () {
       expect(() {
-        Metadata.parse(onPlatform: {
-          'chrome': [const Skip(), const Skip()]
-        });
+        Metadata.parse(
+          onPlatform: {
+            'chrome': [const Skip(), const Skip()],
+          },
+        );
       }, throwsArgumentError);
     });
   });
 
   group('validatePlatformSelectors', () {
     test('succeeds if onPlatform uses valid platforms', () {
-      Metadata.parse(onPlatform: {'vm || browser': const Skip()})
-          .validatePlatformSelectors({'vm'});
+      Metadata.parse(
+        onPlatform: {'vm || browser': const Skip()},
+      ).validatePlatformSelectors({'vm'});
     });
 
     test('succeeds if testOn uses valid platforms', () {
@@ -208,8 +229,9 @@ void main() {
 
     test('fails if onPlatform uses an invalid platform', () {
       expect(() {
-        Metadata.parse(onPlatform: {'unknown': const Skip()})
-            .validatePlatformSelectors({'vm'});
+        Metadata.parse(
+          onPlatform: {'unknown': const Skip()},
+        ).validatePlatformSelectors({'vm'});
       }, throwsFormatException);
     });
 
@@ -229,29 +251,28 @@ void main() {
   group('change', () {
     test('preserves all fields if no parameters are passed', () {
       var metadata = Metadata(
-          testOn: PlatformSelector.parse('linux'),
-          timeout: const Timeout.factor(2),
-          skip: true,
-          skipReason: 'just because',
-          verboseTrace: true,
-          tags: [
-            'foo',
-            'bar'
-          ],
-          onPlatform: {
-            PlatformSelector.parse('mac-os'): Metadata(skip: false)
-          },
-          forTag: {
-            BooleanSelector.parse('slow'):
-                Metadata(timeout: const Timeout.factor(4))
-          });
+        testOn: PlatformSelector.parse('linux'),
+        timeout: const Timeout.factor(2),
+        skip: true,
+        skipReason: 'just because',
+        verboseTrace: true,
+        tags: ['foo', 'bar'],
+        onPlatform: {PlatformSelector.parse('mac-os'): Metadata(skip: false)},
+        forTag: {
+          BooleanSelector.parse('slow'): Metadata(
+            timeout: const Timeout.factor(4),
+          ),
+        },
+      );
       expect(metadata.serialize(), equals(metadata.change().serialize()));
     });
 
     test('updates a changed field', () {
       var metadata = Metadata(timeout: const Timeout.factor(2));
-      expect(metadata.change(timeout: const Timeout.factor(3)).timeout,
-          equals(const Timeout.factor(3)));
+      expect(
+        metadata.change(timeout: const Timeout.factor(3)).timeout,
+        equals(const Timeout.factor(3)),
+      );
     });
   });
 }

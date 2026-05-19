@@ -27,8 +27,9 @@ import '../../utils.dart';
 late Loader _loader;
 
 /// A configuration that loads suites on Chrome.
-final _chrome =
-    SuiteConfiguration.runtimes([RuntimeSelection(Runtime.chrome.identifier)]);
+final _chrome = SuiteConfiguration.runtimes([
+  RuntimeSelection(Runtime.chrome.identifier),
+]);
 
 void main() {
   setUp(() async {
@@ -84,7 +85,7 @@ void main() {
 
       expectStates(liveTest, [
         const State(Status.running, Result.success),
-        const State(Status.complete, Result.success)
+        const State(Status.complete, Result.success),
       ]);
       expectErrors(liveTest, []);
 
@@ -136,11 +137,12 @@ Future main() {
 
     var suites = await _loader
         .loadFile(
-            path,
-            SuiteConfiguration.runtimes([
-              RuntimeSelection(Runtime.vm.identifier),
-              RuntimeSelection(Runtime.chrome.identifier)
-            ]))
+          path,
+          SuiteConfiguration.runtimes([
+            RuntimeSelection(Runtime.vm.identifier),
+            RuntimeSelection(Runtime.chrome.identifier),
+          ]),
+        )
         .asyncMap((loadSuite) => loadSuite.getSuite())
         .cast<RunnerSuite>()
         .toList();
@@ -173,8 +175,10 @@ void main() {
 
     var liveTest = (loadSuite.group.entries.single as Test).load(loadSuite);
     // Skip the "Compiled" message from dart2js.
-    expect(liveTest.onMessage.skip(1).first.then((message) => message.text),
-        completion(equals('print within test')));
+    expect(
+      liveTest.onMessage.skip(1).first.then((message) => message.text),
+      completion(equals('print within test')),
+    );
     await liveTest.run();
     expectTestPassed(liveTest);
   });

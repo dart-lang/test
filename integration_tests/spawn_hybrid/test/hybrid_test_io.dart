@@ -38,10 +38,12 @@ void main() {
 
   test('spawnHybridUri(): supports absolute file: URIs', () async {
     expect(
-        spawnHybridUri(p.toUri(p.absolute(
-                p.relative(p.join('test', 'util', 'emits_numbers.dart')))))
-            .stream
-            .toList(),
-        completion(equals([1, 2, 3])));
+      spawnHybridUri(
+        p.toUri(
+          p.absolute(p.relative(p.join('test', 'util', 'emits_numbers.dart'))),
+        ),
+      ).stream.toList(),
+      completion(equals([1, 2, 3])),
+    );
   });
 }

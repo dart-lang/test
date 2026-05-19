@@ -24,16 +24,16 @@ import 'package:test_api/backend.dart'
 ///
 /// If [beforeLoad] is passed, it's called before the tests have been declared
 /// for this worker.
-StreamChannel<Object?> serializeSuite(Function Function() getMain,
-        {bool hidePrints = true,
-        Future Function(
-                StreamChannel<Object?> Function(String name) suiteChannel)?
-            beforeLoad}) =>
-    RemoteListener.start(
-      getMain,
-      hidePrints: hidePrints,
-      beforeLoad: beforeLoad,
-    );
+StreamChannel<Object?> serializeSuite(
+  Function Function() getMain, {
+  bool hidePrints = true,
+  Future Function(StreamChannel<Object?> Function(String name) suiteChannel)?
+  beforeLoad,
+}) => RemoteListener.start(
+  getMain,
+  hidePrints: hidePrints,
+  beforeLoad: beforeLoad,
+);
 
 /// Sets the stack trace mapper for the current test suite.
 ///
@@ -44,7 +44,8 @@ void setStackTraceMapper(StackTraceMapper mapper) {
   var formatter = StackTraceFormatter.current;
   if (formatter == null) {
     throw StateError(
-        'setStackTraceMapper() may only be called within a test worker.');
+      'setStackTraceMapper() may only be called within a test worker.',
+    );
   }
 
   formatter.configure(mapper: mapper);

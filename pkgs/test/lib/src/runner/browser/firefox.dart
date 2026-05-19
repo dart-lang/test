@@ -31,26 +31,24 @@ class Firefox extends Browser {
   final name = 'Firefox';
 
   Firefox(Uri url, {ExecutableSettings? settings})
-      : super(() =>
-            _startBrowser(url, settings ?? defaultSettings[Runtime.firefox]!));
+    : super(
+        () => _startBrowser(url, settings ?? defaultSettings[Runtime.firefox]!),
+      );
 
   /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
   static Future<Process> _startBrowser(
-      Uri url, ExecutableSettings settings) async {
+    Uri url,
+    ExecutableSettings settings,
+  ) async {
     var dir = createTempDir();
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
-    var process = await Process.start(settings.executable, [
-      '--profile',
-      dir,
-      url.toString(),
-      '--no-remote',
-      ...settings.arguments,
-    ], environment: {
-      'MOZ_CRASHREPORTER_DISABLE': '1',
-      'MOZ_AUTOMATION': '1',
-    });
+    var process = await Process.start(
+      settings.executable,
+      ['--profile', dir, url.toString(), '--no-remote', ...settings.arguments],
+      environment: {'MOZ_CRASHREPORTER_DISABLE': '1', 'MOZ_AUTOMATION': '1'},
+    );
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 

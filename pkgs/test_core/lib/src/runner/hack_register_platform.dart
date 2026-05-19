@@ -13,7 +13,8 @@ import 'platform.dart';
 /// **Do not access this outside the test package**.
 final platformCallbacks =
     UnmodifiableMapView<Runtime, FutureOr<PlatformPlugin> Function()>(
-        _platformCallbacks);
+      _platformCallbacks,
+    );
 final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 
 /// **Do not call this function without express permission from the test package
@@ -29,7 +30,9 @@ final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 ///
 /// This overwrites the default plugins for those runtimes.
 void registerPlatformPlugin(
-    Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> Function() plugin) {
+  Iterable<Runtime> runtimes,
+  FutureOr<PlatformPlugin> Function() plugin,
+) {
   for (var runtime in runtimes) {
     _platformCallbacks[runtime] = plugin;
   }

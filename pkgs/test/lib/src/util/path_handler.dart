@@ -50,8 +50,9 @@ class PathHandler {
 
     if (handler == null) return shelf.Response.notFound('Not found.');
 
-    return handler(request.change(
-        path: p.url.joinAll(components.take(handlerIndex! + 1))));
+    return handler(
+      request.change(path: p.url.joinAll(components.take(handlerIndex! + 1))),
+    );
   }
 }
 

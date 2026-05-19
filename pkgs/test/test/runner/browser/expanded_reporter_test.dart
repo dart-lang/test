@@ -26,7 +26,7 @@ void main() {
 
     var test = await runTest([
       '-r', 'expanded', '-p', 'chrome', '-p', 'vm', '-j', '1', //
-      'test.dart'
+      'test.dart',
     ]);
 
     expect(test.stdoutStream(), emitsThrough(contains('[VM, Kernel]')));

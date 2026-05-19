@@ -65,18 +65,20 @@ void main() {
         setUp(() => setUpRun = true);
 
         test(
-            'description 1',
-            expectAsync0(() {
-              expect(setUpRun, isTrue);
-              setUpRun = false;
-            }, max: 1));
+          'description 1',
+          expectAsync0(() {
+            expect(setUpRun, isTrue);
+            setUpRun = false;
+          }, max: 1),
+        );
 
         test(
-            'description 2',
-            expectAsync0(() {
-              expect(setUpRun, isTrue);
-              setUpRun = false;
-            }, max: 1));
+          'description 2',
+          expectAsync0(() {
+            expect(setUpRun, isTrue);
+            setUpRun = false;
+          }, max: 1),
+        );
       });
 
       await _runTest(tests[0] as Test);
@@ -91,10 +93,11 @@ void main() {
         });
 
         test(
-            'description',
-            expectAsync0(() {
-              expect(setUpRun, isTrue);
-            }, max: 1));
+          'description',
+          expectAsync0(() {
+            expect(setUpRun, isTrue);
+          }, max: 1),
+        );
       });
 
       return _runTest(tests.single as Test);
@@ -105,29 +108,38 @@ void main() {
       var secondSetUpRun = false;
       var thirdSetUpRun = false;
       var tests = declare(() {
-        setUp(expectAsync0(() async {
-          expect(secondSetUpRun, isFalse);
-          expect(thirdSetUpRun, isFalse);
-          firstSetUpRun = true;
-        }));
+        setUp(
+          expectAsync0(() async {
+            expect(secondSetUpRun, isFalse);
+            expect(thirdSetUpRun, isFalse);
+            firstSetUpRun = true;
+          }),
+        );
 
-        setUp(expectAsync0(() async {
-          expect(firstSetUpRun, isTrue);
-          expect(thirdSetUpRun, isFalse);
-          secondSetUpRun = true;
-        }));
+        setUp(
+          expectAsync0(() async {
+            expect(firstSetUpRun, isTrue);
+            expect(thirdSetUpRun, isFalse);
+            secondSetUpRun = true;
+          }),
+        );
 
-        setUp(expectAsync0(() async {
-          expect(firstSetUpRun, isTrue);
-          expect(secondSetUpRun, isTrue);
-          thirdSetUpRun = true;
-        }));
+        setUp(
+          expectAsync0(() async {
+            expect(firstSetUpRun, isTrue);
+            expect(secondSetUpRun, isTrue);
+            thirdSetUpRun = true;
+          }),
+        );
 
-        test('description', expectAsync0(() {
-          expect(firstSetUpRun, isTrue);
-          expect(secondSetUpRun, isTrue);
-          expect(thirdSetUpRun, isTrue);
-        }));
+        test(
+          'description',
+          expectAsync0(() {
+            expect(firstSetUpRun, isTrue);
+            expect(secondSetUpRun, isTrue);
+            expect(thirdSetUpRun, isTrue);
+          }),
+        );
       });
 
       await _runTest(tests.single as Test);
@@ -142,16 +154,18 @@ void main() {
         tearDown(() => tearDownRun = true);
 
         test(
-            'description 1',
-            expectAsync0(() {
-              expect(tearDownRun, isFalse);
-            }, max: 1));
+          'description 1',
+          expectAsync0(() {
+            expect(tearDownRun, isFalse);
+          }, max: 1),
+        );
 
         test(
-            'description 2',
-            expectAsync0(() {
-              expect(tearDownRun, isFalse);
-            }, max: 1));
+          'description 2',
+          expectAsync0(() {
+            expect(tearDownRun, isFalse);
+          }, max: 1),
+        );
       });
 
       await _runTest(tests[0] as Test);
@@ -167,12 +181,14 @@ void main() {
         tearDown(() => tearDownRun = true);
 
         test(
-            'description 1',
-            expectAsync0(() {
-              Invoker.current!.addOutstandingCallback();
-              Future(() => throw TestFailure('oh no'))
-                  .whenComplete(Invoker.current!.removeOutstandingCallback);
-            }, max: 1));
+          'description 1',
+          expectAsync0(() {
+            Invoker.current!.addOutstandingCallback();
+            Future(
+              () => throw TestFailure('oh no'),
+            ).whenComplete(Invoker.current!.removeOutstandingCallback);
+          }, max: 1),
+        );
       });
 
       await _runTest(tests.single as Test, shouldFail: true);
@@ -187,10 +203,11 @@ void main() {
         });
 
         test(
-            'description',
-            expectAsync0(() {
-              expect(tearDownRun, isFalse);
-            }, max: 1));
+          'description',
+          expectAsync0(() {
+            expect(tearDownRun, isFalse);
+          }, max: 1),
+        );
       });
 
       await _runTest(tests.single as Test);
@@ -218,26 +235,28 @@ void main() {
       expect(outstandingCallbackRemovedBeforeTeardown, isTrue);
     });
 
-    test("isn't run until test body completes after out-of-band error",
-        () async {
-      var hasTestFinished = false;
-      var hasTestFinishedBeforeTeardown = false;
-      var tests = declare(() {
-        tearDown(() {
-          hasTestFinishedBeforeTeardown = hasTestFinished;
-        });
+    test(
+      "isn't run until test body completes after out-of-band error",
+      () async {
+        var hasTestFinished = false;
+        var hasTestFinishedBeforeTeardown = false;
+        var tests = declare(() {
+          tearDown(() {
+            hasTestFinishedBeforeTeardown = hasTestFinished;
+          });
 
-        test('description', () {
-          Future<Never>.error('oh no');
-          return pumpEventQueue().then((_) {
-            hasTestFinished = true;
+          test('description', () {
+            Future<Never>.error('oh no');
+            return pumpEventQueue().then((_) {
+              hasTestFinished = true;
+            });
           });
         });
-      });
 
-      await _runTest(tests.single as Test, shouldFail: true);
-      expect(hasTestFinishedBeforeTeardown, isTrue);
-    });
+        await _runTest(tests.single as Test, shouldFail: true);
+        expect(hasTestFinishedBeforeTeardown, isTrue);
+      },
+    );
 
     test("doesn't complete until there are no outstanding callbacks", () async {
       var outstandingCallbackRemoved = false;
@@ -262,31 +281,38 @@ void main() {
       var secondTearDownRun = false;
       var thirdTearDownRun = false;
       var tests = declare(() {
-        tearDown(expectAsync0(() async {
-          expect(secondTearDownRun, isTrue);
-          expect(thirdTearDownRun, isTrue);
-          firstTearDownRun = true;
-        }));
+        tearDown(
+          expectAsync0(() async {
+            expect(secondTearDownRun, isTrue);
+            expect(thirdTearDownRun, isTrue);
+            firstTearDownRun = true;
+          }),
+        );
 
-        tearDown(expectAsync0(() async {
-          expect(firstTearDownRun, isFalse);
-          expect(thirdTearDownRun, isTrue);
-          secondTearDownRun = true;
-        }));
+        tearDown(
+          expectAsync0(() async {
+            expect(firstTearDownRun, isFalse);
+            expect(thirdTearDownRun, isTrue);
+            secondTearDownRun = true;
+          }),
+        );
 
-        tearDown(expectAsync0(() async {
-          expect(firstTearDownRun, isFalse);
-          expect(secondTearDownRun, isFalse);
-          thirdTearDownRun = true;
-        }));
+        tearDown(
+          expectAsync0(() async {
+            expect(firstTearDownRun, isFalse);
+            expect(secondTearDownRun, isFalse);
+            thirdTearDownRun = true;
+          }),
+        );
 
         test(
-            'description',
-            expectAsync0(() {
-              expect(firstTearDownRun, isFalse);
-              expect(secondTearDownRun, isFalse);
-              expect(thirdTearDownRun, isFalse);
-            }, max: 1));
+          'description',
+          expectAsync0(() {
+            expect(firstTearDownRun, isFalse);
+            expect(secondTearDownRun, isFalse);
+            expect(thirdTearDownRun, isFalse);
+          }, max: 1),
+        );
       });
 
       await _runTest(tests.single as Test);
@@ -312,9 +338,13 @@ void main() {
 
         tearDown(() {
           final tearDownZone = Zone.current;
-          expect(tearDownZone.inSameErrorZone(testBodyZone), isTrue,
-              reason: 'The tear down callback is in a different error zone '
-                  'than the test body.');
+          expect(
+            tearDownZone.inSameErrorZone(testBodyZone),
+            isTrue,
+            reason:
+                'The tear down callback is in a different error zone '
+                'than the test body.',
+          );
         });
 
         test('test', () {
@@ -379,12 +409,16 @@ void main() {
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
-      expect(testGroup.metadata.timeout.duration,
-          equals(const Duration(seconds: 10)));
+      expect(
+        testGroup.metadata.timeout.duration,
+        equals(const Duration(seconds: 10)),
+      );
       expect(testGroup.entries, hasLength(1));
       expect(testGroup.entries.single, const TypeMatcher<Test>());
-      expect(testGroup.entries.single.metadata.timeout.duration,
-          equals(const Duration(seconds: 20)));
+      expect(
+        testGroup.entries.single.metadata.timeout.duration,
+        equals(const Duration(seconds: 20)),
+      );
     });
 
     test("a test's timeout duration is applied over the group's", () {
@@ -396,12 +430,16 @@ void main() {
 
       expect(entries, hasLength(1));
       var testGroup = entries.single as Group;
-      expect(testGroup.metadata.timeout.duration,
-          equals(const Duration(seconds: 10)));
+      expect(
+        testGroup.metadata.timeout.duration,
+        equals(const Duration(seconds: 10)),
+      );
       expect(testGroup.entries, hasLength(1));
       expect(testGroup.entries.single, const TypeMatcher<Test>());
-      expect(testGroup.entries.single.metadata.timeout.duration,
-          equals(const Duration(seconds: 15)));
+      expect(
+        testGroup.entries.single.metadata.timeout.duration,
+        equals(const Duration(seconds: 15)),
+      );
     });
 
     test('disallows asynchronous groups', () async {
@@ -418,19 +456,21 @@ void main() {
             setUp(() => setUpRun = true);
 
             test(
-                'description 1',
-                expectAsync0(() {
-                  expect(setUpRun, isTrue);
-                  setUpRun = false;
-                }, max: 1));
+              'description 1',
+              expectAsync0(() {
+                expect(setUpRun, isTrue);
+                setUpRun = false;
+              }, max: 1),
+            );
           });
 
           test(
-              'description 2',
-              expectAsync0(() {
-                expect(setUpRun, isFalse);
-                setUpRun = false;
-              }, max: 1));
+            'description 2',
+            expectAsync0(() {
+              expect(setUpRun, isFalse);
+              setUpRun = false;
+            }, max: 1),
+          );
         });
 
         await _runTest((entries[0] as Group).entries.single as Test);
@@ -442,33 +482,40 @@ void main() {
         var middleSetUpRun = false;
         var innerSetUpRun = false;
         var entries = declare(() {
-          setUp(expectAsync0(() {
-            expect(middleSetUpRun, isFalse);
-            expect(innerSetUpRun, isFalse);
-            outerSetUpRun = true;
-          }, max: 1));
+          setUp(
+            expectAsync0(() {
+              expect(middleSetUpRun, isFalse);
+              expect(innerSetUpRun, isFalse);
+              outerSetUpRun = true;
+            }, max: 1),
+          );
 
           group('middle', () {
-            setUp(expectAsync0(() {
-              expect(outerSetUpRun, isTrue);
-              expect(innerSetUpRun, isFalse);
-              middleSetUpRun = true;
-            }, max: 1));
+            setUp(
+              expectAsync0(() {
+                expect(outerSetUpRun, isTrue);
+                expect(innerSetUpRun, isFalse);
+                middleSetUpRun = true;
+              }, max: 1),
+            );
 
             group('inner', () {
-              setUp(expectAsync0(() {
-                expect(outerSetUpRun, isTrue);
-                expect(middleSetUpRun, isTrue);
-                innerSetUpRun = true;
-              }, max: 1));
+              setUp(
+                expectAsync0(() {
+                  expect(outerSetUpRun, isTrue);
+                  expect(middleSetUpRun, isTrue);
+                  innerSetUpRun = true;
+                }, max: 1),
+              );
 
               test(
-                  'description',
-                  expectAsync0(() {
-                    expect(outerSetUpRun, isTrue);
-                    expect(middleSetUpRun, isTrue);
-                    expect(innerSetUpRun, isTrue);
-                  }, max: 1));
+                'description',
+                expectAsync0(() {
+                  expect(outerSetUpRun, isTrue);
+                  expect(middleSetUpRun, isTrue);
+                  expect(innerSetUpRun, isTrue);
+                }, max: 1),
+              );
             });
           });
         });
@@ -482,23 +529,28 @@ void main() {
         var outerSetUpRun = false;
         var innerSetUpRun = false;
         var entries = declare(() {
-          setUp(expectAsync0(() {
-            expect(innerSetUpRun, isFalse);
-            return Future(() => outerSetUpRun = true);
-          }, max: 1));
+          setUp(
+            expectAsync0(() {
+              expect(innerSetUpRun, isFalse);
+              return Future(() => outerSetUpRun = true);
+            }, max: 1),
+          );
 
           group('inner', () {
-            setUp(expectAsync0(() {
-              expect(outerSetUpRun, isTrue);
-              return Future(() => innerSetUpRun = true);
-            }, max: 1));
+            setUp(
+              expectAsync0(() {
+                expect(outerSetUpRun, isTrue);
+                return Future(() => innerSetUpRun = true);
+              }, max: 1),
+            );
 
             test(
-                'description',
-                expectAsync0(() {
-                  expect(outerSetUpRun, isTrue);
-                  expect(innerSetUpRun, isTrue);
-                }, max: 1));
+              'description',
+              expectAsync0(() {
+                expect(outerSetUpRun, isTrue);
+                expect(innerSetUpRun, isTrue);
+              }, max: 1),
+            );
           });
         });
 
@@ -521,7 +573,9 @@ void main() {
         expect(outerGroup.metadata.tags, unorderedEquals(['a']));
         expect(innerGroup.metadata.tags, unorderedEquals(['a', 'b', 'c']));
         expect(
-            testWithTags.metadata.tags, unorderedEquals(['a', 'b', 'c', 'd']));
+          testWithTags.metadata.tags,
+          unorderedEquals(['a', 'b', 'c', 'd']),
+        );
       });
 
       test('throws on invalid tags', () {
@@ -543,17 +597,19 @@ void main() {
             tearDown(() => tearDownRun = true);
 
             test(
-                'description 1',
-                expectAsync0(() {
-                  expect(tearDownRun, isFalse);
-                }, max: 1));
+              'description 1',
+              expectAsync0(() {
+                expect(tearDownRun, isFalse);
+              }, max: 1),
+            );
           });
 
           test(
-              'description 2',
-              expectAsync0(() {
-                expect(tearDownRun, isFalse);
-              }, max: 1));
+            'description 2',
+            expectAsync0(() {
+              expect(tearDownRun, isFalse);
+            }, max: 1),
+          );
         });
 
         var testGroup = entries[0] as Group;
@@ -568,33 +624,40 @@ void main() {
         var middleTearDownRun = false;
         var outerTearDownRun = false;
         var entries = declare(() {
-          tearDown(expectAsync0(() {
-            expect(innerTearDownRun, isTrue);
-            expect(middleTearDownRun, isTrue);
-            outerTearDownRun = true;
-          }, max: 1));
+          tearDown(
+            expectAsync0(() {
+              expect(innerTearDownRun, isTrue);
+              expect(middleTearDownRun, isTrue);
+              outerTearDownRun = true;
+            }, max: 1),
+          );
 
           group('middle', () {
-            tearDown(expectAsync0(() {
-              expect(innerTearDownRun, isTrue);
-              expect(outerTearDownRun, isFalse);
-              middleTearDownRun = true;
-            }, max: 1));
+            tearDown(
+              expectAsync0(() {
+                expect(innerTearDownRun, isTrue);
+                expect(outerTearDownRun, isFalse);
+                middleTearDownRun = true;
+              }, max: 1),
+            );
 
             group('inner', () {
-              tearDown(expectAsync0(() {
-                expect(outerTearDownRun, isFalse);
-                expect(middleTearDownRun, isFalse);
-                innerTearDownRun = true;
-              }, max: 1));
+              tearDown(
+                expectAsync0(() {
+                  expect(outerTearDownRun, isFalse);
+                  expect(middleTearDownRun, isFalse);
+                  innerTearDownRun = true;
+                }, max: 1),
+              );
 
               test(
-                  'description',
-                  expectAsync0(() {
-                    expect(outerTearDownRun, isFalse);
-                    expect(middleTearDownRun, isFalse);
-                    expect(innerTearDownRun, isFalse);
-                  }, max: 1));
+                'description',
+                expectAsync0(() {
+                  expect(outerTearDownRun, isFalse);
+                  expect(middleTearDownRun, isFalse);
+                  expect(innerTearDownRun, isFalse);
+                }, max: 1),
+              );
             });
           });
         });
@@ -611,23 +674,28 @@ void main() {
         var outerTearDownRun = false;
         var innerTearDownRun = false;
         var entries = declare(() {
-          tearDown(expectAsync0(() {
-            expect(innerTearDownRun, isTrue);
-            return Future(() => outerTearDownRun = true);
-          }, max: 1));
+          tearDown(
+            expectAsync0(() {
+              expect(innerTearDownRun, isTrue);
+              return Future(() => outerTearDownRun = true);
+            }, max: 1),
+          );
 
           group('inner', () {
-            tearDown(expectAsync0(() {
-              expect(outerTearDownRun, isFalse);
-              return Future(() => innerTearDownRun = true);
-            }, max: 1));
+            tearDown(
+              expectAsync0(() {
+                expect(outerTearDownRun, isFalse);
+                return Future(() => innerTearDownRun = true);
+              }, max: 1),
+            );
 
             test(
-                'description',
-                expectAsync0(() {
-                  expect(outerTearDownRun, isFalse);
-                  expect(innerTearDownRun, isFalse);
-                }, max: 1));
+              'description',
+              expectAsync0(() {
+                expect(outerTearDownRun, isFalse);
+                expect(innerTearDownRun, isFalse);
+              }, max: 1),
+            );
           });
         });
 
@@ -650,10 +718,11 @@ void main() {
             });
 
             test(
-                'description',
-                expectAsync0(() {
-                  expect(outerTearDownRun, isFalse);
-                }, max: 1));
+              'description',
+              expectAsync0(() {
+                expect(outerTearDownRun, isFalse);
+              }, max: 1),
+            );
           });
         });
 
@@ -667,21 +736,24 @@ void main() {
   group('duplicate names', () {
     test('can be enabled', () {
       expect(
-          () => declare(() {
-                test('a', expectAsync0(() {}, count: 0));
-                test('a', expectAsync0(() {}, count: 0));
-              }, allowDuplicateTestNames: false),
-          throwsA(isA<DuplicateTestNameException>()
-              .having((e) => e.name, 'name', 'a')));
+        () => declare(() {
+          test('a', expectAsync0(() {}, count: 0));
+          test('a', expectAsync0(() {}, count: 0));
+        }, allowDuplicateTestNames: false),
+        throwsA(
+          isA<DuplicateTestNameException>().having((e) => e.name, 'name', 'a'),
+        ),
+      );
     });
 
     test('are allowed by default', () {
       expect(
-          declare(() {
-            test('a', expectAsync0(() {}, count: 0));
-            test('a', expectAsync0(() {}, count: 0));
-          }).map((e) => e.name),
-          equals(['a', 'a']));
+        declare(() {
+          test('a', expectAsync0(() {}, count: 0));
+          test('a', expectAsync0(() {}, count: 0));
+        }).map((e) => e.name),
+        equals(['a', 'a']),
+      );
     });
   });
 }
