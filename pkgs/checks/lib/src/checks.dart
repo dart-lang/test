@@ -850,7 +850,9 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (_clauses.isEmpty) {
       expected.addAll(_label());
     } else {
-      expected.addAll(postfixLast(' that:', _label()));
+      final label = postfixLast(' that:', _label());
+      expected.addAll(label);
+      final labelLines = label.length;
       for (var clause in _clauses) {
         final details = clause.detail(failingContext);
         expected.addAll(indent(details.expected));
@@ -858,7 +860,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           assert(foundDepth == -1);
           assert(foundOverlap == -1);
           foundDepth = details.depth + 1;
-          foundOverlap = details._actualOverlap + successfulOverlap + 1;
+          foundOverlap = details._actualOverlap + successfulOverlap + labelLines;
         } else {
           if (foundDepth == -1) {
             successfulOverlap += details.expected.length;

@@ -27,6 +27,70 @@ Actual: a List<dynamic> that:
   Which: are not equal''');
     });
 
+    test('includes matching portions of actual when label is multiline', () {
+      final largeKey = Iterable.generate(30, (i) => i).toList();
+      check(() {
+        check({largeKey: [1]})[largeKey].first.identicalTo(2);
+      }).throwsFailure().equals('''
+Expected: a Map<List<int>, List<int>> that:
+  contains a value for [0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  ...] that:
+    has first element that:
+      is identical to <2>
+Actual: a Map<List<int>, List<int>> that:
+  contains a value for [0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  ...] that:
+    has first element that:
+    Actual: <1>
+    Which: is not identical''');
+    });
+
     test('include a reason when provided', () {
       check(() {
         check(because: 'Some reason', 1).isGreaterThan(2);
