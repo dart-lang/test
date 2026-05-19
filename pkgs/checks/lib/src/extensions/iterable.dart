@@ -10,58 +10,80 @@ import 'core.dart';
 extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<int> get length => has((l) => l.length, 'length');
 
-  Subject<T> get first => context.nest(() => ['has first element'], (actual) {
-    final iterator = actual.iterator;
-    if (!iterator.moveNext()) {
-      return Extracted.rejection(which: ['has no elements']);
-    }
-    return Extracted.value(iterator.current);
-  });
+  Subject<T> get first => context.nest(
+    () => ['has first element'],
+    addPredicate: (predicateNoun) => 'has first element: $predicateNoun',
+    (actual) {
+      final iterator = actual.iterator;
+      if (!iterator.moveNext()) {
+        return Extracted.rejection(which: ['has no elements']);
+      }
+      return Extracted.value(iterator.current);
+    },
+  );
 
-  Subject<T> get last => context.nest(() => ['has last element'], (actual) {
-    final iterator = actual.iterator;
-    if (!iterator.moveNext()) {
-      return Extracted.rejection(which: ['has no elements']);
-    }
-    var current = iterator.current;
-    while (iterator.moveNext()) {
-      current = iterator.current;
-    }
-    return Extracted.value(current);
-  });
+  Subject<T> get last => context.nest(
+    () => ['has last element'],
+    addPredicate: (predicateNoun) => 'has last element: $predicateNoun',
+    (actual) {
+      final iterator = actual.iterator;
+      if (!iterator.moveNext()) {
+        return Extracted.rejection(which: ['has no elements']);
+      }
+      var current = iterator.current;
+      while (iterator.moveNext()) {
+        current = iterator.current;
+      }
+      return Extracted.value(current);
+    },
+  );
 
-  Subject<T> get single => context.nest(() => ['has single element'], (actual) {
-    final iterator = actual.iterator;
-    if (!iterator.moveNext()) {
-      return Extracted.rejection(which: ['has no elements']);
-    }
-    final value = iterator.current;
-    if (iterator.moveNext()) {
-      return Extracted.rejection(which: ['has more than one element']);
-    }
-    return Extracted.value(value);
-  });
+  Subject<T> get single => context.nest(
+    () => ['has single element'],
+    addPredicate: (predicateNoun) => 'has single element: $predicateNoun',
+    (actual) {
+      final iterator = actual.iterator;
+      if (!iterator.moveNext()) {
+        return Extracted.rejection(which: ['has no elements']);
+      }
+      final value = iterator.current;
+      if (iterator.moveNext()) {
+        return Extracted.rejection(which: ['has more than one element']);
+      }
+      return Extracted.value(value);
+    },
+  );
 
   void isEmpty() {
-    context.expect(() => const ['is empty'], (actual) {
-      if (actual.isEmpty) return null;
-      return Rejection(which: ['is not empty']);
-    });
+    context.expect(
+      () => const ['is empty'],
+      predicateNoun: () => 'an empty iterable',
+      (actual) {
+        if (actual.isEmpty) return null;
+        return Rejection(which: ['is not empty']);
+      },
+    );
   }
 
   void isNotEmpty() {
-    context.expect(() => const ['is not empty'], (actual) {
-      if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is empty']);
-    });
+    context.expect(
+      () => const ['is not empty'],
+      predicateNoun: () => 'a non-empty iterable',
+      (actual) {
+        if (actual.isNotEmpty) return null;
+        return Rejection(which: ['is empty']);
+      },
+    );
   }
 
   /// Expects that the iterable contains [element] according to
   /// [Iterable.contains].
   void contains(T element) {
     context.expect(
-      () {
-        return prefixFirst('contains ', literal(element));
+      () => prefixFirst('contains ', literal(element)),
+      predicateNoun: () {
+        final l = literal(element);
+        return l.length == 1 ? 'a list containing ${l.first}' : null;
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
@@ -269,6 +291,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@macro deep_collection_equals}
   void deepEquals(Iterable<Object?> expected) => context.expect(
     () => prefixFirst('is deeply equal to ', literal(expected)),
+    predicateNoun: () => literal(expected).singleOrNull,
     (actual) {
       final which = deepCollectionEquals(actual, expected);
       if (which == null) return null;
