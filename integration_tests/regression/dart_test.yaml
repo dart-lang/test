@@ -1,0 +1,13 @@
+paths:
+- lib/issue_2142/test.dart
+
+platforms:
+- chrome
+- vm
+
+compilers:
+- dart2js
+- dart2wasm
+- exe
+- kernel
+- source

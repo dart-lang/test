@@ -3,16 +3,17 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'package:test/test.dart';
 
 void main() {
   group('spawnHybridUri():', () {
     test('loads uris relative to the test file', () async {
       expect(
-          spawnHybridUri(Uri.parse('../util/emits_numbers.dart'))
-              .stream
-              .toList(),
-          completion(equals([1, 2, 3])));
+        spawnHybridUri(Uri.parse('../util/emits_numbers.dart')).stream.toList(),
+        completion(equals([1, 2, 3])),
+      );
     });
   });
 }

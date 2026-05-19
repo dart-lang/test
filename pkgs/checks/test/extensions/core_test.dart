@@ -20,16 +20,18 @@ void main() {
       check(1).has((v) => v.isOdd, 'isOdd').isTrue();
 
       check(null).isRejectedBy(
-          it()
-            ..has((v) {
-              Error.throwWithStackTrace(
-                  UnimplementedError(), StackTrace.fromString('fake trace'));
-            }, 'foo')
-                .isNotNull(),
-          which: [
-            'threw while trying to read foo: <UnimplementedError>',
-            'fake trace'
-          ]);
+        it()
+          ..has((v) {
+            Error.throwWithStackTrace(
+              UnimplementedError(),
+              StackTrace.fromString('fake trace'),
+            );
+          }, 'foo').isNotNull(),
+        which: [
+          'threw while trying to read foo: <UnimplementedError>',
+          'fake trace',
+        ],
+      );
     });
 
     test('which', () {
@@ -39,10 +41,10 @@ void main() {
     test('not', () {
       check(false).not(it()..isTrue());
 
-      check(true).isRejectedBy(it()..not(it()..isTrue()), which: [
-        'is a value that: ',
-        '    is true',
-      ]);
+      check(true).isRejectedBy(
+        it()..not(it()..isTrue()),
+        which: ['is a value that: ', '    is true'],
+      );
     });
 
     group('anyOf', () {
@@ -52,8 +54,9 @@ void main() {
 
       test('rejects values that do not satisfy any condition', () {
         check(0).isRejectedBy(
-            it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
-            which: ['did not match any condition']);
+          it()..anyOf([it()..isGreaterThan(1), it()..isLessThan(-1)]),
+          which: ['did not match any condition'],
+        );
       });
     });
   });
@@ -104,13 +107,15 @@ void main() {
       });
       test('fails for equal', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isGreaterThan(Duration(seconds: 10)),
-            which: ['is not greater than <0:00:10.000000>']);
+          it()..isGreaterThan(Duration(seconds: 10)),
+          which: ['is not greater than <0:00:10.000000>'],
+        );
       });
       test('fails for less', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isGreaterThan(Duration(seconds: 50)),
-            which: ['is not greater than <0:00:50.000000>']);
+          it()..isGreaterThan(Duration(seconds: 50)),
+          which: ['is not greater than <0:00:50.000000>'],
+        );
       });
     });
     group('isGreaterOrEqual', () {
@@ -122,8 +127,9 @@ void main() {
       });
       test('fails for less', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isGreaterOrEqual(Duration(seconds: 50)),
-            which: ['is not greater than or equal to <0:00:50.000000>']);
+          it()..isGreaterOrEqual(Duration(seconds: 50)),
+          which: ['is not greater than or equal to <0:00:50.000000>'],
+        );
       });
     });
     group('isLessThan', () {
@@ -132,13 +138,15 @@ void main() {
       });
       test('fails for equal', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isLessThan(Duration(seconds: 10)),
-            which: ['is not less than <0:00:10.000000>']);
+          it()..isLessThan(Duration(seconds: 10)),
+          which: ['is not less than <0:00:10.000000>'],
+        );
       });
       test('fails for greater', () {
         check(Duration(seconds: 50)).isRejectedBy(
-            it()..isLessThan(Duration(seconds: 10)),
-            which: ['is not less than <0:00:10.000000>']);
+          it()..isLessThan(Duration(seconds: 10)),
+          which: ['is not less than <0:00:10.000000>'],
+        );
       });
     });
     group('isLessOrEqual', () {
@@ -150,8 +158,9 @@ void main() {
       });
       test('fails for greater', () {
         check(Duration(seconds: 10)).isRejectedBy(
-            it()..isLessOrEqual(Duration(seconds: 1)),
-            which: ['is not less than or equal to <0:00:01.000000>']);
+          it()..isLessOrEqual(Duration(seconds: 1)),
+          which: ['is not less than or equal to <0:00:01.000000>'],
+        );
       });
     });
   });

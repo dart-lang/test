@@ -1,7 +1,7 @@
-name: wasm_tests
+name: regression_tests
 publish_to: none
 environment:
   sdk: ^3.10.0
 resolution: workspace
-dev_dependencies:
+dependencies:
   test: any

@@ -9,99 +9,134 @@ import 'package:test/scaffolding.dart';
 void main() {
   group('deepCollectionEquals', () {
     test('allows nested collections with equal elements', () {
-      check(deepCollectionEquals([
-        'a',
-        {'b': 1},
-        {'c', 'd'},
-        [
-          ['e']
-        ],
-      ], [
-        'a',
-        {'b': 1},
-        {'c', 'd'},
-        [
-          ['e']
-        ],
-      ])).isNull();
+      check(
+        deepCollectionEquals(
+          [
+            'a',
+            {'b': 1},
+            {'c', 'd'},
+            [
+              ['e'],
+            ],
+          ],
+          [
+            'a',
+            {'b': 1},
+            {'c', 'd'},
+            [
+              ['e'],
+            ],
+          ],
+        ),
+      ).isNull();
     });
 
     test('allows collections inside sets', () {
-      check(deepCollectionEquals({
-        {'a': 1}
-      }, {
-        {'a': 1}
-      })).isNull();
+      check(
+        deepCollectionEquals(
+          {
+            {'a': 1},
+          },
+          {
+            {'a': 1},
+          },
+        ),
+      ).isNull();
     });
 
     test('allows collections as Map keys', () {
-      check(deepCollectionEquals([
-        {
-          {'a': 1}: {'b': 2}
-        }
-      ], [
-        {
-          {'a': 1}: {'b': 2}
-        }
-      ])).isNull();
+      check(
+        deepCollectionEquals(
+          [
+            {
+              {'a': 1}: {'b': 2},
+            },
+          ],
+          [
+            {
+              {'a': 1}: {'b': 2},
+            },
+          ],
+        ),
+      ).isNull();
     });
 
     test('allows conditions in place of elements in lists', () {
-      check(deepCollectionEquals([
-        'a',
-        'b'
-      ], [
-        it()
-          ..isA<String>().which(it()
-            ..startsWith('a')
-            ..length.isLessThan(2)),
-        it()..isA<String>().startsWith('b')
-      ])).isNull();
+      check(
+        deepCollectionEquals(
+          ['a', 'b'],
+          [
+            it()
+              ..isA<String>().which(
+                it()
+                  ..startsWith('a')
+                  ..length.isLessThan(2),
+              ),
+            it()..isA<String>().startsWith('b'),
+          ],
+        ),
+      ).isNull();
     });
 
     test('allows conditions in place of values in maps', () {
-      check(deepCollectionEquals([
-        {'a': 'b'}
-      ], [
-        {'a': it()..isA<String>().startsWith('b')}
-      ])).isNull();
+      check(
+        deepCollectionEquals(
+          [
+            {'a': 'b'},
+          ],
+          [
+            {'a': it()..isA<String>().startsWith('b')},
+          ],
+        ),
+      ).isNull();
     });
 
     test('allows conditions in place of elements in sets', () {
-      check(deepCollectionEquals(
-          {'b', 'a'}, {'a', it()..isA<String>().startsWith('b')})).isNull();
+      check(
+        deepCollectionEquals(
+          {'b', 'a'},
+          {'a', it()..isA<String>().startsWith('b')},
+        ),
+      ).isNull();
     });
 
     test('allows conditions in place of keys in maps', () {
-      check(deepCollectionEquals(
-          {'a': 'b'}, {it()..isA<String>().startsWith('a'): 'b'})).isNull();
+      check(
+        deepCollectionEquals(
+          {'a': 'b'},
+          {it()..isA<String>().startsWith('a'): 'b'},
+        ),
+      ).isNull();
     });
 
     test('reports non-Set elements', () {
-      check(deepCollectionEquals([
-        ['a']
-      ], [
-        {'a'}
-      ])).isNotNull().returnsNormally().deepEquals(['at [<0>] is not a Set']);
+      check(
+        deepCollectionEquals(
+          [
+            ['a'],
+          ],
+          [
+            {'a'},
+          ],
+        ),
+      ).isNotNull().returnsNormally().deepEquals(['at [<0>] is not a Set']);
     });
 
     test('reports long iterables', () {
-      check(deepCollectionEquals([0], []))
-          .isNotNull()
-          .returnsNormally()
-          .deepEquals([
+      check(
+        deepCollectionEquals([0], []),
+      ).isNotNull().returnsNormally().deepEquals([
         'has more elements than expected',
-        'expected an iterable with 0 element(s)'
+        'expected an iterable with 0 element(s)',
       ]);
     });
 
     test('reports short iterables', () {
-      check(deepCollectionEquals([], [0]))
-          .isNotNull()
-          .returnsNormally()
-          .deepEquals([
+      check(
+        deepCollectionEquals([], [0]),
+      ).isNotNull().returnsNormally().deepEquals([
         'has too few elements',
-        'expected an iterable with at least 1 element(s)'
+        'expected an iterable with at least 1 element(s)',
       ]);
     });
 
@@ -113,22 +148,22 @@ void main() {
     });
 
     test('reports unmet conditions in iterables', () {
-      check(deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]))
-          .isNotNull()
-          .returnsNormally()
-          .deepEquals([
+      check(
+        deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]),
+      ).isNotNull().returnsNormally().deepEquals([
         'has an element at [<0>] that:',
         '  Actual: <0>',
-        '  which is not greater than <0>'
+        '  which is not greater than <0>',
       ]);
     });
 
     test('reports unmet conditions in map values', () {
-      check(deepCollectionEquals(
-              {'a': 'b'}, {'a': it()..isA<String>().startsWith('a')}))
-          .isNotNull()
-          .returnsNormally()
-          .deepEquals([
+      check(
+        deepCollectionEquals(
+          {'a': 'b'},
+          {'a': it()..isA<String>().startsWith('a')},
+        ),
+      ).isNotNull().returnsNormally().deepEquals([
         "has no entry to match 'a': <A value that:",
         '  is a String',
         "  starts with 'a'>",
@@ -136,11 +171,12 @@ void main() {
     });
 
     test('reports unmet conditions in map keys', () {
-      check(deepCollectionEquals(
-              {'b': 'a'}, {it()..isA<String>().startsWith('a'): 'a'}))
-          .isNotNull()
-          .returnsNormally()
-          .deepEquals([
+      check(
+        deepCollectionEquals(
+          {'b': 'a'},
+          {it()..isA<String>().startsWith('a'): 'a'},
+        ),
+      ).isNotNull().returnsNormally().deepEquals([
         'has no entry to match <A value that:',
         '  is a String',
         "  starts with 'a'>: 'a'",

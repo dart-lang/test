@@ -11,37 +11,36 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<int> get length => has((l) => l.length, 'length');
 
   Subject<T> get first => context.nest(() => ['has first element'], (actual) {
-        final iterator = actual.iterator;
-        if (!iterator.moveNext()) {
-          return Extracted.rejection(which: () => ['has no elements']);
-        }
-        return Extracted.value(iterator.current);
-      });
+    final iterator = actual.iterator;
+    if (!iterator.moveNext()) {
+      return Extracted.rejection(which: () => ['has no elements']);
+    }
+    return Extracted.value(iterator.current);
+  });
 
   Subject<T> get last => context.nest(() => ['has last element'], (actual) {
-        final iterator = actual.iterator;
-        if (!iterator.moveNext()) {
-          return Extracted.rejection(which: () => ['has no elements']);
-        }
-        var current = iterator.current;
-        while (iterator.moveNext()) {
-          current = iterator.current;
-        }
-        return Extracted.value(current);
-      });
+    final iterator = actual.iterator;
+    if (!iterator.moveNext()) {
+      return Extracted.rejection(which: () => ['has no elements']);
+    }
+    var current = iterator.current;
+    while (iterator.moveNext()) {
+      current = iterator.current;
+    }
+    return Extracted.value(current);
+  });
 
   Subject<T> get single => context.nest(() => ['has single element'], (actual) {
-        final iterator = actual.iterator;
-        if (!iterator.moveNext()) {
-          return Extracted.rejection(which: () => ['has no elements']);
-        }
-        final value = iterator.current;
-        if (iterator.moveNext()) {
-          return Extracted.rejection(
-              which: () => ['has more than one element']);
-        }
-        return Extracted.value(value);
-      });
+    final iterator = actual.iterator;
+    if (!iterator.moveNext()) {
+      return Extracted.rejection(which: () => ['has no elements']);
+    }
+    final value = iterator.current;
+    if (iterator.moveNext()) {
+      return Extracted.rejection(which: () => ['has more than one element']);
+    }
+    return Extracted.value(value);
+  });
 
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
@@ -60,14 +59,19 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// Expects that the iterable contains [element] according to
   /// [Iterable.contains].
   void contains(T element) {
-    context.expect(() {
-      return prefixFirst('contains ', literal(element));
-    }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: () => ['an empty iterable']);
-      if (actual.contains(element)) return null;
-      return Rejection(
-          which: () => prefixFirst('does not contain ', literal(element)));
-    });
+    context.expect(
+      () {
+        return prefixFirst('contains ', literal(element));
+      },
+      (actual) {
+        if (actual.isEmpty)
+          return Rejection(actual: () => ['an empty iterable']);
+        if (actual.contains(element)) return null;
+        return Rejection(
+          which: () => prefixFirst('does not contain ', literal(element)),
+        );
+      },
+    );
   }
 
   /// Expects that the iterable contains a value matching each expected value
@@ -91,49 +95,54 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   ///   .containsInOrder([1, it<int>()..isGreaterThan(1), 3]);
   /// ```
   void containsInOrder(Iterable<Object?> elements) {
-    context.expect(() => prefixFirst('contains, in order: ', literal(elements)),
-        (actual) {
-      final expected = elements.toList();
-      if (expected.isEmpty) {
-        throw ArgumentError('expected may not be empty');
-      }
-      var expectedIndex = 0;
-      for (final element in actual) {
-        final currentExpected = expected[expectedIndex];
-        final matches = currentExpected is Condition<T>
-            ? softCheck(element, currentExpected) == null
-            : currentExpected is Condition<dynamic>
-                ? softCheck(element, currentExpected) == null
-                : currentExpected == element;
-        if (matches && ++expectedIndex >= expected.length) return null;
-      }
-      return Rejection(
+    context.expect(
+      () => prefixFirst('contains, in order: ', literal(elements)),
+      (actual) {
+        final expected = elements.toList();
+        if (expected.isEmpty) {
+          throw ArgumentError('expected may not be empty');
+        }
+        var expectedIndex = 0;
+        for (final element in actual) {
+          final currentExpected = expected[expectedIndex];
+          final matches = currentExpected is Condition<T>
+              ? softCheck(element, currentExpected) == null
+              : currentExpected is Condition<dynamic>
+              ? softCheck(element, currentExpected) == null
+              : currentExpected == element;
+          if (matches && ++expectedIndex >= expected.length) return null;
+        }
+        return Rejection(
           which: () => [
-                ...prefixFirst(
-                    'did not have an element matching the expectation at index '
-                    '$expectedIndex ',
-                    literal(expected[expectedIndex])),
-              ]);
-    });
+            ...prefixFirst(
+              'did not have an element matching the expectation at index '
+              '$expectedIndex ',
+              literal(expected[expectedIndex]),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
   void any(Condition<T> elementCondition) {
-    context.expect(() {
-      final conditionDescription = describe(elementCondition);
-      assert(conditionDescription.isNotEmpty);
-      return [
-        'contains a value that:',
-        ...conditionDescription,
-      ];
-    }, (actual) {
-      if (actual.isEmpty) return Rejection(actual: () => ['an empty iterable']);
-      for (var e in actual) {
-        if (softCheck(e, elementCondition) == null) return null;
-      }
-      return Rejection(which: () => ['Contains no matching element']);
-    });
+    context.expect(
+      () {
+        final conditionDescription = describe(elementCondition);
+        assert(conditionDescription.isNotEmpty);
+        return ['contains a value that:', ...conditionDescription];
+      },
+      (actual) {
+        if (actual.isEmpty)
+          return Rejection(actual: () => ['an empty iterable']);
+        for (var e in actual) {
+          if (softCheck(e, elementCondition) == null) return null;
+        }
+        return Rejection(which: () => ['Contains no matching element']);
+      },
+    );
   }
 
   /// Expects there are no elements in the iterable which fail to satisfy
@@ -141,46 +150,52 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   ///
   /// Empty iterables will pass always pass this expectation.
   void every(Condition<T> elementCondition) {
-    context.expect(() {
-      final conditionDescription = describe(elementCondition);
-      assert(conditionDescription.isNotEmpty);
-      return [
-        'only has values that:',
-        ...conditionDescription,
-      ];
-    }, (actual) {
-      final iterator = actual.iterator;
-      for (var i = 0; iterator.moveNext(); i++) {
-        final element = iterator.current;
-        final failure = softCheck(element, elementCondition);
-        if (failure == null) continue;
-        final which = failure.rejection.which?.call();
-        return Rejection(
+    context.expect(
+      () {
+        final conditionDescription = describe(elementCondition);
+        assert(conditionDescription.isNotEmpty);
+        return ['only has values that:', ...conditionDescription];
+      },
+      (actual) {
+        final iterator = actual.iterator;
+        for (var i = 0; iterator.moveNext(); i++) {
+          final element = iterator.current;
+          final failure = softCheck(element, elementCondition);
+          if (failure == null) continue;
+          final which = failure.rejection.which?.call();
+          return Rejection(
             which: () => [
-                  'has an element at index $i that:',
-                  ...indent(failure.detail.actual.skip(1)),
-                  ...indent(prefixFirst('Actual: ', failure.rejection.actual()),
-                      failure.detail.depth + 1),
-                  if (which != null && which.isNotEmpty)
-                    ...indent(prefixFirst('Which: ', which),
-                        failure.detail.depth + 1),
-                ]);
-      }
-      return null;
-    });
+              'has an element at index $i that:',
+              ...indent(failure.detail.actual.skip(1)),
+              ...indent(
+                prefixFirst('Actual: ', failure.rejection.actual()),
+                failure.detail.depth + 1,
+              ),
+              if (which != null && which.isNotEmpty)
+                ...indent(
+                  prefixFirst('Which: ', which),
+                  failure.detail.depth + 1,
+                ),
+            ],
+          );
+        }
+        return null;
+      },
+    );
   }
 
   /// Expects that the iterable contains elements that are deeply equal to the
   /// elements of [expected].
   ///
   /// {@macro deep_collection_equals}
-  void deepEquals(Iterable<Object?> expected) => context
-          .expect(() => prefixFirst('is deeply equal to ', literal(expected)),
-              (actual) {
-        final which = deepCollectionEquals(actual, expected);
-        if (which == null) return null;
-        return Rejection(which: which);
-      });
+  void deepEquals(Iterable<Object?> expected) => context.expect(
+    () => prefixFirst('is deeply equal to ', literal(expected)),
+    (actual) {
+      final which = deepCollectionEquals(actual, expected);
+      if (which == null) return null;
+      return Rejection(which: which);
+    },
+  );
 
   /// Expects that the iterable contains elements which equal those of
   /// [expected] in any order.
@@ -189,22 +204,26 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// worst case where the iterables contain many equal elements, and O(n^2) in
   /// more typical cases.
   void unorderedEquals(Iterable<T> expected) {
-    context.expect(() => prefixFirst('unordered equals ', literal(expected)),
-        (actual) {
+    context.expect(() => prefixFirst('unordered equals ', literal(expected)), (
+      actual,
+    ) {
       final which = unorderedCompare(
         actual,
         expected,
         (actual, expected) => expected == actual,
         (expected, index, count) => [
           ...prefixFirst(
-              'has no element equal to the expected element at index '
-              '$index: ',
-              literal(expected)),
+            'has no element equal to the expected element at index '
+            '$index: ',
+            literal(expected),
+          ),
           if (count > 1) 'or ${count - 1} other elements',
         ],
         (actual, index, count) => [
           ...prefixFirst(
-              'has an unexpected element at index $index: ', literal(actual)),
+            'has an unexpected element at index $index: ',
+            literal(actual),
+          ),
           if (count > 1) 'and ${count - 1} other unexpected elements',
         ],
       );
@@ -220,8 +239,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// worst case where conditions match many elements, and O(n^2) in more
   /// typical cases.
   void unorderedMatches(Iterable<Condition<T>> expected) {
-    context.expect(() => prefixFirst('unordered matches ', literal(expected)),
-        (actual) {
+    context.expect(() => prefixFirst('unordered matches ', literal(expected)), (
+      actual,
+    ) {
       final which = unorderedCompare(
         actual,
         expected,
@@ -233,7 +253,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         ],
         (actual, index, count) => [
           ...prefixFirst(
-              'has an unmatched element at index $index: ', literal(actual)),
+            'has an unmatched element at index $index: ',
+            literal(actual),
+          ),
           if (count > 1) 'and ${count - 1} other unmatched elements',
         ],
       );
@@ -254,39 +276,54 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [description] is used in the Expected clause. It should be a predicate
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
-  void pairwiseComparesTo<S>(List<S> expected,
-      Condition<T> Function(S) elementCondition, String description) {
-    context.expect(() {
-      return prefixFirst('pairwise $description ', literal(expected));
-    }, (actual) {
-      final iterator = actual.iterator;
-      for (var i = 0; i < expected.length; i++) {
-        final expectedValue = expected[i];
-        if (!iterator.moveNext()) {
-          return Rejection(
+  void pairwiseComparesTo<S>(
+    List<S> expected,
+    Condition<T> Function(S) elementCondition,
+    String description,
+  ) {
+    context.expect(
+      () {
+        return prefixFirst('pairwise $description ', literal(expected));
+      },
+      (actual) {
+        final iterator = actual.iterator;
+        for (var i = 0; i < expected.length; i++) {
+          final expectedValue = expected[i];
+          if (!iterator.moveNext()) {
+            return Rejection(
               which: () => [
-                    'has too few elements, '
-                        'there is no element to match at index $i'
-                  ]);
-        }
-        final actualValue = iterator.current;
-        final failure = softCheck(actualValue, elementCondition(expectedValue));
-        if (failure == null) continue;
-        final innerDescription = describe<T>(elementCondition(expectedValue));
-        final which = failure.rejection.which?.call();
-        return Rejection(
+                'has too few elements, '
+                    'there is no element to match at index $i',
+              ],
+            );
+          }
+          final actualValue = iterator.current;
+          final failure = softCheck(
+            actualValue,
+            elementCondition(expectedValue),
+          );
+          if (failure == null) continue;
+          final innerDescription = describe<T>(elementCondition(expectedValue));
+          final which = failure.rejection.which?.call();
+          return Rejection(
             which: () => [
-                  'does not have an element at index $i that:',
-                  ...innerDescription,
-                  ...prefixFirst('Actual element at index $i: ',
-                      failure.rejection.actual()),
-                  if (which != null) ...prefixFirst('Which: ', which),
-                ]);
-      }
-      if (!iterator.moveNext()) return null;
-      return Rejection(
-          which: () =>
-              ['has too many elements, expected exactly ${expected.length}']);
-    });
+              'does not have an element at index $i that:',
+              ...innerDescription,
+              ...prefixFirst(
+                'Actual element at index $i: ',
+                failure.rejection.actual(),
+              ),
+              if (which != null) ...prefixFirst('Which: ', which),
+            ],
+          );
+        }
+        if (!iterator.moveNext()) return null;
+        return Rejection(
+          which: () => [
+            'has too many elements, expected exactly ${expected.length}',
+          ],
+        );
+      },
+    );
   }
 }

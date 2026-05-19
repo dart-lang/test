@@ -72,13 +72,17 @@ void main() {
     test('nestAsync holds test open past async condition', () async {
       late void Function() callback;
       final monitor = TestCaseMonitor.start(() {
-        check(null).context.nestAsync(() => [''], (actual) async {
-          return Extracted.value(null);
-        }, LazyCondition((it) async {
-          final completer = Completer<void>();
-          callback = completer.complete;
-          await completer.future;
-        }));
+        check(null).context.nestAsync(
+          () => [''],
+          (actual) async {
+            return Extracted.value(null);
+          },
+          LazyCondition((it) async {
+            final completer = Completer<void>();
+            callback = completer.complete;
+            await completer.future;
+          }),
+        );
       });
       await pumpEventQueue();
       check(monitor).state.equals(State.running);
@@ -134,7 +138,7 @@ void main() {
             ..isA<AsyncError>()
                 .has((e) => e.error, 'error')
                 .isA<String>()
-                .startsWith('This test failed after it had already completed.')
+                .startsWith('This test failed after it had already completed.'),
         ]);
     });
   });
@@ -162,16 +166,23 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
   void didPass() {
     errors.isEmpty();
     state.equals(State.passed);
-    onError.context.expectUnawaited(() => ['emits no further errors'],
-        (actual, reject) async {
+    onError.context.expectUnawaited(() => ['emits no further errors'], (
+      actual,
+      reject,
+    ) async {
       await for (var error in actual.rest) {
-        reject(Rejection(
+        reject(
+          Rejection(
             which: () => [
-                  ...prefixFirst('threw late error', literal(error.error)),
-                  ...(const LineSplitter().convert(TestHandle.current
-                      .formatStackTrace(error.stackTrace)
-                      .toString()))
-                ]));
+              ...prefixFirst('threw late error', literal(error.error)),
+              ...(const LineSplitter().convert(
+                TestHandle.current
+                    .formatStackTrace(error.stackTrace)
+                    .toString(),
+              )),
+            ],
+          ),
+        );
       }
     });
   }
