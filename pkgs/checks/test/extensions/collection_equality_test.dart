@@ -118,27 +118,32 @@ void main() {
             {'a'},
           ],
         ),
-      ).isNotNull().deepEquals(['at [<0>] is not a Set']);
+      ).isNotNull().returnsNormally().deepEquals(['at [<0>] is not a Set']);
     });
 
     test('reports long iterables', () {
-      check(deepCollectionEquals([0], [])).isNotNull().deepEquals([
+      check(
+        deepCollectionEquals([0], []),
+      ).isNotNull().returnsNormally().deepEquals([
         'has more elements than expected',
         'expected an iterable with 0 element(s)',
       ]);
     });
 
     test('reports short iterables', () {
-      check(deepCollectionEquals([], [0])).isNotNull().deepEquals([
+      check(
+        deepCollectionEquals([], [0]),
+      ).isNotNull().returnsNormally().deepEquals([
         'has too few elements',
         'expected an iterable with at least 1 element(s)',
       ]);
     });
 
     test('reports unequal elements in iterables', () {
-      check(
-        deepCollectionEquals([0], [1]),
-      ).isNotNull().deepEquals(['at [<0>] is <0>', 'which does not equal <1>']);
+      check(deepCollectionEquals([0], [1]))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals(['at [<0>] is <0>', 'which does not equal <1>']);
     });
 
     test('reports unmet conditions in iterables', () {
@@ -147,7 +152,7 @@ void main() {
           [0],
           [(Subject<dynamic> it) => it.isA<int>().isGreaterThan(0)],
         ),
-      ).isNotNull().deepEquals([
+      ).isNotNull().returnsNormally().deepEquals([
         'has an element at [<0>] that:',
         '  Actual: <0>',
         '  which is not greater than <0>',
@@ -160,7 +165,7 @@ void main() {
           {'a': 'b'},
           {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('a')},
         ),
-      ).isNotNull().deepEquals([
+      ).isNotNull().returnsNormally().deepEquals([
         "has an element at ['a'] that:",
         "  Actual: 'b'",
         "  which does not start with 'a'",
@@ -173,7 +178,7 @@ void main() {
           {'b': 'a'},
           {(Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'a'},
         ),
-      ).isNotNull().deepEquals([
+      ).isNotNull().returnsNormally().deepEquals([
         'has no entry to match <A value that:',
         '  is a String',
         "  starts with 'a'>: 'a'",
@@ -194,7 +199,7 @@ void main() {
             ],
           },
         ),
-      ).isNotNull().deepEquals([
+      ).isNotNull().returnsNormally().deepEquals([
         "at ['a'][<0>]['b'] is 'c'",
         "which does not equal 'd'",
       ]);
@@ -203,33 +208,37 @@ void main() {
     test('reports recursive lists', () {
       var l = <Object>[];
       l.add(l);
-      check(
-        deepCollectionEquals(l, l),
-      ).isNotNull().deepEquals(['exceeds the depth limit of 1000']);
+      check(deepCollectionEquals(l, l))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
 
     test('reports recursive sets', () {
       var s = <Object>{};
       s.add(s);
-      check(
-        deepCollectionEquals(s, s),
-      ).isNotNull().deepEquals(['exceeds the depth limit of 1000']);
+      check(deepCollectionEquals(s, s))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
 
     test('reports maps with recursive keys', () {
       var m = <Object, Object>{};
       m[m] = 0;
-      check(
-        deepCollectionEquals(m, m),
-      ).isNotNull().deepEquals(['exceeds the depth limit of 1000']);
+      check(deepCollectionEquals(m, m))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
 
     test('reports maps with recursive values', () {
       var m = <Object, Object>{};
       m[0] = m;
-      check(
-        deepCollectionEquals(m, m),
-      ).isNotNull().deepEquals(['exceeds the depth limit of 1000']);
+      check(deepCollectionEquals(m, m))
+          .isNotNull()
+          .returnsNormally()
+          .deepEquals(['exceeds the depth limit of 1000']);
     });
   });
 }

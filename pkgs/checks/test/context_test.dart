@@ -114,7 +114,7 @@ void main() {
         check(null).context.expectUnawaited(() => [''], (actual, reject) {
           final completer = Completer<void>()
             ..future.then((_) {
-              reject(Rejection(which: ['foo']));
+              reject(Rejection(which: () => ['foo']));
             });
           callback = completer.complete;
         });
@@ -169,7 +169,7 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
       await for (var error in actual.rest) {
         reject(
           Rejection(
-            which: [
+            which: () => [
               ...prefixFirst('threw late error', literal(error.error)),
               ...LineSplitter.split(
                 TestHandle.current

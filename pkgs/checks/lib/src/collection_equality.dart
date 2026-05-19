@@ -47,11 +47,14 @@ import '../context.dart';
 /// Collections may be nested to a maximum depth of 1000. Recursive collections
 /// are not allowed.
 /// {@endtemplate}
-Iterable<String>? deepCollectionEquals(Object actual, Object expected) {
+Iterable<String> Function()? deepCollectionEquals(
+  Object actual,
+  Object expected,
+) {
   try {
     return _deepCollectionEquals(actual, expected, 0);
   } on _ExceededDepthError {
-    return ['exceeds the depth limit of $_maxDepth'];
+    return () => ['exceeds the depth limit of $_maxDepth'];
   }
 }
 
@@ -59,7 +62,7 @@ const _maxDepth = 1000;
 
 class _ExceededDepthError extends Error {}
 
-Iterable<String>? _deepCollectionEquals(
+Iterable<String> Function()? _deepCollectionEquals(
   Object actual,
   Object expected,
   int depth,
@@ -74,7 +77,7 @@ Iterable<String>? _deepCollectionEquals(
     final currentExpected = toCheck.expected;
     final path = toCheck.path;
     final currentDepth = toCheck.depth;
-    Iterable<String>? rejectionWhich;
+    Iterable<String> Function()? rejectionWhich;
     if (currentExpected is Set) {
       rejectionWhich = _findSetDifference(
         currentActual,
@@ -105,7 +108,7 @@ Iterable<String>? _deepCollectionEquals(
   return null;
 }
 
-List<String>? _findIterableDifference(
+List<String> Function()? _findIterableDifference(
   Object? actual,
   Iterable<Object?> expected,
   _Path path,
@@ -113,7 +116,7 @@ List<String>? _findIterableDifference(
   int depth,
 ) {
   if (actual is! Iterable) {
-    return ['${path}is not an Iterable'];
+    return () => ['${path}is not an Iterable'];
   }
   var actualIterator = actual.iterator;
   var expectedIterator = expected.iterator;
@@ -122,13 +125,13 @@ List<String>? _findIterableDifference(
     var expectedNext = expectedIterator.moveNext();
     if (!expectedNext && !actualNext) break;
     if (!expectedNext) {
-      return [
+      return () => [
         '${path}has more elements than expected',
         'expected an iterable with $index element(s)',
       ];
     }
     if (!actualNext) {
-      return [
+      return () => [
         '${path}has too few elements',
         'expected an iterable with at least ${index + 1} element(s)',
       ];
@@ -146,7 +149,7 @@ List<String>? _findIterableDifference(
   return null;
 }
 
-List<String>? _compareValue(
+List<String> Function()? _compareValue(
   Object? actualValue,
   Object? expectedValue,
   _Path path,
@@ -162,12 +165,12 @@ List<String>? _compareValue(
   } else if (expectedValue is Condition) {
     final failure = softCheck(actualValue, expectedValue);
     if (failure != null) {
-      final which = failure.rejection.which;
-      return [
+      final which = failure.rejection.which?.call();
+      return () => [
         'has an element ${path.append(pathAppend)}that:',
         ...indent(failure.detail.actual.skip(1)),
         ...indent(
-          prefixFirst('Actual: ', failure.rejection.actual),
+          prefixFirst('Actual: ', failure.rejection.actual()),
           failure.detail.depth + 1,
         ),
         if (which != null)
@@ -176,7 +179,7 @@ List<String>? _compareValue(
     }
   } else {
     if (actualValue != expectedValue) {
-      return [
+      return () => [
         ...prefixFirst('${path.append(pathAppend)}is ', literal(actualValue)),
         ...prefixFirst('which does not equal ', literal(expectedValue)),
       ];
@@ -198,14 +201,14 @@ bool _elementMatches(Object? actual, Object? expected, int depth) {
   return expected == actual;
 }
 
-Iterable<String>? _findSetDifference(
+Iterable<String> Function()? _findSetDifference(
   Object? actual,
   Set<Object?> expected,
   _Path path,
   int depth,
 ) {
   if (actual is! Set) {
-    return ['${path}is not a Set'];
+    return () => ['${path}is not a Set'];
   }
   return unorderedCompare(
     actual,
@@ -222,7 +225,7 @@ Iterable<String>? _findSetDifference(
   );
 }
 
-Iterable<String>? _findMapDifference(
+Iterable<String> Function()? _findMapDifference(
   Object? actual,
   Map<Object?, Object?> expected,
   _Path path,
@@ -230,7 +233,7 @@ Iterable<String>? _findMapDifference(
   int depth,
 ) {
   if (actual is! Map) {
-    return ['${path}is not a Map'];
+    return () => ['${path}is not a Map'];
   }
   if (expected.keys.any(
     (key) => key is Condition || key is Iterable || key is Map,
@@ -254,7 +257,7 @@ Iterable<String> _describeEntry(MapEntry<Object?, Object?> entry) {
 /// Returns a description of a difference found between [actual] and [expected]
 /// when [expected] has only direct key values and there is a 1:1 mapping
 /// between an expected value and a checked value in the map.
-Iterable<String>? _findUnambiguousMapDifference(
+Iterable<String> Function()? _findUnambiguousMapDifference(
   Map<Object?, Object?> actual,
   Map<Object?, Object?> expected,
   _Path path,
@@ -266,7 +269,7 @@ Iterable<String>? _findUnambiguousMapDifference(
     assert(entry.key is! Iterable);
     assert(entry.key is! Map);
     if (!actual.containsKey(entry.key)) {
-      return prefixFirst(
+      return () => prefixFirst(
         '${path}has no key matching expected entry ',
         _describeEntry(entry),
       );
@@ -283,7 +286,7 @@ Iterable<String>? _findUnambiguousMapDifference(
   }
   for (final entry in actual.entries) {
     if (!expected.containsKey(entry.key)) {
-      return prefixFirst(
+      return () => prefixFirst(
         '${path}has an unexpected key for entry ',
         _describeEntry(entry),
       );
@@ -292,7 +295,7 @@ Iterable<String>? _findUnambiguousMapDifference(
   return null;
 }
 
-Iterable<String>? _findAmbiguousMapDifference(
+Iterable<String> Function()? _findAmbiguousMapDifference(
   Map<Object?, Object?> actual,
   Map<Object?, Object?> expected,
   _Path path,
@@ -367,7 +370,7 @@ class _Search {
 /// Runtime is at least `O(|actual||expected|)`, and for collections with many
 /// elements which compare as equal the runtime can reach
 /// `O((|actual| + |expected|)^2.5)`.
-Iterable<String>? unorderedCompare<T, E>(
+Iterable<String> Function()? unorderedCompare<T, E>(
   Iterable<T> actual,
   Iterable<E> expected,
   bool Function(T, E) elementsEqual,
@@ -388,7 +391,7 @@ Iterable<String>? unorderedCompare<T, E>(
   final unpaired = _findUnpaired(adjacency, indexedActual.length);
   if (unpaired.first.isNotEmpty) {
     final firstUnmatched = indexedExpected[unpaired.first.first];
-    return unmatchedExpected(
+    return () => unmatchedExpected(
       firstUnmatched,
       unpaired.first.first,
       unpaired.first.length,
@@ -396,7 +399,7 @@ Iterable<String>? unorderedCompare<T, E>(
   }
   if (unpaired.last.isNotEmpty) {
     final firstUnmatched = indexedActual[unpaired.last.first];
-    return unmatchedActual(
+    return () => unmatchedActual(
       firstUnmatched,
       unpaired.last.first,
       unpaired.last.length,

@@ -19,7 +19,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
       (actual) {
         if (!actual.containsKey(key)) {
           return Extracted.rejection(
-            which: prefixFirst('does not contain the key ', literal(key)),
+            which: () => prefixFirst('does not contain the key ', literal(key)),
           );
         }
         return Extracted.value(actual[key] as V);
@@ -30,14 +30,14 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
-      return Rejection(which: ['is not empty']);
+      return Rejection(which: () => ['is not empty']);
     });
   }
 
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is not empty']);
+      return Rejection(which: () => ['is not empty']);
     });
   }
 
@@ -46,7 +46,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     context.expect(() => prefixFirst('contains key ', literal(key)), (actual) {
       if (actual.containsKey(key)) return null;
       return Rejection(
-        which: prefixFirst('does not contain key ', literal(key)),
+        which: () => prefixFirst('does not contain key ', literal(key)),
       );
     });
   }
@@ -61,11 +61,11 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         return ['contains a key that:', ...conditionDescription];
       },
       (actual) {
-        if (actual.isEmpty) return Rejection(actual: ['an empty map']);
+        if (actual.isEmpty) return Rejection(actual: () => ['an empty map']);
         for (var k in actual.keys) {
           if (softCheck(k, keyCondition) == null) return null;
         }
-        return Rejection(which: ['Contains no matching key']);
+        return Rejection(which: () => ['Contains no matching key']);
       },
     );
   }
@@ -77,7 +77,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     ) {
       if (actual.containsValue(value)) return null;
       return Rejection(
-        which: prefixFirst('does not contain value ', literal(value)),
+        which: () => prefixFirst('does not contain value ', literal(value)),
       );
     });
   }
@@ -92,11 +92,11 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         return ['contains a value that:', ...conditionDescription];
       },
       (actual) {
-        if (actual.isEmpty) return Rejection(actual: ['an empty map']);
+        if (actual.isEmpty) return Rejection(actual: () => ['an empty map']);
         for (var v in actual.values) {
           if (softCheck(v, valueCondition) == null) return null;
         }
-        return Rejection(which: ['Contains no matching value']);
+        return Rejection(which: () => ['Contains no matching value']);
       },
     );
   }
