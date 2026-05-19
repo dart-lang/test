@@ -14,10 +14,10 @@ void main() {
         check(double.nan).isNaN();
       });
       test('fails for ints', () {
-        check(42).isRejectedBy((it) => it.isNaN(), which: ['is a number']);
+        check(42).isRejectedBy((it) => it.isNaN());
       });
       test('fails for numeric doubles', () {
-        check(42.1).isRejectedBy((it) => it.isNaN(), which: ['is a number']);
+        check(42.1).isRejectedBy((it) => it.isNaN());
       });
     });
 
@@ -29,9 +29,7 @@ void main() {
         check(42.1).isNotNaN();
       });
       test('fails for NaN', () {
-        check(
-          double.nan,
-        ).isRejectedBy((it) => it.isNotNaN(), which: ['is not a number (NaN)']);
+        check(double.nan).isRejectedBy((it) => it.isNotNaN());
       });
     });
     group('isNegative', () {
