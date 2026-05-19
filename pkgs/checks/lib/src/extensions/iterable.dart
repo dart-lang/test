@@ -64,8 +64,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         return prefixFirst('contains ', literal(element));
       },
       (actual) {
-        if (actual.isEmpty)
+        if (actual.isEmpty) {
           return Rejection(actual: () => ['an empty iterable']);
+        }
         if (actual.contains(element)) return null;
         return Rejection(
           which: () => prefixFirst('does not contain ', literal(element)),
@@ -216,8 +217,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         return ['contains a value that:', ...conditionDescription];
       },
       (actual) {
-        if (actual.isEmpty)
+        if (actual.isEmpty) {
           return Rejection(actual: () => ['an empty iterable']);
+        }
         for (var e in actual) {
           if (softCheck(e, elementCondition) == null) return null;
         }
