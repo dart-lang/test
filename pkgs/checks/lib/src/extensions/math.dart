@@ -7,18 +7,18 @@ import '../../context.dart';
 extension NumChecks on Subject<num> {
   /// Expects that [num.isNaN] is true.
   void isNaN() {
-    context.expect(() => ['is not a number (NaN)'], (actual) {
-      if (actual.isNaN) return null;
-      return Rejection(which: ['is a number']);
-    });
+    context.expect(
+      () => ['is not a number (NaN)'],
+      (actual) => actual.isNaN ? null : Rejection(),
+    );
   }
 
   /// Expects that [num.isNaN] is false.
   void isNotNaN() {
-    context.expect(() => ['is a number (not NaN)'], (actual) {
-      if (!actual.isNaN) return null;
-      return Rejection(which: ['is not a number (NaN)']);
-    });
+    context.expect(
+      () => ['is a number (not NaN)'],
+      (actual) => actual.isNaN ? Rejection() : null,
+    );
   }
 
   /// Expects that [num.isNegative] is true.
