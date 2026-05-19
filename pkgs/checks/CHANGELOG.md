@@ -3,6 +3,9 @@
 - Require Dart 3.7
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.
+- Fix a bug when using asynchronous conditions with `mayEmit` or
+  `mayEmitMultiple`. Note that extensions using `nestAsync` should synchronously
+  forward exceptions from that call.
 
 ## 0.3.1
 
