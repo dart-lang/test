@@ -483,7 +483,9 @@ Uri _wsUriFor(Uri observatoryUrl) =>
 
 Uri _devtoolsUriFor(Uri serviceUri) {
   assert(serviceUri.isScheme('ws'));
-  return serviceUri.resolve('devtools/debugger').replace(
+  return serviceUri
+      .resolve('devtools/debugger')
+      .replace(
         scheme: 'http',
         queryParameters: {'uri': '$serviceUri'},
         fragment: '',
