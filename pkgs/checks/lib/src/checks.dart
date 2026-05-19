@@ -1072,5 +1072,5 @@ class AsyncConditionDisallowed implements Exception {
   final String flavor;
   AsyncConditionDisallowed._(this.flavor);
   @override
-  String toString() => '$flavor expectations cannot be used on a this subject';
+  String toString() => '$flavor expectations cannot be used on this subject';
 }
