@@ -497,7 +497,8 @@ Which: threw 'error' at:
         final queue = StreamQueue(Stream.value(Future.value(1)));
         await softCheckAsync<StreamQueue<Future<int>>>(
           queue,
-          (it) => it.mayEmitMultiple((it) => it.completes((it) => it.equals(1))),
+          (it) =>
+              it.mayEmitMultiple((it) => it.completes((it) => it.equals(1))),
         );
         await check(queue).isDone();
       });
