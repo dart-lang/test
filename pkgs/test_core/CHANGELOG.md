@@ -2,6 +2,7 @@
 
 * Support using the OS platform selector to configure browser tests.
 * Treat calls to `exit` as test failures in VM tests.
+* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 0.6.18
 
@@ -98,7 +99,6 @@
 * Fix dart2wasm tests on windows.
 * Increase SDK constraint to ^3.5.0.
 * Allow passing additional arguments to `dart compile wasm`.
-* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 0.6.5
 

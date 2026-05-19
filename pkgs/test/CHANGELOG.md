@@ -11,6 +11,7 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Treat calls to `exit` as test failures in VM tests.
+* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 1.31.1
 
@@ -126,7 +127,6 @@
 * Increase SDK constraint to ^3.5.0.
 * Support running Node.js tests compiled with dart2wasm.
 * Allow `firefox` or `firefox-bin` executable name on macOS.
-* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 1.25.8
 
