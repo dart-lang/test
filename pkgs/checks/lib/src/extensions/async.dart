@@ -18,8 +18,8 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [completionCondition] has optionally been checked.
-  Future<void> completes([AsyncCondition<T>? completionCondition]) async {
-    await context.nestAsync<T>(() => ['completes to a value'], (actual) async {
+  Future<void> completes([AsyncCondition<T>? completionCondition]) {
+    return context.nestAsync<T>(() => ['completes to a value'], (actual) async {
       try {
         return Extracted.value(await actual);
       } catch (e, st) {
@@ -79,10 +79,8 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [errorCondition] has optionally been checked.
-  Future<void> throws<E extends Object>([
-    AsyncCondition<E>? errorCondition,
-  ]) async {
-    await context.nestAsync<E>(
+  Future<void> throws<E extends Object>([AsyncCondition<E>? errorCondition]) {
+    return context.nestAsync<E>(
       () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
       (actual) async {
         try {
@@ -144,8 +142,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [emittedCondition] has optionally been checked.
-  Future<void> emits([AsyncCondition<T>? emittedCondition]) async {
-    await context.nestAsync<T>(() => ['emits a value'], (actual) async {
+  Future<void> emits([AsyncCondition<T>? emittedCondition]) {
+    return context.nestAsync<T>(() => ['emits a value'], (actual) async {
       if (!await actual.hasNext) {
         return Extracted.rejection(
           actual: ['a stream'],
@@ -184,8 +182,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// ended, and the [errorCondition] has optionally been checked.
   Future<void> emitsError<E extends Object>([
     AsyncCondition<E>? errorCondition,
-  ]) async {
-    await context.nestAsync<E>(
+  ]) {
+    return context.nestAsync<E>(
       () => ['emits an error${E == Object ? '' : ' of type $E'}'],
       (actual) async {
         if (!await actual.hasNext) {
@@ -327,15 +325,13 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation succeeds, consumes the same events from the source
   /// queue as the satisfied condition. If multiple conditions are satisfied,
   /// chooses the condition which consumed the most events.
-  Future<void> anyOf(
-    Iterable<AsyncCondition<StreamQueue<T>>> conditions,
-  ) async {
+  Future<void> anyOf(Iterable<AsyncCondition<StreamQueue<T>>> conditions) {
     conditions = conditions.toList();
     if (conditions.isEmpty) {
       throw ArgumentError('conditions may not be empty');
     }
     final descriptions = <Iterable<String>>[];
-    await context.expectAsync(
+    return context.expectAsync(
       () => descriptions.isEmpty
           ? ['satisfies any of ${conditions.length} conditions']
           : [
@@ -444,14 +440,20 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If a non-matching event is emitted, no events are consumed.
   /// If a matching event is emitted, that event is consumed.
-  Future<void> mayEmit(AsyncCondition<T> condition) async {
-    await context.expectAsync(
-      () => ['may emit a value that:', ...describe(condition)],
+  Future<void> mayEmit(AsyncCondition<T> condition) {
+    return context.expectAsync(
+      () {
+        try {
+          return ['may emit a value that:', ...describe(condition)];
+        } on AsyncConditionDisallowed {
+          return ['may emit a value satisfying an asynchronous condition'];
+        }
+      },
       (actual) async {
         if (!await actual.hasNext) return null;
         try {
           final value = await actual.peek;
-          if (softCheck(value, condition) == null) {
+          if (await softCheckAsync(value, condition) == null) {
             await actual.next;
           }
         } catch (_) {
@@ -470,14 +472,20 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// - A non-matching event is emitted.
   /// - An error is emitted.
   /// - The stream closes.
-  Future<void> mayEmitMultiple(AsyncCondition<T> condition) async {
-    await context.expectAsync(
-      () => ['may emit a value that:', ...describe(condition)],
+  Future<void> mayEmitMultiple(AsyncCondition<T> condition) {
+    return context.expectAsync(
+      () {
+        try {
+          return ['may emit a value that:', ...describe(condition)];
+        } on AsyncConditionDisallowed {
+          return ['may emit a value satisfying an asynchronous condition'];
+        }
+      },
       (actual) async {
         while (await actual.hasNext) {
           try {
             final value = await actual.peek;
-            if (softCheck(value, condition) == null) {
+            if (await softCheckAsync(value, condition) == null) {
               await actual.next;
             } else {
               return null;
