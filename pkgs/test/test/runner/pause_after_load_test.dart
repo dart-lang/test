@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-@OnPlatform({'windows': Skip('https://github.com/dart-lang/test/issues/1613')})
 library;
 
 import 'dart:async';
@@ -75,6 +74,7 @@ void main() {
       expect(nextLineFired, isFalse);
 
       test.stdin.writeln();
+      await test.stdin.flush();
 
       await expectLater(test.stdout, emitsThrough('loaded test 2!'));
       await expectLater(
@@ -104,6 +104,7 @@ void main() {
       expect(nextLineFired, isFalse);
 
       test.stdin.writeln();
+      await test.stdin.flush();
       await expectLater(
         test.stdout,
         emitsThrough(contains('+2: All tests passed!')),
@@ -164,6 +165,7 @@ void main() {
       expect(nextLineFired, isFalse);
 
       test.stdin.writeln();
+      await test.stdin.flush();
 
       await expectLater(test.stdout, emitsThrough('loaded test!'));
       await expectLater(
@@ -193,6 +195,7 @@ void main() {
       expect(nextLineFired, isFalse);
 
       test.stdin.writeln();
+      await test.stdin.flush();
       await expectLater(test.stdout, emitsThrough('loaded test!'));
       await expectLater(
         test.stdout,
@@ -221,6 +224,7 @@ void main() {
       expect(nextLineFired, isFalse);
 
       test.stdin.writeln();
+      await test.stdin.flush();
 
       await expectLater(
         test.stdout,
@@ -321,6 +325,7 @@ void main() {
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
+    await test.stdin.flush();
     await expectLater(
       test.stdout,
       emitsThrough(contains('+1: All tests passed!')),
@@ -378,6 +383,7 @@ void main() {
     expect(nextLineFired, isFalse);
 
     test.stdin.writeln();
+    await test.stdin.flush();
     await expectLater(
       test.stdout,
       emitsThrough(contains('+1: All tests passed!')),
