@@ -30,8 +30,10 @@ Actual: a List<dynamic> that:
     test('includes matching portions of actual when label is multiline', () {
       check(() {
         check({
-          'foo\nbar': [10],
-        })['foo\nbar'].first..isGreaterThan(0)..isLessThan(10);
+            'foo\nbar': [10],
+          })['foo\nbar'].first
+          ..isGreaterThan(0)
+          ..isLessThan(10);
       }).throwsFailure().equals('''
 Expected: a Map<String, List<int>> that:
   contains a value for 'foo
