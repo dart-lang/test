@@ -28,69 +28,23 @@ Actual: a List<dynamic> that:
     });
 
     test('includes matching portions of actual when label is multiline', () {
-      final largeKey = Iterable.generate(30, (i) => i).toList();
       check(() {
         check({
-          largeKey: [1],
-        })[largeKey].first.identicalTo(2);
+          'foo\nbar': [10],
+        })['foo\nbar'].first..isGreaterThan(0)..isLessThan(10);
       }).throwsFailure().equals('''
-Expected: a Map<List<int>, List<int>> that:
-  contains a value for [0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  ...] that:
+Expected: a Map<String, List<int>> that:
+  contains a value for 'foo
+  bar' that:
     has first element that:
-      is identical to <2>
-Actual: a Map<List<int>, List<int>> that:
-  contains a value for [0,
-  1,
-  2,
-  3,
-  4,
-  5,
-  6,
-  7,
-  8,
-  9,
-  10,
-  11,
-  12,
-  13,
-  14,
-  15,
-  16,
-  17,
-  18,
-  19,
-  20,
-  21,
-  22,
-  23,
-  ...] that:
+      is greater than <0>
+      is less than <10>
+Actual: a Map<String, List<int>> that:
+  contains a value for 'foo
+  bar' that:
     has first element that:
-    Actual: <1>
-    Which: is not identical''');
+    Actual: <10>
+    Which: is not less than <10>''');
     });
 
     test('include a reason when provided', () {
