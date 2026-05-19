@@ -11,16 +11,16 @@ void main() {
     fake = _FakeSample();
   });
   test('method invocation', () {
-    expect(() => fake.f(), throwsA(TypeMatcher<UnimplementedError>()));
+    expect(() => fake.f(), throwsA(const TypeMatcher<UnimplementedError>()));
   });
   test('getter', () {
-    expect(() => fake.x, throwsA(TypeMatcher<UnimplementedError>()));
+    expect(() => fake.x, throwsA(const TypeMatcher<UnimplementedError>()));
   });
   test('setter', () {
-    expect(() => fake.x = 0, throwsA(TypeMatcher<UnimplementedError>()));
+    expect(() => fake.x = 0, throwsA(const TypeMatcher<UnimplementedError>()));
   });
   test('operator', () {
-    expect(() => fake + 1, throwsA(TypeMatcher<UnimplementedError>()));
+    expect(() => fake + 1, throwsA(const TypeMatcher<UnimplementedError>()));
   });
 }
 

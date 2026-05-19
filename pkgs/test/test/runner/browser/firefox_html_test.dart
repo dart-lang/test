@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('firefox')
+library;
 
 import 'package:test/src/runner/browser/dom.dart' as dom;
 import 'package:test/test.dart';

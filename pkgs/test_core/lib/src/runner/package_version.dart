@@ -18,6 +18,6 @@ Future<String> get rootPackageLanguageVersionComment =>
 final _rootPackageLanguageVersionComment = DetachingFuture(() async {
   var packageConfig = await loadPackageConfigUri(await packageConfigUri);
   var rootPackage = packageConfig.packageOf(Uri.file(p.absolute('foo.dart')));
-  if (rootPackage == null) return '';
+  if (rootPackage == null) return '// <unknown-language-version>';
   return '// @dart=${rootPackage.languageVersion}';
 }());

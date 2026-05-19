@@ -29,14 +29,14 @@ thought of as frontend functions as well.
 
 The frontend communicates with the backend using zone-scoped getters.
 [`Invoker.current`][Invoker] provides access to the current test case to
-built-in matchers like [`completion()`][completion], for example to control when
+matchers like [`completion()`][completion], for example to control when
 it completes. Structural functions use [`Declarer.current`][Declarer] to
 gradually build up an in-memory representation of a test suite. The runner is in
 charge of setting up these variables, but the frontend never communicates with
 the runner directly.
 
 [Invoker]: https://github.com/dart-lang/test/blob/master/lib/src/backend/invoker.dart
-[completion]: https://pub.dev/documentation/test_api/latest/test_api/completion.html
+[completion]: https://pub.dev/documentation/matcher/latest/expect/completion.html
 [Declarer]: https://github.com/dart-lang/test/blob/master/lib/src/backend/declarer.dart
 
 ### Backend

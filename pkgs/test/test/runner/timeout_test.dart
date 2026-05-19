@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -29,9 +30,12 @@ void main() {
 
     var test = await runTest(['test.dart']);
     expect(
-        test.stdout,
-        containsInOrder(
-            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
     await test.shouldExit(1);
   });
 
@@ -50,9 +54,12 @@ void main() {
 
     var test = await runTest(['--timeout=0s', 'test.dart']);
     expect(
-        test.stdout,
-        containsInOrder(
-            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
     await test.shouldExit(1);
   });
 
@@ -75,17 +82,17 @@ void main() {
 
     var test = await runTest(['--timeout=400ms', 'test.dart']);
     expect(
-        test.stdout,
-        containsInOrder([
-          'Test timed out after 0.4 seconds.',
-          'Test timed out after 0.4 seconds.',
-          '+1: All tests passed!'
-        ]));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0.4 seconds.',
+        'Test timed out after 0.4 seconds.',
+        '+1: All tests passed!',
+      ]),
+    );
     await test.shouldExit(0);
   });
 
-  test('the --timeout flag applies on top of the default 30s timeout',
-      () async {
+  test('the --timeout flag applies on top of the default 30s timeout', () async {
     await d.file('test.dart', '''
 import 'dart:async';
 
@@ -106,9 +113,12 @@ void main() {
     // test to fail.
     var test = await runTest(['--timeout=0.016x', 'test.dart']);
     expect(
-        test.stdout,
-        containsInOrder(
-            ['Test timed out after 0.4 seconds.', '-1: Some tests failed.']));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0.4 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
     await test.shouldExit(1);
   });
 
@@ -131,9 +141,12 @@ void main() {
 
     var test = await runTest(['--timeout=50ms', 'test.dart']);
     expect(
-        test.stdout,
-        containsInOrder(
-            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
     await test.shouldExit(1);
   });
 
@@ -156,9 +169,12 @@ void main() {
 
     var test = await runTest(['--timeout=50ms', 'test.dart']);
     expect(
-        test.stdout,
-        containsInOrder(
-            ['Test timed out after 0 seconds.', '-1: Some tests failed.']));
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0 seconds.',
+        '-1: Some tests failed.',
+      ]),
+    );
     await test.shouldExit(1);
   });
 

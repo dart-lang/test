@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 @TestOn('vm')
 @Tags(['firefox'])
+library;
 
 import 'package:test/src/runner/browser/firefox.dart';
 import 'package:test/src/runner/executable_settings.dart';
@@ -41,15 +42,22 @@ webSocket.addEventListener("open", function() {
   });
 
   test('reports an error in onExit', () {
-    var firefox = Firefox('http://dart-lang.org',
-        settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+    var firefox = Firefox(
+      Uri.https('dart.dev'),
+      settings: ExecutableSettings(
+        linuxExecutable: '_does_not_exist',
+        macOSExecutable: '_does_not_exist',
+        windowsExecutable: '_does_not_exist',
+      ),
+    );
     expect(
-        firefox.onExit,
-        throwsA(isApplicationException(
-            startsWith('Failed to run Firefox: $noSuchFileMessage'))));
+      firefox.onExit,
+      throwsA(
+        isApplicationException(
+          startsWith('Failed to run Firefox: $noSuchFileMessage'),
+        ),
+      ),
+    );
   });
 
   test('can run successful tests', () async {
@@ -80,6 +88,22 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test('can override firefox location with FIREFOX_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''').create();
+    var test = await runTest(
+      ['-p', 'firefox', 'test.dart'],
+      environment: {'FIREFOX_EXECUTABLE': '/some/bad/path'},
+    );
+    expect(test.stdout, emitsThrough(contains('Failed to run Firefox:')));
+    await test.shouldExit(1);
+  });
+
   test('not impacted by CHROME_EXECUTABLE var', () async {
     await d.file('test.dart', '''
 import 'dart:html';
@@ -92,8 +116,10 @@ void main() {
   });
 }
 ''').create();
-    var test = await runTest(['-p', 'firefox', 'test.dart'],
-        environment: {'CHROME_EXECUTABLE': '/some/bad/path'});
+    var test = await runTest(
+      ['-p', 'firefox', 'test.dart'],
+      environment: {'CHROME_EXECUTABLE': '/some/bad/path'},
+    );
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });

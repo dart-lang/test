@@ -13,7 +13,8 @@ import 'platform.dart';
 /// **Do not access this outside the test package**.
 final platformCallbacks =
     UnmodifiableMapView<Runtime, FutureOr<PlatformPlugin> Function()>(
-        _platformCallbacks);
+      _platformCallbacks,
+    );
 final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 
 /// **Do not call this function without express permission from the test package
@@ -24,12 +25,14 @@ final _platformCallbacks = <Runtime, FutureOr<PlatformPlugin> Function()>{};
 /// This globally registers a plugin for all [Loader]s. When the runner first
 /// requests that a suite be loaded for one of the given runtimes, this will
 /// call [plugin] to load the platform plugin. It may return either a
-/// [PlatformPlugin] or a [Future<PlatformPlugin>]. That plugin is then
+/// [PlatformPlugin] or a `Future<PlatformPlugin>`. That plugin is then
 /// preserved and used to load all suites for all matching runtimes.
 ///
 /// This overwrites the default plugins for those runtimes.
 void registerPlatformPlugin(
-    Iterable<Runtime> runtimes, FutureOr<PlatformPlugin> Function() plugin) {
+  Iterable<Runtime> runtimes,
+  FutureOr<PlatformPlugin> Function() plugin,
+) {
   for (var runtime in runtimes) {
     _platformCallbacks[runtime] = plugin;
   }

@@ -40,6 +40,7 @@ extension RejectionChecks<T> on Subject<T> {
     } else {
       rejection
           .has((r) => r.actual, 'actual')
+          .returnsNormally()
           .context
           .expect(() => ['is left default'], (_) => null);
     }
@@ -58,10 +59,10 @@ extension RejectionChecks<T> on Subject<T> {
     Condition<T> condition, {
     Iterable<String>? actual,
     Iterable<String>? which,
-  }) async {
+  }) {
     late T actualValue;
     var didRunCallback = false;
-    await context.nestAsync<Rejection>(
+    return context.nestAsync<Rejection>(
       () => ['does not meet an async condition with a Rejection'],
       (value) async {
         actualValue = value;
@@ -78,7 +79,7 @@ extension RejectionChecks<T> on Subject<T> {
         }
         return Extracted.value(failure.rejection);
       },
-      LazyCondition((rejection) {
+      (rejection) {
         if (didRunCallback) {
           rejection
               .has((r) => r.actual, 'actual')
@@ -100,7 +101,7 @@ extension RejectionChecks<T> on Subject<T> {
               .returnsNormally()
               .deepEquals(which);
         }
-      }),
+      },
     );
   }
 }
@@ -115,24 +116,4 @@ extension ConditionChecks<T> on Subject<Condition<T>> {
     (condition) async => Extracted.value(await describeAsync<T>(condition)),
     descriptionCondition,
   );
-}
-
-/// A condition which can be defined at the time it is invoked instead of
-/// eagerly.
-///
-/// Allows basing the following condition in `isRejectedByAsync` on the actual
-/// value.
-class LazyCondition<T> implements Condition<T> {
-  final FutureOr<void> Function(Subject<T>) _apply;
-  LazyCondition(this._apply);
-
-  @override
-  void apply(Subject<T> subject) {
-    _apply(subject);
-  }
-
-  @override
-  Future<void> applyAsync(Subject<T> subject) async {
-    await _apply(subject);
-  }
 }

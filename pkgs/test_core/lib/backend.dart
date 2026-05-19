@@ -2,9 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@Deprecated('package:test_core is not intended for general use. '
-    'Please use package:test.')
-library test_core.backend;
+@Deprecated(
+  'package:test_core is not intended for general use. '
+  'Please use package:test.',
+)
+library;
 
 export 'package:test_api/backend.dart'
     show Compiler, Metadata, PlatformSelector, Runtime, SuitePlatform;

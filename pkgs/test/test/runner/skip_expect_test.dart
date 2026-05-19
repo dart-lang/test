@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -39,12 +40,13 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: skipped',
-            '  Skip expect: is failing',
-            '~1: All tests skipped.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: skipped',
+          '  Skip expect: is failing',
+          '~1: All tests skipped.',
+        ]),
+      );
       await test.shouldExit(0);
     });
 
@@ -60,12 +62,13 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: skipped',
-            '  Skip expect (1 is 2).',
-            '~1: All tests skipped.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: skipped',
+          '  Skip expect (1 is 2).',
+          '~1: All tests skipped.',
+        ]),
+      );
       await test.shouldExit(0);
     });
 
@@ -80,12 +83,13 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: skipped',
-            '  Skip expect (<2>).',
-            '~1: All tests skipped.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: skipped',
+          '  Skip expect (<2>).',
+          '~1: All tests skipped.',
+        ]),
+      );
       await test.shouldExit(0);
     });
 
@@ -103,15 +107,16 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: failing',
-            '  Skip expect (<2>).',
-            '+0 -1: failing [E]',
-            '  Expected: <2>',
-            '    Actual: <1>',
-            '+0 -1: Some tests failed.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: failing',
+          '  Skip expect (<2>).',
+          '+0 -1: failing [E]',
+          '  Expected: <2>',
+          '    Actual: <1>',
+          '+0 -1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     });
   });
@@ -130,12 +135,13 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: skipped',
-            '  some reason',
-            '~1: All tests skipped.',
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: skipped',
+          '  some reason',
+          '~1: All tests skipped.',
+        ]),
+      );
       await test.shouldExit(0);
     });
 
@@ -153,15 +159,16 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: failing',
-            '  some reason',
-            '+0 -1: failing [E]',
-            '  Expected: <2>',
-            '    Actual: <1>',
-            '+0 -1: Some tests failed.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: failing',
+          '  some reason',
+          '+0 -1: failing [E]',
+          '  Expected: <2>',
+          '    Actual: <1>',
+          '+0 -1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     });
 
@@ -192,16 +199,17 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: skip',
-            '+1: wait',
-            '+0 -1: skip',
-            'This test was marked as skipped after it had already completed.',
-            'Make sure to use a matching library which informs the test runner',
-            'of pending async work.',
-            '+1 -1: Some tests failed.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: skip',
+          '+1: wait',
+          '+0 -1: skip',
+          'This test was marked as skipped after it had already completed.',
+          'Make sure to use a matching library which informs the test runner',
+          'of pending async work.',
+          '+1 -1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     });
   });
@@ -234,16 +242,17 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '+0: skip',
-            '+1: wait',
-            '+0 -1: skip',
-            'This test was marked as skipped after it had already completed.',
-            'Make sure to use a matching library which informs the test runner',
-            'of pending async work.',
-            '+1 -1: Some tests failed.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '+0: skip',
+          '+1: wait',
+          '+0 -1: skip',
+          'This test was marked as skipped after it had already completed.',
+          'Make sure to use a matching library which informs the test runner',
+          'of pending async work.',
+          '+1 -1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     });
 
@@ -260,9 +269,12 @@ void main() {
 
       var test = await runTest(['test.dart']);
       expect(
-          test.stdout,
-          containsInOrder(
-              ['Invalid argument (skip)', '+0 -1: Some tests failed.']));
+        test.stdout,
+        containsInOrder([
+          'Invalid argument (skip)',
+          '+0 -1: Some tests failed.',
+        ]),
+      );
       await test.shouldExit(1);
     });
   });

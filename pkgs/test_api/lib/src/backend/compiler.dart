@@ -8,7 +8,7 @@ enum Compiler {
   dart2js('Dart2Js', 'dart2js'),
 
   /// Experimental Dart to Wasm compiler.
-  dart2wasm('Dart2WASM', 'dart2wasm'),
+  dart2wasm('Dart2Wasm', 'dart2wasm'),
 
   /// Compiles dart code to a native executable.
   exe('Exe', 'exe'),
@@ -41,8 +41,9 @@ enum Compiler {
   /// [Compiler].
   ///
   /// Note that custom [Compiler] implementations are not supported.
-  factory Compiler.deserialize(Object serialized) => builtIn
-      .firstWhere((compiler) => compiler.identifier == serialized as String);
+  factory Compiler.deserialize(Object serialized) => builtIn.firstWhere(
+    (compiler) => compiler.identifier == serialized as String,
+  );
 
   /// Converts [this] into a JSON-safe object that can be converted back to a
   /// [Compiler] using [Compiler.deserialize].
@@ -50,4 +51,10 @@ enum Compiler {
 
   @override
   String toString() => name;
+}
+
+extension CompileTarget on Compiler {
+  bool get isJS => this == Compiler.dart2js;
+
+  bool get isWasm => this == Compiler.dart2wasm;
 }

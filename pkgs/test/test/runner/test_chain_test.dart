@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'dart:convert';
 
@@ -32,12 +33,13 @@ void main() {
   test('folds packages contained in the except list', () async {
     await d
         .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'fold_stack_frames': {
-                'except': ['stream_channel']
-              }
-            }))
+          'dart_test.yaml',
+          jsonEncode({
+            'fold_stack_frames': {
+              'except': ['stream_channel'],
+            },
+          }),
+        )
         .create();
     var test = await runTest(['test.dart']);
     expect(test.stdoutStream(), neverEmits(contains('package:stream_channel')));
@@ -54,12 +56,13 @@ void main() {
   test('folds all packages not contained in the only list', () async {
     await d
         .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'fold_stack_frames': {
-                'only': ['test']
-              }
-            }))
+          'dart_test.yaml',
+          jsonEncode({
+            'fold_stack_frames': {
+              'only': ['test'],
+            },
+          }),
+        )
         .create();
     var test = await runTest(['test.dart']);
     expect(test.stdoutStream(), neverEmits(contains('package:stream_channel')));
@@ -69,12 +72,13 @@ void main() {
   test('does not fold packages in the only list', () async {
     await d
         .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'fold_stack_frames': {
-                'only': ['test_api']
-              }
-            }))
+          'dart_test.yaml',
+          jsonEncode({
+            'fold_stack_frames': {
+              'only': ['test_api'],
+            },
+          }),
+        )
         .create();
     var test = await runTest(['test.dart']);
     expect(test.stdoutStream(), emitsThrough(contains('package:test_api')));

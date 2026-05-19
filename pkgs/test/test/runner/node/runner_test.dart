@@ -4,7 +4,12 @@
 
 @TestOn('vm')
 @Tags(['node'])
+library;
 
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -27,21 +32,63 @@ final _failure = '''
   }
 ''';
 
+({int major, String full})? _nodeVersion;
+
+({int major, String full}) _readNodeVersion() {
+  final process = Process.runSync(
+    ExecutableSettings(
+      linuxExecutable: 'node',
+      macOSExecutable: 'node',
+      windowsExecutable: 'node.exe',
+    ).executable,
+    ['--version'],
+    stdoutEncoding: utf8,
+  );
+  if (process.exitCode != 0) {
+    throw const OSError('Could not run node --version');
+  }
+
+  final version = RegExp(r'v(\d+)\..*');
+  final parsed = version.firstMatch(process.stdout as String)!;
+  return (major: int.parse(parsed.group(1)!), full: process.stdout);
+}
+
+String? skipBelowMajorNodeVersion(int minimumMajorVersion) {
+  final (:major, :full) = _nodeVersion ??= _readNodeVersion();
+  if (major < minimumMajorVersion) {
+    return 'This test requires Node $minimumMajorVersion.x or later, '
+        'but is running on $full';
+  }
+
+  return null;
+}
+
+String? skipAboveMajorNodeVersion(int maximumMajorVersion) {
+  final (:major, :full) = _nodeVersion ??= _readNodeVersion();
+  if (major > maximumMajorVersion) {
+    return 'This test requires Node $maximumMajorVersion.x or older, '
+        'but is running on $full';
+  }
+
+  return null;
+}
+
 void main() {
   setUpAll(precompileTestExecutable);
 
   group('fails gracefully if', () {
     test('a test file fails to compile', () async {
-      await d.file('test.dart', 'invalid Dart file').create();
+      await d.file('test.dart', 'void main() {invalid Dart}').create();
       var test = await runTest(['-p', 'node', 'test.dart']);
 
       expect(
-          test.stdout,
-          containsInOrder([
-            'Error: Compilation failed.',
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": dart2js failed.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          'Error: Compilation failed.',
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": dart2js failed.',
+        ]),
+      );
       await test.shouldExit(1);
     });
 
@@ -50,11 +97,12 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": oh no'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": oh no',
+        ]),
+      );
       await test.shouldExit(1);
     });
 
@@ -63,11 +111,12 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": No top-level main() function defined.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": No top-level main() function defined.',
+        ]),
+      );
       await test.shouldExit(1);
     }, skip: 'https://github.com/dart-lang/test/issues/894');
 
@@ -76,11 +125,12 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": Top-level main getter is not a function.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Top-level main getter is not a function.',
+        ]),
+      );
       await test.shouldExit(1);
     }, skip: 'https://github.com/dart-lang/test/issues/894');
 
@@ -89,11 +139,12 @@ void main() {
 
       var test = await runTest(['-p', 'node', 'test.dart']);
       expect(
-          test.stdout,
-          containsInOrder([
-            '-1: compiling test.dart [E]',
-            'Failed to load "test.dart": Top-level main() function takes arguments.'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Top-level main() function takes arguments.',
+        ]),
+      );
       await test.shouldExit(1);
     });
   });
@@ -115,6 +166,20 @@ void main() {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
       await test.shouldExit(0);
     });
+
+    test('compiled with dart2wasm', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runTest([
+        '-p',
+        'node',
+        '--compiler',
+        'dart2wasm',
+        'test.dart',
+      ]);
+
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    }, skip: skipBelowMajorNodeVersion(22));
   });
 
   test('defines a node environment constant', () async {
@@ -147,10 +212,75 @@ void main() {
         }
       ''').create();
 
-    var test = await runTest(['-p', 'node', '-p', 'vm', 'test.dart']);
+    var test = await runTest([
+      '-p',
+      'node',
+      '-p',
+      'vm',
+      '-c',
+      'dart2js',
+      'test.dart',
+    ]);
     expect(test.stdout, emitsThrough(contains('+1 -1: Some tests failed.')));
     await test.shouldExit(1);
   });
+
+  test('runs failing tests that fail only on node (with dart2wasm)', () async {
+    await d.file('test.dart', '''
+        import 'package:path/path.dart' as p;
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {
+            if (const bool.fromEnvironment("node")) {
+              throw TestFailure("oh no");
+            }
+          });
+        }
+      ''').create();
+
+    var test = await runTest([
+      '-p',
+      'node',
+      '-p',
+      'vm',
+      '-c',
+      'dart2js',
+      '-c',
+      'dart2wasm',
+      'test.dart',
+    ]);
+    expect(test.stdout, emitsThrough(contains('+1 -2: Some tests failed.')));
+    await test.shouldExit(1);
+  }, skip: skipBelowMajorNodeVersion(22));
+
+  test('gracefully handles wasm errors on old node versions', () async {
+    // Old Node.JS versions can't read the WebAssembly modules emitted by
+    // dart2wasm. The node process exits before connecting to the server
+    // opened by the test runner, leading to timeouts. So, this is a
+    // regression test for https://github.com/dart-lang/test/pull/2259#issuecomment-2307868442
+    await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {
+            // Should pass on newer node versions
+          });
+        }
+      ''').create();
+
+    var test = await runTest(['-p', 'node', '-c', 'dart2wasm', 'test.dart']);
+    expect(
+      test.stdout,
+      emitsInOrder([
+        emitsThrough(
+          contains('Node exited before connecting to the test channel.'),
+        ),
+        emitsThrough(contains('-1: Some tests failed.')),
+      ]),
+    );
+    await test.shouldExit(1);
+  }, skip: skipAboveMajorNodeVersion(21));
 
   test('forwards prints from the Node test', () async {
     await d.file('test.dart', '''
@@ -174,17 +304,17 @@ void main() {
   test('forwards raw JS prints from the Node test', () async {
     await d.file('test.dart', '''
       import 'dart:async';
-
-      import 'package:js/js.dart';
+      import 'dart:js_interop';
+      
       import 'package:test/test.dart';
-
-      @JS("console.log")
-      external void log(value);
-
+      
+      @JS('console.log')
+      external void log(JSString value);
+      
       void main() {
-        test("test", () {
-          log("Hello,");
-          return Future(() => log("world!"));
+        test('test', () {
+          log('Hello,'.toJS);
+          return Future(() => log('world!'.toJS));
         });
       }
     ''').create();
@@ -198,45 +328,55 @@ void main() {
     await d.file('test.dart', _failure).create();
 
     var test = await runTest(['-p', 'node', '--verbose-trace', 'test.dart']);
-    expect(test.stdout,
-        containsInOrder([' main.<fn>', 'package:test', 'dart:async/zone.dart']),
-        skip: 'https://github.com/dart-lang/sdk/issues/41949');
+    expect(
+      test.stdout,
+      containsInOrder([' main.<fn>', 'package:test', 'dart:async/zone.dart']),
+      skip: 'https://github.com/dart-lang/sdk/issues/41949',
+    );
     await test.shouldExit(1);
   });
 
-  test("doesn't dartify stack traces for JS-compiled tests with --js-trace",
-      () async {
-    await d.file('test.dart', _failure).create();
+  test(
+    "doesn't dartify stack traces for JS-compiled tests with --js-trace",
+    () async {
+      await d.file('test.dart', _failure).create();
 
-    var test = await runTest(
-        ['-p', 'node', '--verbose-trace', '--js-trace', 'test.dart']);
-    expect(test.stdoutStream(), neverEmits(endsWith(' main.<fn>')));
-    expect(test.stdoutStream(), neverEmits(contains('package:test')));
-    expect(test.stdoutStream(), neverEmits(contains('dart:async/zone.dart')));
-    expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
-    await test.shouldExit(1);
-  });
+      var test = await runTest([
+        '-p',
+        'node',
+        '--verbose-trace',
+        '--js-trace',
+        'test.dart',
+      ]);
+      expect(test.stdoutStream(), neverEmits(endsWith(' main.<fn>')));
+      expect(test.stdoutStream(), neverEmits(contains('package:test')));
+      expect(test.stdoutStream(), neverEmits(contains('dart:async/zone.dart')));
+      expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
+      await test.shouldExit(1);
+    },
+  );
 
   test('supports node_modules in the package directory', () async {
     await d.dir('node_modules', [
-      d.dir('my_module', [d.file('index.js', 'module.exports.value = 12;')])
+      d.dir('my_module', [d.file('index.js', 'module.exports.value = 12;')]),
     ]).create();
 
     await d.file('test.dart', '''
-      import 'package:js/js.dart';
+      import 'dart:js_interop';
+      
       import 'package:test/test.dart';
-
+      
       @JS()
       external MyModule require(String name);
-
+      
       @JS()
-      class MyModule {
+      extension type MyModule(JSObject _) implements JSObject {
         external int get value;
       }
-
+      
       void main() {
-        test("can load from a module", () {
-          expect(require("my_module").value, equals(12));
+        test('can load from a module', () {
+          expect(require('my_module').value, equals(12));
         });
       }
     ''').create();

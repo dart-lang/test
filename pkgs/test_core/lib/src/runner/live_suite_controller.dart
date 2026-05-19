@@ -66,16 +66,17 @@ class LiveSuiteController {
   /// The future group that backs [LiveSuite.onComplete].
   ///
   /// This contains all the futures from tests that are run in this suite.
-  final _onCompleteGroup = FutureGroup();
+  final _onCompleteGroup = FutureGroup<void>();
 
   /// The completer that backs [LiveSuite.onClose].
   ///
   /// This is completed when the live suite is closed.
-  final _onCloseCompleter = Completer();
+  final _onCloseCompleter = Completer<void>();
 
   /// The controller for [LiveSuite.onTestStarted].
-  final _onTestStartedController =
-      StreamController<LiveTest>.broadcast(sync: true);
+  final _onTestStartedController = StreamController<LiveTest>.broadcast(
+    sync: true,
+  );
 
   /// The set that backs [LiveTest.passed].
   final _passed = <LiveTest>{};
@@ -144,11 +145,11 @@ class LiveSuiteController {
 
   /// Closes the underlying suite.
   Future close() => _closeMemo.runOnce(() async {
-        try {
-          await _suite.close();
-        } finally {
-          _onCloseCompleter.complete();
-        }
-      });
-  final _closeMemo = AsyncMemoizer();
+    try {
+      await _suite.close();
+    } finally {
+      _onCloseCompleter.complete();
+    }
+  });
+  final _closeMemo = AsyncMemoizer<void>();
 }

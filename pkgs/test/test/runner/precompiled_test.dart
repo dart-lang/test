@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @OnPlatform({'windows': Skip('https://github.com/dart-lang/test/issues/1617')})
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -22,50 +23,37 @@ void main() {
   setUpAll(precompileTestExecutable);
 
   group('browser tests', () {
-    setUp(() async {
-      await d.file('to_precompile.dart', '''
-        import "package:test/bootstrap/browser.dart";
-        import "package:test/test.dart";
-
-        main(_) {
-          internalBootstrapBrowserTest(() => () => test("success", () {}));
-        }
-      ''').create();
-
-      await d.dir('precompiled', [
-        d.file('test.html', '''
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>test Test</title>
-            <script src="test.dart.browser_test.dart.js"></script>
-          </head>
-          </html>
-        ''')
-      ]).create();
-
-      var dart2js = await TestProcess.start(
-          Platform.resolvedExecutable,
-          [
-            'compile',
-            'js',
-            ...Platform.executableArguments,
-            '--packages=${(await Isolate.packageConfig)!.toFilePath()}',
-            'to_precompile.dart',
-            '--out=precompiled/test.dart.browser_test.dart.js'
-          ],
-          workingDirectory: d.sandbox);
-      await dart2js.shouldExit(0);
-
-      await d.file('test.dart', 'invalid dart}').create();
+    setUpAll(() async {
+      await _precompileBrowserTest('test.dart');
     });
 
-    test('run a precompiled version of a test rather than recompiling',
-        () async {
-      var test = await runTest(
-          ['-p', 'chrome', '--precompiled=precompiled/', 'test.dart']);
-      expect(test.stdout,
-          containsInOrder(['+0: success', '+1: All tests passed!']));
+    test(
+      'run a precompiled version of a test rather than recompiling',
+      () async {
+        var test = await runTest([
+          '-p',
+          'chrome',
+          '--precompiled=precompiled/',
+          'test.dart',
+        ]);
+        expect(
+          test.stdout,
+          containsInOrder(['+0: success', '+1: All tests passed!']),
+        );
+        await test.shouldExit(0);
+      },
+    );
+
+    test('run two precompiled tests', () async {
+      await _precompileBrowserTest('test_2.dart');
+      var test = await runTest(concurrency: 2, [
+        '-p',
+        'chrome',
+        '--precompiled=precompiled/',
+        'test.dart',
+        'test_2.dart',
+      ]);
+      expect(test.stdout, containsInOrder(['+2: All tests passed!']));
       await test.shouldExit(0);
     });
 
@@ -76,14 +64,15 @@ void main() {
         '--precompiled=precompiled/',
         'test.dart',
         '-r',
-        'json'
+        'json',
       ]);
       expect(
-          test.stdout,
-          containsInOrder([
-            '{"testID":3,"result":"success"',
-            '{"success":true,"type":"done"'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '{"testID":3,"result":"success"',
+          '{"success":true,"type":"done"',
+        ]),
+      );
       await test.shouldExit(0);
     });
   }, tags: const ['chrome']);
@@ -99,43 +88,47 @@ void main() {
             internalBootstrapNodeTest(() => () => test("success", () {
               expect(true, isTrue);
             }));
-          }''')
+          }'''),
       ]).create();
       await _writePackagesFile();
 
       var jsPath = p.join(d.sandbox, 'test', 'test.dart.node_test.dart.js');
-      var dart2js = await TestProcess.start(
-          Platform.resolvedExecutable,
-          [
-            'compile',
-            'js',
-            '--packages=${await Isolate.packageConfig}',
-            p.join('test', 'test.dart'),
-            '--out=$jsPath',
-          ],
-          workingDirectory: d.sandbox);
+      var dart2js = await TestProcess.start(Platform.resolvedExecutable, [
+        'compile',
+        'js',
+        '--packages=${await Isolate.packageConfig}',
+        p.join('test', 'test.dart'),
+        '--out=$jsPath',
+      ], workingDirectory: d.sandbox);
       await dart2js.shouldExit(0);
 
       var jsFile = File(jsPath);
       await jsFile.writeAsString(
-          preamble.getPreamble(minified: true) + await jsFile.readAsString());
+        preamble.getPreamble(minified: true) + await jsFile.readAsString(),
+      );
 
-      await d.dir('test', [d.file('test.dart', 'invalid dart}')]).create();
+      await d.dir('test', [
+        d.file('test.dart', 'void main() {invalid dart}'),
+      ]).create();
     });
 
-    test('run a precompiled version of a test rather than recompiling',
-        () async {
-      var test = await runTest([
-        '-p',
-        'node',
-        '--precompiled',
-        d.sandbox,
-        p.join('test', 'test.dart')
-      ]);
-      expect(test.stdout,
-          containsInOrder(['+0: success', '+1: All tests passed!']));
-      await test.shouldExit(0);
-    });
+    test(
+      'run a precompiled version of a test rather than recompiling',
+      () async {
+        var test = await runTest([
+          '-p',
+          'node',
+          '--precompiled',
+          d.sandbox,
+          p.join('test', 'test.dart'),
+        ]);
+        expect(
+          test.stdout,
+          containsInOrder(['+0: success', '+1: All tests passed!']),
+        );
+        await test.shouldExit(0);
+      },
+    );
 
     test('can use the json reporter', () async {
       var test = await runTest([
@@ -145,14 +138,15 @@ void main() {
         d.sandbox,
         p.join('test', 'test.dart'),
         '-r',
-        'json'
+        'json',
       ]);
       expect(
-          test.stdout,
-          containsInOrder([
-            '{"testID":3,"result":"success"',
-            '{"success":true,"type":"done"'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '{"testID":3,"result":"success"',
+          '{"success":true,"type":"done"',
+        ]),
+      );
       await test.shouldExit(0);
     });
   }, tags: const ['node']);
@@ -181,10 +175,16 @@ void main() {
     });
 
     test('run in the precompiled directory', () async {
-      var test = await runTest(
-          ['-p', 'vm', '--precompiled=${d.sandbox}', 'test/test.dart']);
-      expect(test.stdout,
-          containsInOrder(['+0: true is true', '+1: All tests passed!']));
+      var test = await runTest([
+        '-p',
+        'vm',
+        '--precompiled=${d.sandbox}',
+        'test/test.dart',
+      ]);
+      expect(
+        test.stdout,
+        containsInOrder(['+0: true is true', '+1: All tests passed!']),
+      );
       await test.shouldExit(0);
     });
 
@@ -193,7 +193,7 @@ void main() {
       var snapshotProcess = await runDart([
         '--snapshot_kind=script',
         '--snapshot=test/test.dart.vm_test.vm.app.dill',
-        'test/test.dart.vm_test.dart'
+        'test/test.dart.vm_test.dart',
       ]);
       await snapshotProcess.shouldExit(0);
 
@@ -202,14 +202,21 @@ void main() {
       var testFile = File(p.join(d.sandbox, 'test', 'test.dart'));
       expect(await testFile.exists(), isTrue);
       var originalContent = await testFile.readAsString();
-      await testFile
-          .writeAsString(originalContent.replaceAll('isTrue', 'isFalse'));
+      await testFile.writeAsString(
+        originalContent.replaceAll('isTrue', 'isFalse'),
+      );
 
       // Actually invoke the test with the dill file.
-      var testProcess = await runTest(
-          ['-p', 'vm', '--precompiled=${d.sandbox}', 'test/test.dart']);
-      expect(testProcess.stdout,
-          containsInOrder(['+0: true is true', '+1: All tests passed!']));
+      var testProcess = await runTest([
+        '-p',
+        'vm',
+        '--precompiled=${d.sandbox}',
+        'test/test.dart',
+      ]);
+      expect(
+        testProcess.stdout,
+        containsInOrder(['+0: true is true', '+1: All tests passed!']),
+      );
       await testProcess.shouldExit(0);
     });
 
@@ -220,14 +227,15 @@ void main() {
         '--precompiled=${d.sandbox}',
         'test/test.dart',
         '-r',
-        'json'
+        'json',
       ]);
       expect(
-          test.stdout,
-          containsInOrder([
-            '{"testID":3,"result":"success"',
-            '{"success":true,"type":"done"'
-          ]));
+        test.stdout,
+        containsInOrder([
+          '{"testID":3,"result":"success"',
+          '{"success":true,"type":"done"',
+        ]),
+      );
       await test.shouldExit(0);
     });
   });
@@ -237,4 +245,40 @@ Future<void> _writePackagesFile() async {
   var config = (await findPackageConfig(Directory.current))!;
   await d.dir('.dart_tool').create();
   await savePackageConfig(config, Directory(d.sandbox));
+}
+
+Future<void> _precompileBrowserTest(String testPath) async {
+  var tmpDir = await Directory.systemTemp.createTemp('browser_test');
+  var file = File.fromUri(tmpDir.uri.resolve('precompiled.dart'));
+  await file.writeAsString('''
+        import "package:test/bootstrap/browser.dart";
+        import "package:test/test.dart";
+
+        main(_) {
+          internalBootstrapBrowserTest(() => () => test("success", () {}));
+        }
+      ''');
+
+  await d.dir('precompiled', [
+    d.file(p.setExtension(testPath, 'html'), '''
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>test Test</title>
+            <script src="$testPath.browser_test.dart.js"></script>
+          </head>
+          </html>
+        '''),
+  ]).create();
+
+  var dart2js = await TestProcess.start(Platform.resolvedExecutable, [
+    'compile',
+    'js',
+    '--packages=${(await Isolate.packageConfig)!.toFilePath()}',
+    file.path,
+    '--out=precompiled/$testPath.browser_test.dart.js',
+  ], workingDirectory: d.sandbox);
+  await dart2js.shouldExit(0);
+
+  await d.file(testPath, 'void main() {invalid dart}').create();
 }

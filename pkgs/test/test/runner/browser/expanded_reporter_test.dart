@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -25,7 +26,7 @@ void main() {
 
     var test = await runTest([
       '-r', 'expanded', '-p', 'chrome', '-p', 'vm', '-j', '1', //
-      'test.dart'
+      'test.dart',
     ]);
 
     expect(test.stdoutStream(), emitsThrough(contains('[VM, Kernel]')));

@@ -20,11 +20,14 @@ class ExecutableSettings {
   /// looked up on the system path. It may not be relative.
   final String? _linuxExecutable;
 
-  /// The path to the executable on Mac OS.
+  /// Potential commands to execute on Mac OS to launch this executable.
   ///
-  /// This may be an absolute path or a basename, in which case it will be
-  /// looked up on the system path. It may not be relative.
-  final String? _macOSExecutable;
+  /// The values may be an absolute path, or a basename.
+  /// The chosen command will be the first value from this list which either is
+  /// a full path that exists, or is a basename. When a basename is included it
+  /// should always be at the end of the list because it will always terminate
+  /// the search through the list. Relative paths are not allowed.
+  final List<String>? _macOSExectuables;
 
   /// The path to the executable on Windows.
   ///
@@ -45,7 +48,25 @@ class ExecutableSettings {
       if (envVariable != null) return envVariable;
     }
 
-    if (Platform.isMacOS) return _macOSExecutable!;
+    if (Platform.isMacOS) {
+      if (_macOSExectuables != null) {
+        for (final path in _macOSExectuables) {
+          if (p.basename(path) == path) return path;
+          if (p.isAbsolute(path)) {
+            if (File(path).existsSync()) return path;
+          } else {
+            throw ArgumentError(
+              'Mac OS executable must be a basename or an absolute path.'
+              ' Got relative path: $path',
+            );
+          }
+        }
+      }
+      throw ArgumentError(
+        'Could not find a command basename or an existing '
+        'path in $_macOSExectuables',
+      );
+    }
     if (!Platform.isWindows) return _linuxExecutable!;
     final windowsExecutable = _windowsExecutable!;
     if (p.isAbsolute(windowsExecutable)) return windowsExecutable;
@@ -56,7 +77,7 @@ class ExecutableSettings {
     var prefixes = [
       Platform.environment['LOCALAPPDATA'],
       Platform.environment['PROGRAMFILES'],
-      Platform.environment['PROGRAMFILES(X86)']
+      Platform.environment['PROGRAMFILES(X86)'],
     ];
 
     for (var prefix in prefixes) {
@@ -69,8 +90,9 @@ class ExecutableSettings {
     // If we can't find a path that works, return one that doesn't. This will
     // cause an "executable not found" error to surface.
     return p.join(
-        prefixes.firstWhere((prefix) => prefix != null, orElse: () => '.')!,
-        _windowsExecutable);
+      prefixes.firstWhere((prefix) => prefix != null, orElse: () => '.')!,
+      _windowsExecutable,
+    );
   }
 
   /// Whether to invoke the browser in headless mode.
@@ -93,7 +115,9 @@ class ExecutableSettings {
         }
       } else {
         throw SourceSpanFormatException(
-            'Must be a string.', argumentsNode.span);
+          'Must be a string.',
+          argumentsNode.span,
+        );
       }
     }
 
@@ -116,11 +140,15 @@ class ExecutableSettings {
       } else if (executableNode is YamlMap) {
         linuxExecutable = _getExecutable(executableNode.nodes['linux']);
         macOSExecutable = _getExecutable(executableNode.nodes['mac_os']);
-        windowsExecutable = _getExecutable(executableNode.nodes['windows'],
-            allowRelative: true);
+        windowsExecutable = _getExecutable(
+          executableNode.nodes['windows'],
+          allowRelative: true,
+        );
       } else {
         throw SourceSpanFormatException(
-            'Must be a map or a string.', executableNode.span);
+          'Must be a map or a string.',
+          executableNode.span,
+        );
       }
     }
 
@@ -132,24 +160,29 @@ class ExecutableSettings {
         headless = value;
       } else {
         throw SourceSpanFormatException(
-            'Must be a boolean.', headlessNode.span);
+          'Must be a boolean.',
+          headlessNode.span,
+        );
       }
     }
 
     return ExecutableSettings(
-        arguments: arguments,
-        linuxExecutable: linuxExecutable,
-        macOSExecutable: macOSExecutable,
-        windowsExecutable: windowsExecutable,
-        headless: headless);
+      arguments: arguments,
+      linuxExecutable: linuxExecutable,
+      macOSExecutable: macOSExecutable,
+      windowsExecutable: windowsExecutable,
+      headless: headless,
+    );
   }
 
   /// Asserts that [executableNode] is a string or `null` and returns it.
   ///
   /// If [allowRelative] is `false` (the default), asserts that the value isn't
   /// a relative path.
-  static String? _getExecutable(YamlNode? executableNode,
-      {bool allowRelative = false}) {
+  static String? _getExecutable(
+    YamlNode? executableNode, {
+    bool allowRelative = false,
+  }) {
     if (executableNode == null || executableNode.value == null) return null;
     if (executableNode.value is! String) {
       throw SourceSpanFormatException('Must be a string.', executableNode.span);
@@ -169,29 +202,44 @@ class ExecutableSettings {
     if (p.posix.basename(executable) == executable) return;
 
     throw SourceSpanFormatException(
-        'Linux and Mac OS executables may not be relative paths.',
-        executableNode.span);
+      'Linux and Mac OS executables may not be relative paths.',
+      executableNode.span,
+    );
   }
 
-  ExecutableSettings(
-      {Iterable<String>? arguments,
-      String? linuxExecutable,
-      String? macOSExecutable,
-      String? windowsExecutable,
-      String? environmentOverride,
-      bool? headless})
-      : arguments = arguments == null ? const [] : List.unmodifiable(arguments),
-        _linuxExecutable = linuxExecutable,
-        _macOSExecutable = macOSExecutable,
-        _windowsExecutable = windowsExecutable,
-        _environmentOverride = environmentOverride,
-        _headless = headless;
+  ExecutableSettings({
+    Iterable<String>? arguments,
+    String? linuxExecutable,
+    String? macOSExecutable,
+    List<String>? macOSExecutables,
+    String? windowsExecutable,
+    String? environmentOverride,
+    bool? headless,
+  }) : arguments = arguments == null ? const [] : List.unmodifiable(arguments),
+       _linuxExecutable = linuxExecutable,
+       _macOSExectuables = _normalizeMacExecutable(
+         macOSExecutable,
+         macOSExecutables,
+       ),
+       _windowsExecutable = windowsExecutable,
+       _environmentOverride = environmentOverride,
+       _headless = headless;
 
   /// Merges [this] with [other], with [other]'s settings taking priority.
   ExecutableSettings merge(ExecutableSettings other) => ExecutableSettings(
-      arguments: arguments.toList()..addAll(other.arguments),
-      headless: other._headless ?? _headless,
-      linuxExecutable: other._linuxExecutable ?? _linuxExecutable,
-      macOSExecutable: other._macOSExecutable ?? _macOSExecutable,
-      windowsExecutable: other._windowsExecutable ?? _windowsExecutable);
+    arguments: arguments.toList()..addAll(other.arguments),
+    headless: other._headless ?? _headless,
+    linuxExecutable: other._linuxExecutable ?? _linuxExecutable,
+    macOSExecutables: other._macOSExectuables ?? _macOSExectuables,
+    windowsExecutable: other._windowsExecutable ?? _windowsExecutable,
+  );
+}
+
+List<String>? _normalizeMacExecutable(
+  String? singleArgument,
+  List<String>? listArgument,
+) {
+  if (listArgument != null) return listArgument;
+  if (singleArgument != null) return [singleArgument];
+  return null;
 }

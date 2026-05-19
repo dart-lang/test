@@ -44,17 +44,23 @@ class GithubReporter implements Reporter {
 
   final Set<LiveTest> _completedTests = {};
 
+  /// The github markdown `::group::` that is currently open.
+  var _activeGroup = _ReportGroup.ungrouped;
+
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
     Engine engine,
     StringSink sink, {
     required bool printPath,
     required bool printPlatform,
-  }) =>
-      GithubReporter._(engine, sink, printPath, printPlatform);
+  }) => GithubReporter._(engine, sink, printPath, printPlatform);
 
   GithubReporter._(
-      this._engine, this._sink, this._printPath, this._printPlatform) {
+    this._engine,
+    this._sink,
+    this._printPath,
+    this._printPlatform,
+  ) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
@@ -94,21 +100,31 @@ class GithubReporter implements Reporter {
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
     _subscriptions.add(
-        liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)));
+      liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)),
+    );
 
-    _subscriptions.add(liveTest.onError
-        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(
+      liveTest.onError.listen(
+        (error) => _onError(liveTest, error.error, error.stackTrace),
+      ),
+    );
 
     // Collect messages from tests as they are emitted.
-    _subscriptions.add(liveTest.onMessage.listen((message) {
-      if (_completedTests.contains(liveTest)) {
-        // The test has already completed and it's previous messages were
-        // written out; ensure this post-completion output is not lost.
-        _sink.writeln(message.text);
-      } else {
-        _testMessages.putIfAbsent(liveTest, () => []).add(message);
-      }
-    }));
+    _subscriptions.add(
+      liveTest.onMessage.listen((message) {
+        if (_completedTests.contains(liveTest)) {
+          // The test has already completed and it's previous messages were
+          // written out; ensure this post-completion output is not lost.
+          if (!_activeGroup.isUngrouped) {
+            _sink.writeln(_GithubMarkup.endGroup);
+            _activeGroup = _ReportGroup.ungrouped;
+          }
+          _sink.writeln(message.text);
+        } else {
+          _testMessages.putIfAbsent(liveTest, () => []).add(message);
+        }
+      }),
+    );
   }
 
   /// A callback called when [liveTest] finishes running.
@@ -118,7 +134,8 @@ class GithubReporter implements Reporter {
     final skipped = test.state.result == Result.skipped;
     final failed = errors.isNotEmpty;
     final loadSuite = test.suite is LoadSuite;
-    final synthetic = loadSuite ||
+    final synthetic =
+        loadSuite ||
         test.individualName == '(setUpAll)' ||
         test.individualName == '(tearDownAll)';
 
@@ -137,13 +154,13 @@ class GithubReporter implements Reporter {
     final prefix = failed
         ? _GithubMarkup.failed
         : skipped
-            ? _GithubMarkup.skipped
-            : defaultIcon;
+        ? _GithubMarkup.skipped
+        : defaultIcon;
     final statusSuffix = failed
         ? ' (failed)'
         : skipped
-            ? ' (skipped)'
-            : '';
+        ? ' (skipped)'
+        : '';
 
     var name = test.test.name;
     if (!loadSuite) {
@@ -152,12 +169,36 @@ class GithubReporter implements Reporter {
       }
     }
     if (_printPlatform) {
-      name = '[${test.suite.platform.runtime.name}, '
+      name =
+          '[${test.suite.platform.runtime.name}, '
           '${test.suite.platform.compiler.name}] $name';
     }
-    if (messages.isEmpty && errors.isEmpty) {
+    if (skipped) {
+      if (_activeGroup.isPassing) {
+        _sink.writeln(_GithubMarkup.endGroup);
+      }
+      if (!_activeGroup.isSkipped) {
+        _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
+        _activeGroup = _ReportGroup.skipped;
+      }
+      _sink.writeln('$prefix $name$statusSuffix');
+      for (var message in messages) {
+        _sink.writeln(message.text);
+      }
+    } else if (messages.isEmpty && errors.isEmpty) {
+      if (_activeGroup.isSkipped) {
+        _sink.writeln(_GithubMarkup.endGroup);
+      }
+      if (!_activeGroup.isPassing) {
+        _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
+        _activeGroup = _ReportGroup.passing;
+      }
       _sink.writeln('$prefix $name$statusSuffix');
     } else {
+      if (!_activeGroup.isUngrouped) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _activeGroup = _ReportGroup.ungrouped;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       for (var message in messages) {
         _sink.writeln(message.text);
@@ -185,10 +226,15 @@ class GithubReporter implements Reporter {
         }
       }
       if (_printPlatform) {
-        name = '[${test.suite.platform.runtime.name}, '
+        name =
+            '[${test.suite.platform.runtime.name}, '
             '${test.suite.platform.compiler.name}] $name';
       }
 
+      if (!_activeGroup.isUngrouped) {
+        _sink.writeln(_GithubMarkup.endGroup);
+        _activeGroup = _ReportGroup.ungrouped;
+      }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       _sink.writeln('$error');
       _sink.writeln(stackTrace.toString().trimRight());
@@ -199,11 +245,18 @@ class GithubReporter implements Reporter {
   void _onDone(bool? success) {
     _cancel();
 
+    if (!_activeGroup.isUngrouped) {
+      _sink.writeln(_GithubMarkup.endGroup);
+      _activeGroup = _ReportGroup.ungrouped;
+    }
+
     _sink.writeln();
 
     final hadFailures = _engine.failed.isNotEmpty;
-    final message = StringBuffer('${_engine.passed.length} '
-        '${pluralize('test', _engine.passed.length)} passed');
+    final message = StringBuffer(
+      '${_engine.passed.length} '
+      '${pluralize('test', _engine.passed.length)} passed',
+    );
     if (_engine.failed.isNotEmpty) {
       message.write(', ${_engine.failed.length} failed');
     }
@@ -222,7 +275,7 @@ class GithubReporter implements Reporter {
 abstract class _GithubMarkup {
   // Char sets avilable at https://www.compart.com/en/unicode/.
   static const String passed = '✅';
-  static const String skipped = '❎';
+  static const String skipped = '⏭️';
   static const String failed = '❌';
   // The 'synthetic' icon is currently not used but is something to consider in
   // order to draw a distinction between user tests and test-like supporting
@@ -236,4 +289,14 @@ abstract class _GithubMarkup {
   static final String endGroup = '::endgroup::';
 
   static String error(String message) => '::error::$message';
+}
+
+enum _ReportGroup {
+  passing,
+  skipped,
+  ungrouped;
+
+  bool get isPassing => this == _ReportGroup.passing;
+  bool get isSkipped => this == _ReportGroup.skipped;
+  bool get isUngrouped => this == _ReportGroup.ungrouped;
 }

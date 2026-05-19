@@ -66,13 +66,12 @@ void main() {
         deepCollectionEquals(
           ['a', 'b'],
           [
-            it()
-              ..isA<String>().which(
-                it()
-                  ..startsWith('a')
-                  ..length.isLessThan(2),
-              ),
-            it()..isA<String>().startsWith('b'),
+            (Subject<dynamic> it) => it.isA<String>().which(
+              (it) => it
+                ..startsWith('a')
+                ..length.isLessThan(2),
+            ),
+            (Subject<dynamic> it) => it.isA<String>().startsWith('b'),
           ],
         ),
       ).isNull();
@@ -85,7 +84,7 @@ void main() {
             {'a': 'b'},
           ],
           [
-            {'a': it()..isA<String>().startsWith('b')},
+            {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('b')},
           ],
         ),
       ).isNull();
@@ -95,7 +94,7 @@ void main() {
       check(
         deepCollectionEquals(
           {'b', 'a'},
-          {'a', it()..isA<String>().startsWith('b')},
+          {'a', (Subject<dynamic> it) => it.isA<String>().startsWith('b')},
         ),
       ).isNull();
     });
@@ -104,7 +103,7 @@ void main() {
       check(
         deepCollectionEquals(
           {'a': 'b'},
-          {it()..isA<String>().startsWith('a'): 'b'},
+          {(Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'b'},
         ),
       ).isNull();
     });
@@ -149,7 +148,10 @@ void main() {
 
     test('reports unmet conditions in iterables', () {
       check(
-        deepCollectionEquals([0], [it()..isA<int>().isGreaterThan(0)]),
+        deepCollectionEquals(
+          [0],
+          [(Subject<dynamic> it) => it.isA<int>().isGreaterThan(0)],
+        ),
       ).isNotNull().returnsNormally().deepEquals([
         'has an element at [<0>] that:',
         '  Actual: <0>',
@@ -161,12 +163,12 @@ void main() {
       check(
         deepCollectionEquals(
           {'a': 'b'},
-          {'a': it()..isA<String>().startsWith('a')},
+          {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('a')},
         ),
       ).isNotNull().returnsNormally().deepEquals([
-        "has no entry to match 'a': <A value that:",
-        '  is a String',
-        "  starts with 'a'>",
+        "has an element at ['a'] that:",
+        "  Actual: 'b'",
+        "  which does not start with 'a'",
       ]);
     });
 
@@ -174,7 +176,7 @@ void main() {
       check(
         deepCollectionEquals(
           {'b': 'a'},
-          {it()..isA<String>().startsWith('a'): 'a'},
+          {(Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'a'},
         ),
       ).isNotNull().returnsNormally().deepEquals([
         'has no entry to match <A value that:',
@@ -183,8 +185,28 @@ void main() {
       ]);
     });
 
+    test('maintains paths through maps when the keys are all values', () {
+      check(
+        deepCollectionEquals(
+          {
+            'a': [
+              {'b': 'c'},
+            ],
+          },
+          {
+            'a': [
+              {'b': 'd'},
+            ],
+          },
+        ),
+      ).isNotNull().returnsNormally().deepEquals([
+        "at ['a'][<0>]['b'] is 'c'",
+        "which does not equal 'd'",
+      ]);
+    });
+
     test('reports recursive lists', () {
-      var l = [];
+      var l = <Object>[];
       l.add(l);
       check(deepCollectionEquals(l, l))
           .isNotNull()

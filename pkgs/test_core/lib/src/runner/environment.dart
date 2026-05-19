@@ -39,7 +39,7 @@ class PluginEnvironment implements Environment {
   @override
   final supportsDebugging = false;
   @override
-  Stream get onRestart => StreamController.broadcast().stream;
+  Stream get onRestart => StreamController<void>.broadcast().stream;
 
   const PluginEnvironment();
 
@@ -51,5 +51,6 @@ class PluginEnvironment implements Environment {
 
   @override
   CancelableOperation displayPause() => throw UnsupportedError(
-      'PluginEnvironment.displayPause is not supported.');
+    'PluginEnvironment.displayPause is not supported.',
+  );
 }

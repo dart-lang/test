@@ -12,7 +12,6 @@ window.onload = function() {
 // This mimics a MultiChannel-formatted message.
 var sendLoadException = function(message) {
   window.parent.postMessage({
-    "href": window.location.href,
     "data": [0, {"type": "loadException", "message": message}],
     "exception": true,
   }, window.location.origin);

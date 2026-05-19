@@ -1,9 +1,10 @@
 #!/bin/bash
-# Created with package:mono_repo v6.4.2
+# Created with package:mono_repo v6.6.3
 
 # Support built in commands on windows out of the box.
+
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
-# then "flutter" is called instead of "pub".
+# then "flutter pub" is called instead of "dart pub".
 # This assumes that the Flutter SDK has been installed in a previous step.
 function pub() {
   if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
@@ -12,18 +13,13 @@ function pub() {
     command dart pub "$@"
   fi
 }
-# When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
-# then "flutter" is called instead of "pub".
-# This assumes that the Flutter SDK has been installed in a previous step.
+
 function format() {
-  if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
-    command flutter format "$@"
-  else
-    command dart format "$@"
-  fi
+  command dart format "$@"
 }
+
 # When it is a flutter repo (check the pubspec.yaml for "sdk: flutter")
-# then "flutter" is called instead of "pub".
+# then "flutter analyze" is called instead of "dart analyze".
 # This assumes that the Flutter SDK has been installed in a previous step.
 function analyze() {
   if grep -Fq "sdk: flutter" "${PWD}/pubspec.yaml"; then
@@ -76,68 +72,68 @@ for PKG in ${PKGS}; do
         dart analyze || EXIT_CODE=$?
         ;;
       command_00)
-        echo 'pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta'
-        pushd /tmp && wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb && sudo dpkg -i google-chrome-beta_current_amd64.deb && popd && which google-chrome-beta || EXIT_CODE=$?
+        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s'
+        xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s || EXIT_CODE=$?
         ;;
       command_01)
+        echo 'dart test --timeout=60s'
+        dart test --timeout=60s || EXIT_CODE=$?
+        ;;
+      command_02)
         echo 'dart test'
         dart test || EXIT_CODE=$?
         ;;
-      command_02)
+      command_03)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
-      command_03)
+      command_04)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
-      command_04)
+      command_05)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
-      command_05)
+      command_06)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
-      command_06)
+      command_07)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4'
         xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
-      command_07)
+      command_08)
         echo 'dart test --preset travis --total-shards 5 --shard-index 0'
         dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
         ;;
-      command_08)
+      command_09)
         echo 'dart test --preset travis --total-shards 5 --shard-index 1'
         dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
         ;;
-      command_09)
+      command_10)
         echo 'dart test --preset travis --total-shards 5 --shard-index 2'
         dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
         ;;
-      command_10)
+      command_11)
         echo 'dart test --preset travis --total-shards 5 --shard-index 3'
         dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
         ;;
-      command_11)
+      command_12)
         echo 'dart test --preset travis --total-shards 5 --shard-index 4'
         dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
         ;;
-      command_12)
-        echo 'dart test --preset travis -x browser'
-        dart test --preset travis -x browser || EXIT_CODE=$?
+      command_13)
+        echo 'dart test --preset travis -x browser -c kernel,exe'
+        dart test --preset travis -x browser -c kernel,exe || EXIT_CODE=$?
         ;;
       format)
         echo 'dart format --output=none --set-exit-if-changed .'
         dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
         ;;
-      test_0)
+      test_1)
         echo 'dart test -p chrome,vm,node'
         dart test -p chrome,vm,node || EXIT_CODE=$?
-        ;;
-      test_1)
-        echo 'dart test --timeout=60s'
-        dart test --timeout=60s || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

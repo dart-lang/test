@@ -16,23 +16,28 @@ void main() {
   group('FutureChecks', () {
     group('completes', () {
       test('succeeds for a future that completes to a value', () async {
-        await check(_futureSuccess()).completes(it()..equals(42));
+        await check(_futureSuccess()).completes((it) => it.equals(42));
       });
       test('rejects futures which complete as errors', () async {
         await check(_futureFail()).isRejectedByAsync(
-          it()..completes(it()..equals(1)),
+          (it) => it.completes((it) => it.equals(1)),
           actual: ['a future that completes as an error'],
-          which: ['threw <UnimplementedError> at:', 'fake trace'],
+          which: ['threw <UnimplementedError> at:', '  fake trace'],
         );
       });
       test('can be described', () async {
-        await check(it<Future<void>>()..completes()).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  completes to a value']),
+        await check(
+          (Subject<Future> it) => it.completes(),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals(['  completes to a value']),
         );
         await check(
-          it<Future<int>>()..completes(it()..equals(42)),
+          (Subject<Future> it) => it.completes((it) => it.equals(42)),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  completes to a value that:', '    equals <42>']),
+          (it) => it.deepEquals([
+            '  completes to a value that:',
+            '    equals <42>',
+          ]),
         );
       });
     });
@@ -42,13 +47,13 @@ void main() {
         'succeeds for a future that compeletes to an error of the expected type',
         () async {
           await check(_futureFail()).throws<UnimplementedError>(
-            it()..has((p0) => p0.message, 'message').isNull(),
+            (it) => it.has((p0) => p0.message, 'message').isNull(),
           );
         },
       );
       test('fails for futures that complete to a value', () async {
         await check(_futureSuccess()).isRejectedByAsync(
-          it()..throws(),
+          (it) => it.throws(),
           actual: ['completed to <42>'],
           which: ['did not throw'],
         );
@@ -57,23 +62,25 @@ void main() {
         'failes for futures that complete to an error of the wrong type',
         () async {
           await check(_futureFail()).isRejectedByAsync(
-            it()..throws<StateError>(),
+            (it) => it.throws<StateError>(),
             actual: ['completed to error <UnimplementedError>'],
             which: [
               'threw an exception that is not a StateError at:',
-              'fake trace',
+              '  fake trace',
             ],
           );
         },
       );
       test('can be described', () async {
-        await check(it<Future<void>>()..throws()).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  completes to an error']),
+        await check(
+          (Subject<Future<void>> it) => it.throws(),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals(['  completes to an error']),
         );
         await check(
-          it<Future<void>>()..throws<StateError>(),
+          (Subject<Future<void>> it) => it.throws<StateError>(),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  completes to an error of type StateError']),
+          (it) => it.deepEquals(['  completes to an error of type StateError']),
         );
       });
     });
@@ -127,14 +134,16 @@ Actual: a future that completed to 'value\'''');
             .equals('''
 Expected: a Future<String> that:
   does not complete
-Actual: a future that completed as an error:
-Which: threw 'error'
-fake trace''');
+Actual: a future that completed as an error
+Which: threw 'error' at:
+  fake trace''');
       });
       test('can be described', () async {
         await check(
-          it<Future<void>>()..doesNotComplete(),
-        ).hasAsyncDescriptionWhich(it()..deepEquals(['  does not complete']));
+          (Subject<Future<void>> it) => it.doesNotComplete(),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals(['  does not complete']),
+        );
       });
     });
   });
@@ -142,35 +151,35 @@ fake trace''');
   group('StreamChecks', () {
     group('emits', () {
       test('succeeds for a stream that emits a value', () async {
-        await check(_countingStream(5)).emits(it()..equals(0));
+        await check(_countingStream(5)).emits((it) => it.equals(0));
       });
       test('fails for a stream that closes without emitting', () async {
         await check(_countingStream(0)).isRejectedByAsync(
-          it()..emits(),
+          (it) => it.emits(),
           actual: ['a stream'],
           which: ['closed without emitting enough values'],
         );
       });
       test('fails for a stream that emits an error', () async {
         await check(_countingStream(1, errorAt: 0)).isRejectedByAsync(
-          it()..emits(),
+          (it) => it.emits(),
           actual: ['a stream with error <UnimplementedError: Error at 1>'],
-          which: ['emitted an error instead of a value at:', 'fake trace'],
+          which: ['emitted an error instead of a value at:', '  fake trace'],
         );
       });
       test('can be described', () async {
         await check(
-          it<StreamQueue<void>>()..emits(),
-        ).hasAsyncDescriptionWhich(it()..deepEquals(['  emits a value']));
+          (Subject<StreamQueue<void>> it) => it.emits(),
+        ).hasAsyncDescriptionWhich((it) => it.deepEquals(['  emits a value']));
         await check(
-          it<StreamQueue<int>>()..emits(it()..equals(42)),
+          (Subject<StreamQueue<int>> it) => it.emits((it) => it.equals(42)),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  emits a value that:', '    equals <42>']),
+          (it) => it.deepEquals(['  emits a value that:', '    equals <42>']),
         );
       });
       test('does not consume error', () async {
         final queue = _countingStream(1, errorAt: 0);
-        await softCheckAsync<StreamQueue<int>>(queue, it()..emits());
+        await softCheckAsync<StreamQueue<int>>(queue, (it) => it.emits());
         await check(queue).emitsError();
       });
     });
@@ -185,7 +194,7 @@ fake trace''');
         'fails for a stream that closes without emitting an error',
         () async {
           await check(_countingStream(0)).isRejectedByAsync(
-            it()..emitsError(),
+            (it) => it.emitsError(),
             actual: ['a stream'],
             which: ['closed without emitting an expected error'],
           );
@@ -193,7 +202,7 @@ fake trace''');
       );
       test('fails for a stream that emits value', () async {
         await check(_countingStream(1)).isRejectedByAsync(
-          it()..emitsError(),
+          (it) => it.emitsError(),
           actual: ['a stream emitting value <0>'],
           which: ['closed without emitting an error'],
         );
@@ -202,30 +211,31 @@ fake trace''');
         'fails for a stream that emits an error of the incorrect type',
         () async {
           await check(_countingStream(1, errorAt: 0)).isRejectedByAsync(
-            it()..emitsError<StateError>(),
+            (it) => it.emitsError<StateError>(),
             actual: ['a stream with error <UnimplementedError: Error at 1>'],
             which: [
               'emitted an error which is not StateError at:',
-              'fake trace',
+              '  fake trace',
             ],
           );
         },
       );
       test('can be described', () async {
         await check(
-          it<StreamQueue<void>>()..emitsError(),
-        ).hasAsyncDescriptionWhich(it()..deepEquals(['  emits an error']));
+          (Subject<StreamQueue<void>> it) => it.emitsError(),
+        ).hasAsyncDescriptionWhich((it) => it.deepEquals(['  emits an error']));
         await check(
-          it<StreamQueue<void>>()..emitsError<StateError>(),
+          (Subject<StreamQueue<void>> it) => it.emitsError<StateError>(),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  emits an error of type StateError']),
+          (it) => it.deepEquals(['  emits an error of type StateError']),
         );
         await check(
-          it<StreamQueue<void>>()..emitsError<StateError>(
-            it()..has((e) => e.message, 'message').equals('foo'),
-          ),
+          (Subject<StreamQueue<void>> it) => it
+            ..emitsError<StateError>(
+              (it) => it.has((e) => e.message, 'message').equals('foo'),
+            ),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals([
+          (it) => it.deepEquals([
             '  emits an error of type StateError that:',
             '    has message that:',
             '      equals \'foo\'',
@@ -234,8 +244,8 @@ fake trace''');
       });
       test('uses a transaction', () async {
         final queue = _countingStream(1);
-        await softCheckAsync<StreamQueue<int>>(queue, it()..emitsError());
-        await check(queue).emits((it()..equals(0)));
+        await softCheckAsync<StreamQueue<int>>(queue, (it) => it.emitsError());
+        await check(queue).emits((it) => it.equals(0));
       });
     });
 
@@ -243,14 +253,14 @@ fake trace''');
       test(
         'succeeds for a stream that eventuall emits a matching value',
         () async {
-          await check(_countingStream(5)).emitsThrough(it()..equals(4));
+          await check(_countingStream(5)).emitsThrough((it) => it.equals(4));
         },
       );
       test(
         'fails for a stream that closes without emitting a matching value',
         () async {
           await check(_countingStream(4)).isRejectedByAsync(
-            it()..emitsThrough(it()..equals(5)),
+            (it) => it.emitsThrough((it) => it.equals(5)),
             actual: ['a stream'],
             which: ['ended after emitting 4 elements with none matching'],
           );
@@ -258,9 +268,10 @@ fake trace''');
       );
       test('can be described', () async {
         await check(
-          it<StreamQueue<int>>()..emitsThrough(it()..equals(42)),
+          (Subject<StreamQueue<int>> it) =>
+              it.emitsThrough((it) => it.equals(42)),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals([
+          (it) => it.deepEquals([
             '  emits any values then emits a value that:',
             '    equals <42>',
           ]),
@@ -270,28 +281,29 @@ fake trace''');
         final queue = _countingStream(1);
         await softCheckAsync(
           queue,
-          it<StreamQueue<int>>()..emitsThrough(it()..equals(42)),
+          (Subject<StreamQueue<int>> it) =>
+              it.emitsThrough((it) => it.equals(42)),
         );
-        check(queue).emits(it()..equals(0));
+        await check(queue).emits((it) => it.equals(0));
       });
       test('consumes events', () async {
         final queue = _countingStream(3);
-        await check(queue).emitsThrough(it()..equals(1));
-        await check(queue).emits((it()..equals(2)));
+        await check(queue).emitsThrough((it) => it.equals(1));
+        await check(queue).emits((it) => it.equals(2));
       });
     });
 
     group('emitsInOrder', () {
       test('succeeds for happy case', () async {
         await check(_countingStream(2)).inOrder([
-          it()..emits(it()..equals(0)),
-          it()..emits(it()..equals(1)),
-          it()..isDone(),
+          (it) => it.emits((it) => it.equals(0)),
+          (it) => it.emits((it) => it.equals(1)),
+          (it) => it.isDone(),
         ]);
       });
       test('reports which condition failed', () async {
         await check(_countingStream(1)).isRejectedByAsync(
-          it()..inOrder([it()..emits(), it()..emits()]),
+          (it) => it.inOrder([(it) => it.emits(), (it) => it.emits()]),
           actual: ['a stream'],
           which: [
             'satisfied 1 conditions then',
@@ -302,7 +314,10 @@ fake trace''');
       });
       test('nestes the report for deep failures', () async {
         await check(_countingStream(2)).isRejectedByAsync(
-          it()..inOrder([it()..emits(), it()..emits(it()..equals(2))]),
+          (it) => it.inOrder([
+            (it) => it.emits(),
+            (it) => it.emits((it) => it.equals(2)),
+          ]),
           actual: ['a stream'],
           which: [
             'satisfied 1 conditions then',
@@ -316,32 +331,32 @@ fake trace''');
       });
       test('gets described with the number of conditions', () async {
         await check(
-          it<StreamQueue<int>>()..inOrder([it(), it()]),
+          (Subject<StreamQueue<int>> it) => it.inOrder([(_) {}, (_) {}]),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  satisfies 2 conditions in order']),
+          (it) => it.deepEquals(['  satisfies 2 conditions in order']),
         );
       });
       test('uses a transaction', () async {
         final queue = _countingStream(3);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..inOrder([
-            it()..emits(it()..equals(0)),
-            it()..emits(it()..equals(1)),
-            it()..emits(it()..equals(42)),
+          (it) => it.inOrder([
+            (it) => it.emits((it) => it.equals(0)),
+            (it) => it.emits((it) => it.equals(1)),
+            (it) => it.emits((it) => it.equals(42)),
           ]),
         );
         await check(queue).inOrder([
-          it()..emits(it()..equals(0)),
-          it()..emits(it()..equals(1)),
-          it()..emits(it()..equals(2)),
-          it()..isDone(),
+          (it) => it.emits((it) => it.equals(0)),
+          (it) => it.emits((it) => it.equals(1)),
+          (it) => it.emits((it) => it.equals(2)),
+          (it) => it.isDone(),
         ]);
       });
       test('consumes events', () async {
         final queue = _countingStream(3);
-        await check(queue).inOrder([it()..emits(), it()..emits()]);
-        await check(queue).emits(it()..equals(2));
+        await check(queue).inOrder([(it) => it.emits(), (it) => it.emits()]);
+        await check(queue).emits((it) => it.equals(2));
       });
     });
 
@@ -349,111 +364,152 @@ fake trace''');
       test(
         'succeeds for a stream that closes without emitting a matching value',
         () async {
-          await check(_countingStream(5)).neverEmits(it()..equals(5));
+          await check(_countingStream(5)).neverEmits((it) => it.equals(5));
         },
       );
       test('fails for a stream that emits a matching value', () async {
         await check(_countingStream(6)).isRejectedByAsync(
-          it()..neverEmits(it()..equals(5)),
+          (it) => it.neverEmits((it) => it.equals(5)),
           actual: ['a stream'],
           which: ['emitted <5>', 'following 5 other items'],
         );
       });
       test('can be described', () async {
         await check(
-          it<StreamQueue<int>>()..neverEmits(it()..equals(42)),
+          (Subject<StreamQueue<int>> it) =>
+              it.neverEmits((it) => it.equals(42)),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  never emits a value that:', '    equals <42>']),
+          (it) =>
+              it.deepEquals(['  never emits a value that:', '    equals <42>']),
         );
       });
       test('uses a transaction', () async {
         final queue = _countingStream(2);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..neverEmits(it()..equals(1)),
+          (it) => it.neverEmits((it) => it.equals(1)),
         );
         await check(queue).inOrder([
-          it()..emits(it()..equals(0)),
-          it()..emits(it()..equals(1)),
-          it()..isDone(),
+          (it) => it.emits((it) => it.equals(0)),
+          (it) => it.emits((it) => it.equals(1)),
+          (it) => it.isDone(),
         ]);
       });
     });
 
     group('mayEmit', () {
       test('succeeds for a stream that emits a matching value', () async {
-        await check(_countingStream(1)).mayEmit(it()..equals(0));
+        await check(_countingStream(1)).mayEmit((it) => it.equals(0));
       });
       test('succeeds for a stream that emits an error', () async {
-        await check(_countingStream(1, errorAt: 0)).mayEmit(it()..equals(0));
+        await check(
+          _countingStream(1, errorAt: 0),
+        ).mayEmit((it) => it.equals(0));
       });
       test('succeeds for a stream that closes', () async {
-        await check(_countingStream(0)).mayEmit(it()..equals(42));
+        await check(_countingStream(0)).mayEmit((it) => it.equals(42));
       });
       test('consumes a matching event', () async {
         final queue = _countingStream(2);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..mayEmit(it()..equals(0)),
+          (it) => it.mayEmit((it) => it.equals(0)),
         );
-        await check(queue).emits(it()..equals(1));
+        await check(queue).emits((it) => it.equals(1));
+      });
+      test('consumes a matching async event', () async {
+        final queue = StreamQueue(Stream.value(Future.value(1)));
+        await softCheckAsync<StreamQueue<Future<int>>>(
+          queue,
+          (it) => it.mayEmit((it) => it.completes((it) => it.equals(1))),
+        );
+        await check(queue).isDone();
       });
       test('does not consume a non-matching event', () async {
         final queue = _countingStream(2);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..mayEmit(it()..equals(1)),
+          (it) => it.mayEmit((it) => it.equals(1)),
         );
-        await check(queue).emits(it()..equals(0));
+        await check(queue).emits((it) => it.equals(0));
       });
       test('does not consume an error', () async {
         final queue = _countingStream(1, errorAt: 0);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..mayEmit(it()..equals(0)),
+          (it) => it.mayEmit((it) => it.equals(0)),
         );
         await check(queue).emitsError<UnimplementedError>(
-          it()..has((e) => e.message, 'message').equals('Error at 1'),
+          (it) => it.has((e) => e.message, 'message').equals('Error at 1'),
+        );
+      });
+      test('can be described when condition is async', () async {
+        await check(
+          (Subject<StreamQueue<Future<int>>> it) =>
+              it.mayEmit((it) => it.completes()),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals([
+            '  may emit a value satisfying an asynchronous condition',
+          ]),
         );
       });
     });
 
     group('mayEmitMultiple', () {
       test('succeeds for a stream that emits a matching value', () async {
-        await check(_countingStream(1)).mayEmitMultiple(it()..equals(0));
+        await check(_countingStream(1)).mayEmitMultiple((it) => it.equals(0));
       });
       test('succeeds for a stream that emits an error', () async {
         await check(
           _countingStream(1, errorAt: 0),
-        ).mayEmitMultiple(it()..equals(0));
+        ).mayEmitMultiple((it) => it.equals(0));
       });
       test('succeeds for a stream that closes', () async {
-        await check(_countingStream(0)).mayEmitMultiple(it()..equals(42));
+        await check(_countingStream(0)).mayEmitMultiple((it) => it.equals(42));
       });
       test('consumes matching events', () async {
         final queue = _countingStream(3);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..mayEmitMultiple(it()..isLessThan(2)),
+          (it) => it.mayEmitMultiple((it) => it.isLessThan(2)),
         );
-        await check(queue).emits(it()..equals(2));
+        await check(queue).emits((it) => it.equals(2));
       });
       test('consumes no events if no events match', () async {
         final queue = _countingStream(2);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..mayEmitMultiple(it()..isLessThan(0)),
+          (it) => it.mayEmitMultiple((it) => it.isLessThan(0)),
         );
-        await check(queue).emits(it()..equals(0));
+        await check(queue).emits((it) => it.equals(0));
       });
       test('does not consume an error', () async {
         final queue = _countingStream(1, errorAt: 0);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..mayEmitMultiple(it()..equals(0)),
+          (it) => it.mayEmitMultiple((it) => it.equals(0)),
         );
         await check(queue).emitsError<UnimplementedError>(
-          it()..has((e) => e.message, 'message').equals('Error at 1'),
+          (it) => it.has((e) => e.message, 'message').equals('Error at 1'),
+        );
+      });
+      test('consumes a matching async event', () async {
+        final queue = StreamQueue(Stream.value(Future.value(1)));
+        await softCheckAsync<StreamQueue<Future<int>>>(
+          queue,
+          (it) =>
+              it.mayEmitMultiple((it) => it.completes((it) => it.equals(1))),
+        );
+        await check(queue).isDone();
+      });
+      test('can be described when condition is async', () async {
+        await check(
+          (Subject<StreamQueue<Future<int>>> it) =>
+              it.mayEmitMultiple((it) => it.completes()),
+        ).hasAsyncDescriptionWhich(
+          (it) => it.deepEquals([
+            '  may emit a value satisfying an asynchronous condition',
+          ]),
         );
       });
     });
@@ -464,7 +520,7 @@ fake trace''');
       });
       test('fails for a stream that emits a value', () async {
         await check(_countingStream(1)).isRejectedByAsync(
-          it()..isDone(),
+          (it) => it.isDone(),
           actual: ['a stream'],
           which: ['emitted an unexpected value: <0>'],
         );
@@ -473,33 +529,36 @@ fake trace''');
         final controller = StreamController<void>();
         controller.addError('sad', StackTrace.fromString('fake trace'));
         await check(StreamQueue(controller.stream)).isRejectedByAsync(
-          it()..isDone(),
+          (it) => it.isDone(),
           actual: ['a stream'],
-          which: ['emitted an unexpected error: \'sad\'', 'fake trace'],
+          which: ['emitted an unexpected error: \'sad\' at:', '  fake trace'],
         );
       });
       test('uses a transaction', () async {
         final queue = _countingStream(1);
-        await softCheckAsync<StreamQueue<int>>(queue, it()..isDone());
-        await check(queue).emits(it()..equals(0));
+        await softCheckAsync<StreamQueue<int>>(queue, (it) => it.isDone());
+        await check(queue).emits((it) => it.equals(0));
       });
       test('can be described', () async {
         await check(
-          it<StreamQueue<int>>()..isDone(),
-        ).hasAsyncDescriptionWhich(it()..deepEquals(['  is done']));
+          (Subject<StreamQueue<int>> it) => it.isDone(),
+        ).hasAsyncDescriptionWhich((it) => it.deepEquals(['  is done']));
       });
     });
 
     group('emitsAnyOf', () {
       test('succeeds for a stream that matches one condition', () async {
         await check(_countingStream(1)).anyOf([
-          it()..emits(it()..equals(42)),
-          it()..emits((it()..equals(0))),
+          (it) => it.emits((it) => it.equals(42)),
+          (it) => it.emits((it) => it.equals(0)),
         ]);
       });
       test('fails for a stream that matches no conditions', () async {
         await check(_countingStream(0)).isRejectedByAsync(
-          it()..anyOf([it()..emits(), it()..emitsThrough(it()..equals(1))]),
+          (it) => it.anyOf([
+            (it) => it.emits(),
+            (it) => it.emitsThrough((it) => it.equals(1)),
+          ]),
           actual: ['a stream'],
           which: [
             'failed to satisfy any condition',
@@ -512,9 +571,9 @@ fake trace''');
       });
       test('includes nested details for nested failures', () async {
         await check(_countingStream(1)).isRejectedByAsync(
-          it()..anyOf([
-            it()..emits(it()..equals(42)),
-            it()..emitsThrough(it()..equals(10)),
+          (it) => it.anyOf([
+            (it) => it.emits((it) => it.equals(42)),
+            (it) => it.emitsThrough((it) => it.equals(10)),
           ]),
           actual: ['a stream'],
           which: [
@@ -530,29 +589,30 @@ fake trace''');
       });
       test('gets described with the number of conditions', () async {
         await check(
-          it<StreamQueue<int>>()..anyOf([it()..emits(), it()..emits()]),
+          (Subject<StreamQueue<int>> it) =>
+              it..anyOf([(it) => it.emits(), (it) => it.emits()]),
         ).hasAsyncDescriptionWhich(
-          it()..deepEquals(['  satisfies any of 2 conditions']),
+          (it) => it.deepEquals(['  satisfies any of 2 conditions']),
         );
       });
       test('uses a transaction', () async {
         final queue = _countingStream(1);
         await softCheckAsync<StreamQueue<int>>(
           queue,
-          it()..anyOf([
-            it()..emits(it()..equals(10)),
-            it()..emitsThrough(it()..equals(42)),
+          (it) => it.anyOf([
+            (it) => it.emits((it) => it.equals(10)),
+            (it) => it.emitsThrough((it) => it.equals(42)),
           ]),
         );
-        await check(queue).emits(it()..equals(0));
+        await check(queue).emits((it) => it.equals(0));
       });
       test('consumes events', () async {
         final queue = _countingStream(3);
         await check(queue).anyOf([
-          it()..emits(it()..equals(1)),
-          it()..emitsThrough(it()..equals(1)),
+          (it) => it.emits((it) => it.equals(1)),
+          (it) => it.emitsThrough((it) => it.equals(1)),
         ]);
-        await check(queue).emits(it()..equals(2));
+        await check(queue).emits((it) => it.equals(2));
       });
     });
   });

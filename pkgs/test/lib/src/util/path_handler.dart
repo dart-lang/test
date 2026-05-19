@@ -30,7 +30,7 @@ class PathHandler {
   void add(String path, shelf.Handler handler) {
     var node = _paths;
     for (var component in p.url.split(path)) {
-      node = node.children.putIfAbsent(component, () => _Node());
+      node = node.children.putIfAbsent(component, _Node.new);
     }
     node.handler = handler;
   }
@@ -50,8 +50,9 @@ class PathHandler {
 
     if (handler == null) return shelf.Response.notFound('Not found.');
 
-    return handler(request.change(
-        path: p.url.joinAll(components.take(handlerIndex! + 1))));
+    return handler(
+      request.change(path: p.url.joinAll(components.take(handlerIndex! + 1))),
+    );
   }
 }
 

@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'dart:convert';
 
 import 'package:test/test.dart';
@@ -25,8 +27,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
@@ -44,8 +48,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, emitsThrough(contains('dart:async')));
     await test.shouldExit(1);
   });
@@ -61,8 +67,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, emitsThrough(contains('"testStart"')));
     await test.shouldExit(0);
   });
@@ -84,8 +92,10 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest(['test.dart'],
-        environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+    );
     expect(test.stdout, neverEmits(contains('dart:isolate-patch')));
     await test.shouldExit(1);
   });
@@ -93,7 +103,7 @@ void main() {
   group('disallows local-only configuration:', () {
     for (var field in [
       'skip', 'retry', 'test_on', 'paths', 'filename', 'names', 'tags', //
-      'plain_names', 'include_tags', 'exclude_tags', 'pub_serve', 'add_tags',
+      'plain_names', 'include_tags', 'exclude_tags', 'add_tags',
       'define_platforms', 'allow_duplicate_test_names',
     ]) {
       test('for $field', () async {
@@ -107,12 +117,17 @@ void main() {
           }
         ''').create();
 
-        var test = await runTest(['test.dart'],
-            environment: {'DART_TEST_CONFIG': 'global_test.yaml'});
+        var test = await runTest(
+          ['test.dart'],
+          environment: {'DART_TEST_CONFIG': 'global_test.yaml'},
+        );
         expect(
-            test.stderr,
-            containsInOrder(
-                ["of global_test.yaml: $field isn't supported here.", '^^']));
+          test.stderr,
+          containsInOrder([
+            "of global_test.yaml: $field isn't supported here.",
+            '^^',
+          ]),
+        );
         await test.shouldExit(exit_codes.data);
       });
     }

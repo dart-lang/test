@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
+
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:test/test.dart';
@@ -184,14 +186,20 @@ void main() {
       _expectEscape(r'\x7a', 'z');
     });
 
-    test('a fixed-length unicode character',
-        () => _expectEscape(r'\u0062', 'b'));
+    test(
+      'a fixed-length unicode character',
+      () => _expectEscape(r'\u0062', 'b'),
+    );
 
-    test('a short variable-length unicode character',
-        () => _expectEscape(r'\u{62}', 'b'));
+    test(
+      'a short variable-length unicode character',
+      () => _expectEscape(r'\u{62}', 'b'),
+    );
 
-    test('a long variable-length unicode character',
-        () => _expectEscape(r'\u{000062}', 'b'));
+    test(
+      'a long variable-length unicode character',
+      () => _expectEscape(r'\u{000062}', 'b'),
+    );
   });
 
   group('throws an ArgumentError for', () {
@@ -239,10 +247,9 @@ Matcher _isRune(String char) {
 /// Parses [dart], which should be a string literal, into a
 /// [StringLiteralIterator].
 StringLiteralIterator _parse(String dart) {
-  var declaration = parseString(content: 'final str = $dart;')
-      .unit
-      .declarations
-      .single as TopLevelVariableDeclaration;
+  var declaration =
+      parseString(content: 'final str = $dart;').unit.declarations.single
+          as TopLevelVariableDeclaration;
   var literal = declaration.variables.variables.single.initializer;
   return StringLiteralIterator(literal as StringLiteral);
 }

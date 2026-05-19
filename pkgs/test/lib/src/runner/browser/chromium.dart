@@ -5,12 +5,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:test/src/runner/browser/default_settings.dart';
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
+import 'default_settings.dart';
 
 enum ChromiumBasedBrowser {
   chrome(Runtime.chrome),
@@ -32,8 +32,8 @@ enum ChromiumBasedBrowser {
     var args = [
       '--user-data-dir=$dir',
       url.toString(),
-      '--enable-logging=stdout',
-      '--v=1',
+      '--enable-logging=stderr',
+      '--v=0',
       '--disable-extensions',
       '--disable-popup-blocking',
       '--bwsi',

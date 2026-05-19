@@ -20,3 +20,12 @@ abstract class Reporter {
   /// paused.
   void resume();
 }
+
+/// A reporter that prints nothing.
+class SilentReporter implements Reporter {
+  @override
+  void pause() {}
+
+  @override
+  void resume() {}
+}

@@ -4,6 +4,7 @@
 
 @TestOn('vm')
 @Tags(['edge'])
+library;
 
 import 'package:test/src/runner/browser/microsoft_edge.dart';
 import 'package:test/src/runner/executable_settings.dart';
@@ -32,18 +33,26 @@ webSocket.addEventListener("open", function() {
     addTearDown(() => edge.close());
 
     expect(await (await webSocket).stream.first, equals('loaded!'));
-  }, timeout: Timeout.factor(2));
+  }, timeout: const Timeout.factor(2));
 
   test('reports an error in onExit', () {
-    var edge = MicrosoftEdge(Uri.parse('https://dart.dev'), configuration(),
-        settings: ExecutableSettings(
-            linuxExecutable: '_does_not_exist',
-            macOSExecutable: '_does_not_exist',
-            windowsExecutable: '_does_not_exist'));
+    var edge = MicrosoftEdge(
+      Uri.parse('https://dart.dev'),
+      configuration(),
+      settings: ExecutableSettings(
+        linuxExecutable: '_does_not_exist',
+        macOSExecutable: '_does_not_exist',
+        windowsExecutable: '_does_not_exist',
+      ),
+    );
     expect(
-        edge.onExit,
-        throwsA(isApplicationException(
-            startsWith('Failed to run Edge: $noSuchFileMessage'))));
+      edge.onExit,
+      throwsA(
+        isApplicationException(
+          startsWith('Failed to run Edge: $noSuchFileMessage'),
+        ),
+      ),
+    );
   });
 
   test('can run successful tests', () async {
@@ -71,6 +80,22 @@ void main() {
 
     var test = await runTest(['-p', 'edge', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
+    await test.shouldExit(1);
+  });
+
+  test('can override edge location with MS_EDGE_EXECUTABLE var', () async {
+    await d.file('test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test("success", () {});
+}
+''').create();
+    var test = await runTest(
+      ['-p', 'edge', 'test.dart'],
+      environment: {'MS_EDGE_EXECUTABLE': '/some/bad/path'},
+    );
+    expect(test.stdout, emitsThrough(contains('Failed to run Edge:')));
     await test.shouldExit(1);
   });
 }

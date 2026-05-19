@@ -17,8 +17,10 @@ import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test_core/src/runner/suite.dart';
 
 /// A dummy suite platform to use for testing suites.
-final suitePlatform =
-    SuitePlatform(Runtime.vm, compiler: Runtime.vm.defaultCompiler);
+final suitePlatform = SuitePlatform(
+  Runtime.vm,
+  compiler: Runtime.vm.defaultCompiler,
+);
 
 // The last state change detected via [expectStates].
 State? lastState;
@@ -27,34 +29,49 @@ State? lastState;
 ///
 /// The most recent emitted state is stored in [_lastState].
 void expectStates(LiveTest liveTest, Iterable<State> statesIter) {
-  var states = Queue.from(statesIter);
-  liveTest.onStateChange.listen(expectAsync1((state) {
-    lastState = state;
-    expect(state, equals(states.removeFirst()));
-  }, count: states.length, max: states.length));
+  var states = Queue.of(statesIter);
+  liveTest.onStateChange.listen(
+    expectAsync1(
+      (state) {
+        lastState = state;
+        expect(state, equals(states.removeFirst()));
+      },
+      count: states.length,
+      max: states.length,
+    ),
+  );
 }
 
 /// Asserts that errors will be emitted via [liveTest.onError] that match
 /// [validators], in order.
-void expectErrors(LiveTest liveTest, Iterable<Function> validatorsIter) {
-  var validators = Queue.from(validatorsIter);
-  liveTest.onError.listen(expectAsync1((error) {
-    validators.removeFirst()(error.error);
-  }, count: validators.length, max: validators.length));
+void expectErrors(
+  LiveTest liveTest,
+  Iterable<void Function(Object)> validatorsIter,
+) {
+  var validators = Queue.of(validatorsIter);
+  liveTest.onError.listen(
+    expectAsync1(
+      (error) {
+        validators.removeFirst()(error.error);
+      },
+      count: validators.length,
+      max: validators.length,
+    ),
+  );
 }
 
 /// Asserts that [liveTest] will have a single failure with message `"oh no"`.
 void expectSingleFailure(LiveTest liveTest) {
   expectStates(liveTest, [
     const State(Status.running, Result.success),
-    const State(Status.complete, Result.failure)
+    const State(Status.complete, Result.failure),
   ]);
 
   expectErrors(liveTest, [
     (error) {
       expect(lastState?.status, equals(Status.complete));
       expect(error, isTestFailure('oh no'));
-    }
+    },
   ]);
 }
 
@@ -62,21 +79,21 @@ void expectSingleFailure(LiveTest liveTest) {
 void expectSingleError(LiveTest liveTest) {
   expectStates(liveTest, [
     const State(Status.running, Result.success),
-    const State(Status.complete, Result.error)
+    const State(Status.complete, Result.error),
   ]);
 
   expectErrors(liveTest, [
     (error) {
       expect(lastState?.status, equals(Status.complete));
       expect(error, equals('oh no'));
-    }
+    },
   ]);
 }
 
 /// Returns a matcher that matches a [TestFailure] with the given [message].
 ///
 /// [message] can be a string or a [Matcher].
-Matcher isTestFailure(message) => const TypeMatcher<TestFailure>()
+Matcher isTestFailure(Object message) => const TypeMatcher<TestFailure>()
     .having((e) => e.message, 'message', message);
 
 /// Asserts that [liveTest] has completed and passed.
@@ -98,7 +115,7 @@ void expectTestPassed(LiveTest liveTest) {
 
 /// Asserts that [liveTest] failed with a single [TestFailure] whose message
 /// matches [message].
-void expectTestFailed(LiveTest liveTest, message) {
+void expectTestFailed(LiveTest liveTest, Object message) {
   expect(liveTest.state.status, equals(Status.complete));
   expect(liveTest.state.result, equals(Result.failure));
   expect(liveTest.errors, hasLength(1));
@@ -137,9 +154,10 @@ Engine declareEngine(void Function() body, {bool runSkipped = false}) {
   var declarer = Declarer()..declare(body);
   return Engine.withSuites([
     RunnerSuite(
-        const PluginEnvironment(),
-        SuiteConfiguration.runSkipped(runSkipped),
-        declarer.build(),
-        suitePlatform)
+      const PluginEnvironment(),
+      SuiteConfiguration.runSkipped(runSkipped),
+      declarer.build(),
+      suitePlatform,
+    ),
   ]);
 }

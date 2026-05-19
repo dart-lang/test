@@ -4,14 +4,36 @@
 
 import 'dart:convert';
 
-import 'package:checks/context.dart';
 import 'package:meta/meta.dart' as meta;
+
+import '../../context.dart';
 
 extension CoreChecks<T> on Subject<T> {
   /// Extracts a property of the value for further expectations.
   ///
   /// Sets up a clause that the value "has [name] that:" followed by any
   /// expectations applied to the returned [Subject].
+  ///
+  /// ```dart
+  /// check(RegExp('^abc'))
+  ///   .has((s) => s.pattern, 'pattern')
+  ///   .equals('^abc');
+  /// ```
+  ///
+  /// For checking properties of custom types it's common define extension
+  /// methods using `has`:
+  /// ```dart
+  /// extension RegExpChecks on Subject<RegExp> {
+  ///   Subject<String> get pattern => has((s) => s.pattern, 'pattern');
+  ///   Subject<bool> get isUnicode => has((s) => s.isUnicode, 'isUnicode');
+  /// }
+  ///
+  /// void main() {
+  ///   check(RegExp('^abc'))
+  ///     ..pattern.contains('abc')
+  ///     ..isUnicode.isTrue();
+  /// }
+  /// ```
   @meta.useResult
   Subject<R> has<R>(R Function(T) extract, String name) {
     return context.nest(() => ['has $name'], (value) {
@@ -20,8 +42,11 @@ extension CoreChecks<T> on Subject<T> {
       } catch (e, st) {
         return Extracted.rejection(
           which: () => [
-            ...prefixFirst('threw while trying to read $name: ', literal(e)),
-            ...(const LineSplitter()).convert(st.toString()),
+            ...prefixFirst(
+              'threw while trying to read $name: ',
+              postfixLast(' at:', literal(e)),
+            ),
+            ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }
@@ -37,11 +62,11 @@ extension CoreChecks<T> on Subject<T> {
   /// ```
   /// check(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
-  ///   ..has((s) => s.bar, 'bar').which(it()
+  ///   ..has((s) => s.bar, 'bar').which((b) => b
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  void which(Condition<T> condition) => condition.apply(this);
+  void which(Condition<T> condition) => condition(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.

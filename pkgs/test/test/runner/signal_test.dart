@@ -4,6 +4,7 @@
 
 // Windows doesn't support sending signals.
 @TestOn('vm && !windows')
+library;
 
 import 'dart:async';
 import 'dart:io';
@@ -48,7 +49,9 @@ void main() {
 
       var test = await _runTest(['-p', 'chrome', 'test.dart']);
       await expectLater(
-          test.stdout, emitsThrough(endsWith('compiling test.dart')));
+        test.stdout,
+        emitsThrough(endsWith('loading test.dart')),
+      );
       await signalAndQuit(test);
 
       expectTempDirEmpty(skip: 'Failing on Travis.');
@@ -69,7 +72,7 @@ void main() {
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await Future.delayed(Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
 
       await signalAndQuit(test);
     });
@@ -178,7 +181,7 @@ void main() {
       // TODO(nweiz): Sending two signals in close succession can cause the
       // second one to be ignored, so we wait a bit before the second
       // one. Remove this hack when issue 23047 is fixed.
-      await Future.delayed(Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       await signalAndQuit(test);
     });
 
@@ -220,9 +223,11 @@ void main() {
 }
 
 Future<TestProcess> _runTest(List<String> args, {bool forwardStdio = false}) =>
-    runTest(args,
-        environment: {'_UNITTEST_TEMP_DIR': _tempDir},
-        forwardStdio: forwardStdio);
+    runTest(
+      args,
+      environment: {'_UNITTEST_TEMP_DIR': _tempDir},
+      forwardStdio: forwardStdio,
+    );
 
 Future<void> signalAndQuit(TestProcess test) async {
   test.signal(ProcessSignal.sigterm);
@@ -230,6 +235,6 @@ Future<void> signalAndQuit(TestProcess test) async {
   await expectLater(test.stderr, emitsDone);
 }
 
-void expectTempDirEmpty({skip}) {
+void expectTempDirEmpty({Object? skip}) {
   expect(Directory(_tempDir).listSync(), isEmpty, skip: skip);
 }

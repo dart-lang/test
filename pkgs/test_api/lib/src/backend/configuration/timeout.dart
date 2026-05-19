@@ -50,9 +50,7 @@ final class Timeout {
   /// Declares a relative timeout that scales the default.
   const Timeout.factor(this.scaleFactor) : duration = null;
 
-  const Timeout._none()
-      : scaleFactor = null,
-        duration = null;
+  const Timeout._none() : scaleFactor = null, duration = null;
 
   /// Parse the timeout from a user-provided string.
   ///
@@ -79,7 +77,7 @@ final class Timeout {
 
     // Scan a number. This will be either a time unit or a scale factor.
     scanner.expect(_untilUnit, name: 'number');
-    var number = double.parse((scanner.lastMatch![0])!);
+    var number = double.parse(scanner.lastMatch![0]!);
 
     // A number followed by "x" is a scale factor.
     if (scanner.scan('x') || scanner.scan('X')) {
@@ -92,13 +90,13 @@ final class Timeout {
     var microseconds = 0.0;
     while (true) {
       scanner.expect(_unit, name: 'unit');
-      microseconds += _microsecondsFor(number, (scanner.lastMatch![0])!);
+      microseconds += _microsecondsFor(number, scanner.lastMatch![0]!);
 
       scanner.scan(_whitespace);
 
       // Scan the next number, if it's available.
       if (!scanner.scan(_untilUnit)) break;
-      number = double.parse((scanner.lastMatch![0])!);
+      number = double.parse(scanner.lastMatch![0]!);
     }
 
     scanner.expectDone();
@@ -107,14 +105,14 @@ final class Timeout {
 
   /// Returns the number of microseconds in [number] [unit]s.
   static double _microsecondsFor(double number, String unit) => switch (unit) {
-        'd' => number * 24 * 60 * 60 * 1000000,
-        'h' => number * 60 * 60 * 1000000,
-        'm' => number * 60 * 1000000,
-        's' => number * 1000000,
-        'ms' => number * 1000,
-        'us' => number,
-        _ => throw ArgumentError('Unknown unit $unit.'),
-      };
+    'd' => number * 24 * 60 * 60 * 1000000,
+    'h' => number * 60 * 60 * 1000000,
+    'm' => number * 60 * 1000000,
+    's' => number * 1000000,
+    'ms' => number * 1000,
+    'us' => number,
+    _ => throw ArgumentError('Unknown unit $unit.'),
+  };
 
   /// Returns a new [Timeout] that merges [this] with [other].
   ///
@@ -141,7 +139,7 @@ final class Timeout {
   int get hashCode => duration.hashCode ^ 5 * scaleFactor.hashCode;
 
   @override
-  bool operator ==(other) =>
+  bool operator ==(Object other) =>
       other is Timeout &&
       other.duration == duration &&
       other.scaleFactor == scaleFactor;

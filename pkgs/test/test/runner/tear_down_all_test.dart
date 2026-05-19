@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
+library;
 
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -92,6 +93,21 @@ void main() {
 
     var test = await runTest(['test.dart']);
     expect(test.stdout, neverEmits(contains('(tearDownAll)')));
+    await test.shouldExit(0);
+  });
+
+  test('does not fail with asserts enabled - issue #2498', () async {
+    await d.file('test.dart', r'''
+        import 'package:test/test.dart';
+
+        void main() {
+          tearDownAll(() {});
+
+          test("test", () {});
+        }
+        ''').create();
+
+    var test = await runTest(['test.dart'], vmArgs: ['--enable-asserts']);
     await test.shouldExit(0);
   });
 }

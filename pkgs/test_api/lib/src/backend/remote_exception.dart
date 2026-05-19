@@ -29,7 +29,7 @@ final class RemoteException implements Exception {
   ///
   /// Other than JSON- and isolate-safety, no guarantees are made about the
   /// serialized format.
-  static Map<String, dynamic> serialize(error, StackTrace stackTrace) {
+  static Map<String, dynamic> serialize(dynamic error, StackTrace stackTrace) {
     String? message;
     if (error is String) {
       message = error;
@@ -48,7 +48,7 @@ final class RemoteException implements Exception {
       'type': error.runtimeType.toString(),
       'supertype': supertype,
       'toString': error.toString(),
-      'stackChain': Chain.forTrace(stackTrace).toString()
+      'stackChain': Chain.forTrace(stackTrace).toString(),
     };
   }
 
@@ -56,13 +56,15 @@ final class RemoteException implements Exception {
   ///
   /// The returned [AsyncError] is guaranteed to have a [RemoteException] as its
   /// error and a [Chain] as its stack trace.
-  static AsyncError deserialize(serialized) {
-    return AsyncError(_deserializeException(serialized),
-        Chain.parse(serialized['stackChain'] as String));
+  static AsyncError deserialize(Map serialized) {
+    return AsyncError(
+      _deserializeException(serialized),
+      Chain.parse(serialized['stackChain'] as String),
+    );
   }
 
   /// Deserializes the exception portion of [serialized].
-  static RemoteException _deserializeException(serialized) {
+  static RemoteException _deserializeException(Map serialized) {
     final message = serialized['message'] as String?;
     final type = serialized['type'] as String;
     final toString = serialized['toString'] as String;
@@ -84,6 +86,5 @@ final class RemoteException implements Exception {
 /// It's important to preserve [TestFailure]-ness, because tests have different
 /// results depending on whether an exception was a failure or an error.
 final class _RemoteTestFailure extends RemoteException implements TestFailure {
-  _RemoteTestFailure(String? message, String type, String toString)
-      : super._(message, type, toString);
+  _RemoteTestFailure(super.message, super.type, super.toString) : super._();
 }

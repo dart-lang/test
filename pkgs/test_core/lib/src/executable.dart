@@ -10,11 +10,11 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
-import 'package:test_core/src/runner/no_tests_found_exception.dart';
 
 import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/no_tests_found_exception.dart';
 import 'runner/version.dart';
 import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
@@ -39,6 +39,7 @@ Future<void> main(List<String> args) async {
   completeShutdown();
 }
 
+// ignore: unreachable_from_main
 Future<void> runTests(List<String> args) async {
   await _execute(args);
 }
@@ -62,10 +63,13 @@ Future<void> _execute(List<String> args) async {
   /// terminates the program immediately.
   final signals = Platform.isWindows
       ? ProcessSignal.sigint.watch()
-      : Platform.isFuchsia // Signals don't exist on Fuchsia.
-          ? Stream.empty()
-          : StreamGroup.merge(
-              [ProcessSignal.sigterm.watch(), ProcessSignal.sigint.watch()]);
+      : Platform
+            .isFuchsia // Signals don't exist on Fuchsia.
+      ? const Stream<Never>.empty()
+      : StreamGroup.merge([
+          ProcessSignal.sigterm.watch(),
+          ProcessSignal.sigint.watch(),
+        ]);
 
   Configuration configuration;
   try {
@@ -95,13 +99,15 @@ Future<void> _execute(List<String> args) async {
   try {
     var fileConfiguration = Configuration.empty;
     if (File(_globalConfigPath).existsSync()) {
-      fileConfiguration = fileConfiguration
-          .merge(Configuration.load(_globalConfigPath, global: true));
+      fileConfiguration = fileConfiguration.merge(
+        Configuration.load(_globalConfigPath, global: true),
+      );
     }
 
     if (File(configuration.configurationPath).existsSync()) {
-      fileConfiguration = fileConfiguration
-          .merge(Configuration.load(configuration.configurationPath));
+      fileConfiguration = fileConfiguration.merge(
+        Configuration.load(configuration.configurationPath),
+      );
     }
 
     configuration = fileConfiguration.merge(configuration);
@@ -123,16 +129,20 @@ Future<void> _execute(List<String> args) async {
       .where((preset) => !configuration.knownPresets.contains(preset))
       .toList();
   if (undefinedPresets.isNotEmpty) {
-    _printUsage("Undefined ${pluralize('preset', undefinedPresets.length)} "
-        "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.");
+    _printUsage(
+      "Undefined ${pluralize('preset', undefinedPresets.length)} "
+      "${toSentence(undefinedPresets.map((preset) => '"$preset"'))}.",
+    );
     exitCode = exit_codes.usage;
     return;
   }
 
   if (!configuration.explicitPaths &&
       !Directory(configuration.testSelections.keys.single).existsSync()) {
-    _printUsage('No test files were passed and the default "test/" '
-        "directory doesn't exist.");
+    _printUsage(
+      'No test files were passed and the default "test/" '
+      "directory doesn't exist.",
+    );
     exitCode = exit_codes.data;
     return;
   }
@@ -162,9 +172,11 @@ Future<void> _execute(List<String> args) async {
   } catch (error, stackTrace) {
     stderr.writeln(getErrorMessage(error));
     stderr.writeln(Trace.from(stackTrace).terse);
-    stderr.writeln('This is an unexpected error. Please file an issue at '
-        'http://github.com/dart-lang/test\n'
-        'with the stack trace and instructions for reproducing the error.');
+    stderr.writeln(
+      'This is an unexpected error. Please file an issue at '
+      'http://github.com/dart-lang/test\n'
+      'with the stack trace and instructions for reproducing the error.',
+    );
     exitCode = exit_codes.software;
   } finally {
     await runner?.close();

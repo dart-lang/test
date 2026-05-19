@@ -1,8 +1,179 @@
-## 0.5.4-wip
+## 0.6.19-wip
+
+* Support using the OS platform selector to configure browser tests.
+* Treat calls to `exit` as test failures in VM tests.
+
+## 0.6.18
+
+* Ignore an error locating the SDK directory on platforms where the
+  `resolvedExecutable` is unexpectedly `null`.
+* Respect `NO_COLOR`, `CLICOLOR`, `FORCE_COLOR`, `CLICOLOR_FORCE`, and `TERM=dumb`
+  environment variables for color output detection.
+* Fix a bug where `-c exe` tests would hang on exit on windows.
+* Update `parse_metadata.dart` to be compatible with `analyzer >=8.0.0 <14.0.0`.
+* `GithubReporter`:
+    * Group contiguous passing and skipped tests into collapsible groups to
+      reduce log noise in GitHub Actions.
+    * Updated skipped icon to ⏭️.
+
+## 0.6.17
+
+* Print a summary of failed tests at the end of the expanded reporter output.
+* Add `vm-asan`, `vm-msan`, and `vm-tsan` runtimes to run tests on the standalone
+  Dart VM under Address Sanitizer, Memory Sanitizer or Thread Sanitizer. This is
+  useful for finding issues when using foreign libraries through dart:ffi, such
+  as use-after-free, use of initialized memory and data races, or for detecting
+  data races in Dart code using shared fields.
+* Change return type on the `body` callback argument to `group` to `void` from
+  `dynamic`. This may surface cases where the group callback was erroneously
+  returning an ignored value.
+* Fix a hang when a test run with `--compiler exe` crashes.
+* Require `analyzer: '>=8.0.0 <13.0.0'`
+
+## 0.6.16
+
+* Fix coverage reporting to report all coverage when using JSON workflow.
+* Add `SuiteConfiguration.suiteLoadTimeout` to configure the timeout for loading a test suite.
+* Removed hard-coded timeout of 12m for loading a test suite and set default to `none`.
+* Bump `test_api` to 0.7.10
+* Print a summary of failed tests at the end of the expanded reporter output.
+
+## 0.6.15
+
+* Add `--coverage-package` flag, which filters the coverage report to specific
+  packages using RegExps.
+* Require a function definition named `main` directly in a test suite and
+  provide a more direct error message than a failing compiler output.
+* Suppress skip reason messages in the compact and failures-only reporters.
+* Improve fidelity of checks for using ascii characters. Check the SDK reported
+  support on windows, and assume ascii support for all terminals on linux since
+  the SDK reported support is much more narrow.
+* Fix default coverage filter when running in a workspace package. Default
+  filter now includes all the workspace's package.
+* Add support for reading test package version within pub workspaces.
+* Allow `analyzer` major version 10.
+
+## 0.6.14
+
+* Fix type cast when parsing a `null` hit map.
+
+## 0.6.13
+
+* Require Dart 3.7
+* Add `--coverage-path` and `--branch-coverage` options to `dart test`.
+* Allow `analyzer` major version 9.
+
+## 0.6.12
+
+* Expand pub constraint to allow the latest `analyzer`.
+
+## 0.6.11
+
+* Graduate native assets from experiment to preview.
+
+## 0.6.10
+
+* Set a debug name for test isolates.
+* Fix an assertion failure when using `setUpAll` or `tearDownAll` and running
+  with asserts enabled.
+
+## 0.6.9
+
+* Add support for native assets for `dart test` in pub workspaces.
+* `test()` and `group()` functions now take an optional `TestLocation` that will
+  be used as the location of the test in JSON reporters instead of being parsed
+  from the call stack.
+
+## 0.6.8
+
+* Fix hang when running multiple precompiled browser tests.
+
+## 0.6.7
+
+* Update the `package:vm_service` constraint to allow version `15.x`.
+
+## 0.6.6
+
+* Allow `analyzer: '>=6.0.0 <8.0.0'`
+* Fix dart2wasm tests on windows.
+* Increase SDK constraint to ^3.5.0.
+* Allow passing additional arguments to `dart compile wasm`.
+
+## 0.6.5
+
+* Increase SDK constraint to ^3.4.0.
+* Ensure we don't create files ending in a `.`, this breaks windows.
+
+## 0.6.4
+
+* Enable asserts for `dart2wasm` tests.
+
+## 0.6.3
+
+* Update min SDK constraint to 3.2.0.
+* Fix testing with `dart2wasm` - use `dart compile wasm` instead of depending on
+  SDK internals
+
+## 0.6.2
+
+* Add `@doNotSubmit` to more declarations of the `solo` parameter.
+
+## 0.6.1
+
+* Handle missing package configs.
+* Document the silent reporter in CLI help output.
+* Support enabling experiments with the dart2wasm compiler.
+
+## 0.6.0
+
+* Handle paths with leading `/` when spawning test isolates.
+* Added `dart2wasm` as a supported compiler for the `chrome` runtime.
+* **BREAKING**: Removed the `experimentalChromeWasm` runtime.
+* **BREAKING**: Removed `Runtime.isJS` and `Runtime.isWasm`, as this is now
+  based on the compiler and not the runtime.
+* **BREAKING**: Removed `Configuration.pubServeUrl` and support for it.
+* Fix running of tests defined under `lib/` with relative imports to other
+  libraries in the package.
+* Update the `package:frontend_server_client` constraint to allow version
+  `4.0.0`.
+* Update the `package:vm_service` constraint to allow version `14.x`.
+
+## 0.5.9
+
+* Update the vm_service constraint to allow version `13.x`.
+
+## 0.5.8
+
+* Move scaffolding definitions to a non-deprecated library.
+* Allow omitting the `Compiler` argument to `currentPlatform`.
+
+## 0.5.7
+
+* Pass --disable-program-split to dart2js to fix tests which use deferred
+  loading.
+* Add a 'silent' reporter option. Keep it hidden in the CLI args help since it
+  is not useful in the general case, but can be useful for tests of the test
+  runner.
+* Update to `package:vm_service` `12.0.0`
+
+## 0.5.6
+
+* Add support for discontinuing after the first failing test with `--fail-fast`.
+
+## 0.5.5
+
+* Change "compiling <path>" to "loading <path>" message in all cases. Surface
+  the "loading" messages in the situations where previously only "compiling"
+  message would be used.
+
+## 0.5.4
 
 * Drop support for null unsafe Dart, bump SDK constraint to `3.0.0`.
 * Add `final` modifier on some implementation classes: `Configuration`,
-  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`. 
+  `CustomRuntime`,`RuntimeSettings`, `SuiteConfiguration`.
+* Fix the `root_` fields in the JSON reporter when running a test on Windows
+  with an absolute path.
+* Allow the latest analyzer (6.x.x).
 
 ## 0.5.3
 

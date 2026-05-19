@@ -25,6 +25,8 @@ final _macOSDirectories = {
 final OperatingSystem currentOSGuess = (() {
   if (p.style == p.Style.url) return OperatingSystem.none;
   if (p.style == p.Style.windows) return OperatingSystem.windows;
-  if (_macOSDirectories.any(p.current.startsWith)) return OperatingSystem.macOS;
+  if (_macOSDirectories.any(p.current.startsWith)) {
+    return OperatingSystem.macOS;
+  }
   return OperatingSystem.linux;
 })();

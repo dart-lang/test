@@ -9,21 +9,19 @@ import 'dart:io' show pid;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/hooks.dart' // ignore: implementation_imports
-    show
-        TestFailure;
+import 'package:test_api/hooks.dart' show TestFailure;
+import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/test_location.dart'; // ignore: implementation_imports
 
+import '../../platform.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
-import '../runner_suite.dart';
-import '../suite.dart';
 import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
@@ -64,9 +62,11 @@ class JsonReporter implements Reporter {
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
-  static JsonReporter watch(Engine engine, StringSink sink,
-          {required bool isDebugRun}) =>
-      JsonReporter._(engine, sink, isDebugRun);
+  static JsonReporter watch(
+    Engine engine,
+    StringSink sink, {
+    required bool isDebugRun,
+  }) => JsonReporter._(engine, sink, isDebugRun);
 
   JsonReporter._(this._engine, this._sink, this._isDebugRun) {
     _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
@@ -75,15 +75,23 @@ class JsonReporter implements Reporter {
     // canceled.
     _subscriptions.add(_engine.success.asStream().listen(_onDone));
 
-    _subscriptions.add(_engine.onSuiteAdded.listen(null, onDone: () {
-      _emit('allSuites', {
-        'count': _engine.addedSuites.length,
-        'time': _stopwatch.elapsed.inMilliseconds
-      });
-    }));
+    _subscriptions.add(
+      _engine.onSuiteAdded.listen(
+        null,
+        onDone: () {
+          _emit('allSuites', {
+            'count': _engine.addedSuites.length,
+            'time': _stopwatch.elapsed.inMilliseconds,
+          });
+        },
+      ),
+    );
 
-    _emit('start',
-        {'protocolVersion': '0.1.1', 'runnerVersion': testVersion, 'pid': pid});
+    _emit('start', {
+      'protocolVersion': '0.1.1',
+      'runnerVersion': testVersion,
+      'pid': pid,
+    });
   }
 
   @override
@@ -142,26 +150,37 @@ class JsonReporter implements Reporter {
         'suiteID': suiteID,
         'groupIDs': groupIDs,
         'metadata': _serializeMetadata(suiteConfig, liveTest.test.metadata),
-        ..._frameInfo(suiteConfig, liveTest.test.trace,
-            liveTest.suite.platform.runtime, liveTest.suite.path!),
-      }
+        ..._locationInfo(
+          suiteConfig,
+          liveTest.test.trace,
+          liveTest.test.location,
+          liveTest.suite.platform,
+          liveTest.suite.path!,
+        ),
+      },
     });
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
     _subscriptions.add(
-        liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)));
+      liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)),
+    );
 
-    _subscriptions.add(liveTest.onError
-        .listen((error) => _onError(liveTest, error.error, error.stackTrace)));
+    _subscriptions.add(
+      liveTest.onError.listen(
+        (error) => _onError(liveTest, error.error, error.stackTrace),
+      ),
+    );
 
-    _subscriptions.add(liveTest.onMessage.listen((message) {
-      _emit('print', {
-        'testID': id,
-        'messageType': message.type.name,
-        'message': message.text
-      });
-    }));
+    _subscriptions.add(
+      liveTest.onMessage.listen((message) {
+        _emit('print', {
+          'testID': id,
+          'messageType': message.type.name,
+          'message': message.text,
+        });
+      }),
+    );
   }
 
   /// Returns an ID for [suite].
@@ -187,8 +206,8 @@ class JsonReporter implements Reporter {
         _emit('debug', {
           'suiteID': id,
           'observatory': runnerSuite.environment.observatoryUrl?.toString(),
-          'remoteDebugger':
-              runnerSuite.environment.remoteDebuggerUrl?.toString(),
+          'remoteDebugger': runnerSuite.environment.remoteDebuggerUrl
+              ?.toString(),
         });
       });
     }
@@ -197,8 +216,8 @@ class JsonReporter implements Reporter {
       'suite': <String, Object?>{
         'id': id,
         'platform': suite.platform.runtime.identifier,
-        'path': suite.path
-      }
+        'path': suite.path,
+      },
     });
     return id;
   }
@@ -227,9 +246,14 @@ class JsonReporter implements Reporter {
           'name': group.name,
           'metadata': _serializeMetadata(suiteConfig, group.metadata),
           'testCount': group.testCount,
-          ..._frameInfo(
-              suiteConfig, group.trace, suite.platform.runtime, suite.path!)
-        }
+          ..._locationInfo(
+            suiteConfig,
+            group.trace,
+            group.location,
+            suite.platform,
+            suite.path!,
+          ),
+        },
       });
       parentID = id;
       return id;
@@ -239,8 +263,8 @@ class JsonReporter implements Reporter {
   /// Serializes [metadata] into a JSON-protocol-compatible map.
   Map _serializeMetadata(SuiteConfiguration suiteConfig, Metadata metadata) =>
       suiteConfig.runSkipped
-          ? {'skip': false, 'skipReason': null}
-          : {'skip': metadata.skip, 'skipReason': metadata.skipReason};
+      ? {'skip': false, 'skipReason': null}
+      : {'skip': metadata.skip, 'skipReason': metadata.skipReason};
 
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest liveTest) {
@@ -248,7 +272,7 @@ class JsonReporter implements Reporter {
       'testID': _liveTestIDs[liveTest],
       'result': _normalizeTestResult(liveTest),
       'skipped': liveTest.state.result == Result.skipped,
-      'hidden': !_engine.liveTests.contains(liveTest)
+      'hidden': !_engine.liveTests.contains(liveTest),
     });
   }
 
@@ -261,12 +285,12 @@ class JsonReporter implements Reporter {
   }
 
   /// A callback called when [liveTest] throws [error].
-  void _onError(LiveTest liveTest, error, StackTrace stackTrace) {
+  void _onError(LiveTest liveTest, Object error, StackTrace stackTrace) {
     _emit('error', {
       'testID': _liveTestIDs[liveTest],
       'error': error.toString(),
       'stackTrace': '$stackTrace',
-      'isFailure': error is TestFailure
+      'isFailure': error is TestFailure,
     });
   }
 
@@ -301,17 +325,29 @@ class JsonReporter implements Reporter {
   /// If javascript traces are enabled and the test is on a javascript platform,
   /// or if the [trace] is null or empty, then the line, column, and url will
   /// all be `null`.
-  Map<String, dynamic> _frameInfo(SuiteConfiguration suiteConfig, Trace? trace,
-      Runtime runtime, String suitePath) {
-    var absoluteSuitePath = p.absolute(suitePath);
+  Map<String, dynamic> _locationInfo(
+    SuiteConfiguration suiteConfig,
+    Trace? trace,
+    TestLocation? location,
+    SuitePlatform platform,
+    String suitePath,
+  ) {
+    // If this test has a location override, always use that.
+    if (location != null) {
+      return location.serialize();
+    }
+
+    var absoluteSuitePath = p.canonicalize(p.absolute(suitePath));
     var frame = trace?.frames.first;
-    if (frame == null || (suiteConfig.jsTrace && runtime.isJS)) {
+    if (frame == null || (suiteConfig.jsTrace && platform.compiler.isJS)) {
       return {'line': null, 'column': null, 'url': null};
     }
 
-    var rootFrame = trace?.frames.firstWhereOrNull((frame) =>
-        frame.uri.scheme == 'file' &&
-        frame.uri.toFilePath() == absoluteSuitePath);
+    var rootFrame = trace?.frames.firstWhereOrNull(
+      (frame) =>
+          frame.uri.scheme == 'file' &&
+          p.canonicalize(frame.uri.toFilePath()) == absoluteSuitePath,
+    );
     return {
       'line': frame.line,
       'column': frame.column,
@@ -320,7 +356,7 @@ class JsonReporter implements Reporter {
         'root_line': rootFrame.line,
         'root_column': rootFrame.column,
         'root_url': rootFrame.uri.toString(),
-      }
+      },
     };
   }
 }

@@ -22,7 +22,9 @@ final class TestHandle {
     final invoker = Invoker.current;
     if (invoker == null) throw OutsideTestException();
     return TestHandle._(
-        invoker, StackTraceFormatter.current ?? _defaultFormatter);
+      invoker,
+      StackTraceFormatter.current ?? _defaultFormatter,
+    );
   }
 
   static final _defaultFormatter = StackTraceFormatter();

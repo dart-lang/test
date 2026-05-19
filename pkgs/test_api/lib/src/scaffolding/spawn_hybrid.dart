@@ -21,27 +21,33 @@ import 'test_structure.dart' show addTearDown;
 // package:test will only send a `Map` across this channel, but users of
 // `hybridMain` can send any json encodeable type.
 final _transformer = StreamChannelTransformer<dynamic, dynamic>(
-    StreamTransformer.fromHandlers(handleData: (message, sink) {
-  switch (message['type'] as String) {
-    case 'data':
-      sink.add(message['data']);
-      break;
+  StreamTransformer.fromHandlers(
+    handleData: (message, sink) {
+      switch (message['type'] as String) {
+        case 'data':
+          sink.add(message['data']);
+          break;
 
-    case 'print':
-      print(message['line']);
-      break;
+        case 'print':
+          print(message['line']);
+          break;
 
-    case 'error':
-      var error = RemoteException.deserialize(message['error']);
-      sink.addError(error.error, error.stackTrace);
-      break;
-  }
-}), StreamSinkTransformer.fromHandlers(handleData: (message, sink) {
-  // This is called synchronously from the user's `Sink.add()` call, so if
-  // [ensureJsonEncodable] throws here they'll get a helpful stack trace.
-  ensureJsonEncodable(message);
-  sink.add(message);
-}));
+        case 'error':
+          var error = RemoteException.deserialize(message['error'] as Map);
+          sink.addError(error.error, error.stackTrace);
+          break;
+      }
+    },
+  ),
+  StreamSinkTransformer.fromHandlers(
+    handleData: (message, sink) {
+      // This is called synchronously from the user's `Sink.add()` call, so if
+      // [ensureJsonEncodable] throws here they'll get a helpful stack trace.
+      ensureJsonEncodable(message);
+      sink.add(message);
+    },
+  ),
+);
 
 /// Spawns a VM isolate for the given [uri], which may be a [Uri] or a [String].
 ///
@@ -89,7 +95,11 @@ final _transformer = StreamChannelTransformer<dynamic, dynamic>(
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
+StreamChannel spawnHybridUri(
+  Object uri, {
+  Object? message,
+  bool stayAlive = false,
+}) {
   if (uri is String) {
     // Ensure that it can be parsed as a uri.
     Uri.parse(uri);
@@ -139,10 +149,16 @@ StreamChannel spawnHybridUri(uri, {Object? message, bool stayAlive = false}) {
 ///
 /// **Note**: If you use this API, be sure to add a dependency on the
 /// **`stream_channel` package, since you're using its API as well!
-StreamChannel spawnHybridCode(String dartCode,
-    {Object? message, bool stayAlive = false}) {
-  var uri = Uri.dataFromString(dartCode,
-      encoding: utf8, mimeType: 'application/dart');
+StreamChannel spawnHybridCode(
+  String dartCode, {
+  Object? message,
+  bool stayAlive = false,
+}) {
+  var uri = Uri.dataFromString(
+    dartCode,
+    encoding: utf8,
+    mimeType: 'application/dart',
+  );
   return _spawn(uri.toString(), message, stayAlive: stayAlive);
 }
 
@@ -150,8 +166,10 @@ StreamChannel spawnHybridCode(String dartCode,
 StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {
-    throw UnsupportedError("Can't connect to the test runner.\n"
-        'spawnHybridUri() is currently only supported within "dart test".');
+    throw UnsupportedError(
+      "Can't connect to the test runner.\n"
+      'spawnHybridUri() is currently only supported within "dart test".',
+    );
   }
 
   ensureJsonEncodable(message);
@@ -162,11 +180,11 @@ StreamChannel _spawn(String uri, Object? message, {bool stayAlive = false}) {
     'type': 'spawn-hybrid-uri',
     'url': uri,
     'message': message,
-    'channel': virtualChannel.id
+    'channel': virtualChannel.id,
   });
 
   if (!stayAlive) {
-    var disconnector = Disconnector();
+    var disconnector = Disconnector<void>();
     addTearDown(() => disconnector.disconnect());
     isolateChannel = isolateChannel.transform(disconnector);
   }
