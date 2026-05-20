@@ -9,7 +9,6 @@ import 'dart:isolate';
 
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/hooks.dart';
 
 import '../runner/plugin/remote_platform_helpers.dart';
 import '../runner/plugin/shared_platform_helpers.dart';
@@ -20,12 +19,7 @@ void internalBootstrapVmTest(Function Function() getMain, SendPort sendPort) {
     IsolateChannel<Object?>.connectSend(sendPort),
   );
   var testControlChannel = platformChannel.virtualChannel()
-    ..pipe(
-      IOOverrides.runWithIOOverrides(
-        () => serializeSuite(getMain),
-        _EarlyExitIOOverrides(),
-      ),
-    );
+    ..pipe(serializeSuite(getMain));
   platformChannel.sink.add(testControlChannel.id);
 
   platformChannel.stream.forEach((message) {
@@ -49,12 +43,7 @@ void internalBootstrapNativeTest(
   var socket = await Socket.connect(args[0], int.parse(args[1]));
   var platformChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
   var testControlChannel = platformChannel.virtualChannel()
-    ..pipe(
-      IOOverrides.runWithIOOverrides(
-        () => serializeSuite(getMain),
-        _EarlyExitIOOverrides(),
-      ),
-    );
+    ..pipe(serializeSuite(getMain));
   platformChannel.sink.add(testControlChannel.id);
 
   unawaited(
@@ -64,11 +53,4 @@ void internalBootstrapNativeTest(
       platformChannel.sink.add('done');
     }),
   );
-}
-
-final class _EarlyExitIOOverrides extends IOOverrides {
-  @override
-  Never exit(int code) {
-    throw TestFailure('exit($code) was called.');
-  }
 }

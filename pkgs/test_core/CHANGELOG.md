@@ -1,7 +1,6 @@
 ## 0.6.19-wip
 
 * Support using the OS platform selector to configure browser tests.
-* Treat calls to `exit` as test failures in VM tests.
 * Use a DevTools URL instead of a defunct observatory URL.
 
 ## 0.6.18
