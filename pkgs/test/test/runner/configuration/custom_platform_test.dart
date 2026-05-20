@@ -7,6 +7,7 @@ library;
 
 import 'dart:io';
 
+import 'package:matcher/expect.dart';
 import 'package:test/src/runner/browser/default_settings.dart';
 import 'package:test/test.dart';
 import 'package:test_api/src/backend/runtime.dart';

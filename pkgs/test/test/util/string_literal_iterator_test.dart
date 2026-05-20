@@ -7,6 +7,7 @@ library;
 
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/string_literal_iterator.dart';
 

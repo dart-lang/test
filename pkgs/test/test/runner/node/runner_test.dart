@@ -9,6 +9,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:matcher/expect.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';

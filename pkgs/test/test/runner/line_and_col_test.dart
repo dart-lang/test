@@ -5,6 +5,7 @@
 @TestOn('vm')
 library;
 
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;

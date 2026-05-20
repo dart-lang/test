@@ -8,6 +8,7 @@ library;
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:matcher/expect.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;

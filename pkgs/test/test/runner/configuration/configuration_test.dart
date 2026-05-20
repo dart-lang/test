@@ -6,6 +6,7 @@
 library;
 
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/runner/configuration/reporters.dart';
 import 'package:test_core/src/runner/suite.dart';

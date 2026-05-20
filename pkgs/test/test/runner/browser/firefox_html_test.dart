@@ -5,6 +5,7 @@
 @TestOn('firefox')
 library;
 
+import 'package:matcher/expect.dart';
 import 'package:test/src/runner/browser/dom.dart' as dom;
 import 'package:test/test.dart';
 

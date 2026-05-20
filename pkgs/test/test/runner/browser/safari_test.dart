@@ -6,6 +6,7 @@
 @Tags(['safari'])
 library;
 
+import 'package:matcher/expect.dart';
 import 'package:test/src/runner/browser/safari.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';

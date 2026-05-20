@@ -5,6 +5,7 @@
 @TestOn('vm')
 library;
 
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:async/async.dart';
+import 'package:matcher/expect.dart';
 import 'package:test/test.dart';
 
 import '../utils.dart';

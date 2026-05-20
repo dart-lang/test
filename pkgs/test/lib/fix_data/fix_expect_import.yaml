@@ -1,0 +1,1366 @@
+version: 1
+transforms:
+  - title: 'Replace CustomMatcher'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'CustomMatcher'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'CustomMatcher'
+  - title: 'Replace Description'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'Description'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'Description'
+  - title: 'Replace isInstanceOf'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'isInstanceOf'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'isInstanceOf'
+  - title: 'Replace Matcher'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'Matcher'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'Matcher'
+  - title: 'Replace StreamMatcher'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'StreamMatcher'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'StreamMatcher'
+  - title: 'Replace StringDescription'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'StringDescription'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'StringDescription'
+  - title: 'Replace Throws'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'Throws'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'Throws'
+  - title: 'Replace TypeMatcher'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      class: 'TypeMatcher'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          class: 'TypeMatcher'
+  - title: 'Replace anything'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'anything'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'anything'
+  - title: 'Replace isArgumentError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isArgumentError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isArgumentError'
+  - title: 'Replace isCastError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isCastError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isCastError'
+  - title: 'Replace isConcurrentModificationError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isConcurrentModificationError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isConcurrentModificationError'
+  - title: 'Replace isCyclicInitializationError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isCyclicInitializationError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isCyclicInitializationError'
+  - title: 'Replace isEmpty'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isEmpty'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isEmpty'
+  - title: 'Replace isException'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isException'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isException'
+  - title: 'Replace isFalse'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isFalse'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isFalse'
+  - title: 'Replace isFormatException'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isFormatException'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isFormatException'
+  - title: 'Replace isList'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isList'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isList'
+  - title: 'Replace isMap'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isMap'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isMap'
+  - title: 'Replace isNaN'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNaN'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNaN'
+  - title: 'Replace isNegative'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNegative'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNegative'
+  - title: 'Replace isNonNegative'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNonNegative'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNonNegative'
+  - title: 'Replace isNonPositive'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNonPositive'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNonPositive'
+  - title: 'Replace isNonZero'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNonZero'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNonZero'
+  - title: 'Replace isNoSuchMethodError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNoSuchMethodError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNoSuchMethodError'
+  - title: 'Replace isNotEmpty'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNotEmpty'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNotEmpty'
+  - title: 'Replace isNotNaN'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNotNaN'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNotNaN'
+  - title: 'Replace isNotNull'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNotNull'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNotNull'
+  - title: 'Replace isNull'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNull'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNull'
+  - title: 'Replace isNullThrownError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isNullThrownError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isNullThrownError'
+  - title: 'Replace isPositive'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isPositive'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isPositive'
+  - title: 'Replace isRangeError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isRangeError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isRangeError'
+  - title: 'Replace isStateError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isStateError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isStateError'
+  - title: 'Replace isTrue'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isTrue'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isTrue'
+  - title: 'Replace isUnimplementedError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isUnimplementedError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isUnimplementedError'
+  - title: 'Replace isUnsupportedError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isUnsupportedError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isUnsupportedError'
+  - title: 'Replace isZero'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'isZero'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'isZero'
+  - title: 'Replace returnsNormally'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'returnsNormally'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'returnsNormally'
+  - title: 'Replace throws'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throws'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throws'
+  - title: 'Replace throwsArgumentError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsArgumentError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsArgumentError'
+  - title: 'Replace throwsConcurrentModificationError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsConcurrentModificationError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsConcurrentModificationError'
+  - title: 'Replace throwsCyclicInitializationError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsCyclicInitializationError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsCyclicInitializationError'
+  - title: 'Replace throwsException'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsException'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsException'
+  - title: 'Replace throwsFormatException'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsFormatException'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsFormatException'
+  - title: 'Replace throwsNoSuchMethodError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsNoSuchMethodError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsNoSuchMethodError'
+  - title: 'Replace throwsNullThrownError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsNullThrownError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsNullThrownError'
+  - title: 'Replace throwsRangeError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsRangeError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsRangeError'
+  - title: 'Replace throwsStateError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsStateError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsStateError'
+  - title: 'Replace throwsUnimplementedError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsUnimplementedError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsUnimplementedError'
+  - title: 'Replace throwsUnsupportedError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'throwsUnsupportedError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'throwsUnsupportedError'
+  - title: 'Replace completes'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'completes'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'completes'
+  - title: 'Replace doesNotComplete'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'doesNotComplete'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'doesNotComplete'
+  - title: 'Replace emitsDone'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'emitsDone'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'emitsDone'
+  - title: 'Replace neverCalled'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      variable: 'neverCalled'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          variable: 'neverCalled'
+  - title: 'Replace addStateInfo'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'addStateInfo'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'addStateInfo'
+  - title: 'Replace allOf'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'allOf'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'allOf'
+  - title: 'Replace anyElement'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'anyElement'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'anyElement'
+  - title: 'Replace anyOf'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'anyOf'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'anyOf'
+  - title: 'Replace closeTo'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'closeTo'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'closeTo'
+  - title: 'Replace collapseWhitespace'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'collapseWhitespace'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'collapseWhitespace'
+  - title: 'Replace completion'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'completion'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'completion'
+  - title: 'Replace contains'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'contains'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'contains'
+  - title: 'Replace containsAll'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'containsAll'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'containsAll'
+  - title: 'Replace containsAllInOrder'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'containsAllInOrder'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'containsAllInOrder'
+  - title: 'Replace containsOnce'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'containsOnce'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'containsOnce'
+  - title: 'Replace containsPair'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'containsPair'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'containsPair'
+  - title: 'Replace containsValue'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'containsValue'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'containsValue'
+  - title: 'Replace emits'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'emits'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'emits'
+  - title: 'Replace emitsAnyOf'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'emitsAnyOf'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'emitsAnyOf'
+  - title: 'Replace emitsError'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'emitsError'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'emitsError'
+  - title: 'Replace emitsInAnyOrder'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'emitsInAnyOrder'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'emitsInAnyOrder'
+  - title: 'Replace emitsInOrder'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'emitsInOrder'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'emitsInOrder'
+  - title: 'Replace emitsThrough'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'emitsThrough'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'emitsThrough'
+  - title: 'Replace endsWith'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'endsWith'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'endsWith'
+  - title: 'Replace equals'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'equals'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'equals'
+  - title: 'Replace equalsIgnoringCase'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'equalsIgnoringCase'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'equalsIgnoringCase'
+  - title: 'Replace equalsIgnoringWhitespace'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'equalsIgnoringWhitespace'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'equalsIgnoringWhitespace'
+  - title: 'Replace escape'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'escape'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'escape'
+  - title: 'Replace everyElement'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'everyElement'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'everyElement'
+  - title: 'Replace expect'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expect'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expect'
+  - title: 'Replace expectAsync'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync'
+  - title: 'Replace expectAsync0'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync0'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync0'
+  - title: 'Replace expectAsync1'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync1'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync1'
+  - title: 'Replace expectAsync2'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync2'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync2'
+  - title: 'Replace expectAsync3'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync3'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync3'
+  - title: 'Replace expectAsync4'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync4'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync4'
+  - title: 'Replace expectAsync5'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync5'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync5'
+  - title: 'Replace expectAsync6'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsync6'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsync6'
+  - title: 'Replace expectAsyncUntil0'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil0'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil0'
+  - title: 'Replace expectAsyncUntil1'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil1'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil1'
+  - title: 'Replace expectAsyncUntil2'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil2'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil2'
+  - title: 'Replace expectAsyncUntil3'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil3'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil3'
+  - title: 'Replace expectAsyncUntil4'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil4'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil4'
+  - title: 'Replace expectAsyncUntil5'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil5'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil5'
+  - title: 'Replace expectAsyncUntil6'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectAsyncUntil6'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectAsyncUntil6'
+  - title: 'Replace expectLater'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'expectLater'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'expectLater'
+  - title: 'Replace fail'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'fail'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'fail'
+  - title: 'Replace greaterThan'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'greaterThan'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'greaterThan'
+  - title: 'Replace greaterThanOrEqualTo'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'greaterThanOrEqualTo'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'greaterThanOrEqualTo'
+  - title: 'Replace hasLength'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'hasLength'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'hasLength'
+  - title: 'Replace inClosedOpenRange'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'inClosedOpenRange'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'inClosedOpenRange'
+  - title: 'Replace inExclusiveRange'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'inExclusiveRange'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'inExclusiveRange'
+  - title: 'Replace inInclusiveRange'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'inInclusiveRange'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'inInclusiveRange'
+  - title: 'Replace inOpenClosedRange'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'inOpenClosedRange'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'inOpenClosedRange'
+  - title: 'Replace isA'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'isA'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'isA'
+  - title: 'Replace isIn'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'isIn'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'isIn'
+  - title: 'Replace isNot'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'isNot'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'isNot'
+  - title: 'Replace lessThan'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'lessThan'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'lessThan'
+  - title: 'Replace lessThanOrEqualTo'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'lessThanOrEqualTo'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'lessThanOrEqualTo'
+  - title: 'Replace matches'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'matches'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'matches'
+  - title: 'Replace mayEmit'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'mayEmit'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'mayEmit'
+  - title: 'Replace mayEmitMultiple'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'mayEmitMultiple'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'mayEmitMultiple'
+  - title: 'Replace neverEmits'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'neverEmits'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'neverEmits'
+  - title: 'Replace orderedEquals'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'orderedEquals'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'orderedEquals'
+  - title: 'Replace pairwiseCompare'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'pairwiseCompare'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'pairwiseCompare'
+  - title: 'Replace predicate'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'predicate'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'predicate'
+  - title: 'Replace prints'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'prints'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'prints'
+  - title: 'Replace same'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'same'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'same'
+  - title: 'Replace startsWith'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'startsWith'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'startsWith'
+  - title: 'Replace stringContainsInOrder'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'stringContainsInOrder'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'stringContainsInOrder'
+  - title: 'Replace throwsA'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'throwsA'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'throwsA'
+  - title: 'Replace unorderedEquals'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'unorderedEquals'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'unorderedEquals'
+  - title: 'Replace unorderedMatches'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'unorderedMatches'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'unorderedMatches'
+  - title: 'Replace wrapMatcher'
+    date: 2024-11-07
+    bulkApply: true
+    element:
+      uris: ['package:test/test.dart']
+      function: 'wrapMatcher'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:matcher/expect.dart']
+          function: 'wrapMatcher'
