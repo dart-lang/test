@@ -13,7 +13,7 @@ void main() {
       check('bob').contains('bo');
       check('bob').isRejectedBy(
         (it) => it.contains('kayleb'),
-        which: ["Does not contain 'kayleb'"],
+        which: ["does not contain 'kayleb'"],
       );
     });
     test('length', () {
