@@ -298,14 +298,14 @@ stderr: ${processResult.stderr}''');
     try {
       var precompiledPath = _config.suiteDefaults.precompiledPath;
       if (precompiledPath != null) {
-        return _spawnPrecompiledIsolate(
+        return await _spawnPrecompiledIsolate(
           path,
           message,
           precompiledPath,
           compiler,
         );
       }
-      return switch (compiler) {
+      return await switch (compiler) {
         Compiler.kernel => _spawnIsolateWithUri(
           await _compileToKernel(path, suiteMetadata),
           message,
