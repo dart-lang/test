@@ -140,8 +140,8 @@ class _UnorderedEquals extends _UnorderedMatches {
   final List _expectedValues;
 
   _UnorderedEquals(Iterable expected)
-    : _expectedValues = expected.toList(),
-      super(expected.map(equals));
+      : _expectedValues = expected.toList(),
+        super(expected.map(equals));
 
   @override
   Description describe(Description description) => description
@@ -168,8 +168,8 @@ class _UnorderedMatches extends _IterableMatcher {
   final bool _allowUnmatchedValues;
 
   _UnorderedMatches(Iterable expected, {bool allowUnmatchedValues = false})
-    : _expected = expected.map(wrapMatcher).toList(),
-      _allowUnmatchedValues = allowUnmatchedValues;
+      : _expected = expected.map(wrapMatcher).toList(),
+        _allowUnmatchedValues = allowUnmatchedValues;
 
   String? _test(List values) {
     // Check the lengths are the same.
@@ -193,25 +193,21 @@ class _UnorderedMatches extends _IterableMatcher {
     for (var valueIndex = 0; valueIndex < values.length; valueIndex++) {
       _findPairing(edges, valueIndex, matched);
     }
-    for (
-      var matcherIndex = 0;
-      matcherIndex < _expected.length;
-      matcherIndex++
-    ) {
+    for (var matcherIndex = 0;
+        matcherIndex < _expected.length;
+        matcherIndex++) {
       if (matched[matcherIndex] == null) {
         final description = StringDescription()
             .add('has no match for ')
             .addDescriptionOf(_expected[matcherIndex])
             .add(' at index $matcherIndex');
-        final remainingUnmatched = matched
-            .sublist(matcherIndex + 1)
-            .where((m) => m == null)
-            .length;
+        final remainingUnmatched =
+            matched.sublist(matcherIndex + 1).where((m) => m == null).length;
         return remainingUnmatched == 0
             ? description.toString()
             : description
-                  .add(' along with $remainingUnmatched other unmatched')
-                  .toString();
+                .add(' along with $remainingUnmatched other unmatched')
+                .toString();
       }
     }
     return null;
@@ -233,7 +229,8 @@ class _UnorderedMatches extends _IterableMatcher {
     Description mismatchDescription,
     Map matchState,
     bool verbose,
-  ) => mismatchDescription.add(_test(item.toList())!);
+  ) =>
+      mismatchDescription.add(_test(item.toList())!);
 
   /// Returns `true` if the value at [valueIndex] can be paired with some
   /// unmatched matcher and updates the state of [matched].
@@ -244,7 +241,8 @@ class _UnorderedMatches extends _IterableMatcher {
     List<List<int>> edges,
     int valueIndex,
     List<int?> matched,
-  ) => _findPairingInner(edges, valueIndex, matched, <int>{});
+  ) =>
+      _findPairingInner(edges, valueIndex, matched, <int>{});
 
   /// Implementation of [_findPairing], tracks [reserved] which are the
   /// matchers that have been used _during_ this search.
@@ -281,7 +279,8 @@ Matcher pairwiseCompare<S, T>(
   Iterable<S> expected,
   bool Function(S, T) comparator,
   String description,
-) => _PairwiseCompare(expected, comparator, description);
+) =>
+    _PairwiseCompare(expected, comparator, description);
 
 typedef _Comparator<S, T> = bool Function(S a, T b);
 
@@ -362,8 +361,8 @@ class _ContainsAll extends _UnorderedMatches {
   final Iterable _unwrappedExpected;
 
   _ContainsAll(Iterable expected)
-    : _unwrappedExpected = expected,
-      super(expected.map(wrapMatcher), allowUnmatchedValues: true);
+      : _unwrappedExpected = expected,
+        super(expected.map(wrapMatcher), allowUnmatchedValues: true);
   @override
   Description describe(Description description) =>
       description.add('contains all of ').addDescriptionOf(_unwrappedExpected);
@@ -414,7 +413,8 @@ class _ContainsAllInOrder extends _IterableMatcher {
     Description mismatchDescription,
     Map matchState,
     bool verbose,
-  ) => mismatchDescription.add(_test(item, matchState)!);
+  ) =>
+      mismatchDescription.add(_test(item, matchState)!);
 }
 
 /// Matches [Iterable]s where exactly one element matches the expected
@@ -463,7 +463,8 @@ class _ContainsOnce extends _IterableMatcher {
     Description mismatchDescription,
     Map matchState,
     bool verbose,
-  ) => mismatchDescription.add(_test(item, matchState)!);
+  ) =>
+      mismatchDescription.add(_test(item, matchState)!);
 }
 
 /// Matches [Iterable]s which are sorted.
@@ -487,8 +488,8 @@ class _IsSorted<T, K> extends _IterableMatcher<T> {
   final Comparator<K> _compare;
 
   _IsSorted(K Function(T) keyOf, Comparator<K> compare)
-    : _keyOf = keyOf,
-      _compare = compare;
+      : _keyOf = keyOf,
+        _compare = compare;
 
   @override
   bool typedMatches(Iterable<T> item, Map matchState) {

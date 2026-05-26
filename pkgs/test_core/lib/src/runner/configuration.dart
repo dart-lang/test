@@ -130,6 +130,10 @@ class Configuration {
   /// See [shardIndex] for details.
   final int? totalShards;
 
+  /// How to distribute tests across shards.
+  String get shardBy => _shardBy ?? 'test';
+  final String? _shardBy;
+
   /// The list of packages to fold when producing [StackTrace]s.
   Set<String> get foldTraceExcept => _foldTraceExcept ?? {};
   final Set<String>? _foldTraceExcept;
@@ -283,6 +287,7 @@ class Configuration {
     required int? concurrency,
     required int? shardIndex,
     required int? totalShards,
+    required String? shardBy,
     required Map<String, Set<TestSelection>>? testSelections,
     required Iterable<String>? foldTraceExcept,
     required Iterable<String>? foldTraceOnly,
@@ -340,6 +345,7 @@ class Configuration {
       concurrency: concurrency,
       shardIndex: shardIndex,
       totalShards: totalShards,
+      shardBy: shardBy,
       testSelections: testSelections,
       foldTraceExcept: foldTraceExcept,
       foldTraceOnly: foldTraceOnly,
@@ -403,6 +409,7 @@ class Configuration {
     int? concurrency,
     int? shardIndex,
     int? totalShards,
+    String? shardBy,
     Map<String, Set<TestSelection>>? testSelections,
     Iterable<String>? foldTraceExcept,
     Iterable<String>? foldTraceOnly,
@@ -458,6 +465,7 @@ class Configuration {
     concurrency: concurrency,
     shardIndex: shardIndex,
     totalShards: totalShards,
+    shardBy: shardBy,
     testSelections: testSelections,
     foldTraceExcept: foldTraceExcept,
     foldTraceOnly: foldTraceOnly,
@@ -531,6 +539,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
+    shardBy: null,
     testSelections: null,
     filename: null,
     chosenPresets: null,
@@ -599,6 +608,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
+    shardBy: null,
     testSelections: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
@@ -669,6 +679,7 @@ class Configuration {
     coveragePackages: null,
     shardIndex: null,
     totalShards: null,
+    shardBy: null,
     testSelections: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
@@ -735,6 +746,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
+    shardBy: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
     chosenPresets: null,
@@ -806,6 +818,7 @@ class Configuration {
     required int? concurrency,
     required this.shardIndex,
     required this.totalShards,
+    required String? shardBy,
     required Map<String, Set<TestSelection>>? testSelections,
     required Iterable<String>? foldTraceExcept,
     required Iterable<String>? foldTraceOnly,
@@ -821,7 +834,8 @@ class Configuration {
     required BooleanSelector? excludeTags,
     required Iterable<Pattern>? globalPatterns,
     required SuiteConfiguration? suiteDefaults,
-  }) : _help = help,
+  }) : _shardBy = shardBy,
+       _help = help,
        _version = version,
        _pauseAfterLoad = pauseAfterLoad,
        _debug = debug,
@@ -899,6 +913,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
+    shardBy: null,
     testSelections: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
@@ -1002,6 +1017,7 @@ class Configuration {
       concurrency: other._concurrency ?? _concurrency,
       shardIndex: other.shardIndex ?? shardIndex,
       totalShards: other.totalShards ?? totalShards,
+      shardBy: other._shardBy ?? _shardBy,
       testSelections: other._testSelections ?? _testSelections,
       foldTraceExcept: foldTraceExcept,
       foldTraceOnly: foldTraceOnly,
@@ -1059,6 +1075,7 @@ class Configuration {
     int? concurrency,
     int? shardIndex,
     int? totalShards,
+    String? shardBy,
     Map<String, Set<TestSelection>>? testSelections,
     Iterable<String>? exceptPackages,
     Iterable<String>? onlyPackages,
@@ -1110,6 +1127,7 @@ class Configuration {
       concurrency: concurrency ?? _concurrency,
       shardIndex: shardIndex ?? this.shardIndex,
       totalShards: totalShards ?? this.totalShards,
+      shardBy: shardBy ?? _shardBy,
       testSelections: testSelections ?? _testSelections,
       foldTraceExcept: exceptPackages ?? _foldTraceExcept,
       foldTraceOnly: onlyPackages ?? _foldTraceOnly,

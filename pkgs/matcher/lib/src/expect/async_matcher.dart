@@ -68,5 +68,6 @@ abstract class AsyncMatcher extends Matcher {
     Description mismatchDescription,
     Map matchState,
     bool verbose,
-  ) => StringDescription(matchState[this] as String);
+  ) =>
+      StringDescription(matchState[this] as String);
 }

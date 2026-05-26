@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
@@ -269,25 +270,76 @@ class Runner {
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return StreamGroup.merge(
-      _config.testSelections.entries.map((pathEntry) {
+    final Stream<LoadSuite> source;
+    if (_config.totalShards != null && _config.shardBy == 'file') {
+      final allFiles = <String>[];
+      for (var pathEntry in _config.testSelections.entries) {
         final testPath = pathEntry.key;
-        final testSelections = pathEntry.value;
-        final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
         if (Directory(testPath).existsSync()) {
-          return _loader.loadDir(testPath, suiteConfig);
+          allFiles.addAll(
+            Directory(testPath)
+                .listSync(recursive: true)
+                .whereType<File>()
+                .map((f) => f.path)
+                .where((path) => _config.filename.matches(p.basename(path))),
+          );
         } else if (File(testPath).existsSync()) {
-          return _loader.loadFile(testPath, suiteConfig);
+          allFiles.add(testPath);
         } else {
-          return Stream.fromIterable([
-            LoadSuite.forLoadException(
-              LoadException(testPath, 'Does not exist.'),
-              suiteConfig,
-            ),
-          ]);
+          allFiles.add(testPath);
         }
-      }),
-    ).map((loadSuite) {
+      }
+
+      allFiles.sort();
+
+      final shardSize = allFiles.length / _config.totalShards!;
+      final shardStart = (shardSize * _config.shardIndex!).round();
+      final shardEnd = (shardSize * (_config.shardIndex! + 1)).round();
+      final shardFiles = allFiles.sublist(shardStart, shardEnd);
+
+      source = StreamGroup.merge(
+        shardFiles.map((path) {
+          final key = _config.testSelections.keys.firstWhere(
+            (k) => path == k || p.isWithin(k, path),
+            orElse: () => _config.testSelections.keys.first,
+          );
+          final testSelections = _config.testSelections[key]!;
+          final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+
+          if (!File(path).existsSync() && !Directory(path).existsSync()) {
+            return Stream.fromIterable([
+              LoadSuite.forLoadException(
+                LoadException(path, 'Does not exist.'),
+                suiteConfig,
+              ),
+            ]);
+          }
+          return _loader.loadFile(path, suiteConfig);
+        }),
+      );
+    } else {
+      source = StreamGroup.merge(
+        _config.testSelections.entries.map((pathEntry) {
+          final testPath = pathEntry.key;
+          final testSelections = pathEntry.value;
+          final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+          if (Directory(testPath).existsSync()) {
+            return _loader.loadDir(testPath, suiteConfig);
+          } else if (File(testPath).existsSync()) {
+            return _loader.loadFile(testPath, suiteConfig);
+          } else {
+            return Stream.fromIterable([
+              LoadSuite.forLoadException(
+                LoadException(testPath, 'Does not exist.'),
+                suiteConfig,
+              ),
+            ]);
+          }
+        }),
+      );
+    }
+
+    return source.map((loadSuite) {
       return loadSuite.changeSuite((suite) {
         _warnForUnknownTags(suite);
 
@@ -482,15 +534,15 @@ class Runner {
     return 'the suite itself';
   }
 
-  /// If sharding is enabled, filters [suite] to only include the tests that
-  /// should be run in this shard.
+  /// If sharding by "test" is enabled, filters [suite] to only include the
+  /// tests that should be run in this shard.
   ///
   /// We just take a slice of the tests in each suite corresponding to the shard
-  /// index. This makes the tests pretty tests across shards, and since the
+  /// index. This makes the tests pretty even across shards, and since the
   /// tests are continuous, makes us more likely to be able to re-use
   /// `setUpAll()` logic.
   RunnerSuite _shardSuite(RunnerSuite suite) {
-    if (_config.totalShards == null) return suite;
+    if (_config.totalShards == null || _config.shardBy == 'file') return suite;
 
     var shardSize = suite.group.testCount / _config.totalShards!;
     var shardIndex = _config.shardIndex!;

@@ -80,14 +80,13 @@ class _ExpectedFunction<T> {
     String? id,
     String? reason,
     bool Function()? isDone,
-  }) : _callback = callback,
-       _minExpectedCalls = minExpected,
-       _maxExpectedCalls = (maxExpected == 0 && minExpected > 0)
-           ? minExpected
-           : maxExpected,
-       _isDone = isDone,
-       _reason = reason == null ? '' : '\n$reason',
-       _id = _makeCallbackId(id, callback) {
+  })  : _callback = callback,
+        _minExpectedCalls = minExpected,
+        _maxExpectedCalls =
+            (maxExpected == 0 && minExpected > 0) ? minExpected : maxExpected,
+        _isDone = isDone,
+        _reason = reason == null ? '' : '\n$reason',
+        _id = _makeCallbackId(id, callback) {
     try {
       _test = TestHandle.current;
     } on OutsideTestException {
@@ -162,14 +161,16 @@ class _ExpectedFunction<T> {
     Object? a0 = placeholder,
     Object? a1 = placeholder,
     Object? a2 = placeholder,
-  ]) => max6(a0, a1, a2);
+  ]) =>
+      max6(a0, a1, a2);
 
   T max4([
     Object? a0 = placeholder,
     Object? a1 = placeholder,
     Object? a2 = placeholder,
     Object? a3 = placeholder,
-  ]) => max6(a0, a1, a2, a3);
+  ]) =>
+      max6(a0, a1, a2, a3);
 
   T max5([
     Object? a0 = placeholder,
@@ -177,7 +178,8 @@ class _ExpectedFunction<T> {
     Object? a2 = placeholder,
     Object? a3 = placeholder,
     Object? a4 = placeholder,
-  ]) => max6(a0, a1, a2, a3, a4);
+  ]) =>
+      max6(a0, a1, a2, a3, a4);
 
   T max6([
     Object? a0 = placeholder,
@@ -186,7 +188,8 @@ class _ExpectedFunction<T> {
     Object? a3 = placeholder,
     Object? a4 = placeholder,
     Object? a5 = placeholder,
-  ]) => _run([a0, a1, a2, a3, a4, a5].where((a) => a != placeholder));
+  ]) =>
+      _run([a0, a1, a2, a3, a4, a5].where((a) => a != placeholder));
 
   /// Runs the wrapped function with [args] and returns its return value.
   T _run(Iterable args) {
@@ -237,13 +240,14 @@ Function expectAsync(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<Object?>(
-  callback,
-  count,
-  max,
-  id: id,
-  reason: reason,
-).func;
+}) =>
+    _ExpectedFunction<Object?>(
+      callback,
+      count,
+      max,
+      id: id,
+      reason: reason,
+    ).func;
 
 /// Informs the framework that the given [callback] of arity 0 is expected to be
 /// called [count] number of times (by default 1).
@@ -272,7 +276,8 @@ Func0<T> expectAsync0<T>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max0;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max0;
 
 /// Informs the framework that the given [callback] of arity 1 is expected to be
 /// called [count] number of times (by default 1).
@@ -301,7 +306,8 @@ Func1<T, A> expectAsync1<T, A>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max1;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max1;
 
 /// Informs the framework that the given [callback] of arity 2 is expected to be
 /// called [count] number of times (by default 1).
@@ -330,7 +336,8 @@ Func2<T, A, B> expectAsync2<T, A, B>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max2;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max2;
 
 /// Informs the framework that the given [callback] of arity 3 is expected to be
 /// called [count] number of times (by default 1).
@@ -359,7 +366,8 @@ Func3<T, A, B, C> expectAsync3<T, A, B, C>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max3;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max3;
 
 /// Informs the framework that the given [callback] of arity 4 is expected to be
 /// called [count] number of times (by default 1).
@@ -388,7 +396,8 @@ Func4<T, A, B, C, D> expectAsync4<T, A, B, C, D>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max4;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max4;
 
 /// Informs the framework that the given [callback] of arity 5 is expected to be
 /// called [count] number of times (by default 1).
@@ -417,7 +426,8 @@ Func5<T, A, B, C, D, E> expectAsync5<T, A, B, C, D, E>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max5;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max5;
 
 /// Informs the framework that the given [callback] of arity 6 is expected to be
 /// called [count] number of times (by default 1).
@@ -446,7 +456,8 @@ Func6<T, A, B, C, D, E, F> expectAsync6<T, A, B, C, D, E, F>(
   int max = 0,
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max6;
+}) =>
+    _ExpectedFunction<T>(callback, count, max, id: id, reason: reason).max6;
 
 /// This function is deprecated because it doesn't work well with strong mode.
 /// Use [expectAsyncUntil0], [expectAsyncUntil1],
@@ -458,14 +469,15 @@ Function expectAsyncUntil(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<Object?>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).func;
+}) =>
+    _ExpectedFunction<Object?>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).func;
 
 /// Informs the framework that the given [callback] of arity 0 is expected to be
 /// called until [isDone] returns true.
@@ -489,14 +501,15 @@ Func0<T> expectAsyncUntil0<T>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max0;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max0;
 
 /// Informs the framework that the given [callback] of arity 1 is expected to be
 /// called until [isDone] returns true.
@@ -520,14 +533,15 @@ Func1<T, A> expectAsyncUntil1<T, A>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max1;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max1;
 
 /// Informs the framework that the given [callback] of arity 2 is expected to be
 /// called until [isDone] returns true.
@@ -551,14 +565,15 @@ Func2<T, A, B> expectAsyncUntil2<T, A, B>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max2;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max2;
 
 /// Informs the framework that the given [callback] of arity 3 is expected to be
 /// called until [isDone] returns true.
@@ -582,14 +597,15 @@ Func3<T, A, B, C> expectAsyncUntil3<T, A, B, C>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max3;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max3;
 
 /// Informs the framework that the given [callback] of arity 4 is expected to be
 /// called until [isDone] returns true.
@@ -613,14 +629,15 @@ Func4<T, A, B, C, D> expectAsyncUntil4<T, A, B, C, D>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max4;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max4;
 
 /// Informs the framework that the given [callback] of arity 5 is expected to be
 /// called until [isDone] returns true.
@@ -644,14 +661,15 @@ Func5<T, A, B, C, D, E> expectAsyncUntil5<T, A, B, C, D, E>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max5;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max5;
 
 /// Informs the framework that the given [callback] of arity 6 is expected to be
 /// called until [isDone] returns true.
@@ -675,11 +693,12 @@ Func6<T, A, B, C, D, E, F> expectAsyncUntil6<T, A, B, C, D, E, F>(
   bool Function() isDone, {
   String? id,
   String? reason,
-}) => _ExpectedFunction<T>(
-  callback,
-  0,
-  -1,
-  id: id,
-  reason: reason,
-  isDone: isDone,
-).max6;
+}) =>
+    _ExpectedFunction<T>(
+      callback,
+      0,
+      -1,
+      id: id,
+      reason: reason,
+      isDone: isDone,
+    ).max6;

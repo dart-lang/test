@@ -178,7 +178,8 @@ void main() {
   });
 
   group('with count', () {
-    test("won't allow the test to complete until it's called at least that "
+    test(
+        "won't allow the test to complete until it's called at least that "
         'many times', () async {
       late void Function() callback;
       final monitor = TestCaseMonitor.start(() {

@@ -41,5 +41,6 @@ abstract class FeatureMatcher<T> extends TypeMatcher<T> {
     Description mismatchDescription,
     Map matchState,
     bool verbose,
-  ) => mismatchDescription;
+  ) =>
+      mismatchDescription;
 }

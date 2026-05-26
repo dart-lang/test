@@ -35,8 +35,7 @@ Null Function([
   Object?,
   Object?,
   Object?,
-])
-get neverCalled {
+]) get neverCalled {
   // Make sure the test stays alive long enough to call the function if it's
   // going to.
   expect(pumpEventQueue(), completes);

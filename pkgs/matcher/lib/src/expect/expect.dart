@@ -21,14 +21,13 @@ import 'util/pretty_print.dart';
 /// The type used for functions that can be used to build up error reports
 /// upon failures in [expect].
 @Deprecated('Will be removed in 0.13.0.')
-typedef ErrorFormatter =
-    String Function(
-      Object? actual,
-      Matcher matcher,
-      String? reason,
-      Map matchState,
-      bool verbose,
-    );
+typedef ErrorFormatter = String Function(
+  Object? actual,
+  Matcher matcher,
+  String? reason,
+  Map matchState,
+  bool verbose,
+);
 
 /// Assert that [actual] matches [matcher].
 ///
@@ -88,7 +87,8 @@ Future expectLater(
   dynamic matcher, {
   String? reason,
   Object? /* String|bool */ skip,
-}) => _expect(actual, matcher, reason: reason, skip: skip);
+}) =>
+    _expect(actual, matcher, reason: reason, skip: skip);
 
 /// The implementation of [expect] and [expectLater].
 Future _expect(
@@ -149,23 +149,21 @@ Future _expect(
       fail(formatFailure(matcher, actual, result, reason: reason));
     } else if (result is Future) {
       final outstandingWork = test.markPending();
-      return result
-          .then((realResult) {
-            if (realResult == null) return;
-            fail(
-              formatFailure(
-                matcher as Matcher,
-                actual,
-                realResult as String,
-                reason: reason,
-              ),
-            );
-          })
-          .whenComplete(
-            // Always remove this, in case the failure is caught and handled
-            // gracefully.
-            outstandingWork.complete,
-          );
+      return result.then((realResult) {
+        if (realResult == null) return;
+        fail(
+          formatFailure(
+            matcher as Matcher,
+            actual,
+            realResult as String,
+            reason: reason,
+          ),
+        );
+      }).whenComplete(
+        // Always remove this, in case the failure is caught and handled
+        // gracefully.
+        outstandingWork.complete,
+      );
     }
 
     return Future.sync(() {});
