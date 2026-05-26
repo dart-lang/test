@@ -84,6 +84,8 @@ $_runtimeCompilers
                                       (defaults to "$_defaultConcurrency")
     --total-shards                    The total number of invocations of the test runner being run.
     --shard-index                     The index of this test runner invocation (of --total-shards).
+    --shard-by                        How to distribute tests across shards.
+                                      [test (default), file]
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
     --suite-load-timeout              The timeout for loading a test suite. Loading the test suite includes compiling the test suite. For example: 15s, 2m, none
