@@ -15,7 +15,7 @@ class _BadCustomMatcher extends CustomMatcher {
 
 class _HasPrice extends CustomMatcher {
   _HasPrice(Object? matcher)
-      : super('Widget with a price that is', 'price', matcher);
+    : super('Widget with a price that is', 'price', matcher);
   @override
   Object? featureValueOf(Object? actual) => (actual as Widget).price;
 }

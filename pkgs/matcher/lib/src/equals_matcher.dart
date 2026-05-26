@@ -120,7 +120,7 @@ class _DeepMatcher extends Matcher {
     if (actual is Iterable) {
       var expectedIterator = expected.iterator;
       var actualIterator = actual.iterator;
-      for (var index = 0;; index++) {
+      for (var index = 0; ; index++) {
         // Advance in lockstep.
         var expectedNext = expectedIterator.moveNext();
         var actualNext = actualIterator.moveNext();
@@ -379,6 +379,6 @@ class _Mismatch {
   });
 
   _Mismatch.simple(this.location, this.actual, String problem)
-      : describeProblem = ((description, verbose) => description.add(problem)),
-        instead = false;
+    : describeProblem = ((description, verbose) => description.add(problem)),
+      instead = false;
 }

@@ -39,8 +39,7 @@ final Matcher completes = const _Completes(null);
 Matcher completion(
   Object? matcher, [
   @Deprecated('this parameter is ignored') String? description,
-]) =>
-    _Completes(wrapMatcher(matcher));
+]) => _Completes(wrapMatcher(matcher));
 
 class _Completes extends AsyncMatcher {
   final Matcher? _matcher;

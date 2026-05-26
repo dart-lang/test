@@ -59,6 +59,5 @@ abstract class Matcher {
     Description mismatchDescription,
     Map matchState,
     bool verbose,
-  ) =>
-      mismatchDescription;
+  ) => mismatchDescription;
 }

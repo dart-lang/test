@@ -132,10 +132,10 @@ Matcher _hasPrice(Object matcher) =>
     const TypeMatcher<Widget>().having((e) => e.price, 'price', matcher);
 
 Matcher _badCustomMatcher() => const TypeMatcher<Widget>().having(
-      (e) => throw Exception('bang'),
-      'feature',
-      {1: 'a'},
-    );
+  (e) => throw Exception('bang'),
+  'feature',
+  {1: 'a'},
+);
 
 class CustomRangeError extends RangeError {
   CustomRangeError.range(

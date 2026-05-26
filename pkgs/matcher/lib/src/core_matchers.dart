@@ -328,8 +328,7 @@ class _In<T> extends FeatureMatcher<T> {
 Matcher predicate<T>(
   bool Function(T) f, [
   String description = 'satisfies function',
-]) =>
-    _Predicate(f, description);
+]) => _Predicate(f, description);
 
 class _Predicate<T> extends FeatureMatcher<T> {
   final bool Function(T) _matcher;

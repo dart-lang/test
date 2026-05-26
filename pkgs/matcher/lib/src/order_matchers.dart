@@ -12,12 +12,12 @@ Matcher greaterThan(Object value) =>
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to the given [value].
 Matcher greaterThanOrEqualTo(Object value) => _OrderingMatcher(
-      value,
-      true,
-      false,
-      true,
-      'a value greater than or equal to',
-    );
+  value,
+  true,
+  false,
+  true,
+  'a value greater than or equal to',
+);
 
 /// Returns a matcher which matches if the match argument is less
 /// than the given [value].

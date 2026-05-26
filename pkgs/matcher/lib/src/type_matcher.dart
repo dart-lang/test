@@ -66,8 +66,8 @@ class TypeMatcher<T> extends Matcher {
     )
     String? name,
   ]) : _name =
-            // ignore: deprecated_member_use_from_same_package
-            name;
+           // ignore: deprecated_member_use_from_same_package
+           name;
 
   /// Returns a new [TypeMatcher] that validates the existing type as well as
   /// a specific [feature] of the object with the provided [matcher].
@@ -88,8 +88,7 @@ class TypeMatcher<T> extends Matcher {
     Object? Function(T) feature,
     String description,
     dynamic matcher,
-  ) =>
-      HavingMatcher(this, description, feature, matcher);
+  ) => HavingMatcher(this, description, feature, matcher);
 
   @override
   Description describe(Description description) {

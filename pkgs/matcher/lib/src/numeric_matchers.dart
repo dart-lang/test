@@ -91,8 +91,8 @@ class _InRange extends FeatureMatcher<num> {
 
   @override
   Description describe(Description description) => description.add(
-        'be in range from '
-        "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
-        "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})",
-      );
+    'be in range from '
+    "$_low (${_lowMatchValue ? 'inclusive' : 'exclusive'}) to "
+    "$_high (${_highMatchValue ? 'inclusive' : 'exclusive'})",
+  );
 }

@@ -44,7 +44,8 @@ void _testEscaping(String name, String source, String target) {
     expect(
       escaped == target,
       isTrue,
-      reason: 'Expected escaped value: $target\n'
+      reason:
+          'Expected escaped value: $target\n'
           '  Actual escaped value: $escaped',
     );
   });

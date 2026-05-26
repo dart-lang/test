@@ -229,8 +229,7 @@ void main() {
         expectLater(() {
           scheduleMicrotask(() => print('hello!'));
           return completer.future;
-        }, prints('hello!\n'))
-            .then((_) {
+        }, prints('hello!\n')).then((_) {
           fired = true;
         }),
       );

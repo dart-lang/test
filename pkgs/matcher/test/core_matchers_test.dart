@@ -243,7 +243,8 @@ void main() {
       4,
       <Object?>[],
     ];
-    var reason1 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
+    var reason1 =
+        "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'bar'], ['foo'], 3, []] "
         'Which: at location [2] is <3> instead of <4>';
 
@@ -259,7 +260,8 @@ void main() {
       4,
       <Object?>[],
     ];
-    var reason2 = "Expected: [['foo', 'bar'], ['foo'], 4, []] "
+    var reason2 =
+        "Expected: [['foo', 'bar'], ['foo'], 4, []] "
         "Actual: [['foo', 'barry'], ['foo'], 4, []] "
         "Which: at location [0][1] is 'barry' instead of 'bar'";
 
@@ -275,7 +277,8 @@ void main() {
       4,
       {'foo': 'barry'},
     ];
-    var reason3 = "Expected: [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}] "
+    var reason3 =
+        "Expected: [['foo', 'bar'], ['foo'], 4, {'foo': 'barry'}] "
         "Actual: [['foo', 'bar'], ['foo'], 4, {'foo': 'bar'}] "
         "Which: at location [3]['foo'] is 'bar' instead of 'barry'";
 
