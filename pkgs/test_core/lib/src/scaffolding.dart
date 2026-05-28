@@ -8,8 +8,6 @@ import 'package:meta/meta.dart' show doNotSubmit, isTest, isTestGroup;
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
-import 'package:test_api/src/backend/declarer.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';

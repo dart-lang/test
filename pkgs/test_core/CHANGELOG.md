@@ -1,4 +1,9 @@
-## 0.6.18-wip
+## 0.6.19-wip
+
+* Support using the OS platform selector to configure browser tests.
+* Use a DevTools URL instead of a defunct observatory URL.
+
+## 0.6.18
 
 * Ignore an error locating the SDK directory on platforms where the
   `resolvedExecutable` is unexpectedly `null`.

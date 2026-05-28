@@ -125,6 +125,8 @@ class VMPlatform extends PlatformPlugin {
 
     Environment? environment;
     IsolateRef? isolateRef;
+    String? isolateID;
+    Uri? serverUri;
     if (_config.debug) {
       if (platform.compiler == Compiler.exe) {
         throw UnsupportedError(
@@ -136,21 +138,17 @@ class VMPlatform extends PlatformPlugin {
         enable: true,
         silenceOutput: true,
       );
-      // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
-      var isolateID = Service.getIsolateID(isolate!)!;
+      serverUri = info.serverUri!;
+      isolateID = Service.getIsolateId(isolate!)!;
 
-      var libraryPath = (await absoluteUri(path)).toString();
-      var serverUri = info.serverUri!;
-      client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
+      var serviceWebsocket = _wsUriFor(serverUri);
+      client = await vmServiceConnectUri(serviceWebsocket.toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM()).isolates!.firstWhere(
         (isolate) => isolate.number == isolateNumber.toString(),
       );
       await client.setName(isolateRef.id!, path);
-      var libraryRef = (await client.getIsolate(
-        isolateRef.id!,
-      )).libraries!.firstWhere((library) => library.uri == libraryPath);
-      var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
+      var url = _devtoolsUriFor(serviceWebsocket);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -163,7 +161,14 @@ class VMPlatform extends PlatformPlugin {
       environment,
       channel.cast(),
       message,
-      gatherCoverage: () => _gatherCoverage(environment!, _config),
+      gatherCoverage: () {
+        if (serverUri == null || isolateID == null) {
+          throw StateError(
+            'VM Service is not running, cannot gather coverage.',
+          );
+        }
+        return _gatherCoverage(serverUri, isolateID, _config);
+      },
     );
 
     if (isolateRef != null) {
@@ -293,14 +298,14 @@ stderr: ${processResult.stderr}''');
     try {
       var precompiledPath = _config.suiteDefaults.precompiledPath;
       if (precompiledPath != null) {
-        return _spawnPrecompiledIsolate(
+        return await _spawnPrecompiledIsolate(
           path,
           message,
           precompiledPath,
           compiler,
         );
       }
-      return switch (compiler) {
+      return await switch (compiler) {
         Compiler.kernel => _spawnIsolateWithUri(
           await _compileToKernel(path, suiteMetadata),
           message,
@@ -458,19 +463,17 @@ stderr: ${processResult.stderr}''');
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(
-  Environment environment,
+  Uri serviceUri,
+  String isolateId,
   Configuration config,
 ) async {
-  final isolateId = Uri.parse(
-    environment.observatoryUrl!.fragment,
-  ).queryParameters['isolateId'];
   return await collect(
-    environment.observatoryUrl!,
+    serviceUri,
     false,
     false,
     false,
     await _filterCoveragePackages(config.coveragePackages, config.coverageLcov),
-    isolateIds: {isolateId!},
+    isolateIds: {isolateId},
     branchCoverage: config.branchCoverage,
   );
 }
@@ -478,12 +481,16 @@ Future<Map<String, dynamic>> _gatherCoverage(
 Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-  fragment: Uri(
-    path: '/inspect',
-    queryParameters: {'isolateId': isolateId, 'objectId': id},
-  ).toString(),
-);
+Uri _devtoolsUriFor(Uri serviceUri) {
+  assert(serviceUri.isScheme('ws'));
+  return serviceUri
+      .resolve('devtools/debugger')
+      .replace(
+        scheme: 'http',
+        queryParameters: {'uri': '$serviceUri'},
+        fragment: '',
+      );
+}
 
 var _hasRegistered = false;
 void _setupPauseAfterTests() {

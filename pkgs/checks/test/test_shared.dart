@@ -53,10 +53,10 @@ extension RejectionChecks<T> on Subject<T> {
     Condition<T> condition, {
     Iterable<String>? actual,
     Iterable<String>? which,
-  }) async {
+  }) {
     late T actualValue;
     var didRunCallback = false;
-    await context.nestAsync<Rejection>(
+    return context.nestAsync<Rejection>(
       () => ['does not meet an async condition with a Rejection'],
       (value) async {
         actualValue = value;

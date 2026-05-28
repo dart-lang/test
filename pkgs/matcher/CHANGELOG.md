@@ -1,4 +1,4 @@
-## 0.12.20-wip
+## 0.12.20
 
 * Allow exceptions from `operator ==` to bubble up and fail the test instead of
   treating them as unequal objects.

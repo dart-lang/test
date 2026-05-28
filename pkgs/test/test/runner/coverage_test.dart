@@ -22,6 +22,28 @@ void main() {
   group('with the --coverage flag,', () {
     late Directory coverageDirectory;
     late String pkgDir;
+    late String dependencyOverrides;
+
+    setUpAll(() async {
+      final testPath = await packageDir;
+      final testPathParts = p.split(testPath);
+      final testCorePath = p.joinAll(
+        testPathParts.take(testPathParts.length - 1).followedBy(['test_core']),
+      );
+      final testApiPath = p.joinAll(
+        testPathParts.take(testPathParts.length - 1).followedBy(['test_api']),
+      );
+      dependencyOverrides =
+          '''
+dependency_overrides:
+  test:
+    path: $testPath
+  test_core:
+    path: $testCorePath
+  test_api:
+    path: $testApiPath
+''';
+    });
 
     Future<void> validateTest(TestProcess test) async {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
@@ -78,8 +100,9 @@ version: 1.0.0
 environment:
   sdk: ^3.5.0
 dev_dependencies:
-  test: ^1.26.2
-        '''),
+  test: any
+$dependencyOverrides
+'''),
         ]),
         d.dir('fake_client', [
           d.dir('lib', [
@@ -112,8 +135,9 @@ dependencies:
   fake_package:
     path: ../fake_package
 dev_dependencies:
-  test: ^1.26.2
-        '''),
+  test: any
+$dependencyOverrides
+'''),
         ]),
       ]);
       await outerDirectory.create();
@@ -233,8 +257,9 @@ environment:
   sdk: ^3.5.0
 resolution: workspace
 dev_dependencies:
-  test: ^1.26.2
-            '''),
+  test: any
+$dependencyOverrides
+'''),
             d.dir('lib', [
               d.file('calculate.dart', '''
               int calculate(int x) {
@@ -295,8 +320,9 @@ dependencies:
   dart_frog: ^1.0.0
 dev_dependencies:
   mocktail: ^1.0.0
-  test: ^1.26.2
-            '''),
+  test: any
+$dependencyOverrides
+'''),
           d.dir('routes', [
             d.file('index.dart', '''
 import 'package:dart_frog/dart_frog.dart';
