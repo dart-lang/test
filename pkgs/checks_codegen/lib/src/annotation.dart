@@ -6,7 +6,7 @@
 /// getters for fields.
 ///
 /// Annotate an import to the `.checks.dart` library.
-class CheckExtensions {
+final class CheckExtensions {
   final List<Type> types;
   const CheckExtensions(this.types);
 }

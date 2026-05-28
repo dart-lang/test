@@ -21,7 +21,7 @@ Builder checksBuilder(BuilderOptions? _) => source_gen.LibraryBuilder(
   generatedExtension: '.checks.dart',
 );
 
-class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
+final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   const ChecksGenerator();
 
   @override
@@ -204,7 +204,7 @@ class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   }
 }
 
-class InvalidCheckExtensions extends Error {
+final class InvalidCheckExtensions extends Error {
   final String message;
   InvalidCheckExtensions(this.message);
   @override
