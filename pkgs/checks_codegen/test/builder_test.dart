@@ -127,7 +127,9 @@ abstract class Foo {
 ''',
       }, readerWriter: readerWriter);
       check(result.errors).any(
-        (e) => e.contains('must annotate an import or export of some_test.checks.dart'),
+        (e) => e.contains(
+          'must annotate an import or export of some_test.checks.dart',
+        ),
       );
     });
 
@@ -153,7 +155,9 @@ abstract class Foo {
 ''',
         }, readerWriter: readerWriter);
         check(result.errors).any(
-          (e) => e.contains('must annotate an import or export of some_test.checks.dart'),
+          (e) => e.contains(
+            'must annotate an import or export of some_test.checks.dart',
+          ),
         );
       },
     );
