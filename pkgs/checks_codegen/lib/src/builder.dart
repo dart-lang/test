@@ -39,13 +39,13 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
         when uri.relativeUriString == expectedImport) {
       // Annotation is on the correct import or export
     } else {
-      throw InvalidCheckExtensions(
+      throw InvalidGenerationSourceError(
         'must annotate an import or export of $expectedImport',
       );
     }
     final typesField = annotation.read('types');
     if (!typesField.isList) {
-      throw InvalidCheckExtensions(
+      throw InvalidGenerationSourceError(
         'Failed to resolve the specified types. '
         'Check for a missing build dependency.',
       );
@@ -85,8 +85,9 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     BuildStep buildStep,
   ) {
     final basename = p.url.basenameWithoutExtension(buildStep.inputId.path);
-    throw InvalidCheckExtensions(
+    throw InvalidGenerationSourceError(
       'must annotate an import or export of $basename.checks.dart',
+      element: element,
     );
   }
 
@@ -98,7 +99,9 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   ) async {
     final type = dartObject.toTypeValue();
     if (type is! InterfaceType) {
-      throw StateError('Got a non interface type: $type');
+      throw InvalidGenerationSourceError(
+        'Only interface types may be used for checks extensions:: $type',
+      );
     }
     final element = type.element;
     final import = await _findImportFor(
@@ -135,7 +138,11 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     String entryAssetPath,
   ) async {
     final type = field.type;
-    if (type is! InterfaceType) throw StateError('Got a non interface type');
+    if (type is! InterfaceType) {
+      throw InvalidGenerationSourceError(
+        'Only interface types may be used for checks extensions:: $type',
+      );
+    }
     final import = await _findImportFor(
       imports,
       type.element,
@@ -202,11 +209,4 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       return exportingLibrary.uri.toString();
     }
   }
-}
-
-final class InvalidCheckExtensions extends Error {
-  final String message;
-  InvalidCheckExtensions(this.message);
-  @override
-  String toString() => 'Invalid `CheckExtensions` annotation: $message';
 }

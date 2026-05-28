@@ -1,7 +1,7 @@
 [![pub package](https://img.shields.io/pub/v/checks_codegen.svg)](https://pub.dev/packages/checks_codegen)
 [![package publisher](https://img.shields.io/pub/publisher/checks_codegen.svg)](https://pub.dev/packages/checks_codegen/publisher)
 
-`package:checks_code` is a companion to [`package:checks`] for generating
+`package:checks_codegen` is a companion to [`package:checks`] for generating
 extensions to read fields from subjects under test.
 
 [`package:checks`]:https://pub.dev/packages/checks
