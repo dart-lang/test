@@ -33,13 +33,14 @@ class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     final basename = p.url.basenameWithoutExtension(buildStep.inputId.path);
     final expectedImport = '$basename.checks.dart';
 
-    if (directive case LibraryImport(
-      :final DirectiveUriWithRelativeUri uri,
-    ) when uri.relativeUriString == expectedImport) {
-      // Annotation is on the correct import
+    if (directive
+        case LibraryImport(:final DirectiveUriWithRelativeUri uri) ||
+            LibraryExport(:final DirectiveUriWithRelativeUri uri)
+        when uri.relativeUriString == expectedImport) {
+      // Annotation is on the correct import or export
     } else {
       throw InvalidCheckExtensions(
-        'must annotate an import of $expectedImport',
+        'must annotate an import or export of $expectedImport',
       );
     }
     final typesField = annotation.read('types');
@@ -85,7 +86,7 @@ class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   ) {
     final basename = p.url.basenameWithoutExtension(buildStep.inputId.path);
     throw InvalidCheckExtensions(
-      'must annotate an import of $basename.checks.dart',
+      'must annotate an import or export of $basename.checks.dart',
     );
   }
 

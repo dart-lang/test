@@ -65,7 +65,49 @@ abstract class Bar {}
       );
     });
 
-    test('fails if the annotation is not on an import', () async {
+    test('can build with an export', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+export 'some_test.checks.dart';
+''',
+          'a|test/foo.dart': '''
+import 'bar.dart';
+
+abstract class Foo {
+    final Bar barField;
+    int get intField;
+}
+''',
+          'a|test/bar.dart': '''
+abstract class Bar {}
+''',
+        },
+        readerWriter: readerWriter,
+        outputs: {
+          'a|test/some_test.checks.dart': decodedMatches(
+            stringContainsInOrder([
+              "import 'package:checks/checks.dart';",
+              "import 'package:checks/context.dart' as _i1;",
+              "import 'bar.dart' as _i3;",
+              "import 'foo.dart' as _i2;",
+              'extension FooChecks on _i1.Subject<_i2.Foo> {',
+              "  _i1.Subject<_i3.Bar> get barField => has((v) => v.barField, 'barField');",
+              "  _i1.Subject<int> get intField => has((v) => v.intField, 'intField');",
+              '}',
+            ]),
+          ),
+        },
+      );
+    });
+
+    test('fails if the annotation is not on an import or export', () async {
       final result = await testBuilder(builder, {
         'a|test/some_test.dart': '''
 import 'package:checks_codegen/checks_codegen.dart';
@@ -85,12 +127,12 @@ abstract class Foo {
 ''',
       }, readerWriter: readerWriter);
       check(result.errors).any(
-        (e) => e.contains('must annotate an import of some_test.checks.dart'),
+        (e) => e.contains('must annotate an import or export of some_test.checks.dart'),
       );
     });
 
     test(
-      'fails if the annotation is not an import to the generated file',
+      'fails if the annotation is not an import or export to the generated file',
       () async {
         final result = await testBuilder(builder, {
           'a|test/some_test.dart': '''
@@ -111,7 +153,7 @@ abstract class Foo {
 ''',
         }, readerWriter: readerWriter);
         check(result.errors).any(
-          (e) => e.contains('must annotate an import of some_test.checks.dart'),
+          (e) => e.contains('must annotate an import or export of some_test.checks.dart'),
         );
       },
     );

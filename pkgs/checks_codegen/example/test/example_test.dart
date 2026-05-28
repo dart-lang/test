@@ -5,11 +5,9 @@
 import 'dart:typed_data';
 
 import 'package:checks/checks.dart';
-import 'package:checks_codegen/checks_codegen.dart';
 import 'package:test/test.dart';
 
-@CheckExtensions([TypedData])
-import 'example_test.checks.dart';
+import 'shared.dart';
 
 void main() {
   test('uses generated extensions', () {

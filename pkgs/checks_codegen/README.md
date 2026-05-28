@@ -26,8 +26,11 @@ suggestions, feature requests, or general feedback.
 1. Add a `dev_dependency` on `checks_codegen` (`dart pub add
    dev:checks_codegen`).
 
-1. In a test `some_test.dart` add an import to `some_test.checks.dart` annotated
-   with `@CheckExtensions([TypesUnderTest])`.
+1. Use a `ChecksExtensions` annotation under `test/` to generate a library
+   defining check extensions for listed types. In a shared testing library like
+   `test/shared.dart` annotate an _export_ of `shared.checks.dart`. **Or** In a
+   test suite `test/some_test.dart` annotate an _import_ to
+   `some_test.checks.dart`.
 
 1. Use `checks` that read fields in your test code:
 
