@@ -19,6 +19,7 @@ dependencies:
   code_builder: ^4.11.0
   collection: ^1.19.0
   matcher: ^0.12.19
+  meta: ^1.18.0
   package_config: ^2.2.0
   path: ^1.9.0
   source_gen: ^4.2.0
