@@ -26,34 +26,8 @@ final bool supportsCliCompiler = () {
 }();
 
 void main() {
-  late String testPath;
-  late String testCorePath;
-  late String testApiPath;
-
   setUpAll(() async {
     await precompileTestExecutable();
-
-    testPath = await packageDir;
-    final testPathParts = p.split(testPath);
-    testCorePath = p.joinAll(
-      testPathParts.take(testPathParts.length - 1).followedBy(['test_core']),
-    );
-    testApiPath = p.joinAll(
-      testPathParts.take(testPathParts.length - 1).followedBy(['test_api']),
-    );
-  });
-
-  // The test sandbox must be set up as a valid Dart package (with its own
-  // pubspec.yaml, running `pub get` to generate a valid package_config.json,
-  // and putting the entrypoint under the correct package root). This is required
-  // for the `cli` compiler (`dart build cli`), which requires the entrypoint
-  // target to reside inside a package defined in the package config.
-  setUp(() async {
-    await d
-        .file('pubspec.yaml', _pubspec(testPath, testCorePath, testApiPath))
-        .create();
-
-    await (await runPub(['get'], workingDirectory: d.sandbox)).shouldExit(0);
   });
 
   for (var runtime in Runtime.builtIn) {
@@ -93,7 +67,7 @@ void main() {
         skip: skipReason,
         () {
           final testArgs = [
-            'test/test.dart',
+            'test.dart',
             '-p',
             runtime.identifier,
             '-c',
@@ -101,15 +75,8 @@ void main() {
           ];
 
           test('can run passing tests', () async {
-            await d.dir('test', [d.file('test.dart', _goodTest)]).create();
-            var test = await runTest(
-              testArgs,
-              packageConfig: p.join(
-                d.sandbox,
-                '.dart_tool/package_config.json',
-              ),
-              workingDirectory: d.sandbox,
-            );
+            await d.file('test.dart', _goodTest).create();
+            var test = await runTest(testArgs);
 
             expect(
               test.stdout,
@@ -119,17 +86,8 @@ void main() {
           });
 
           test('fails gracefully for invalid code', () async {
-            await d.dir('test', [
-              d.file('test.dart', _compileErrorTest),
-            ]).create();
-            var test = await runTest(
-              testArgs,
-              packageConfig: p.join(
-                d.sandbox,
-                '.dart_tool/package_config.json',
-              ),
-              workingDirectory: d.sandbox,
-            );
+            await d.file('test.dart', _compileErrorTest).create();
+            var test = await runTest(testArgs);
 
             expect(
               test.stdout,
@@ -143,22 +101,15 @@ void main() {
           });
 
           test('fails gracefully for test failures', () async {
-            await d.dir('test', [d.file('test.dart', _failingTest)]).create();
-            var test = await runTest(
-              testArgs,
-              packageConfig: p.join(
-                d.sandbox,
-                '.dart_tool/package_config.json',
-              ),
-              workingDirectory: d.sandbox,
-            );
+            await d.file('test.dart', _failingTest).create();
+            var test = await runTest(testArgs);
 
             expect(
               test.stdout,
               containsInOrder([
                 'Expected: <2>',
                 'Actual: <1>',
-                '${p.join('test', 'test.dart')} 5',
+                'test.dart 5',
                 '+0 -1: Some tests failed.',
               ]),
             );
@@ -167,37 +118,21 @@ void main() {
           });
 
           test('fails gracefully if a test file throws in main', () async {
-            await d.dir('test', [d.file('test.dart', _throwingTest)]).create();
-            var test = await runTest(
-              testArgs,
-              packageConfig: p.join(
-                d.sandbox,
-                '.dart_tool/package_config.json',
-              ),
-              workingDirectory: d.sandbox,
-            );
+            await d.file('test.dart', _throwingTest).create();
+            var test = await runTest(testArgs);
             expect(
               test.stdout,
               containsInOrder([
-                '-1: [${runtime.name}, ${compiler.name}] loading test/test.dart [E]',
-                'Failed to load "test/test.dart": oh no',
+                '-1: [${runtime.name}, ${compiler.name}] loading test.dart [E]',
+                'Failed to load "test.dart": oh no',
               ]),
             );
             await test.shouldExit(1);
           });
 
           test('captures prints', () async {
-            await d.dir('test', [
-              d.file('test.dart', _testWithPrints),
-            ]).create();
-            var test = await runTest(
-              [...testArgs, '-r', 'json'],
-              packageConfig: p.join(
-                d.sandbox,
-                '.dart_tool/package_config.json',
-              ),
-              workingDirectory: d.sandbox,
-            );
+            await d.file('test.dart', _testWithPrints).create();
+            var test = await runTest([...testArgs, '-r', 'json']);
 
             expect(
               test.stdout,
@@ -213,18 +148,8 @@ void main() {
             test(
               'forwards stdout/stderr',
               () async {
-                await d.dir('test', [
-                  d.file('test.dart', _testWithStdOutAndErr),
-                ]).create();
-                var test = await runTest(
-                  testArgs,
-                  reporter: 'silent',
-                  packageConfig: p.join(
-                    d.sandbox,
-                    '.dart_tool/package_config.json',
-                  ),
-                  workingDirectory: d.sandbox,
-                );
+                await d.file('test.dart', _testWithStdOutAndErr).create();
+                var test = await runTest(testArgs, reporter: 'silent');
 
                 expect(test.stdout, emitsThrough('hello'));
                 expect(test.stderr, emits('world'));
@@ -285,20 +210,3 @@ void main() async {
   stderr.writeln('world');
   test('success', () {});
 }''';
-
-String _pubspec(String testPath, String testCorePath, String testApiPath) =>
-    '''
-name: mypackage
-version: 1.0.0
-environment:
-  sdk: ^3.5.0
-dev_dependencies:
-  test: any
-dependency_overrides:
-  test:
-    path: $testPath
-  test_core:
-    path: $testCorePath
-  test_api:
-    path: $testApiPath
-''';

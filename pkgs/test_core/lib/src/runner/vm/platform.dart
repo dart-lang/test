@@ -41,20 +41,7 @@ class VMPlatform extends PlatformPlugin {
     p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
   );
   final _closeMemo = AsyncMemoizer<void>();
-  // The temporary directory must be located within the package workspace
-  // under `.dart_tool` (and thus inside the active package root). This is
-  // because the bootstrapped/wrapper test file (e.g. `.bootstrap.native.dart`
-  // created by [_bootstrapNativeTestFile]) is written to this directory and
-  // passed as the `--target` entrypoint to `dart build cli`. If this wrapper
-  // entrypoint resides outside of a mapped package root (such as in the system
-  // temp directory), `dart build cli` will fail to compile.
-  final _tempDir = () {
-    var tempRoot = Directory(p.join(p.current, '.dart_tool', 'test', 'temp'));
-    if (!tempRoot.existsSync()) {
-      tempRoot.createSync(recursive: true);
-    }
-    return tempRoot.createTempSync('dart_test.vm.');
-  }();
+  final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
 
   @override
   Future<RunnerSuite?> load(
@@ -302,6 +289,8 @@ class VMPlatform extends PlatformPlugin {
       outputDir,
       '--packages',
       (await packageConfigUri).toFilePath(),
+      '--root-package',
+      (await currentPackage).name,
       if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
       if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
       if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
