@@ -179,8 +179,8 @@ void main() {
             expect(
               test.stdout,
               containsInOrder([
-                '-1: [${runtime.name}, ${compiler.name}] loading ${p.join('test', 'test.dart')} [E]',
-                'Failed to load "${p.join('test', 'test.dart')}": oh no',
+                '-1: [${runtime.name}, ${compiler.name}] loading test/test.dart [E]',
+                'Failed to load "test/test.dart": oh no',
               ]),
             );
             await test.shouldExit(1);
