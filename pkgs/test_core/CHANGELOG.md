@@ -1,5 +1,6 @@
 ## 0.6.19-wip
 
+* Add support for `-c cli` (the native CLI compiler) to the vm platform.
 * Support using the OS platform selector to configure browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
 
