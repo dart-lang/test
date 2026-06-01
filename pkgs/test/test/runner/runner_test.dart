@@ -75,7 +75,7 @@ Running Tests:
                                       $_runtimes.
                                       Each platform supports the following compilers:
 $_runtimeCompilers
--c, --compiler                        The compiler(s) to use to run tests, supported compilers are [dart2js, dart2wasm, exe, kernel, source].
+-c, --compiler                        The compiler(s) to use to run tests, supported compilers are [dart2js, dart2wasm, exe, cli, kernel, source].
                                       Each platform has a default compiler but may support other compilers.
                                       You can target a compiler to a specific platform using arguments of the following form [<platform-selector>:]<compiler>.
                                       If a platform is specified but no given compiler is supported for that platform, then it will use its default compiler.
@@ -137,7 +137,7 @@ final _runtimes =
     ', edge, node]';
 
 final _runtimeCompilers = [
-  '[vm]: kernel (default), source, exe',
+  '[vm]: kernel (default), source, exe, cli',
   '[vm-asan]: exe (default)',
   '[vm-msan]: exe (default)',
   '[vm-tsan]: exe (default)',
