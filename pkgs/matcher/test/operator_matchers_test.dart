@@ -96,4 +96,3 @@ void main() {
     expect(() => matcher.matches(null, {}), throwsArgumentError);
   });
 }
-
