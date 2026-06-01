@@ -49,7 +49,9 @@ void main() {
   // for the `cli` compiler (`dart build cli`), which requires the entrypoint
   // target to reside inside a package defined in the package config.
   setUp(() async {
-    await d.file('pubspec.yaml', _pubspec(testPath, testCorePath, testApiPath)).create();
+    await d
+        .file('pubspec.yaml', _pubspec(testPath, testCorePath, testApiPath))
+        .create();
 
     await (await runPub(['get'], workingDirectory: d.sandbox)).shouldExit(0);
   });
@@ -284,7 +286,8 @@ void main() async {
   test('success', () {});
 }''';
 
-String _pubspec(String testPath, String testCorePath, String testApiPath) => '''
+String _pubspec(String testPath, String testCorePath, String testApiPath) =>
+    '''
 name: mypackage
 version: 1.0.0
 environment:

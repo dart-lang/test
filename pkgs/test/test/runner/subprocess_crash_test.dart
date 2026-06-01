@@ -46,17 +46,19 @@ void main() {
   // for the `cli` compiler (`dart build cli`), which requires the entrypoint
   // target to reside inside a package defined in the package config.
   setUp(() async {
-    await d.file('pubspec.yaml', _pubspec(testPath, testCorePath, testApiPath)).create();
+    await d
+        .file('pubspec.yaml', _pubspec(testPath, testCorePath, testApiPath))
+        .create();
 
     await (await runPub(['get'], workingDirectory: d.sandbox)).shouldExit(0);
   });
 
   for (var compiler in ['exe', 'cli']) {
     test(
-        'gracefully handles an early test suite exit with the $compiler compiler',
-        () async {
-      await d.dir('test', [
-        d.file('test.dart', '''
+      'gracefully handles an early test suite exit with the $compiler compiler',
+      () async {
+        await d.dir('test', [
+          d.file('test.dart', '''
         import 'dart:io';
 
         import 'package:test/test.dart';
@@ -66,30 +68,32 @@ void main() {
           test('exits', () {
             exit(0);
           });
-        }''')
-      ]).create();
+        }'''),
+        ]).create();
 
-      var test = await runTest(
-        ['--compiler', compiler, 'test/test.dart'],
-        packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'),
-        workingDirectory: d.sandbox,
-      );
-      expect(
-        test.stdout,
-        containsInOrder([
-          '+1: [VM, ${compiler == 'exe' ? 'Exe' : 'Cli'}] exits - did not complete [E]',
-          '+1: Some tests failed.',
-        ]),
-      );
-      await test.shouldExit(1);
-    },
-        skip: compiler == 'cli' && !supportsCliCompiler
-            ? 'Dart version does not support build cli'
-            : null);
+        var test = await runTest(
+          ['--compiler', compiler, 'test/test.dart'],
+          packageConfig: p.join(d.sandbox, '.dart_tool/package_config.json'),
+          workingDirectory: d.sandbox,
+        );
+        expect(
+          test.stdout,
+          containsInOrder([
+            '+1: [VM, ${compiler == 'exe' ? 'Exe' : 'Cli'}] exits - did not complete [E]',
+            '+1: Some tests failed.',
+          ]),
+        );
+        await test.shouldExit(1);
+      },
+      skip: compiler == 'cli' && !supportsCliCompiler
+          ? 'Dart version does not support build cli'
+          : null,
+    );
   }
 }
 
-String _pubspec(String testPath, String testCorePath, String testApiPath) => '''
+String _pubspec(String testPath, String testCorePath, String testApiPath) =>
+    '''
 name: mypackage
 version: 1.0.0
 environment:

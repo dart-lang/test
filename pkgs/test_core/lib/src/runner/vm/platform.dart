@@ -257,14 +257,16 @@ class VMPlatform extends PlatformPlugin {
     switch (platform.compiler) {
       case Compiler.cli:
         var executable = await _compileToCli(platform, path, suiteMetadata);
-        return await Process.start(
-          executable,
-          [socket.address.host, socket.port.toString()],
-          mode: ProcessStartMode.inheritStdio,
-        );
+        return await Process.start(executable, [
+          socket.address.host,
+          socket.port.toString(),
+        ], mode: ProcessStartMode.inheritStdio);
       case Compiler.exe:
-        var sharedLibrary =
-            await _compileToNative(platform, path, suiteMetadata);
+        var sharedLibrary = await _compileToNative(
+          platform,
+          path,
+          suiteMetadata,
+        );
         return await Process.start(
           _aotRuntimeFor(platform),
           [sharedLibrary, socket.address.host, socket.port.toString()],
@@ -318,7 +320,9 @@ stderr: ${processResult.stderr}''');
     );
     if (!await File(executablePath).exists()) {
       throw LoadException(
-          path, 'Compiled executable not found at $executablePath');
+        path,
+        'Compiled executable not found at $executablePath',
+      );
     }
     return executablePath;
   }
