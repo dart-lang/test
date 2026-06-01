@@ -42,9 +42,12 @@ class VMPlatform extends PlatformPlugin {
   );
   final _closeMemo = AsyncMemoizer<void>();
   // The temporary directory must be located within the package workspace
-  // under `.dart_tool` so that the bootstrapped target file resides inside a
-  // package root, which is required for `dart build cli` to find and run
-  // build/link hooks.
+  // under `.dart_tool` (and thus inside the active package root). This is
+  // because the bootstrapped/wrapper test file (e.g. `.bootstrap.native.dart`
+  // created by [_bootstrapNativeTestFile]) is written to this directory and
+  // passed as the `--target` entrypoint to `dart build cli`. If this wrapper
+  // entrypoint resides outside of a mapped package root (such as in the system
+  // temp directory), `dart build cli` will fail to compile.
   final _tempDir = () {
     var tempRoot = Directory(p.join(p.current, '.dart_tool', 'test', 'temp'));
     if (!tempRoot.existsSync()) {
