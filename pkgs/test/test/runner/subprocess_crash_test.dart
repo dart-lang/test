@@ -5,22 +5,10 @@
 @TestOn('vm')
 library;
 
-import 'dart:io';
-import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
-
-final bool supportsCliCompiler = () {
-  try {
-    var current = Version.parse(Platform.version.split(' ').first);
-    return current > Version.parse('3.13.0-139.0.dev');
-  } catch (_) {
-    return false;
-  }
-}();
 
 void main() {
   setUpAll(precompileTestExecutable);
