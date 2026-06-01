@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:matcher/matcher.dart';
-import 'package:test/test.dart' show expect, test, throwsArgumentError;
+import 'package:test/test.dart' show expect, test, throwsArgumentError, throwsA;
 
 import 'test_utils.dart';
 
@@ -86,4 +86,14 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  test('isNot throws ArgumentError for AsyncMatcher', () {
+    expect(() => isNot(throwsA(anything)), throwsArgumentError);
+  });
+
+  test('anyOf throws ArgumentError for AsyncMatcher', () {
+    final matcher = anyOf(throwsA(anything));
+    expect(() => matcher.matches(null, {}), throwsArgumentError);
+  });
 }
+

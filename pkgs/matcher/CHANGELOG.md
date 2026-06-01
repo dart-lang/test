@@ -1,3 +1,7 @@
+## 0.12.21-wip
+
+* Throw an `ArgumentError` when `isNot` or `anyOf` is used with an `AsyncMatcher`.
+
 ## 0.12.20
 
 * Allow exceptions from `operator ==` to bubble up and fail the test instead of
