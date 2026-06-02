@@ -28,7 +28,7 @@ final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
 
 final bool supportsCliCompiler = () {
   var current = Version.parse(Platform.version.split(' ').first);
-  return current > Version.parse('3.13.0-139.0.dev');
+  return current > Version.parse('3.13.0-155.0.dev');
 }();
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
