@@ -34,3 +34,4 @@ dependencies:
 
 dev_dependencies:
   test: any
+  test_descriptor: ^2.0.0
