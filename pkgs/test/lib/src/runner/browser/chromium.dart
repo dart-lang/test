@@ -42,6 +42,9 @@ enum ChromiumBasedBrowser {
       '--disable-default-apps',
       '--disable-translate',
       '--disable-dev-shm-usage',
+      '--disable-background-timer-throttling',
+      '--disable-blink-features=TimerThrottlingForBackgroundTabs',
+      '--disable-features=IntensiveWakeUpThrottling',
       if (settings!.headless && !configuration.pauseAfterLoad) ...[
         '--headless',
         '--disable-gpu',

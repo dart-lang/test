@@ -11,6 +11,7 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
+* Disable throttling in chrome launch arguments.
 
 ## 1.31.1
 
