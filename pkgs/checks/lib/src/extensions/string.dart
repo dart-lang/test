@@ -208,15 +208,17 @@ Rejection? _findDifference(
       );
     }
   } else {
-    final indentation = ' ' * (i > 10 ? 14 : i);
+    final markerIndent = ' ' * (i > 10 ? 14 : i);
     return Rejection(
       which: [
         'differs at offset $i:',
-        '${_leading(escapedExpectedDisplay, i)}'
-            '${_trailing(escapedExpectedDisplay, i)}',
-        '${_leading(escapedActualDisplay, i)}'
-            '${_trailing(escapedActualDisplay, i)}',
-        '$indentation^',
+        ...indent([
+          '${_leading(escapedExpectedDisplay, i)}'
+              '${_trailing(escapedExpectedDisplay, i)}',
+          '${_leading(escapedActualDisplay, i)}'
+              '${_trailing(escapedActualDisplay, i)}',
+          '$markerIndent^',
+        ]),
       ],
     );
   }

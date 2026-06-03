@@ -436,10 +436,14 @@ abstract final class Context<T> {
   ///
   /// {@macro async_limitations}
   ///
+  /// Extensions which use `expectAsync` should always make that call
+  /// synchronously and return the result so that exceptions stemming from use
+  /// in a synchronous context can be reported synchronously.
+  ///
   /// ```dart
   /// extension CustomChecks on Subject<CustomType> {
-  ///   Future<void> someAsyncExpectation() async {
-  ///     await context.expectAsync(() => ['meets this async expectation'],
+  ///   Future<void> someAsyncExpectation()  {
+  ///     return context.expectAsync(() => ['meets this async expectation'],
   ///         (actual) async {
   ///       if (await _expectationIsMet(actual)) return null;
   ///       return Rejection(which: ['does not meet this async expectation']);
@@ -552,10 +556,14 @@ abstract final class Context<T> {
   ///
   /// {@macro async_limitations}
   ///
+  /// Extensions which use `nestAsync` should always make that call
+  /// synchronously and return the result so that exceptions stemming from use
+  /// in a synchronous context can be reported synchronously.
+  ///
   /// ```dart
   /// Future<void> someAsyncResult(
-  ///     [AsyncCondition<Result> resultCondition]) async {
-  ///   await context.nestAsync(() => ['has someAsyncResult'], (actual) async {
+  ///     [AsyncCondition<Result> resultCondition]) {
+  ///   return context.nestAsync(() => ['has someAsyncResult'], (actual) async {
   ///     if (await _asyncOperationFailed(actual)) {
   ///       return Extracted.rejection(which: ['cannot read someAsyncResult']);
   ///     }
@@ -740,12 +748,15 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   Future<void> expectAsync(
     Iterable<String> Function() clause,
     FutureOr<Rejection?> Function(T) predicate,
+  ) {
+    if (!_allowAsync) throw AsyncConditionDisallowed._('Async');
+    return _expectAsync(clause, predicate);
+  }
+
+  Future<void> _expectAsync(
+    Iterable<String> Function() clause,
+    FutureOr<Rejection?> Function(T) predicate,
   ) async {
-    if (!_allowAsync) {
-      throw StateError(
-        'Async expectations cannot be used on a synchronous subject',
-      );
-    }
     _clauses.add(_ExpectationClause(clause));
     final outstandingWork = TestHandle.current.markPending();
     try {
@@ -764,9 +775,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     Iterable<String> Function() clause,
     void Function(T actual, void Function(Rejection) reject) predicate,
   ) {
-    if (!_allowUnawaited) {
-      throw StateError('Late expectations cannot be used for soft checks');
-    }
+    if (!_allowUnawaited) throw AsyncConditionDisallowed._('Unawaited');
     _clauses.add(_ExpectationClause(clause));
     _value.apply((actual) {
       predicate(actual, (r) => _fail(_failure(r._fillActual(actual))));
@@ -801,14 +810,18 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   Future<void> nestAsync<R>(
     Iterable<String> Function() label,
+    FutureOr<Extracted<R>> Function(T) extract, [
+    AsyncCondition<R>? nestedCondition,
+  ]) {
+    if (!_allowAsync) throw AsyncConditionDisallowed._('Async');
+    return _nestAsync(label, extract, nestedCondition);
+  }
+
+  Future<void> _nestAsync<R>(
+    Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T) extract,
     AsyncCondition<R>? nestedCondition,
   ) async {
-    if (!_allowAsync) {
-      throw StateError(
-        'Async expectations cannot be used on a synchronous subject',
-      );
-    }
     final outstandingWork = TestHandle.current.markPending();
     try {
       final result = await _value.mapAsync(
@@ -850,7 +863,9 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (_clauses.isEmpty) {
       expected.addAll(_label());
     } else {
-      expected.addAll(postfixLast(' that:', _label()));
+      final label = postfixLast(' that:', _label());
+      expected.addAll(label);
+      final labelLines = label.length;
       for (var clause in _clauses) {
         final details = clause.detail(failingContext);
         expected.addAll(indent(details.expected));
@@ -858,7 +873,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           assert(foundDepth == -1);
           assert(foundOverlap == -1);
           foundDepth = details.depth + 1;
-          foundOverlap = details._actualOverlap + successfulOverlap + 1;
+          foundOverlap =
+              details._actualOverlap + successfulOverlap + labelLines;
         } else {
           if (foundDepth == -1) {
             successfulOverlap += details.expected.length;
@@ -1053,4 +1069,11 @@ final class Rejection {
       : Rejection(actual: literal(value), which: which);
 
   Rejection({this.actual = const [], this.which});
+}
+
+class AsyncConditionDisallowed implements Exception {
+  final String flavor;
+  AsyncConditionDisallowed._(this.flavor);
+  @override
+  String toString() => '$flavor expectations cannot be used on this subject';
 }

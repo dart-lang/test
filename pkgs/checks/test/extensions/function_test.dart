@@ -21,10 +21,18 @@ void main() {
         );
       });
       test('fails for functions that throw the wrong type', () {
-        check(() => throw StateError('oops!')).isRejectedBy(
+        check(() {
+          Error.throwWithStackTrace(
+            StateError('oops!'),
+            StackTrace.fromString('fake trace'),
+          );
+        }).isRejectedBy(
           (it) => it.throws<ArgumentError>(),
           actual: ['a function that threw error <Bad state: oops!>'],
-          which: ['did not throw an ArgumentError'],
+          which: [
+            'threw an exception that is not a ArgumentError at:',
+            '  fake trace',
+          ],
         );
       });
     });
@@ -42,7 +50,7 @@ void main() {
         }).isRejectedBy(
           (it) => it.returnsNormally(),
           actual: ['a function that throws'],
-          which: ['threw <Bad state: oops!>', 'fake trace'],
+          which: ['threw <Bad state: oops!> at:', '  fake trace'],
         );
       });
     });

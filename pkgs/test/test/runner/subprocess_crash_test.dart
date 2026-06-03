@@ -13,16 +13,16 @@ import '../io.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('gracefully handles a non-exit crash', () async {
+  test('gracefully handles an early test suite exit', () async {
     await d.file('test.dart', '''
-      import 'dart:ffi';
+      import 'dart:io';
 
       import 'package:test/test.dart';
 
       void main() {
         test('runs', () {});
-        test('crashes', () {
-          Pointer.fromAddress(0).cast<Long>()[0] = 0;
+        test('exits', () {
+          exit(0);
         });
       }''').create();
 
@@ -30,7 +30,7 @@ void main() {
     expect(
       test.stdout,
       containsInOrder([
-        '+1: [VM, Exe] crashes - did not complete [E]',
+        '+1: [VM, Exe] exits - did not complete [E]',
         '+1: Some tests failed.',
       ]),
     );

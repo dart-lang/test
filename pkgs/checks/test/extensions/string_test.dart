@@ -147,7 +147,7 @@ void main() {
       test('reports index of different character', () {
         check('hit').isRejectedBy(
           (it) => it.equals('hat'),
-          which: ['differs at offset 1:', 'hat', 'hit', ' ^'],
+          which: ['differs at offset 1:', '  hat', '  hit', '   ^'],
         );
       });
       test(
@@ -157,9 +157,9 @@ void main() {
             (it) => it.equals('blah blah blah hat blah blah blah'),
             which: [
               'differs at offset 16:',
-              '... lah blah hat blah bl ...',
-              '... lah blah hit blah bl ...',
-              '              ^',
+              '  ... lah blah hat blah bl ...',
+              '  ... lah blah hit blah bl ...',
+              '                ^',
             ],
           );
         },
@@ -186,7 +186,7 @@ void main() {
       test('reports index of different character with original characters', () {
         check('HiT').isRejectedBy(
           (it) => it.equalsIgnoringCase('hAt'),
-          which: ['differs at offset 1:', 'hAt', 'HiT', ' ^'],
+          which: ['differs at offset 1:', '  hAt', '  HiT', '   ^'],
         );
       });
     });
@@ -216,7 +216,7 @@ void main() {
       test('reports index of different character with original characters', () {
         check('x  hit  x').isRejectedBy(
           (it) => it.equalsIgnoringWhitespace('x hat x'),
-          which: ['differs at offset 3:', 'x hat x', 'x hit x', '   ^'],
+          which: ['differs at offset 3:', '  x hat x', '  x hit x', '     ^'],
         );
       });
     });

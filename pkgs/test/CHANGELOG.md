@@ -10,8 +10,7 @@
   independent from any OS specific configuration. For instance a wide skip of
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
-* Treat calls to `exit` as test failures in VM tests.
-* Recompiled browser test host.
+* Use a DevTools URL instead of a defunct observatory URL.
 
 ## 1.31.1
 

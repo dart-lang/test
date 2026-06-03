@@ -14,7 +14,11 @@ import 'checks.dart' show Condition, describe;
 ///
 /// [Iterable]s and [Map]s will only print their first [_maxItems] elements or
 /// key/value pairs, respectively.
-Iterable<String> literal(Object? object) => _prettyPrint(object, 0, {}, true);
+Iterable<String> literal(Object? object) {
+  final result = _prettyPrint(object, 0, {}, true);
+  assert(result.isNotEmpty);
+  return result;
+}
 
 const _maxLineLength = 80;
 const _maxItems = 25;
@@ -76,7 +80,10 @@ Iterable<String> _prettyPrint(
   } else if (object is Condition<Never>) {
     return ['<A value that:', ...postfixLast('>', describe(object))];
   } else {
-    final value = const LineSplitter().convert(object.toString());
+    final value = switch (object.toString()) {
+      '' => const ['empty toString()'],
+      final s => LineSplitter.split(s),
+    };
     return isTopLevel ? prefixFirst('<', postfixLast('>', value)) : value;
   }
 }

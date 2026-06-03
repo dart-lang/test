@@ -2,6 +2,14 @@
 
 - Require Dart 3.7
 - Improve speed of pretty printing for large collections.
+- Improve formatting for failures involving unexpected exceptions.
+- Improve formatting for failed String equality checks - indent string diff
+  lines.
+- Fix a bug when using asynchronous conditions with `mayEmit` or
+  `mayEmitMultiple`. Note that extensions using `nestAsync` should synchronously
+  forward exceptions from that call.
+- Fix a bug when printing a failure message involving a value that returns an
+  empty output from `toString()`.
 
 ## 0.3.1
 

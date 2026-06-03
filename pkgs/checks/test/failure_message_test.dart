@@ -27,6 +27,28 @@ Actual: a List<dynamic> that:
   Which: are not equal''');
     });
 
+    test('includes matching portions of actual when label is multiline', () {
+      check(() {
+        check({
+            'foo\nbar': [10],
+          })['foo\nbar'].first
+          ..isGreaterThan(0)
+          ..isLessThan(10);
+      }).throwsFailure().equals('''
+Expected: a Map<String, List<int>> that:
+  contains a value for 'foo
+  bar' that:
+    has first element that:
+      is greater than <0>
+      is less than <10>
+Actual: a Map<String, List<int>> that:
+  contains a value for 'foo
+  bar' that:
+    has first element that:
+    Actual: <10>
+    Which: is not less than <10>''');
+    });
+
     test('include a reason when provided', () {
       check(() {
         check(because: 'Some reason', 1).isGreaterThan(2);
@@ -44,10 +66,25 @@ Actual: a List<dynamic> that:
         check<int?>(because: 'Some reason', 1).isNotNull().isGreaterThan(2);
       }).throwsFailure().endsWith('Reason: Some reason');
     });
+
+    test('handles objects with empty toString', () {
+      check(() {
+        check(EmptyToString()).equals(EmptyToString());
+      }).throwsFailure().equals('''
+Expected: a EmptyToString that:
+  equals <empty toString()>
+Actual: <empty toString()>
+Which: are not equal''');
+    });
   });
 }
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
       throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
+}
+
+class EmptyToString {
+  @override
+  String toString() => '';
 }
