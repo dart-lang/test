@@ -87,7 +87,10 @@ class VMPlatform extends PlatformPlugin {
           suiteConfig.metadata,
           platform.compiler,
         );
-        if (isolate == null) return null;
+        if (isolate == null) {
+          receivePort.close();
+          return null;
+        }
       } catch (error) {
         receivePort.close();
         rethrow;
