@@ -85,7 +85,7 @@ class _TestCompilerForLanguageVersion {
   final _closeMemo = AsyncMemoizer<void>();
   final _compilePool = Pool(1);
   final String _dillCachePath;
-  final FrontendClientFactory _clientStarter;
+  final FrontendClientFactory _clientFactory;
   FrontendServerClient? _frontendServerClient;
   final String _languageVersionComment;
   late final _outputDill = File(
@@ -103,7 +103,7 @@ class _TestCompilerForLanguageVersion {
   _TestCompilerForLanguageVersion(
     String dillCachePrefix,
     this._languageVersionComment,
-    this._clientStarter,
+    this._clientFactory,
   ) : _dillCachePath =
           '$dillCachePrefix.'
           '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
@@ -201,7 +201,7 @@ class _TestCompilerForLanguageVersion {
       }
     }
 
-    var client = await _clientStarter(
+    var client = await _clientFactory(
       testUri.toString(),
       _outputDill.path,
       platformDill,
