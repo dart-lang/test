@@ -46,9 +46,14 @@ class TestCompiler {
   /// A prefix used for the dill files for each compiler that is created.
   final String _dillCachePrefix;
 
+  final FrontendClientFactory _clientFactory;
+
   /// No work is done until the first call to [compile] is received, at which
   /// point the compiler process is started.
-  TestCompiler(this._dillCachePrefix);
+  TestCompiler(
+    this._dillCachePrefix, {
+    FrontendClientFactory clientFactory = FrontendServerClient.start,
+  }) : _clientFactory = clientFactory;
 
   /// Compiles [mainDart], using a separate compiler per language version of
   /// the tests.
@@ -62,6 +67,7 @@ class TestCompiler {
       () => _TestCompilerForLanguageVersion(
         _dillCachePrefix,
         languageVersionComment,
+        _clientFactory,
       ),
     );
     return compiler.compile(mainDart);
@@ -79,6 +85,7 @@ class _TestCompilerForLanguageVersion {
   final _closeMemo = AsyncMemoizer<void>();
   final _compilePool = Pool(1);
   final String _dillCachePath;
+  final FrontendClientFactory _clientFactory;
   FrontendServerClient? _frontendServerClient;
   final String _languageVersionComment;
   late final _outputDill = File(
@@ -96,6 +103,7 @@ class _TestCompilerForLanguageVersion {
   _TestCompilerForLanguageVersion(
     String dillCachePrefix,
     this._languageVersionComment,
+    this._clientFactory,
   ) : _dillCachePath =
           '$dillCachePrefix.'
           '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
@@ -119,15 +127,16 @@ class _TestCompilerForLanguageVersion {
     final testCache = File(_dillCachePath);
 
     try {
-      if (_frontendServerClient == null) {
+      if (_frontendServerClient case final frontendServerClient?) {
+        compilerOutput = await frontendServerClient.compile(<Uri>[
+          tempFile.uri,
+        ]);
+      } else {
         if (await testCache.exists()) {
           await testCache.copy(_outputDill.path);
         }
         compilerOutput = await _createCompiler(tempFile.uri);
-      } else {
-        compilerOutput = await _frontendServerClient!.compile(<Uri>[
-          tempFile.uri,
-        ]);
+        if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
       }
     } catch (e, s) {
       if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
@@ -192,7 +201,7 @@ class _TestCompilerForLanguageVersion {
       }
     }
 
-    var client = _frontendServerClient = await FrontendServerClient.start(
+    var client = await _clientFactory(
       testUri.toString(),
       _outputDill.path,
       platformDill,
@@ -202,10 +211,19 @@ class _TestCompilerForLanguageVersion {
       nativeAssets: nativeAssetsYaml?.toFilePath(),
       printIncrementalDependencies: false,
     );
+
+    if (_closeMemo.hasRun) {
+      client.kill();
+      return null;
+    }
+
+    _frontendServerClient = client;
     return client.compile();
   }
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
+    _frontendServerClient?.kill();
+    _frontendServerClient = null;
     await _compilePool.close();
     if (_dillToCache != null) {
       var testCache = File(_dillCachePath);
@@ -214,13 +232,23 @@ class _TestCompilerForLanguageVersion {
       }
       _dillToCache!.copySync(_dillCachePath);
     }
-    _frontendServerClient?.kill();
-    _frontendServerClient = null;
     if (_outputDillDirectory.existsSync()) {
       await _outputDillDirectory.deleteWithRetry();
     }
   });
 }
+
+typedef FrontendClientFactory =
+    Future<FrontendServerClient> Function(
+      String entrypoint,
+      String outputDillPath,
+      String platformKernel, {
+      List<String>? enabledExperiments,
+      bool printIncrementalDependencies,
+      String sdkRoot,
+      String packagesJson,
+      String? nativeAssets,
+    });
 
 /// Computes a unique dill cache suffix for each [languageVersionComment]
 /// and [enabledExperiments] combination.
