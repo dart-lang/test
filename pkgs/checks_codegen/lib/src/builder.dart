@@ -8,7 +8,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/code_builder.dart';
+import 'package:code_builder/code_builder.dart' hide FunctionType;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart' as source_gen show LibraryBuilder;
@@ -129,7 +129,9 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   }
 
   bool _isCheckableField(FieldElement field) =>
-      field.name != 'hashCode' && !field.isStatic;
+      field.name != 'hashCode' &&
+      !field.isStatic &&
+      field.type is! FunctionType;
 
   Future<Method> _createHasGetter(
     List<LibraryElement> imports,
