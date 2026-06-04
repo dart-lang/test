@@ -100,7 +100,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     final type = dartObject.toTypeValue();
     if (type is! InterfaceType) {
       throw InvalidGenerationSourceError(
-        'Only interface types may be used for checks extensions:: $type',
+        'Only interface types may be used for checks extensions: $type',
       );
     }
     final element = type.element;
