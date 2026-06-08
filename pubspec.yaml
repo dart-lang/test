@@ -12,3 +12,8 @@ workspace:
   - pkgs/test_core
 dev_dependencies:
   dart_flutter_team_lints: ^3.1.0
+
+dependency_overrides:
+  # Ensures we are testing on the latest, we can't actually get this version
+  # solve yet.
+  package_config: ^3.0.0
