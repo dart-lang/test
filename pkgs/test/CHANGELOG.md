@@ -14,6 +14,7 @@
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
 * Disable throttling in chrome launch arguments.
+* Allow package_config `3.x.x`.
 
 ## 1.31.1
 
