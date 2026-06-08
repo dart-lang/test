@@ -14,6 +14,7 @@ final class Runtime {
     Compiler.kernel,
     Compiler.source,
     Compiler.exe,
+    Compiler.cli,
   ], isDartVM: true);
   static const Runtime vmAsan = Runtime(
     'VM with Address Sanitizer',

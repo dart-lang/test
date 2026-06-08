@@ -1,5 +1,7 @@
 ## 1.31.2-wip
 
+* Add support for running tests as native CLI bundles (vm platform only).
+  * You can run tests this way with `--compiler cli`.
 * **Impacts Configuration** Support using the OS platform selector to configure
   browser tests.
   Previously tests loaded for the browser would have an operating system of
