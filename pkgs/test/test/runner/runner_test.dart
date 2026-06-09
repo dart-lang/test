@@ -84,8 +84,7 @@ $_runtimeCompilers
                                       (defaults to "$_defaultConcurrency")
     --total-shards                    The total number of invocations of the test runner being run.
     --shard-index                     The index of this test runner invocation (of --total-shards).
-    --shard-by                        How to distribute tests across shards.
-                                      [test (default), file]
+    --shard-by-file                   Distribute entire test files (suites) across shards instead of individual tests.
     --timeout                         The default test timeout. For example: 15s, 2x, none
                                       (defaults to "30s")
     --suite-load-timeout              The timeout for loading a test suite. Loading the test suite includes compiling the test suite. For example: 15s, 2m, none
@@ -166,7 +165,7 @@ $_usage''');
     test('an invalid option is passed', () async {
       var test = await runTest(['--asdf']);
       expectStderrEquals(test, '''
-Could not find an option named "--asdf".
+Could not find an option named "asdf".
 
 $_usage''');
       await test.shouldExit(exit_codes.usage);

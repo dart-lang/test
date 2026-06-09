@@ -195,7 +195,7 @@ void main() {
       '.',
       '--shard-index=0',
       '--total-shards=2',
-      '--shard-by=file',
+      '--shard-by-file',
     ]);
     expect(
       test.stdout,
@@ -212,7 +212,7 @@ void main() {
       '.',
       '--shard-index=1',
       '--total-shards=2',
-      '--shard-by=file',
+      '--shard-by-file',
     ]);
     expect(
       test.stdout,
@@ -226,7 +226,7 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test('interaction of --shard-by=file with name filters', () async {
+  test('interaction of --shard-by-file with name filters', () async {
     await d.file('1_test.dart', '''
       import 'package:test/test.dart';
 
@@ -249,7 +249,7 @@ void main() {
       '.',
       '--shard-index=1',
       '--total-shards=2',
-      '--shard-by=file',
+      '--shard-by-file',
       '--name=match',
     ]);
     expect(test.stdout, emitsThrough('No tests ran.'));
@@ -260,7 +260,7 @@ void main() {
       '.',
       '--shard-index=0',
       '--total-shards=2',
-      '--shard-by=file',
+      '--shard-by-file',
       '--name=match',
     ]);
     expect(
@@ -270,7 +270,54 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test('interaction of --shard-by=test with name filters', () async {
+  test(
+    'interaction of --shard-by-file with tag filters (files are partitioned before tags are matched)',
+    () async {
+      await d.file('1_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("match", tags: "match", () {});
+      }
+    ''').create();
+
+      await d.file('2_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("other", tags: "other", () {});
+      }
+    ''').create();
+
+      // Shard 1 gets 2_test.dart. But 2_test.dart has no tests matching tag 'match'.
+      // So shard 1 should report no tests ran and fail.
+      var test = await runTest([
+        '.',
+        '--shard-index=1',
+        '--total-shards=2',
+        '--shard-by-file',
+        '--tags=match',
+      ]);
+      expect(test.stdout, emitsThrough('No tests ran.'));
+      await test.shouldExit(79);
+
+      // Shard 0 gets 1_test.dart. It matches, so it runs.
+      test = await runTest([
+        '.',
+        '--shard-index=0',
+        '--total-shards=2',
+        '--shard-by-file',
+        '--tags=match',
+      ]);
+      expect(
+        test.stdout,
+        containsInOrder(['+0: ./1_test.dart: match', '+1: All tests passed!']),
+      );
+      await test.shouldExit(0);
+    },
+  );
+
+  test('interaction of default sharding with name filters', () async {
     await d.file('test.dart', '''
       import 'package:test/test.dart';
 
@@ -288,7 +335,6 @@ void main() {
       'test.dart',
       '--shard-index=0',
       '--total-shards=2',
-      '--shard-by=test',
       '--name=match',
     ]);
     expect(
@@ -302,7 +348,6 @@ void main() {
       'test.dart',
       '--shard-index=1',
       '--total-shards=2',
-      '--shard-by=test',
       '--name=match',
     ]);
     expect(
@@ -345,6 +390,88 @@ void main() {
         emits('--shard-index must be less than --total-shards.'),
       );
       await test.shouldExit(exit_codes.usage);
+    });
+  });
+
+  group('--shard-by-file edge cases:', () {
+    test('less test suites than shards', () async {
+      await d.file('1_test.dart', '''
+        import 'package:test/test.dart';
+        void main() {
+          test("test 1", () {});
+        }
+      ''').create();
+
+      // Shard 0 gets 1_test.dart
+      var test = await runTest([
+        '.',
+        '--shard-index=0',
+        '--total-shards=2',
+        '--shard-by-file',
+      ]);
+      expect(test.stdout, emitsThrough(contains('+0: ./1_test.dart: test 1')));
+      await test.shouldExit(0);
+
+      // Shard 1 gets nothing
+      test = await runTest([
+        '.',
+        '--shard-index=1',
+        '--total-shards=2',
+        '--shard-by-file',
+      ]);
+      expect(test.stdout, emitsThrough('No tests ran.'));
+      await test.shouldExit(79);
+    });
+
+    test('no test suites found', () async {
+      var test = await runTest([
+        '.',
+        '--shard-index=0',
+        '--total-shards=2',
+        '--shard-by-file',
+      ]);
+      expect(test.stderr, emitsThrough('No tests were found.'));
+      await test.shouldExit(exit_codes.noTestsRan);
+    });
+    group('interaction with @TestOn:', () {
+      test('sharding by file respects @TestOn', () async {
+        await d.file('vm_test.dart', '''
+          @TestOn('vm')
+          import 'package:test/test.dart';
+          void main() {
+            test("vm", () {});
+          }
+        ''').create();
+
+        await d.file('browser_test.dart', '''
+          @TestOn('browser')
+          import 'package:test/test.dart';
+          void main() {
+            test("browser", () {});
+          }
+        ''').create();
+
+        // Files are sorted: browser_test.dart, vm_test.dart
+        // Shard 0 gets browser_test.dart.
+        var test = await runTest([
+          '.',
+          '--shard-index=0',
+          '--total-shards=2',
+          '--shard-by-file',
+        ]);
+        expect(test.stdout, emitsThrough('No tests ran.'));
+        await test.shouldExit(79);
+
+        // Shard 1 gets vm_test.dart.
+        test = await runTest([
+          '.',
+          '--shard-index=1',
+          '--total-shards=2',
+          '--shard-by-file',
+        ]);
+        expect(test.stdout, emitsThrough(contains('+0: ./vm_test.dart: vm')));
+        await test.shouldExit(0);
+      });
     });
   });
 }

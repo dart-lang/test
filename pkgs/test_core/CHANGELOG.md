@@ -2,7 +2,7 @@
 
 * Support using the OS platform selector to configure browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by` to control sharding strategy.
+* Add flag `--shard-by-file` to control sharding strategy.
 
 ## 0.6.18
 

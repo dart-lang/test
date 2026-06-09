@@ -130,9 +130,9 @@ class Configuration {
   /// See [shardIndex] for details.
   final int? totalShards;
 
-  /// How to distribute tests across shards.
-  String get shardBy => _shardBy ?? 'test';
-  final String? _shardBy;
+  /// Whether to distribute tests across shards by file.
+  bool get shardByFile => _shardByFile ?? false;
+  final bool? _shardByFile;
 
   /// The list of packages to fold when producing [StackTrace]s.
   Set<String> get foldTraceExcept => _foldTraceExcept ?? {};
@@ -287,7 +287,7 @@ class Configuration {
     required int? concurrency,
     required int? shardIndex,
     required int? totalShards,
-    required String? shardBy,
+    required bool? shardByFile,
     required Map<String, Set<TestSelection>>? testSelections,
     required Iterable<String>? foldTraceExcept,
     required Iterable<String>? foldTraceOnly,
@@ -345,7 +345,7 @@ class Configuration {
       concurrency: concurrency,
       shardIndex: shardIndex,
       totalShards: totalShards,
-      shardBy: shardBy,
+      shardByFile: shardByFile,
       testSelections: testSelections,
       foldTraceExcept: foldTraceExcept,
       foldTraceOnly: foldTraceOnly,
@@ -409,7 +409,7 @@ class Configuration {
     int? concurrency,
     int? shardIndex,
     int? totalShards,
-    String? shardBy,
+    bool? shardByFile,
     Map<String, Set<TestSelection>>? testSelections,
     Iterable<String>? foldTraceExcept,
     Iterable<String>? foldTraceOnly,
@@ -465,7 +465,7 @@ class Configuration {
     concurrency: concurrency,
     shardIndex: shardIndex,
     totalShards: totalShards,
-    shardBy: shardBy,
+    shardByFile: shardByFile,
     testSelections: testSelections,
     foldTraceExcept: foldTraceExcept,
     foldTraceOnly: foldTraceOnly,
@@ -539,7 +539,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
-    shardBy: null,
+    shardByFile: null,
     testSelections: null,
     filename: null,
     chosenPresets: null,
@@ -608,7 +608,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
-    shardBy: null,
+    shardByFile: null,
     testSelections: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
@@ -679,7 +679,7 @@ class Configuration {
     coveragePackages: null,
     shardIndex: null,
     totalShards: null,
-    shardBy: null,
+    shardByFile: null,
     testSelections: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
@@ -746,7 +746,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
-    shardBy: null,
+    shardByFile: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
     chosenPresets: null,
@@ -818,7 +818,7 @@ class Configuration {
     required int? concurrency,
     required this.shardIndex,
     required this.totalShards,
-    required String? shardBy,
+    required bool? shardByFile,
     required Map<String, Set<TestSelection>>? testSelections,
     required Iterable<String>? foldTraceExcept,
     required Iterable<String>? foldTraceOnly,
@@ -834,7 +834,7 @@ class Configuration {
     required BooleanSelector? excludeTags,
     required Iterable<Pattern>? globalPatterns,
     required SuiteConfiguration? suiteDefaults,
-  }) : _shardBy = shardBy,
+  }) : _shardByFile = shardByFile,
        _help = help,
        _version = version,
        _pauseAfterLoad = pauseAfterLoad,
@@ -913,7 +913,7 @@ class Configuration {
     concurrency: null,
     shardIndex: null,
     totalShards: null,
-    shardBy: null,
+    shardByFile: null,
     testSelections: null,
     foldTraceExcept: null,
     foldTraceOnly: null,
@@ -1017,7 +1017,7 @@ class Configuration {
       concurrency: other._concurrency ?? _concurrency,
       shardIndex: other.shardIndex ?? shardIndex,
       totalShards: other.totalShards ?? totalShards,
-      shardBy: other._shardBy ?? _shardBy,
+      shardByFile: other._shardByFile ?? _shardByFile,
       testSelections: other._testSelections ?? _testSelections,
       foldTraceExcept: foldTraceExcept,
       foldTraceOnly: foldTraceOnly,
@@ -1075,7 +1075,7 @@ class Configuration {
     int? concurrency,
     int? shardIndex,
     int? totalShards,
-    String? shardBy,
+    bool? shardByFile,
     Map<String, Set<TestSelection>>? testSelections,
     Iterable<String>? exceptPackages,
     Iterable<String>? onlyPackages,
@@ -1127,7 +1127,7 @@ class Configuration {
       concurrency: concurrency ?? _concurrency,
       shardIndex: shardIndex ?? this.shardIndex,
       totalShards: totalShards ?? this.totalShards,
-      shardBy: shardBy ?? _shardBy,
+      shardByFile: shardByFile ?? _shardByFile,
       testSelections: testSelections ?? _testSelections,
       foldTraceExcept: exceptPackages ?? _foldTraceExcept,
       foldTraceOnly: onlyPackages ?? _foldTraceOnly,

@@ -270,74 +270,9 @@ class Runner {
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    final Stream<LoadSuite> source;
-    if (_config.totalShards != null && _config.shardBy == 'file') {
-      final allFiles = <String>[];
-      for (var pathEntry in _config.testSelections.entries) {
-        final testPath = pathEntry.key;
-        if (Directory(testPath).existsSync()) {
-          allFiles.addAll(
-            Directory(testPath)
-                .listSync(recursive: true)
-                .whereType<File>()
-                .map((f) => f.path)
-                .where((path) => _config.filename.matches(p.basename(path))),
-          );
-        } else if (File(testPath).existsSync()) {
-          allFiles.add(testPath);
-        } else {
-          allFiles.add(testPath);
-        }
-      }
-
-      allFiles.sort();
-
-      final shardSize = allFiles.length / _config.totalShards!;
-      final shardStart = (shardSize * _config.shardIndex!).round();
-      final shardEnd = (shardSize * (_config.shardIndex! + 1)).round();
-      final shardFiles = allFiles.sublist(shardStart, shardEnd);
-
-      source = StreamGroup.merge(
-        shardFiles.map((path) {
-          final key = _config.testSelections.keys.firstWhere(
-            (k) => path == k || p.isWithin(k, path),
-            orElse: () => _config.testSelections.keys.first,
-          );
-          final testSelections = _config.testSelections[key]!;
-          final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
-
-          if (!File(path).existsSync() && !Directory(path).existsSync()) {
-            return Stream.fromIterable([
-              LoadSuite.forLoadException(
-                LoadException(path, 'Does not exist.'),
-                suiteConfig,
-              ),
-            ]);
-          }
-          return _loader.loadFile(path, suiteConfig);
-        }),
-      );
-    } else {
-      source = StreamGroup.merge(
-        _config.testSelections.entries.map((pathEntry) {
-          final testPath = pathEntry.key;
-          final testSelections = pathEntry.value;
-          final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
-          if (Directory(testPath).existsSync()) {
-            return _loader.loadDir(testPath, suiteConfig);
-          } else if (File(testPath).existsSync()) {
-            return _loader.loadFile(testPath, suiteConfig);
-          } else {
-            return Stream.fromIterable([
-              LoadSuite.forLoadException(
-                LoadException(testPath, 'Does not exist.'),
-                suiteConfig,
-              ),
-            ]);
-          }
-        }),
-      );
-    }
+    final source = _config.totalShards != null && _config.shardByFile
+        ? _shardByFileSuites()
+        : _allSuites();
 
     return source.map((loadSuite) {
       return loadSuite.changeSuite((suite) {
@@ -458,6 +393,76 @@ class Runner {
     });
   }
 
+  /// Returns a stream of all [LoadSuite]s.
+  Stream<LoadSuite> _allSuites() {
+    return StreamGroup.merge(
+      _config.testSelections.entries.map((pathEntry) {
+        final testPath = pathEntry.key;
+        final testSelections = pathEntry.value;
+        final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+        if (Directory(testPath).existsSync()) {
+          return _loader.loadDir(testPath, suiteConfig);
+        } else if (File(testPath).existsSync()) {
+          return _loader.loadFile(testPath, suiteConfig);
+        } else {
+          return Stream.fromIterable([
+            LoadSuite.forLoadException(
+              LoadException(testPath, 'Does not exist.'),
+              suiteConfig,
+            ),
+          ]);
+        }
+      }),
+    );
+  }
+
+  /// Returns a stream of [LoadSuite]s sharded by file.
+  Stream<LoadSuite> _shardByFileSuites() {
+    final allFiles = <String>[];
+    for (var testPath in _config.testSelections.keys) {
+      if (Directory(testPath).existsSync()) {
+        allFiles.addAll(
+          Directory(testPath)
+              .listSync(recursive: true)
+              .whereType<File>()
+              .map((f) => f.path)
+              .where((path) => _config.filename.matches(p.basename(path))),
+        );
+      } else {
+        // If it's a file or doesn't exist, we add it to the list to be
+        // sharded and potentially reported as an error later.
+        allFiles.add(testPath);
+      }
+    }
+
+    allFiles.sort();
+
+    final shardSize = allFiles.length / _config.totalShards!;
+    final shardStart = (shardSize * _config.shardIndex!).round();
+    final shardEnd = (shardSize * (_config.shardIndex! + 1)).round();
+    final shardFiles = allFiles.sublist(shardStart, shardEnd);
+
+    return StreamGroup.merge(
+      shardFiles.map((path) {
+        final entry = _config.testSelections.entries.firstWhere(
+          (e) => path == e.key || p.isWithin(e.key, path),
+          orElse: () => _config.testSelections.entries.first,
+        );
+        final suiteConfig = _config.suiteDefaults.selectTests(entry.value);
+
+        if (!File(path).existsSync() && !Directory(path).existsSync()) {
+          return Stream.fromIterable([
+            LoadSuite.forLoadException(
+              LoadException(path, 'Does not exist.'),
+              suiteConfig,
+            ),
+          ]);
+        }
+        return _loader.loadFile(path, suiteConfig);
+      }),
+    );
+  }
+
   /// Prints a warning for any unknown tags referenced in [suite] or its
   /// children.
   void _warnForUnknownTags(Suite suite) {
@@ -542,7 +547,7 @@ class Runner {
   /// tests are continuous, makes us more likely to be able to re-use
   /// `setUpAll()` logic.
   RunnerSuite _shardSuite(RunnerSuite suite) {
-    if (_config.totalShards == null || _config.shardBy == 'file') return suite;
+    if (_config.totalShards == null || _config.shardByFile) return suite;
 
     var shardSize = suite.group.testCount / _config.totalShards!;
     var shardIndex = _config.shardIndex!;
