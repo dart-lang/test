@@ -19,7 +19,7 @@ dependencies:
   glob: ^2.0.0
   io: ^1.0.0
   meta: ^1.16.0
-  package_config: ^2.0.0
+  package_config: ">=2.0.0 <4.0.0"
   path: ^1.8.0
   pool: ^1.5.0
   source_map_stack_trace: ^2.1.0
@@ -34,3 +34,4 @@ dependencies:
 
 dev_dependencies:
   test: any
+  test_descriptor: ^2.0.0

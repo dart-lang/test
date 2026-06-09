@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -24,6 +25,11 @@ final Future<String> packageDir =
 
 /// The root directory of the Dart SDK.
 final String sdkDir = p.dirname(p.dirname(Platform.resolvedExecutable));
+
+final bool supportsCliCompiler = () {
+  var current = Version.parse(Platform.version.split(' ').first);
+  return current > Version.parse('3.13.0-159.0.dev');
+}();
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
 final String noSuchFileMessage = Platform.isWindows
