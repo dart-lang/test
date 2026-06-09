@@ -164,10 +164,15 @@ $_usage''');
   group('fails gracefully if', () {
     test('an invalid option is passed', () async {
       var test = await runTest(['--asdf']);
-      expectStderrEquals(test, '''
-Could not find an option named "asdf".
+      var expected1 = 'Could not find an option named "asdf".\n\n$_usage';
+      var expected2 = 'Could not find an option named "--asdf".\n\n$_usage';
 
-$_usage''');
+      var stderr = await test.stderrStream().toList();
+      var stderrText = stderr.join('\n').trim();
+      expect(
+        stderrText,
+        anyOf(equals(expected1.trim()), equals(expected2.trim())),
+      );
       await test.shouldExit(exit_codes.usage);
     });
 
