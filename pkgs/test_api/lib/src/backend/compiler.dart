@@ -10,8 +10,13 @@ enum Compiler {
   /// Experimental Dart to Wasm compiler.
   dart2wasm('Dart2Wasm', 'dart2wasm'),
 
-  /// Compiles dart code to a native executable.
+  /// Compiles dart code to a native executable. This compiler does not
+  /// support code assets from build and link hooks.
   exe('Exe', 'exe'),
+
+  /// Compiles dart code to a native CLI bundle. This compiler supports
+  /// code assets from build and link hooks.
+  cli('Cli', 'cli'),
 
   /// The standard compiler for vm tests, compiles tests to kernel before
   /// running them on the VM.
@@ -25,6 +30,7 @@ enum Compiler {
     Compiler.dart2js,
     Compiler.dart2wasm,
     Compiler.exe,
+    Compiler.cli,
     Compiler.kernel,
     Compiler.source,
   ];

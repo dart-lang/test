@@ -1,5 +1,6 @@
 ## 0.7.13-wip
 
+* Add `Compiler.cli` (the native CLI compiler).
 * Expose several more backend APIs for use in `flutter_test`.
 * Allow using browser platforms with a specified OS.
 

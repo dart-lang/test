@@ -66,10 +66,25 @@ Actual: a Map<String, List<int>> that:
         check<int?>(because: 'Some reason', 1).isNotNull().isGreaterThan(2);
       }).throwsFailure().endsWith('Reason: Some reason');
     });
+
+    test('handles objects with empty toString', () {
+      check(() {
+        check(EmptyToString()).equals(EmptyToString());
+      }).throwsFailure().equals('''
+Expected: a EmptyToString that:
+  equals <empty toString()>
+Actual: <empty toString()>
+Which: are not equal''');
+    });
   });
 }
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
       throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
+}
+
+class EmptyToString {
+  @override
+  String toString() => '';
 }

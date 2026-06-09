@@ -57,7 +57,8 @@ class VMPlatform extends PlatformPlugin {
     MultiChannel outerChannel;
     var cleanupCallbacks = <void Function()>[];
     Isolate? isolate;
-    if (platform.compiler == Compiler.exe) {
+    if (platform.compiler == Compiler.exe ||
+        platform.compiler == Compiler.cli) {
       var serverSocket = await ServerSocket.bind('localhost', 0);
       Process process;
       try {
@@ -87,7 +88,10 @@ class VMPlatform extends PlatformPlugin {
           suiteConfig.metadata,
           platform.compiler,
         );
-        if (isolate == null) return null;
+        if (isolate == null) {
+          receivePort.close();
+          return null;
+        }
       } catch (error) {
         receivePort.close();
         rethrow;
@@ -128,10 +132,11 @@ class VMPlatform extends PlatformPlugin {
     String? isolateID;
     Uri? serverUri;
     if (_config.debug) {
-      if (platform.compiler == Compiler.exe) {
+      if (platform.compiler == Compiler.exe ||
+          platform.compiler == Compiler.cli) {
         throw UnsupportedError(
-          'Unable to debug tests compiled to `exe` (tried to debug $path with '
-          'the `exe` compiler).',
+          'Unable to debug tests compiled to `${platform.compiler.identifier}` '
+          '(tried to debug $path with the `${platform.compiler.identifier}` compiler).',
         );
       }
       var info = await Service.controlWebServer(
@@ -236,13 +241,79 @@ class VMPlatform extends PlatformPlugin {
       );
     }
 
-    var sharedLibrary = await _compileToNative(platform, path, suiteMetadata);
-    return await Process.start(
-      _aotRuntimeFor(platform),
-      [sharedLibrary, socket.address.host, socket.port.toString()],
-      environment: _environmentFor(platform),
-      mode: ProcessStartMode.inheritStdio,
+    switch (platform.compiler) {
+      case Compiler.cli:
+        var executable = await _compileToCli(platform, path, suiteMetadata);
+        return await Process.start(executable, [
+          socket.address.host,
+          socket.port.toString(),
+        ], mode: ProcessStartMode.inheritStdio);
+      case Compiler.exe:
+        var sharedLibrary = await _compileToNative(
+          platform,
+          path,
+          suiteMetadata,
+        );
+        return await Process.start(
+          _aotRuntimeFor(platform),
+          [sharedLibrary, socket.address.host, socket.port.toString()],
+          environment: _environmentFor(platform),
+          mode: ProcessStartMode.inheritStdio,
+        );
+      default:
+        throw StateError(
+          'Unsupported compiler ${platform.compiler} for spawning an executable',
+        );
+    }
+  }
+
+  /// Compiles [path] to a native CLI bundle using `dart build cli`.
+  Future<String> _compileToCli(
+    SuitePlatform platform,
+    String path,
+    Metadata suiteMetadata,
+  ) async {
+    var bootstrapPath = await _bootstrapNativeTestFile(
+      path,
+      suiteMetadata.languageVersionComment ??
+          await rootPackageLanguageVersionComment,
     );
+
+    var outputDir = p.join(_tempDir.path, 'cli_build');
+    var processResult = await Process.run(Platform.resolvedExecutable, [
+      'build',
+      'cli',
+      '--target',
+      bootstrapPath,
+      '--output',
+      outputDir,
+      '--packages',
+      (await packageConfigUri).toFilePath(),
+      '--root-package',
+      (await currentPackage).name,
+      if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
+      if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
+      if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
+    ]);
+    if (processResult.exitCode != 0) {
+      throw LoadException(path, '''
+exitCode: ${processResult.exitCode}
+stdout: ${processResult.stdout}
+stderr: ${processResult.stderr}''');
+    }
+    var executablePath = p.join(
+      outputDir,
+      'bundle',
+      'bin',
+      p.basenameWithoutExtension(bootstrapPath),
+    );
+    if (!await File(executablePath).exists()) {
+      throw LoadException(
+        path,
+        'Compiled executable not found at $executablePath',
+      );
+    }
+    return executablePath;
   }
 
   /// Compiles [path] to a native shared library using
