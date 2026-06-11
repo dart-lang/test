@@ -48,6 +48,8 @@ void main() {
       } else if (runtime == Runtime.vmTsan &&
           !File('$sdkDir/bin/dartaotruntime_tsan').existsSync()) {
         skipReason = 'SDK too old';
+      } else if (compiler == Compiler.cli && !supportsCliCompiler) {
+        skipReason = 'SDK too old';
       }
       group(
         '--runtime ${runtime.identifier} --compiler ${compiler.identifier}',

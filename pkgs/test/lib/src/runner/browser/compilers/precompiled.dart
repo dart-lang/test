@@ -112,6 +112,7 @@ abstract class PrecompiledSupport extends CompilerSupport {
         faviconPath,
       ),
       Compiler.exe ||
+      Compiler.cli ||
       Compiler.kernel ||
       Compiler.source => throw UnsupportedError(
         'The browser platform does not support $compiler',

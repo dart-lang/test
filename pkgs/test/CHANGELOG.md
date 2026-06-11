@@ -1,5 +1,7 @@
 ## 1.31.2-wip
 
+* Add support for running tests as native CLI bundles (vm platform only).
+  * You can run tests this way with `--compiler cli`.
 * **Impacts Configuration** Support using the OS platform selector to configure
   browser tests.
   Previously tests loaded for the browser would have an operating system of
@@ -12,6 +14,7 @@
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
 * Disable throttling in chrome launch arguments.
+* Allow package_config `3.x.x`.
 
 ## 1.31.1
 
