@@ -4,6 +4,7 @@
 
 import 'dart:async';
 
+import 'package:analyzer/dart/ast/ast.dart' as ast;
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -43,19 +44,41 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
         'must annotate an import or export of $expectedImport',
       );
     }
-    final typesField = annotation.read('types');
-    if (!typesField.isList) {
+    final compilationUnit = await buildStep.resolver.astNodeFor(
+      directive.libraryFragment,
+    ) as ast.CompilationUnit?;
+    if (compilationUnit == null) {
+      throw InvalidGenerationSourceError('Could not find AST for library.');
+    }
+    final typeNames = await _extractTypeNamesFromAst(
+      compilationUnit,
+      expectedImport,
+    );
+
+    if (typeNames.isEmpty) {
       throw InvalidGenerationSourceError(
-        'Failed to resolve the specified types. '
-        'Check for a missing build dependency.',
+        'Could not find @CheckExtensions annotation or it was empty.',
       );
     }
-    final types = typesField.listValue;
+
+    final currentLibrary = directive.libraryFragment.element;
+    final imports = directive.libraryFragment.importedLibraries;
+
+    final targetElements = <Element>[];
+    for (final name in typeNames) {
+      final element = _findElementByName(currentLibrary, imports, name);
+      if (element != null) {
+        targetElements.add(element);
+      } else {
+        throw InvalidGenerationSourceError('Could not resolve type: $name');
+      }
+    }
+
     final extensions = await Future.wait([
-      for (final object in types)
+      for (final element in targetElements)
         _createExtension(
           directive.libraryFragment.importedLibraries,
-          object,
+          element,
           buildStep.resolver,
           buildStep.inputId.path,
         ),
@@ -93,27 +116,20 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
 
   Future<Extension> _createExtension(
     List<LibraryElement> imports,
-    DartObject dartObject,
+    Element element,
     Resolver resolver,
     String entryAssetPath,
   ) async {
-    final type = dartObject.toTypeValue();
-    if (type is! InterfaceType) {
-      throw InvalidGenerationSourceError(
-        'Only interface types may be used for checks extensions: $type',
-      );
-    }
-    final element = type.element;
     final import = await _findImportFor(
       imports,
       element,
       resolver,
       entryAssetPath,
     );
+    final checkableProperties = _getCheckableProperties(element);
     final hasGetters = await Future.wait([
-      for (final field in element.fields)
-        if (_isCheckableField(field))
-          _createHasGetter(imports, field, resolver, entryAssetPath),
+      for (final property in checkableProperties)
+        _createHasGetter(imports, property, resolver, entryAssetPath),
     ]);
     return Extension(
       (b) => b
@@ -135,23 +151,21 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
 
   Future<Method> _createHasGetter(
     List<LibraryElement> imports,
-    FieldElement field,
+    _CheckableProperty property,
     Resolver resolver,
     String entryAssetPath,
   ) async {
-    final type = field.type;
-    if (type is! InterfaceType) {
-      throw InvalidGenerationSourceError(
-        'Only interface types may be used for checks extensions:: $type',
+    final typeElement = property.element;
+    String? import;
+    if (typeElement != null) {
+      import = await _findImportFor(
+        imports,
+        typeElement,
+        resolver,
+        entryAssetPath,
       );
     }
-    final import = await _findImportFor(
-      imports,
-      type.element,
-      resolver,
-      entryAssetPath,
-    );
-    final name = field.name!;
+    final name = property.name;
     return Method(
       (b) => b
         ..name = name
@@ -160,7 +174,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
           (b) => b
             ..symbol = 'Subject'
             ..url = 'package:checks/context.dart'
-            ..types.add(refer(field.type.getDisplayString(), import)),
+            ..types.add(refer(property.type.getDisplayString(), import)),
         )
         ..lambda = true
         ..body = refer('has').call([
@@ -211,4 +225,98 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       return exportingLibrary.uri.toString();
     }
   }
+
+  List<_CheckableProperty> _getCheckableProperties(Element element) {
+    final properties = <_CheckableProperty>[];
+
+    if (element is InterfaceElement) {
+      for (final field in element.fields) {
+        if (_isCheckableField(field)) {
+          final type = field.type;
+          Element? typeElement;
+          if (type is InterfaceType) {
+            typeElement = type.element;
+          }
+          final name = field.name;
+          if (name != null) {
+            properties.add(_CheckableProperty(name, type, typeElement));
+          }
+        }
+      }
+    } else if (element is ExtensionTypeElement) {
+      for (final getter in element.getters) {
+        if (!getter.isStatic && getter.name != 'hashCode') {
+          final type = getter.returnType;
+          if (type is! FunctionType) {
+            Element? typeElement;
+            if (type is InterfaceType) {
+              typeElement = type.element;
+            }
+            final name = getter.name;
+            if (name != null) {
+              properties.add(_CheckableProperty(name, type, typeElement));
+            }
+          }
+        }
+      }
+    }
+    return properties;
+  }
+
+  Future<List<String>> _extractTypeNamesFromAst(
+    ast.CompilationUnit compilationUnit,
+    String expectedImport,
+  ) async {
+    for (final directive in compilationUnit.directives) {
+      bool isTargetDirective = false;
+      if (directive is ast.ImportDirective) {
+        isTargetDirective = directive.uri.stringValue == expectedImport;
+      } else if (directive is ast.ExportDirective) {
+        isTargetDirective = directive.uri.stringValue == expectedImport;
+      }
+
+      if (isTargetDirective) {
+        for (final annotation in directive.metadata) {
+          if (annotation.name.name == 'CheckExtensions') {
+            final arguments = annotation.arguments?.arguments;
+            if (arguments != null && arguments.isNotEmpty) {
+              final typesArg = arguments.first;
+              if (typesArg is ast.ListLiteral) {
+                return typesArg.elements
+                    .whereType<ast.Identifier>()
+                    .map((e) => e.name)
+                    .toList();
+              }
+            }
+          }
+        }
+      }
+    }
+    return [];
+  }
+
+  Element? _findElementByName(
+    LibraryElement currentLibrary,
+    List<LibraryElement> imports,
+    String name,
+  ) {
+    final element = currentLibrary.exportNamespace.get2(name);
+    if (element != null) return element;
+
+    for (final import in imports) {
+      final element = import.exportNamespace.get2(name);
+      if (element != null) {
+        return element;
+      }
+    }
+    return null;
+  }
+}
+
+class _CheckableProperty {
+  final String name;
+  final DartType type;
+  final Element? element;
+
+  _CheckableProperty(this.name, this.type, this.element);
 }

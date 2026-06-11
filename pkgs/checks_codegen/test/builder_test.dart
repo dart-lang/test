@@ -204,5 +204,40 @@ abstract class Foo {
         ..not((s) => s.contains('functionField'))
         ..not((s) => s.contains('method'));
     });
+
+    test('can build for extension type', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/ext_type_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'ext_type.dart';
+
+@CheckExtensions([MyExtType])
+import 'ext_type_test.checks.dart';
+''',
+          'a|test/ext_type.dart': '''
+extension type MyExtType(int i) {
+  int get intField => i;
+}
+''',
+        },
+        readerWriter: readerWriter,
+        flattenOutput: true,
+      );
+      final checksOutput = readerWriter.testing.readString(
+        AssetId('a', 'test/ext_type_test.checks.dart'),
+      );
+      check(checksOutput).containsInOrder([
+        "import 'package:checks/checks.dart';",
+        "import 'package:checks/context.dart' as _i1;",
+        "import 'ext_type.dart' as _i2;",
+        'extension MyExtTypeChecks on _i1.Subject<_i2.MyExtType> {',
+        '  _i1.Subject<int> get intField => has((v) => '
+            "v.intField, 'intField');",
+        '}',
+      ]);
+    });
   });
 }
