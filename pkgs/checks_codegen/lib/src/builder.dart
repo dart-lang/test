@@ -44,9 +44,9 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
         'must annotate an import or export of $expectedImport',
       );
     }
-    final compilationUnit = await buildStep.resolver.astNodeFor(
-      directive.libraryFragment,
-    ) as ast.CompilationUnit?;
+    final compilationUnit =
+        await buildStep.resolver.astNodeFor(directive.libraryFragment)
+            as ast.CompilationUnit?;
     if (compilationUnit == null) {
       throw InvalidGenerationSourceError('Could not find AST for library.');
     }
