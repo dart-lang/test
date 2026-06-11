@@ -5,7 +5,6 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/ast/ast.dart' as ast;
-import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
@@ -268,7 +267,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     String expectedImport,
   ) async {
     for (final directive in compilationUnit.directives) {
-      bool isTargetDirective = false;
+      var isTargetDirective = false;
       if (directive is ast.ImportDirective) {
         isTargetDirective = directive.uri.stringValue == expectedImport;
       } else if (directive is ast.ExportDirective) {
