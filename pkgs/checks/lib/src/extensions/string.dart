@@ -14,7 +14,7 @@ extension StringChecks on Subject<String> {
     context.expect(() => prefixFirst('contains ', literal(pattern)), (actual) {
       if (actual.contains(pattern)) return null;
       return Rejection(
-        which: prefixFirst('Does not contain ', literal(pattern)),
+        which: () => prefixFirst('Does not contain ', literal(pattern)),
       );
     });
   }
@@ -24,14 +24,14 @@ extension StringChecks on Subject<String> {
   void isEmpty() {
     context.expect(() => const ['is empty'], (actual) {
       if (actual.isEmpty) return null;
-      return Rejection(which: ['is not empty']);
+      return Rejection(which: () => ['is not empty']);
     });
   }
 
   void isNotEmpty() {
     context.expect(() => const ['is not empty'], (actual) {
       if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is empty']);
+      return Rejection(which: () => ['is empty']);
     });
   }
 
@@ -39,7 +39,7 @@ extension StringChecks on Subject<String> {
     context.expect(() => prefixFirst('starts with ', literal(other)), (actual) {
       if (actual.startsWith(other)) return null;
       return Rejection(
-        which: prefixFirst('does not start with ', literal(other)),
+        which: () => prefixFirst('does not start with ', literal(other)),
       );
     });
   }
@@ -48,7 +48,7 @@ extension StringChecks on Subject<String> {
     context.expect(() => prefixFirst('ends with ', literal(other)), (actual) {
       if (actual.endsWith(other)) return null;
       return Rejection(
-        which: prefixFirst('does not end with ', literal(other)),
+        which: () => prefixFirst('does not end with ', literal(other)),
       );
     });
   }
@@ -66,7 +66,7 @@ extension StringChecks on Subject<String> {
     context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
       if (expected.allMatches(actual).isNotEmpty) return null;
       return Rejection(
-        which: prefixFirst('does not match ', literal(expected)),
+        which: () => prefixFirst('does not match ', literal(expected)),
       );
     });
   }
@@ -86,7 +86,7 @@ extension StringChecks on Subject<String> {
           var index = actual.indexOf(s, fromIndex);
           if (index < 0) {
             return Rejection(
-              which: [
+              which: () => [
                 ...prefixFirst(
                   'does not have a match for the substring ',
                   literal(s),
@@ -182,10 +182,10 @@ Rejection? _findDifference(
   if (i == minLength) {
     if (escapedExpected.length < escapedActual.length) {
       if (expected.isEmpty) {
-        return Rejection(which: ['is not the empty string']);
+        return Rejection(which: () => ['is not the empty string']);
       }
       return Rejection(
-        which: [
+        which: () => [
           'is too long with unexpected trailing characters:',
           _trailing(escapedActualDisplay, i),
         ],
@@ -193,15 +193,15 @@ Rejection? _findDifference(
     } else {
       if (actual.isEmpty) {
         return Rejection(
-          actual: ['an empty string'],
-          which: [
+          actual: () => ['an empty string'],
+          which: () => [
             'is missing all expected characters:',
             _trailing(escapedExpectedDisplay, 0),
           ],
         );
       }
       return Rejection(
-        which: [
+        which: () => [
           'is too short with missing trailing characters:',
           _trailing(escapedExpectedDisplay, i),
         ],
@@ -210,7 +210,7 @@ Rejection? _findDifference(
   } else {
     final markerIndent = ' ' * (i > 10 ? 14 : i);
     return Rejection(
-      which: [
+      which: () => [
         'differs at offset $i:',
         ...indent([
           '${_leading(escapedExpectedDisplay, i)}'

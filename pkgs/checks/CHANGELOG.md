@@ -1,5 +1,9 @@
-## 0.3.2-wip
+## 0.4.0-wip
 
+- **Breaking changes in `package:checks/context.dart`** Require callbacks for
+  the `actual` and `which` arguments to `Rejection`. Allows skipping the
+  formatting of these strings in some cases where the expectation is used in a
+  soft check.
 - Require Dart 3.7
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.

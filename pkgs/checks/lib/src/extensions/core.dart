@@ -41,7 +41,7 @@ extension CoreChecks<T> on Subject<T> {
         return Extracted.value(extract(value));
       } catch (e, st) {
         return Extracted.rejection(
-          which: [
+          which: () => [
             ...prefixFirst(
               'threw while trying to read $name: ',
               postfixLast(' at:', literal(e)),
@@ -78,7 +78,7 @@ extension CoreChecks<T> on Subject<T> {
       (actual) {
         if (softCheck(actual, condition) != null) return null;
         return Rejection(
-          which: ['is a value that: ', ...indent(describe(condition))],
+          which: () => ['is a value that: ', ...indent(describe(condition))],
         );
       },
     );
@@ -95,7 +95,7 @@ extension CoreChecks<T> on Subject<T> {
         for (final condition in conditions) {
           if (softCheck(actual, condition) == null) return null;
         }
-        return Rejection(which: ['did not match any condition']);
+        return Rejection(which: () => ['did not match any condition']);
       },
     );
   }
@@ -106,7 +106,7 @@ extension CoreChecks<T> on Subject<T> {
   Subject<R> isA<R>() {
     return context.nest<R>(() => ['is a $R'], (actual) {
       if (actual is! R) {
-        return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
+        return Extracted.rejection(which: () => ['Is a ${actual.runtimeType}']);
       }
       return Extracted.value(actual);
     }, atSameLevel: true);
@@ -116,7 +116,7 @@ extension CoreChecks<T> on Subject<T> {
   void equals(T other) {
     context.expect(() => prefixFirst('equals ', literal(other)), (actual) {
       if (actual == other) return null;
-      return Rejection(which: ['are not equal']);
+      return Rejection(which: () => ['are not equal']);
     });
   }
 
@@ -126,7 +126,7 @@ extension CoreChecks<T> on Subject<T> {
       actual,
     ) {
       if (identical(actual, other)) return null;
-      return Rejection(which: ['is not identical']);
+      return Rejection(which: () => ['is not identical']);
     });
   }
 }
@@ -175,7 +175,7 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     ) {
       if (actual.compareTo(other) > 0) return null;
       return Rejection(
-        which: prefixFirst('is not greater than ', literal(other)),
+        which: () => prefixFirst('is not greater than ', literal(other)),
       );
     });
   }
@@ -187,10 +187,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
       (actual) {
         if (actual.compareTo(other) >= 0) return null;
         return Rejection(
-          which: prefixFirst(
-            'is not greater than or equal to ',
-            literal(other),
-          ),
+          which: () =>
+              prefixFirst('is not greater than or equal to ', literal(other)),
         );
       },
     );
@@ -202,7 +200,9 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
       actual,
     ) {
       if (actual.compareTo(other) < 0) return null;
-      return Rejection(which: prefixFirst('is not less than ', literal(other)));
+      return Rejection(
+        which: () => prefixFirst('is not less than ', literal(other)),
+      );
     });
   }
 
@@ -213,7 +213,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
       (actual) {
         if (actual.compareTo(other) <= 0) return null;
         return Rejection(
-          which: prefixFirst('is not less than or equal to ', literal(other)),
+          which: () =>
+              prefixFirst('is not less than or equal to ', literal(other)),
         );
       },
     );

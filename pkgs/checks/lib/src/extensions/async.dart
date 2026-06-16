@@ -24,8 +24,8 @@ extension FutureChecks<T> on Subject<Future<T>> {
         return Extracted.value(await actual);
       } catch (e, st) {
         return Extracted.rejection(
-          actual: ['a future that completes as an error'],
-          which: [
+          actual: () => ['a future that completes as an error'],
+          which: () => [
             ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
             ...indent(LineSplitter.split(st.toString())),
           ],
@@ -50,15 +50,16 @@ extension FutureChecks<T> on Subject<Future<T>> {
           (r) {
             reject(
               Rejection(
-                actual: prefixFirst('a future that completed to ', literal(r)),
+                actual: () =>
+                    prefixFirst('a future that completed to ', literal(r)),
               ),
             );
           },
           onError: (Object e, StackTrace st) {
             reject(
               Rejection(
-                actual: ['a future that completed as an error'],
-                which: [
+                actual: () => ['a future that completed as an error'],
+                which: () => [
                   ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
                   ...indent(LineSplitter.split(st.toString())),
                 ],
@@ -84,16 +85,17 @@ extension FutureChecks<T> on Subject<Future<T>> {
       () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
       (actual) async {
         try {
+          final value = await actual;
           return Extracted.rejection(
-            actual: prefixFirst('completed to ', literal(await actual)),
-            which: ['did not throw'],
+            actual: () => prefixFirst('completed to ', literal(value)),
+            which: () => ['did not throw'],
           );
         } on E catch (e) {
           return Extracted.value(e);
         } catch (e, st) {
           return Extracted.rejection(
-            actual: prefixFirst('completed to error ', literal(e)),
-            which: [
+            actual: () => prefixFirst('completed to error ', literal(e)),
+            which: () => [
               'threw an exception that is not a $E at:',
               ...indent(LineSplitter.split(st.toString())),
             ],
@@ -146,8 +148,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
     return context.nestAsync<T>(() => ['emits a value'], (actual) async {
       if (!await actual.hasNext) {
         return Extracted.rejection(
-          actual: ['a stream'],
-          which: ['closed without emitting enough values'],
+          actual: () => ['a stream'],
+          which: () => ['closed without emitting enough values'],
         );
       }
       try {
@@ -155,8 +157,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         return Extracted.value(await actual.next);
       } catch (e, st) {
         return Extracted.rejection(
-          actual: prefixFirst('a stream with error ', literal(e)),
-          which: [
+          actual: () => prefixFirst('a stream with error ', literal(e)),
+          which: () => [
             'emitted an error instead of a value at:',
             ...indent(LineSplitter.split(st.toString())),
           ],
@@ -188,23 +190,24 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
       (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
-            actual: ['a stream'],
-            which: ['closed without emitting an expected error'],
+            actual: () => ['a stream'],
+            which: () => ['closed without emitting an expected error'],
           );
         }
         try {
           final value = await actual.peek;
           return Extracted.rejection(
-            actual: prefixFirst('a stream emitting value ', literal(value)),
-            which: ['closed without emitting an error'],
+            actual: () =>
+                prefixFirst('a stream emitting value ', literal(value)),
+            which: () => ['closed without emitting an error'],
           );
         } on E catch (e) {
           await actual.next.then<void>((_) {}, onError: (_) {});
           return Extracted.value(e);
         } catch (e, st) {
           return Extracted.rejection(
-            actual: prefixFirst('a stream with error ', literal(e)),
-            which: [
+            actual: () => prefixFirst('a stream with error ', literal(e)),
+            which: () => [
               'emitted an error which is not $E at:',
               ...indent(LineSplitter.split(st.toString())),
             ],
@@ -243,8 +246,10 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           count++;
         }
         return Rejection(
-          actual: ['a stream'],
-          which: ['ended after emitting $count elements with none matching'],
+          actual: () => ['a stream'],
+          which: () => [
+            'ended after emitting $count elements with none matching',
+          ],
         );
       },
     );
@@ -282,10 +287,10 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           descriptions.addAll(await describeAsync(condition));
           final failure = await softCheckAsync(actual, condition);
           if (failure != null) {
-            final which = failure.rejection.which;
+            final which = failure.rejection.which?.call();
             return Rejection(
-              actual: ['a stream'],
-              which: [
+              actual: () => ['a stream'],
+              which: () => [
                 if (satisfiedCount > 0)
                   'satisfied $satisfiedCount conditions then',
                 'failed to satisfy the condition at index $satisfiedCount',
@@ -296,7 +301,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
                     failure.detail.depth - 1,
                   ),
                   ...indent(
-                    prefixFirst('Actual: ', failure.rejection.actual),
+                    prefixFirst('Actual: ', failure.rejection.actual()),
                     failure.detail.depth,
                   ),
                   if (which != null)
@@ -365,8 +370,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         }
         transaction.reject();
         Iterable<String> failureDetails(int index, CheckFailure? failure) {
-          final actual = failure!.rejection.actual;
-          final which = failure.rejection.which;
+          final actual = failure!.rejection.actual();
+          final which = failure.rejection.which?.call();
           final detail = failure.detail;
           final failed = 'failed the condition at index $index';
           if (detail.depth > 0) {
@@ -390,8 +395,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         }
 
         return Rejection(
-          actual: ['a stream'],
-          which: [
+          actual: () => ['a stream'],
+          which: () => [
             'failed to satisfy any condition',
             for (var i = 0; i < failures.length; i++)
               ...failureDetails(i, failures[i]),
@@ -420,8 +425,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         await for (var emitted in actual.rest) {
           if (softCheck(emitted, condition) == null) {
             return Rejection(
-              actual: ['a stream'],
-              which: [
+              actual: () => ['a stream'],
+              which: () => [
                 ...prefixFirst('emitted ', literal(emitted)),
                 if (count > 0) 'following $count other items',
               ],
@@ -507,17 +512,16 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
     await _expectAsync(() => ['is done'], (actual) async {
       if (!await actual.hasNext) return null;
       try {
+        final next = await actual.next;
         return Rejection(
-          actual: ['a stream'],
-          which: prefixFirst(
-            'emitted an unexpected value: ',
-            literal(await actual.next),
-          ),
+          actual: () => ['a stream'],
+          which: () =>
+              prefixFirst('emitted an unexpected value: ', literal(next)),
         );
       } catch (e, st) {
         return Rejection(
-          actual: ['a stream'],
-          which: [
+          actual: () => ['a stream'],
+          which: () => [
             ...prefixFirst(
               'emitted an unexpected error: ',
               postfixLast(' at:', literal(e)),
