@@ -144,7 +144,7 @@ class _Parser {
   /// [annotation] is the annotation.
   PlatformSelector _parseTestOn(Annotation annotation) =>
       _parsePlatformSelector(
-        annotation.arguments!.compatibleArguments.first.argumentExpression,
+        annotation.arguments!.arguments.first.argumentExpression,
       );
 
   /// Parses an [expression] that should contain a string representing a
@@ -163,7 +163,7 @@ class _Parser {
   ///
   /// [annotation] is the annotation.
   int _parseRetry(Annotation annotation) => _parseInt(
-    annotation.arguments!.compatibleArguments.first.argumentExpression,
+    annotation.arguments!.arguments.first.argumentExpression,
   );
 
   /// Parses a `@Timeout` annotation.
@@ -175,7 +175,7 @@ class _Parser {
       return Timeout.none;
     }
 
-    var args = annotation.arguments!.compatibleArguments;
+    var args = annotation.arguments!.arguments;
     if (constructorName == null) {
       return Timeout(_parseDuration(args.first.argumentExpression));
     }
@@ -201,7 +201,7 @@ class _Parser {
   ///
   /// Returns either `true` or a reason string.
   dynamic _parseSkip(Annotation annotation) {
-    var args = annotation.arguments!.compatibleArguments;
+    var args = annotation.arguments!.arguments;
     return args.isEmpty
         ? true
         : _parseString(args.first.argumentExpression).stringValue;
@@ -223,7 +223,7 @@ class _Parser {
   /// [annotation] is the annotation.
   Set<String> _parseTags(Annotation annotation) {
     return _parseList(
-      annotation.arguments!.compatibleArguments.first.argumentExpression,
+      annotation.arguments!.arguments.first.argumentExpression,
     ).map((tagExpression) {
       var name = _parseString(tagExpression).stringValue!;
       if (name.contains(anchoredHyphenatedIdentifier)) return name;
@@ -241,7 +241,7 @@ class _Parser {
   /// [annotation] is the annotation.
   Map<PlatformSelector, Metadata> _parseOnPlatform(Annotation annotation) {
     return _parseMap(
-      annotation.arguments!.compatibleArguments.first.argumentExpression,
+      annotation.arguments!.arguments.first.argumentExpression,
       key: _parsePlatformSelector,
       value: (value) {
         var expressions = <AstNode>[];
@@ -332,10 +332,11 @@ class _Parser {
   }
 
   Map<String, Expression> _parseNamedArguments(
-    Iterable<CompatibleArgument> arguments,
+    Iterable<Argument> arguments,
   ) => {
     for (var argument in arguments)
-      if (argument.name case String name) name: argument.argumentExpression,
+      if (argument is NamedArgument)
+        argument.name.lexeme: argument.argumentExpression,
   };
 
   /// Asserts that [existing] is null.
@@ -350,12 +351,12 @@ class _Parser {
     );
   }
 
-  Iterable<CompatibleArgument> _parseArguments(Expression expression) {
+  Iterable<Argument> _parseArguments(Expression expression) {
     if (expression is InstanceCreationExpression) {
-      return expression.argumentList.compatibleArguments;
+      return expression.argumentList.arguments;
     }
     if (expression is MethodInvocation) {
-      return expression.argumentList.compatibleArguments;
+      return expression.argumentList.arguments;
     }
     throw SourceSpanFormatException(
       'Expected an instantiation',
@@ -603,42 +604,4 @@ class _Parser {
   }
 }
 
-extension ArgumentListExt on ArgumentList {
-  Iterable<CompatibleArgument> get compatibleArguments =>
-      arguments.map(CompatibleArgument.new);
-}
 
-/// A zero-cost wrapper to provide a compatible interface for arguments
-/// across different analyzer versions.
-/// TODO(scheglov): Simplify to `Argument` when ready for `analyzer 13`.
-extension type const CompatibleArgument(AstNode _node) {
-  /// Returns the name of the named argument, or null if not a named argument.
-  String? get name {
-    if (_node is! Expression) {
-      // New analyzer: `NamedArgument.name` is a Token.
-      return (_node as dynamic).name.lexeme as String;
-    }
-    // Old analyzer or positional in new analyzer.
-    try {
-      var nameObj = (_node as dynamic).name;
-      if (nameObj is Label) {
-        return (nameObj as dynamic).label.name as String;
-      }
-    } catch (_) {
-      // Ignore
-    }
-    return null;
-  }
-
-  /// Returns the evaluation value of the argument.
-  Expression get argumentExpression {
-    if (_node is Expression) {
-      if (name != null) {
-        return (_node as dynamic).expression as Expression;
-      }
-      return _node;
-    } else {
-      return (_node as dynamic).argumentExpression as Expression;
-    }
-  }
-}

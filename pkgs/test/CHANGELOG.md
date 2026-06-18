@@ -15,6 +15,7 @@
 * Use a DevTools URL instead of a defunct observatory URL.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
+* Require `analyzer: '>=13.0.0 <15.0.0'`
 
 ## 1.31.1
 
