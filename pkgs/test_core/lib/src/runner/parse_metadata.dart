@@ -162,9 +162,8 @@ class _Parser {
   /// Parses a `@Retry` annotation.
   ///
   /// [annotation] is the annotation.
-  int _parseRetry(Annotation annotation) => _parseInt(
-    annotation.arguments!.arguments.first.argumentExpression,
-  );
+  int _parseRetry(Annotation annotation) =>
+      _parseInt(annotation.arguments!.arguments.first.argumentExpression);
 
   /// Parses a `@Timeout` annotation.
   ///
@@ -331,13 +330,12 @@ class _Parser {
     );
   }
 
-  Map<String, Expression> _parseNamedArguments(
-    Iterable<Argument> arguments,
-  ) => {
-    for (var argument in arguments)
-      if (argument is NamedArgument)
-        argument.name.lexeme: argument.argumentExpression,
-  };
+  Map<String, Expression> _parseNamedArguments(Iterable<Argument> arguments) =>
+      {
+        for (var argument in arguments)
+          if (argument is NamedArgument)
+            argument.name.lexeme: argument.argumentExpression,
+      };
 
   /// Asserts that [existing] is null.
   ///
@@ -603,5 +601,3 @@ class _Parser {
     }
   }
 }
-
-
