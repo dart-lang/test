@@ -2,6 +2,7 @@
 
 * Allow exceptions from `operator ==` to bubble up and fail the test instead of
   treating them as unequal objects.
+* Require Dart 3.11
 
 ## 0.12.19
 

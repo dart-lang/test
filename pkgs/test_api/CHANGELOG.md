@@ -6,7 +6,7 @@
 
 ## 0.7.12
 
-* Allow `analyzer` major version 13.
+* Require `analyzer: '>=13.0.0 <15.0.0'`
 
 ## 0.7.11
 
