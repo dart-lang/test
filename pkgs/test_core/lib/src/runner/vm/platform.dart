@@ -287,11 +287,11 @@ class VMPlatform extends PlatformPlugin {
       p.withoutExtension(path),
     );
     // Find the package the test belongs to. If the test is outside the package
-    // config, fall back to "current package" which might be a workspace. In
-    // this case no hooks are run. Alternatively, this should be a failure.
+    // config, fall back to workspace root (might be a workspace or a package). In
+    // this case no hooks are run.
     final rootPackage =
-        (await currentPackageConfig).packageOf(await absoluteUri(path))?.name ??
-        (await currentPackage).name;
+        (await packageOf(path))?.name ??
+        (await currentWorkspaceRootPackage).name;
     var processResult = await Process.run(Platform.resolvedExecutable, [
       for (var experiment in enabledExperiments)
         '--enable-experiment=$experiment',
@@ -602,7 +602,7 @@ Future<Set<String>> _filterCoveragePackages(
     return {};
   }
   if (coveragePackages == null || coveragePackages.isEmpty) {
-    return workspacePackageNames(await currentPackage);
+    return workspacePackageNames(await currentWorkspaceRootPackage);
   } else {
     return (await currentPackageConfig).packages
         .map((package) => package.name)
