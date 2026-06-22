@@ -280,7 +280,12 @@ class VMPlatform extends PlatformPlugin {
           await rootPackageLanguageVersionComment,
     );
 
-    var outputDir = p.join(_tempDir.path, 'cli_build');
+    // Unique output per path to avoid overriding in concurrent tests.
+    var outputDir = p.join(
+      _tempDir.path,
+      'cli_build',
+      p.withoutExtension(path),
+    );
     var processResult = await Process.run(Platform.resolvedExecutable, [
       for (var experiment in enabledExperiments)
         '--enable-experiment=$experiment',
