@@ -286,6 +286,12 @@ class VMPlatform extends PlatformPlugin {
       'cli_build',
       p.withoutExtension(path),
     );
+    // Find the package the test belongs to. If the test is outside the package
+    // config, fall back to "current package" which might be a workspace. In
+    // this case no hooks are run. Alternatively, this should be a failure.
+    final rootPackage =
+        (await currentPackageConfig).packageOf(await absoluteUri(path))?.name ??
+        (await currentPackage).name;
     var processResult = await Process.run(Platform.resolvedExecutable, [
       for (var experiment in enabledExperiments)
         '--enable-experiment=$experiment',
@@ -298,7 +304,7 @@ class VMPlatform extends PlatformPlugin {
       '--packages',
       (await packageConfigUri).toFilePath(),
       '--root-package',
-      (await currentPackage).name,
+      rootPackage,
       if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
       if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
       if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
