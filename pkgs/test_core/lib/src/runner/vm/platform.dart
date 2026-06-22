@@ -25,6 +25,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/plugin/shared_platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
+import '../../util/dart.dart';
 import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
@@ -281,6 +282,8 @@ class VMPlatform extends PlatformPlugin {
 
     var outputDir = p.join(_tempDir.path, 'cli_build');
     var processResult = await Process.run(Platform.resolvedExecutable, [
+      for (var experiment in enabledExperiments)
+        '--enable-experiment=$experiment',
       'build',
       'cli',
       '--target',
@@ -334,6 +337,8 @@ stderr: ${processResult.stderr}''');
     );
     var output = File(p.setExtension(bootstrapPath, '.so'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
+      for (var experiment in enabledExperiments)
+        '--enable-experiment=$experiment',
       'compile',
       'aot-snapshot',
       bootstrapPath,
