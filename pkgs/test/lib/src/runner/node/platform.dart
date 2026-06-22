@@ -309,8 +309,7 @@ const main = async () => {
       }
     }
   );
-  const module = await WebAssembly.instantiate(
-      await WebAssembly.compileStreaming(response), {});
+  const module = await WebAssembly.instantiateStreaming(response, {});
   invoke(module);
 };
 
