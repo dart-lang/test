@@ -2,11 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'expect/async_matcher.dart';
 import 'interfaces.dart';
 import 'util.dart';
 
 /// Returns a matcher that inverts [valueOrMatcher] to its logical negation.
-Matcher isNot(Object? valueOrMatcher) => _IsNot(wrapMatcher(valueOrMatcher));
+Matcher isNot(Object? valueOrMatcher) {
+  final matcher = wrapMatcher(valueOrMatcher);
+  if (matcher is AsyncMatcher) {
+    throw ArgumentError('isNot cannot be used with AsyncMatchers');
+  }
+  return _IsNot(matcher);
+}
 
 class _IsNot extends Matcher {
   final Matcher _matcher;
@@ -108,6 +115,9 @@ class _AnyOf extends Matcher {
   @override
   bool matches(dynamic item, Map matchState) {
     for (var matcher in _matchers) {
+      if (matcher is AsyncMatcher) {
+        throw ArgumentError('anyOf cannot be used with AsyncMatchers');
+      }
       if (matcher.matches(item, matchState)) {
         return true;
       }
