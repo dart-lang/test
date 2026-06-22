@@ -33,7 +33,7 @@ final bool supportsCliCompiler = () {
 
 /// The platform-specific message emitted when a nonexistent file is loaded.
 final String noSuchFileMessage = Platform.isWindows
-    ? 'The system cannot find the file specified.'
+    ? 'The system cannot find the file specified'
     : 'No such file or directory';
 
 /// An operating system name that's different than the current operating system.
