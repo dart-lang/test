@@ -18,21 +18,20 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [completionCondition] has optionally been checked.
-  Future<void> completes([AsyncCondition<T>? completionCondition]) {
-    return context.nestAsync<T>(() => ['completes to a value'], (actual) async {
-      try {
-        return Extracted.value(await actual);
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: ['a future that completes as an error'],
-          which: [
-            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    }, completionCondition);
-  }
+  Future<Subject<T>> completes([AsyncCondition<T>? completionCondition]) =>
+      context.nestAsync<T>(() => ['completes to a value'], (actual) async {
+        try {
+          return Extracted.value(await actual);
+        } catch (e, st) {
+          return Extracted.rejection(
+            actual: ['a future that completes as an error'],
+            which: [
+              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+              ...indent(LineSplitter.split(st.toString())),
+            ],
+          );
+        }
+      }, completionCondition);
 
   /// Expects that the `Future` never completes as a value or an error.
   ///
@@ -79,30 +78,30 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [errorCondition] has optionally been checked.
-  Future<void> throws<E extends Object>([AsyncCondition<E>? errorCondition]) {
-    return context.nestAsync<E>(
-      () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
-      (actual) async {
-        try {
-          return Extracted.rejection(
-            actual: prefixFirst('completed to ', literal(await actual)),
-            which: ['did not throw'],
-          );
-        } on E catch (e) {
-          return Extracted.value(e);
-        } catch (e, st) {
-          return Extracted.rejection(
-            actual: prefixFirst('completed to error ', literal(e)),
-            which: [
-              'threw an exception that is not a $E at:',
-              ...indent(LineSplitter.split(st.toString())),
-            ],
-          );
-        }
-      },
-      errorCondition,
-    );
-  }
+  Future<Subject<E>> throws<E extends Object>([
+    AsyncCondition<E>? errorCondition,
+  ]) => context.nestAsync<E>(
+    () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
+    (actual) async {
+      try {
+        return Extracted.rejection(
+          actual: prefixFirst('completed to ', literal(await actual)),
+          which: ['did not throw'],
+        );
+      } on E catch (e) {
+        return Extracted.value(e);
+      } catch (e, st) {
+        return Extracted.rejection(
+          actual: prefixFirst('completed to error ', literal(e)),
+          which: [
+            'threw an exception that is not a $E at:',
+            ...indent(LineSplitter.split(st.toString())),
+          ],
+        );
+      }
+    },
+    errorCondition,
+  );
 }
 
 /// Expectations on a [StreamQueue].
@@ -142,28 +141,27 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [emittedCondition] has optionally been checked.
-  Future<void> emits([AsyncCondition<T>? emittedCondition]) {
-    return context.nestAsync<T>(() => ['emits a value'], (actual) async {
-      if (!await actual.hasNext) {
-        return Extracted.rejection(
-          actual: ['a stream'],
-          which: ['closed without emitting enough values'],
-        );
-      }
-      try {
-        await actual.peek;
-        return Extracted.value(await actual.next);
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: prefixFirst('a stream with error ', literal(e)),
-          which: [
-            'emitted an error instead of a value at:',
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    }, emittedCondition);
-  }
+  Future<Subject<T>> emits([AsyncCondition<T>? emittedCondition]) =>
+      context.nestAsync<T>(() => ['emits a value'], (actual) async {
+        if (!await actual.hasNext) {
+          return Extracted.rejection(
+            actual: ['a stream'],
+            which: ['closed without emitting enough values'],
+          );
+        }
+        try {
+          await actual.peek;
+          return Extracted.value(await actual.next);
+        } catch (e, st) {
+          return Extracted.rejection(
+            actual: prefixFirst('a stream with error ', literal(e)),
+            which: [
+              'emitted an error instead of a value at:',
+              ...indent(LineSplitter.split(st.toString())),
+            ],
+          );
+        }
+      }, emittedCondition);
 
   /// Expects that the stream emits an error of type [E].
   ///
@@ -180,40 +178,38 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [errorCondition] has optionally been checked.
-  Future<void> emitsError<E extends Object>([
+  Future<Subject<E>> emitsError<E extends Object>([
     AsyncCondition<E>? errorCondition,
-  ]) {
-    return context.nestAsync<E>(
-      () => ['emits an error${E == Object ? '' : ' of type $E'}'],
-      (actual) async {
-        if (!await actual.hasNext) {
-          return Extracted.rejection(
-            actual: ['a stream'],
-            which: ['closed without emitting an expected error'],
-          );
-        }
-        try {
-          final value = await actual.peek;
-          return Extracted.rejection(
-            actual: prefixFirst('a stream emitting value ', literal(value)),
-            which: ['closed without emitting an error'],
-          );
-        } on E catch (e) {
-          await actual.next.then<void>((_) {}, onError: (_) {});
-          return Extracted.value(e);
-        } catch (e, st) {
-          return Extracted.rejection(
-            actual: prefixFirst('a stream with error ', literal(e)),
-            which: [
-              'emitted an error which is not $E at:',
-              ...indent(LineSplitter.split(st.toString())),
-            ],
-          );
-        }
-      },
-      errorCondition,
-    );
-  }
+  ]) => context.nestAsync<E>(
+    () => ['emits an error${E == Object ? '' : ' of type $E'}'],
+    (actual) async {
+      if (!await actual.hasNext) {
+        return Extracted.rejection(
+          actual: ['a stream'],
+          which: ['closed without emitting an expected error'],
+        );
+      }
+      try {
+        final value = await actual.peek;
+        return Extracted.rejection(
+          actual: prefixFirst('a stream emitting value ', literal(value)),
+          which: ['closed without emitting an error'],
+        );
+      } on E catch (e) {
+        await actual.next.then<void>((_) {}, onError: (_) {});
+        return Extracted.value(e);
+      } catch (e, st) {
+        return Extracted.rejection(
+          actual: prefixFirst('a stream with error ', literal(e)),
+          which: [
+            'emitted an error which is not $E at:',
+            ...indent(LineSplitter.split(st.toString())),
+          ],
+        );
+      }
+    },
+    errorCondition,
+  );
 
   /// Expects that the `Stream` emits any number of events before emitting an
   /// event that satisfies [condition].
