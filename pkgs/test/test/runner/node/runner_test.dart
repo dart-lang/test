@@ -106,41 +106,33 @@ void main() {
       await test.shouldExit(1);
     });
 
-    test(
-      "a test file doesn't have a main defined",
-      () async {
-        await d.file('test.dart', 'void foo() {}').create();
+    test("a test file doesn't have a main defined", () async {
+      await d.file('test.dart', 'void foo() {}').create();
 
-        var test = await runTest(['-p', 'node', 'test.dart']);
-        expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": No top-level main() function defined.',
-          ]),
-        );
-        await test.shouldExit(1);
-      },
-      skip: 'https://github.com/dart-lang/test/issues/894',
-    );
+      var test = await runTest(['-p', 'node', 'test.dart']);
+      expect(
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": No top-level main() function defined.',
+        ]),
+      );
+      await test.shouldExit(1);
+    }, skip: 'https://github.com/dart-lang/test/issues/894');
 
-    test(
-      'a test file has a non-function main',
-      () async {
-        await d.file('test.dart', 'int main;').create();
+    test('a test file has a non-function main', () async {
+      await d.file('test.dart', 'int main;').create();
 
-        var test = await runTest(['-p', 'node', 'test.dart']);
-        expect(
-          test.stdout,
-          containsInOrder([
-            '-1: loading test.dart [E]',
-            'Failed to load "test.dart": Top-level main getter is not a function.',
-          ]),
-        );
-        await test.shouldExit(1);
-      },
-      skip: 'https://github.com/dart-lang/test/issues/894',
-    );
+      var test = await runTest(['-p', 'node', 'test.dart']);
+      expect(
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": Top-level main getter is not a function.',
+        ]),
+      );
+      await test.shouldExit(1);
+    }, skip: 'https://github.com/dart-lang/test/issues/894');
 
     test('a test file has a main with arguments', () async {
       await d.file('test.dart', 'void main(arg) {}').create();
@@ -238,10 +230,8 @@ void main() {
     await test.shouldExit(1);
   });
 
-  test(
-    'runs failing tests that fail only on node (with dart2wasm)',
-    () async {
-      await d.file('test.dart', '''
+  test('runs failing tests that fail only on node (with dart2wasm)', () async {
+    await d.file('test.dart', '''
         import 'package:path/path.dart' as p;
         import 'package:test/test.dart';
 
@@ -254,31 +244,27 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest([
-        '-p',
-        'node',
-        '-p',
-        'vm',
-        '-c',
-        'dart2js',
-        '-c',
-        'dart2wasm',
-        'test.dart',
-      ]);
-      expect(test.stdout, emitsThrough(contains('+1 -2: Some tests failed.')));
-      await test.shouldExit(1);
-    },
-    skip: skipBelowMajorNodeVersion(22),
-  );
+    var test = await runTest([
+      '-p',
+      'node',
+      '-p',
+      'vm',
+      '-c',
+      'dart2js',
+      '-c',
+      'dart2wasm',
+      'test.dart',
+    ]);
+    expect(test.stdout, emitsThrough(contains('+1 -2: Some tests failed.')));
+    await test.shouldExit(1);
+  }, skip: skipBelowMajorNodeVersion(22));
 
-  test(
-    'gracefully handles wasm errors on old node versions',
-    () async {
-      // Old Node.JS versions can't read the WebAssembly modules emitted by
-      // dart2wasm. The node process exits before connecting to the server
-      // opened by the test runner, leading to timeouts. So, this is a
-      // regression test for https://github.com/dart-lang/test/pull/2259#issuecomment-2307868442
-      await d.file('test.dart', '''
+  test('gracefully handles wasm errors on old node versions', () async {
+    // Old Node.JS versions can't read the WebAssembly modules emitted by
+    // dart2wasm. The node process exits before connecting to the server
+    // opened by the test runner, leading to timeouts. So, this is a
+    // regression test for https://github.com/dart-lang/test/pull/2259#issuecomment-2307868442
+    await d.file('test.dart', '''
         import 'package:test/test.dart';
 
         void main() {
@@ -288,20 +274,18 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest(['-p', 'node', '-c', 'dart2wasm', 'test.dart']);
-      expect(
-        test.stdout,
-        emitsInOrder([
-          emitsThrough(
-            contains('Node exited before connecting to the test channel.'),
-          ),
-          emitsThrough(contains('-1: Some tests failed.')),
-        ]),
-      );
-      await test.shouldExit(1);
-    },
-    skip: skipAboveMajorNodeVersion(21),
-  );
+    var test = await runTest(['-p', 'node', '-c', 'dart2wasm', 'test.dart']);
+    expect(
+      test.stdout,
+      emitsInOrder([
+        emitsThrough(
+          contains('Node exited before connecting to the test channel.'),
+        ),
+        emitsThrough(contains('-1: Some tests failed.')),
+      ]),
+    );
+    await test.shouldExit(1);
+  }, skip: skipAboveMajorNodeVersion(21));
 
   test('forwards prints from the Node test', () async {
     await d.file('test.dart', '''
