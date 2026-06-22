@@ -15,6 +15,7 @@
 * Use a DevTools URL instead of a defunct observatory URL.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
+* Fix Node + Wasm platform.
 
 ## 1.31.1
 
