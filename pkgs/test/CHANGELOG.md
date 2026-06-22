@@ -1,4 +1,4 @@
-## 1.31.2-wip
+## 1.31.2
 
 * Add support for running tests as native CLI bundles (vm platform only).
   * You can run tests this way with `--compiler cli`.
