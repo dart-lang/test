@@ -309,8 +309,8 @@ const main = async () => {
       }
     }
   );
-  const instancePromise = WebAssembly.compileStreaming(response);
-  const module = await instantiate(instancePromise, {});
+  const module = await WebAssembly.instantiate(
+      await WebAssembly.compileStreaming(response), {});
   invoke(module);
 };
 
