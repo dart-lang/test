@@ -4,7 +4,7 @@ publish_to: none
 resolution: workspace
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.11.0
 
 dev_dependencies:
   build_runner: ^2.13.0
