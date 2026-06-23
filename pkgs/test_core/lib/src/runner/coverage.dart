@@ -47,7 +47,7 @@ Future<void> writeCoverageLcov(
   Coverage allCoverageData,
 ) async {
   final resolver = await Resolver.create(
-    packagePath: (await currentWorkspaceRootPackage).root.toFilePath(),
+    packagePath: (await workspaceRoot).root.toFilePath(),
   );
   final filteredCoverageData = allCoverageData.filterIgnored(
     ignoredLinesInFilesCache: {},

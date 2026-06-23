@@ -290,8 +290,7 @@ class VMPlatform extends PlatformPlugin {
     // config, fall back to workspace root (might be a workspace or a package). In
     // this case no hooks are run.
     final rootPackage =
-        (await packageOf(path))?.name ??
-        (await currentWorkspaceRootPackage).name;
+        (await packageOf(path))?.name ?? (await workspaceRoot).name;
     var processResult = await Process.run(Platform.resolvedExecutable, [
       for (var experiment in enabledExperiments)
         '--enable-experiment=$experiment',
@@ -602,7 +601,7 @@ Future<Set<String>> _filterCoveragePackages(
     return {};
   }
   if (coveragePackages == null || coveragePackages.isEmpty) {
-    return workspacePackageNames(await currentWorkspaceRootPackage);
+    return workspacePackageNames(await workspaceRoot);
   } else {
     return (await currentPackageConfig).packages
         .map((package) => package.name)
