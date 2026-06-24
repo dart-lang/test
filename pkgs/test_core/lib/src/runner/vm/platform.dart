@@ -314,11 +314,12 @@ exitCode: ${processResult.exitCode}
 stdout: ${processResult.stdout}
 stderr: ${processResult.stderr}''');
     }
+    var executableSuffix = Platform.isWindows ? '.exe' : '';
     var executablePath = p.join(
       outputDir,
       'bundle',
       'bin',
-      p.basenameWithoutExtension(bootstrapPath),
+      '${p.basenameWithoutExtension(bootstrapPath)}$executableSuffix',
     );
     if (!await File(executablePath).exists()) {
       throw LoadException(
