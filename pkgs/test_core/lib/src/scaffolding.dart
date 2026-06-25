@@ -11,7 +11,7 @@ import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
-import 'runner/reporter/expanded.dart';
+import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
@@ -58,13 +58,7 @@ Declarer get _declarer {
     var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(
-      engine,
-      PrintSink(),
-      color: true,
-      printPath: false,
-      printPlatform: false,
-    );
+    createDirectReporter(engine);
 
     var success = await runZoned(
       () => Invoker.guard(engine.run),

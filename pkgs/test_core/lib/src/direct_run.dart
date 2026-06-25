@@ -12,7 +12,7 @@ import 'runner/configuration.dart';
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
 import 'runner/reporter.dart';
-import 'runner/reporter/expanded.dart';
+import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
@@ -64,13 +64,7 @@ Future<bool> _directRunTests(
   String? fullTestName,
   required bool allowDuplicateTestNames,
 }) async {
-  reporterFactory ??= (engine) => ExpandedReporter.watch(
-    engine,
-    PrintSink(),
-    color: Configuration.empty.color,
-    printPath: false,
-    printPlatform: false,
-  );
+  reporterFactory ??= createDirectReporter;
   final declarer = Declarer(
     fullTestName: fullTestName,
     allowDuplicateTestNames: allowDuplicateTestNames,
