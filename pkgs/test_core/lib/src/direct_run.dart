@@ -8,7 +8,6 @@ import 'dart:collection';
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart';
 
-import 'runner/configuration.dart';
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
 import 'runner/reporter.dart';
@@ -16,7 +15,6 @@ import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
-import 'util/print_sink.dart';
 
 /// Runs all unskipped test cases declared in [testMain].
 ///

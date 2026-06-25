@@ -15,7 +15,6 @@ import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
-import 'util/print_sink.dart';
 
 // Hide implementations which don't support being run directly.
 // This file is an almost direct copy of import below, but with the global
