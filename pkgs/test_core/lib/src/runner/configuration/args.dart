@@ -132,7 +132,7 @@ final ArgParser _parser = (() {
   parser.addFlag(
     'shard-by-suite',
     help:
-        'Distribute entire test files (suites) across shards instead of individual tests.',
+        'Distribute entire test suites (_test.dart files) across shards instead of individual tests.',
     negatable: false,
   );
   parser.addOption(
