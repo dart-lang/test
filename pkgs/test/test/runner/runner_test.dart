@@ -164,15 +164,10 @@ $_usage''');
   group('fails gracefully if', () {
     test('an invalid option is passed', () async {
       var test = await runTest(['--asdf']);
-      var expected1 = 'Could not find an option named "asdf".\n\n$_usage';
-      var expected2 = 'Could not find an option named "--asdf".\n\n$_usage';
+      expectStderrEquals(test, '''
+Could not find an option named "--asdf".
 
-      var stderr = await test.stderrStream().toList();
-      var stderrText = stderr.join('\n').trim();
-      expect(
-        stderrText,
-        anyOf(equals(expected1.trim()), equals(expected2.trim())),
-      );
+$_usage''');
       await test.shouldExit(exit_codes.usage);
     });
 
@@ -848,27 +843,23 @@ void main() {
       });
 
       for (var platform in ['vm', 'chrome']) {
-        test(
-          'on the $platform platform',
-          () async {
-            var test = await runTest(
-              ['test.dart', '-p', platform],
-              vmArgs: ['--enable-experiment=non-nullable'],
-            );
+        test('on the $platform platform', () async {
+          var test = await runTest(
+            ['test.dart', '-p', platform],
+            vmArgs: ['--enable-experiment=non-nullable'],
+          );
 
-            await expectLater(test.stdout, emitsThrough(contains('int x;')));
-            await test.shouldExit(1);
+          await expectLater(test.stdout, emitsThrough(contains('int x;')));
+          await test.shouldExit(1);
 
-            // Test that they can be removed on subsequent runs as well
-            test = await runTest(['test.dart', '-p', platform]);
-            await expectLater(
-              test.stdout,
-              emitsThrough(contains('+1: All tests passed!')),
-            );
-            await test.shouldExit(0);
-          },
-          skip: 'https://github.com/dart-lang/test/issues/1813',
-        );
+          // Test that they can be removed on subsequent runs as well
+          test = await runTest(['test.dart', '-p', platform]);
+          await expectLater(
+            test.stdout,
+            emitsThrough(contains('+1: All tests passed!')),
+          );
+          await test.shouldExit(0);
+        }, skip: 'https://github.com/dart-lang/test/issues/1813');
       }
     });
   });
@@ -906,22 +897,18 @@ void main() {
       await test.shouldExit(0);
     });
 
-    test(
-      'on the browser platform',
-      () async {
-        var test = await runTest([
-          '-p',
-          'vm,chrome',
-          'a_test.dart',
-          'b_test.dart',
-        ]);
-        await expectLater(
-          test.stdout,
-          emitsThrough(contains('+3: All tests passed!')),
-        );
-        await test.shouldExit(0);
-      },
-      skip: 'https://github.com/dart-lang/test/issues/1803',
-    );
+    test('on the browser platform', () async {
+      var test = await runTest([
+        '-p',
+        'vm,chrome',
+        'a_test.dart',
+        'b_test.dart',
+      ]);
+      await expectLater(
+        test.stdout,
+        emitsThrough(contains('+3: All tests passed!')),
+      );
+      await test.shouldExit(0);
+    }, skip: 'https://github.com/dart-lang/test/issues/1803');
   });
 }
