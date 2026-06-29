@@ -206,18 +206,17 @@ dart test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
 
 By default, sharding is done by individual tests within each suite.
-You can shard by entire test files (suites) using the `--shard-by-file` flag.
+You can shard by entire test suites (files) using the `--shard-by-suite` flag.
 
 * When sharding by test (default): Distribute individual test cases across
   shards. This balances the test load at the test case level. Test cases from
   each suite are sliced continuously, which minimizes how often a suite is
-  split across shards and helps maximize the re-use of `setUpAll` and
+  split across shards and helps maximize the re-use of suite `setUpAll` and
   `tearDownAll` setups.
-* When sharding by file (using `--shard-by-file`): Distribute entire test files (suites)
-  across shards. This can be faster for suites with many small files as it
-  avoids loading every file in every shard. Because test files are not split,
-  any `setUpAll` and `tearDownAll` setups in a file are guaranteed to run only
-  once (on the shard running that file).
+* When sharding by suite (using `--shard-by-suite`): Distribute entire test suites
+  across shards. This can be faster for suites with many small suites as it
+  avoids loading every suite in every shard. Because test suites are not split,
+  any `setUpAll` and `tearDownAll` setups within a suite (including shared helper setups imported across suites) run only on the shard executing that suite.
 
 Sharding is particularly useful for distributed testing, where multiple
 machines are used to run tests simultaneously. By dividing the test suite into
@@ -231,10 +230,12 @@ The sharding modes interact differently with filters like `--name` or `--tags`:
 * When sharding by test (default), the sharding partition is calculated *after*
   applying filters. This guarantees that the matching tests are distributed
   as evenly as possible across all shards.
-* When sharding by file (using `--shard-by-file`), the files are partitioned
-  *before* they are loaded and filtered. If a filter only matches tests in a
-  few files, some shards might run no tests because those files were allocated
-  to other shards.
+* When sharding by suite (using `--shard-by-suite`), suite-level annotations
+  (such as `@TestOn` platform selectors and suite-level `@Tags`) are evaluated
+  before suite sharding, filtering out non-matching suites so shards do not receive
+  empty workloads. In contrast, test-case/group filters (such as `--name` or test-level tags)
+  operate on test cases within loaded suites after sharding. If a test-case filter only matches tests in a
+  few suites, some shards might run no tests because those suites were allocated to other shards.
 
 ### Test concurrency
 

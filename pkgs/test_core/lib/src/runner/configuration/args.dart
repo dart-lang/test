@@ -130,7 +130,7 @@ final ArgParser _parser = (() {
     help: 'The index of this test runner invocation (of --total-shards).',
   );
   parser.addFlag(
-    'shard-by-file',
+    'shard-by-suite',
     help:
         'Distribute entire test files (suites) across shards instead of individual tests.',
     negatable: false,
@@ -385,7 +385,7 @@ class _Parser {
 
     var shardIndex = _parseOption('shard-index', int.parse);
     var totalShards = _parseOption('total-shards', int.parse);
-    var shardByFile = _ifParsed('shard-by-file') as bool?;
+    var shardBySuite = _ifParsed('shard-by-suite') as bool?;
     if ((shardIndex == null) != (totalShards == null)) {
       throw const FormatException(
         '--shard-index and --total-shards may only be passed together.',
@@ -484,7 +484,7 @@ class _Parser {
       concurrency: _parseOption('concurrency', int.parse),
       shardIndex: shardIndex,
       totalShards: totalShards,
-      shardByFile: shardByFile,
+      shardBySuite: shardBySuite,
       timeout: _parseOption('timeout', Timeout.parse),
       suiteLoadTimeout: _parseOption('suite-load-timeout', Timeout.parse),
       globalPatterns: patterns,

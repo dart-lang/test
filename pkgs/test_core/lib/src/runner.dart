@@ -270,8 +270,8 @@ class Runner {
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    final source = _config.totalShards != null && _config.shardByFile
-        ? _shardByFileSuites()
+    final source = _config.totalShards != null && _config.shardBySuite
+        ? _shardBySuiteSuites()
         : _allSuites();
 
     return source.map((loadSuite) {
@@ -416,8 +416,8 @@ class Runner {
     );
   }
 
-  /// Returns a stream of [LoadSuite]s sharded by file.
-  Stream<LoadSuite> _shardByFileSuites() {
+  /// Returns a stream of [LoadSuite]s sharded by suite.
+  Stream<LoadSuite> _shardBySuiteSuites() {
     final allFiles = <String>[];
     for (var testPath in _config.testSelections.keys) {
       if (Directory(testPath).existsSync()) {
@@ -437,10 +437,21 @@ class Runner {
 
     allFiles.sort();
 
-    final shardSize = allFiles.length / _config.totalShards!;
-    final shardStart = (shardSize * _config.shardIndex!).round();
-    final shardEnd = (shardSize * (_config.shardIndex! + 1)).round();
-    final shardFiles = allFiles.sublist(shardStart, shardEnd);
+    final matchingFiles = allFiles.where((path) {
+      final entry = _config.testSelections.entries.firstWhere(
+        (e) => path == e.key || p.isWithin(e.key, path),
+        orElse: () => _config.testSelections.entries.first,
+      );
+      final suiteConfig = _config.suiteDefaults.selectTests(entry.value);
+      return _loader.matchesSuite(path, suiteConfig);
+    }).toList();
+
+    final shardFiles = <String>[];
+    for (var i = 0; i < matchingFiles.length; i++) {
+      if (i % _config.totalShards! == _config.shardIndex!) {
+        shardFiles.add(matchingFiles[i]);
+      }
+    }
 
     return StreamGroup.merge(
       shardFiles.map((path) {
@@ -547,7 +558,7 @@ class Runner {
   /// tests are continuous, makes us more likely to be able to re-use
   /// `setUpAll()` logic.
   RunnerSuite _shardSuite(RunnerSuite suite) {
-    if (_config.totalShards == null || _config.shardByFile) return suite;
+    if (_config.totalShards == null || _config.shardBySuite) return suite;
 
     var shardSize = suite.group.testCount / _config.totalShards!;
     var shardIndex = _config.shardIndex!;

@@ -18,19 +18,21 @@ void main() {
   setUpAll(precompileTestExecutable);
 
   group('on_platform', () {
-    test('applies platform-specific configuration to matching tests', () async {
-      await d
-          .file(
-            'dart_test.yaml',
-            jsonEncode({
-              'on_platform': {
-                'chrome': {'timeout': '0s'},
-              },
-            }),
-          )
-          .create();
+    test(
+      'applies platform-specific configuration to matching tests',
+      () async {
+        await d
+            .file(
+              'dart_test.yaml',
+              jsonEncode({
+                'on_platform': {
+                  'chrome': {'timeout': '0s'},
+                },
+              }),
+            )
+            .create();
 
-      await d.file('test.dart', '''
+        await d.file('test.dart', '''
         import 'dart:async';
 
         import 'package:test/test.dart';
@@ -40,16 +42,18 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest(['-p', 'chrome,vm', 'test.dart']);
-      expect(
-        test.stdout,
-        containsInOrder([
-          '-1: [Chrome, Dart2Js] test [E]',
-          '+1 -1: Some tests failed.',
-        ]),
-      );
-      await test.shouldExit(1);
-    }, tags: ['chrome']);
+        var test = await runTest(['-p', 'chrome,vm', 'test.dart']);
+        expect(
+          test.stdout,
+          containsInOrder([
+            '-1: [Chrome, Dart2Js] test [E]',
+            '+1 -1: Some tests failed.',
+          ]),
+        );
+        await test.shouldExit(1);
+      },
+      tags: ['chrome'],
+    );
 
     test('supports platform selectors', () async {
       await d

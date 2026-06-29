@@ -3,7 +3,7 @@
 * Add support for `-c cli` (the native CLI compiler) to the vm platform.
 * Support using the OS platform selector to configure browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-file` to control sharding strategy.
+* Add flag `--shard-by-suite` to control sharding strategy.
 * Allow package_config `3.x.x`.
 
 
