@@ -214,7 +214,7 @@ You can shard by entire test suites (files) using the `--shard-by-suite` flag.
   split across shards and helps maximize the re-use of suite `setUpAll` and
   `tearDownAll` setups.
 * When sharding by suite (using `--shard-by-suite`): Distribute entire test suites
-  across shards. This can be faster for suites with many small suites as it
+  across shards. This can be faster for projects with many small test suites as it
   avoids loading every suite in every shard. Because test suites are not split,
   any `setUpAll` and `tearDownAll` setups within a suite (including shared helper setups imported across suites) run only on the shard executing that suite.
 
