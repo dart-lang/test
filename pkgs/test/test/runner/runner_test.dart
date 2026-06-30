@@ -375,7 +375,13 @@ $_usage''');
       await d.file('test.dart', _success).create();
       var test = await runDart(['test.dart']);
 
-      expect(test.stdout, emitsThrough(contains('All tests passed!')));
+      expect(
+        test.stdout,
+        allOf(
+          neverEmits(contains('success')),
+          emitsThrough(contains('All tests passed!')),
+        ),
+      );
       await test.shouldExit(0);
     });
 
@@ -445,7 +451,15 @@ $_usage''');
 
     test('directly', () async {
       var test = await runDart(['test.dart']);
-      expect(test.stdout, emitsThrough(contains('All tests passed!')));
+
+      expect(
+        test.stdout,
+        allOf(
+          neverEmits(anyElement(contains('success 1'))),
+          neverEmits(anyElement(contains('success 2'))),
+          emits(contains('All tests passed!')),
+        ),
+      );
       await test.shouldExit(0);
     });
   });

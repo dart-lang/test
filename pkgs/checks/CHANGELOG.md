@@ -1,6 +1,8 @@
 ## 0.3.2-wip
 
-- Require Dart 3.7
+- Add `isNotA<R>()` check extension as a convenience in place of
+  `not((it) => it.isA<R>())`.
+- Require Dart 3.11
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.
 - Improve formatting for failed String equality checks - indent string diff

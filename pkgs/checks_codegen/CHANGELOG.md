@@ -1,0 +1,8 @@
+## 0.1.1-wip
+
+* Require `analyzer: '>=13.0.0 <15.0.0'`
+
+ 
+## 0.1.0
+
+-   Initial release.

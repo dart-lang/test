@@ -25,6 +25,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/plugin/shared_platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
+import '../../util/dart.dart';
 import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
@@ -279,8 +280,20 @@ class VMPlatform extends PlatformPlugin {
           await rootPackageLanguageVersionComment,
     );
 
-    var outputDir = p.join(_tempDir.path, 'cli_build');
+    // Unique output per path to avoid overriding in concurrent tests.
+    var outputDir = p.join(
+      _tempDir.path,
+      'cli_build',
+      p.withoutExtension(path),
+    );
+    // Find the package the test belongs to. If the test is outside the package
+    // config, fall back to workspace root (might be a workspace or a package). In
+    // this case no hooks are run.
+    final rootPackage =
+        (await packageOf(path))?.name ?? (await workspaceRoot).name;
     var processResult = await Process.run(Platform.resolvedExecutable, [
+      for (var experiment in enabledExperiments)
+        '--enable-experiment=$experiment',
       'build',
       'cli',
       '--target',
@@ -290,7 +303,7 @@ class VMPlatform extends PlatformPlugin {
       '--packages',
       (await packageConfigUri).toFilePath(),
       '--root-package',
-      (await currentPackage).name,
+      rootPackage,
       if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
       if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
       if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
@@ -301,11 +314,12 @@ exitCode: ${processResult.exitCode}
 stdout: ${processResult.stdout}
 stderr: ${processResult.stderr}''');
     }
+    var executableSuffix = Platform.isWindows ? '.exe' : '';
     var executablePath = p.join(
       outputDir,
       'bundle',
       'bin',
-      p.basenameWithoutExtension(bootstrapPath),
+      '${p.basenameWithoutExtension(bootstrapPath)}$executableSuffix',
     );
     if (!await File(executablePath).exists()) {
       throw LoadException(
@@ -334,6 +348,8 @@ stderr: ${processResult.stderr}''');
     );
     var output = File(p.setExtension(bootstrapPath, '.so'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
+      for (var experiment in enabledExperiments)
+        '--enable-experiment=$experiment',
       'compile',
       'aot-snapshot',
       bootstrapPath,
@@ -586,7 +602,7 @@ Future<Set<String>> _filterCoveragePackages(
     return {};
   }
   if (coveragePackages == null || coveragePackages.isEmpty) {
-    return workspacePackageNames(await currentPackage);
+    return workspacePackageNames(await workspaceRoot);
   } else {
     return (await currentPackageConfig).packages
         .map((package) => package.name)
