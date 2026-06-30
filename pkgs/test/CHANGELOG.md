@@ -17,7 +17,6 @@
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 
-
 ## 1.31.1
 
 * Ignore an error locating the SDK directory on platforms where the
