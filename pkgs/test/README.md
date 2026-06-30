@@ -227,15 +227,8 @@ can significantly reduce the overall testing time.
 
 The sharding modes interact differently with filters like `--name` or `--tags`:
 
-* When sharding by test (default), the sharding partition is calculated *after*
-  applying filters. This guarantees that the matching tests are distributed
-  as evenly as possible across all shards.
-* When sharding by suite (using `--shard-by-suite`), suite-level annotations
-  (such as `@TestOn` platform selectors and suite-level `@Tags`) are evaluated
-  before suite sharding, filtering out non-matching suites so shards do not receive
-  empty workloads. In contrast, test-case/group filters (such as `--name` or test-level tags)
-  operate on test cases within loaded suites after sharding. If a test-case filter only matches tests in a
-  few suites, some shards might run no tests because those suites were allocated to other shards.
+* When sharding by test case (default), the partition is calculated *after* applying filters. This guarantees matching test cases are distributed as evenly as possible across all shards.
+* When sharding by test suite (using `--shard-by-suite`), suite-level annotations (such as `@TestOn` platform selectors and suite-level `@Tags` at the top of a file) are evaluated before sharding to filter out non-matching suites. However, test filters which apply to individual test cases or groups (such as `--name`) will be reflected in the distribution when sharding by test case, but not when sharding by test suite. Test invocations with an uneven number of matching test cases between test suites can cause uneven workloads across the shards.
 
 ### Test concurrency
 
