@@ -13,6 +13,7 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
+* Add flag `--shard-by-suite` to control sharding strategy.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`

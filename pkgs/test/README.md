@@ -204,12 +204,31 @@ dart test --total-shards 3 --shard-index 0 path/to/test.dart
 dart test --total-shards 3 --shard-index 1 path/to/test.dart
 dart test --total-shards 3 --shard-index 2 path/to/test.dart
 ```
-Sharding: This refers to the process of splitting up a large test suite into
-smaller subsets (called shards) that can be run independently. Sharding is
-particularly useful for distributed testing, where multiple machines are used
-to run tests simultaneously. By dividing the test suite into smaller subsets,
-you can run tests in parallel across multiple machines, which can significantly
-reduce the overall testing time.
+
+By default, sharding is done by individual tests within each suite.
+You can shard by entire test suites (files) using the `--shard-by-suite` flag.
+
+* When sharding by test (default): Distribute individual test cases across
+  shards. This balances the test load at the test case level. Test cases from
+  each suite are sliced continuously, which minimizes how often a suite is
+  split across shards and helps maximize the re-use of suite `setUpAll` and
+  `tearDownAll` setups.
+* When sharding by suite (using `--shard-by-suite`): Distribute entire test suites
+  across shards. This can be faster for projects with many small test suites as it
+  avoids loading every suite in every shard. Because test suites are not split,
+  any `setUpAll` and `tearDownAll` setups within a suite (including shared helper setups imported across suites) run only on the shard executing that suite.
+
+Sharding is particularly useful for distributed testing, where multiple
+machines are used to run tests simultaneously. By dividing the test suite into
+smaller subsets, you can run tests in parallel across multiple machines, which
+can significantly reduce the overall testing time.
+
+### Interaction with Test Filters
+
+The sharding modes interact differently with filters like `--name` or `--tags`:
+
+* When sharding by test case (default), the partition is calculated *after* applying filters. This guarantees matching test cases are distributed as evenly as possible across all shards.
+* When sharding by test suite (using `--shard-by-suite`), suite-level annotations (such as `@TestOn` platform selectors and suite-level `@Tags` at the top of a file) are evaluated before sharding to filter out non-matching suites. However, test filters which apply to individual test cases or groups (such as `--name`) will be reflected in the distribution when sharding by test case, but not when sharding by test suite. Test invocations with an uneven number of matching test cases between test suites can cause uneven workloads across the shards.
 
 ### Test concurrency
 
