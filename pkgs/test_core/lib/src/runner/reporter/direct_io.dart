@@ -14,7 +14,7 @@ import 'compact.dart';
 import 'failures_only.dart';
 
 Reporter createDirectReporter(Engine engine) {
-  if (Platform.environment['DART_TEST_REPORTER'] case final envReporter) {
+  if (Platform.environment['DART_TEST_REPORTER'] case final envReporter?) {
     if (allReporters[envReporter]?.factory case final factory?) {
       return factory(Configuration.empty, engine, PrintSink());
     }
