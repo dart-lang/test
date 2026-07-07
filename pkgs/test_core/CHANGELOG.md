@@ -1,3 +1,7 @@
+## 0.6.20-wip
+
+* Add support for `DART_TEST_REPORTER` environment variable.
+
 ## 0.6.19
 
 * Add support for `-c cli` (the native CLI compiler) to the vm platform.
