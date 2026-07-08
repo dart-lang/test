@@ -1,3 +1,10 @@
+## 1.32.0-wip
+
+* Add support for `DART_TEST_REPORTER` environment variable in test runner and
+  when tests are run directly on platforms which support `dart:io`. The
+  environment variable takes precedence over configuration in `dart_test.yaml`
+  but is overridden by the `--reporter` flag when passed to the test runner.
+
 ## 1.31.2
 
 * Add support for running tests as native CLI bundles (vm platform only).

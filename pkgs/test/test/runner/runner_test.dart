@@ -384,6 +384,51 @@ $_usage''');
       await test.shouldExit(0);
     });
 
+    test('directly with DART_TEST_REPORTER', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runDart(
+        ['test.dart'],
+        environment: {'DART_TEST_REPORTER': 'expanded'},
+      );
+
+      expect(
+        test.stdout,
+        containsInOrder(['+0: success', '+1: All tests passed!']),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('with DART_TEST_REPORTER from runner', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runTest(
+        ['test.dart'],
+        environment: {'DART_TEST_REPORTER': 'expanded'},
+      );
+
+      expect(
+        test.stdout,
+        containsInOrder(['+0: success', '+1: All tests passed!']),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('CLI flag overrides DART_TEST_REPORTER', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runTest(
+        ['test.dart', '--reporter', 'failures-only'],
+        environment: {'DART_TEST_REPORTER': 'expanded'},
+      );
+
+      expect(
+        test.stdout,
+        allOf(
+          neverEmits(contains('success')),
+          emitsThrough(contains('All tests passed!')),
+        ),
+      );
+      await test.shouldExit(0);
+    });
+
     // Regression test; this broke in 0.12.0-beta.9.
     test('on a file in a subdirectory', () async {
       await d.dir('dir', [d.file('test.dart', _success)]).create();
