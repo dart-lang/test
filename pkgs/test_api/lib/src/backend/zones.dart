@@ -11,7 +11,12 @@ import 'dart:async';
 /// Enumerated here, so [runInZone] can copy the entire test running context
 /// when running.
 class TestZoneProperty {
-  static const values = [#test.invoker, #test.declarer, #runCount, #test.managedErrorZone];
+  static const values = [
+    #test.invoker,
+    #test.declarer,
+    #runCount,
+    #test.managedErrorZone,
+  ];
 }
 
 /// A callback and the zone in which it was declared.
@@ -32,17 +37,20 @@ class CapturedCallback {
 /// `of` is omitted.
 ///
 /// Sets zone handlers from [specification] if provided.
-R runInZone<R>(Zone zone, R Function() function,
-    {Map<Object?, Object?>? values,
-    ZoneSpecification? specification,
-    Zone? of}) {
+R runInZone<R>(
+  Zone zone,
+  R Function() function, {
+  Map<Object?, Object?>? values,
+  ZoneSpecification? specification,
+  Zone? of,
+}) {
   of ??= Zone.current;
   values = {
     for (var property in TestZoneProperty.values)
       if (values == null || !values.containsKey(property))
         if (zone[property] == null)
           if (of[property] case final currentValue?) property: currentValue,
-    ...?values
+    ...?values,
   };
   if (values.isEmpty) values = null;
   return zone

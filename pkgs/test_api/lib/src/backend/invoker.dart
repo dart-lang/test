@@ -352,11 +352,11 @@ class Invoker {
 
         _waitForOutstandingCallbacks(
           () =>
-          runRobustly(
-            captured.zone,
-            captured.fn as FutureOr<dynamic> Function(),
-          ).whenComplete(() {
-            if (!completer.isCompleted) completer.complete();
+              runRobustly(
+                captured.zone,
+                captured.fn as FutureOr<dynamic> Function(),
+              ).whenComplete(() {
+                if (!completer.isCompleted) completer.complete();
               }),
         ).then((_) => removeOutstandingCallback()).unawaited;
 
