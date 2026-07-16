@@ -14,6 +14,7 @@ import 'invoker.dart';
 import 'metadata.dart';
 import 'test.dart';
 import 'test_location.dart';
+import 'zones.dart';
 
 /// A class that manages the state of tests as they're declared.
 ///
@@ -55,13 +56,13 @@ class Declarer {
   final bool _noRetry;
 
   /// The set-up functions to run for each test in this group.
-  final _setUps = <FutureOr<dynamic> Function()>[];
+  final _setUps = <CapturedCallback>[];
 
   /// The tear-down functions to run for each test in this group.
-  final _tearDowns = <FutureOr<dynamic> Function()>[];
+  final _tearDowns = <CapturedCallback>[];
 
   /// The set-up functions to run once for this group.
-  final _setUpAlls = <FutureOr<dynamic> Function()>[];
+  final _setUpAlls = <CapturedCallback>[];
 
   /// The default timeout for synthetic tests.
   final _timeout = const Timeout(Duration(minutes: 12));
@@ -77,7 +78,7 @@ class Declarer {
   TestLocation? _setUpAllLocation;
 
   /// The tear-down functions to run once for this group.
-  final _tearDownAlls = <void Function()>[];
+  final _tearDownAlls = <CapturedCallback>[];
 
   /// The trace for the first call to [tearDownAll].
   ///
@@ -224,6 +225,8 @@ class Declarer {
     );
     newMetadata.validatePlatformSelectors(_platformVariables);
     var metadata = _metadata.merge(newMetadata);
+    var testZone = Zone.current;
+
     _addEntry(
       LocalTest(
         fullName,
@@ -238,25 +241,25 @@ class Declarer {
             parents.add(declarer);
           }
 
-          // Register all tear-down functions in all declarers. Iterate through
-          // parents outside-in so that the Invoker gets the functions in the order
-          // they were declared in source.
+          var invoker = Invoker.current!;
+
           for (var declarer in parents.reversed) {
             for (var tearDown in declarer._tearDowns) {
-              Invoker.current!.addTearDown(tearDown);
+              invoker.addTearDown(tearDown);
             }
           }
 
-          await runZoned(
-            () async {
-              await _runSetUps();
-              await body();
-            },
-            // Make the declarer visible to running tests so that they'll throw
-            // useful errors when calling `test()` and `group()` within a test.
-            zoneValues: {#test.declarer: this},
-          );
+          var setUpSuccess = await _runSetUps();
+          if (setUpSuccess) {
+            await invoker.runRobustly(
+              testZone,
+              body as FutureOr<dynamic> Function(),
+              values: {#test.declarer: this},
+              completeOnAsyncError: false,
+            );
+          }
         },
+
         trace: _collectTraces ? Trace.current(2) : null,
         location: location,
         guarded: false,
@@ -331,43 +334,44 @@ class Declarer {
   String _prefix(String name) => _name == null ? name : '$_name $name';
 
   /// Registers a function to be run before each test in this group.
-  void setUp(FutureOr<dynamic> Function() callback) {
+  void setUp(dynamic callback) {
     _checkNotBuilt('setUp');
-    _setUps.add(callback);
+    _setUps.add(_captured(callback));
   }
 
   /// Registers a function to be run after each test in this group.
-  void tearDown(FutureOr<dynamic> Function() callback) {
+  void tearDown(dynamic callback) {
     _checkNotBuilt('tearDown');
-    _tearDowns.add(callback);
+    _tearDowns.add(_captured(callback));
   }
 
   /// Registers a function to be run once before all tests.
-  void setUpAll(
-    FutureOr<dynamic> Function() callback, {
-    TestLocation? location,
-  }) {
+  void setUpAll(dynamic callback, {TestLocation? location}) {
     _checkNotBuilt('setUpAll');
     if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
     _setUpAllLocation ??= location;
-    _setUpAlls.add(callback);
+    _setUpAlls.add(_captured(callback));
   }
 
   /// Registers a function to be run once after all tests.
-  void tearDownAll(
-    FutureOr<dynamic> Function() callback, {
-    TestLocation? location,
-  }) {
+  void tearDownAll(dynamic callback, {TestLocation? location}) {
     _checkNotBuilt('tearDownAll');
     if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
     _tearDownAllLocation ??= location;
-    _tearDownAlls.add(callback);
+    _tearDownAlls.add(_captured(callback));
   }
 
   /// Like [tearDownAll], but called from within a running [setUpAll] test to
   /// dynamically add a [tearDownAll].
-  void addTearDownAll(FutureOr<dynamic> Function() callback) =>
-      _tearDownAlls.add(callback);
+  void addTearDownAll(dynamic callback) {
+    _tearDownAlls.add(_captured(callback));
+  }
+
+  CapturedCallback _captured(dynamic callback) {
+    if (callback is CapturedCallback) return callback;
+    if (callback is Function) return CapturedCallback(callback, Zone.current);
+    throw ArgumentError('Callback must be a Function or CapturedCallback');
+  }
 
   /// Finalizes and returns the group being declared.
   ///
@@ -428,10 +432,20 @@ class Declarer {
   ///
   /// If no set-up functions are declared, this returns a [Future] that
   /// completes immediately.
-  Future _runSetUps() async {
-    if (_parent != null) await _parent._runSetUps();
-    // TODO: why does type inference not work here?
-    await Future.forEach<Function>(_setUps, (setUp) => setUp());
+  Future<bool> _runSetUps() async {
+    if (_parent != null) {
+      var parentSuccess = await _parent!._runSetUps();
+      if (!parentSuccess) return false;
+    }
+    var invoker = Invoker.current!;
+    for (var setUp in _setUps) {
+      var success = await invoker.runRobustly(
+        setUp.zone,
+        setUp.fn as FutureOr<dynamic> Function(),
+      );
+      if (!success) return false;
+    }
+    return true;
   }
 
   /// Returns a [Test] that runs the callbacks in [_setUpAll], or `null`.
@@ -441,13 +455,15 @@ class Declarer {
     return LocalTest(
       _prefix('(setUpAll)'),
       _metadata.change(timeout: _timeout),
-      () {
-        return runZoned(
-          () => Future.forEach<Function>(_setUpAlls, (setUp) => setUp()),
-          // Make the declarer visible to running scaffolds so they can add to
-          // the declarer's `tearDownAll()` list.
-          zoneValues: {#test.declarer: this},
-        );
+      () async {
+        var invoker = Invoker.current!;
+        for (var setUp in _setUpAlls) {
+          var success = await invoker.runRobustly(
+            setUp.zone,
+            setUp.fn as FutureOr<dynamic> Function(),
+          );
+          if (!success) return;
+        }
       },
       trace: _setUpAllTrace,
       location: _setUpAllLocation,
@@ -465,13 +481,9 @@ class Declarer {
     return LocalTest(
       _prefix('(tearDownAll)'),
       _metadata.change(timeout: _timeout),
-      () {
-        return runZoned(
-          () => Invoker.current!.runTearDowns(_tearDownAlls),
-          // Make the declarer visible to running scaffolds so they can add to
-          // the declarer's `tearDownAll()` list.
-          zoneValues: {#test.declarer: this},
-        );
+      () async {
+        var invoker = Invoker.current!;
+        await invoker.runTearDowns(_tearDownAlls);
       },
       trace: _tearDownAllTrace,
       location: _tearDownAllLocation,
