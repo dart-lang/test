@@ -253,7 +253,7 @@ class Declarer {
           if (setUpSuccess) {
             await invoker.runRobustly(
               testZone,
-              body as FutureOr<dynamic> Function(),
+              body,
               values: {#test.declarer: this},
               completeOnAsyncError: false,
             );
@@ -434,7 +434,7 @@ class Declarer {
   /// completes immediately.
   Future<bool> _runSetUps() async {
     if (_parent != null) {
-      var parentSuccess = await _parent!._runSetUps();
+      var parentSuccess = await _parent._runSetUps();
       if (!parentSuccess) return false;
     }
     var invoker = Invoker.current!;

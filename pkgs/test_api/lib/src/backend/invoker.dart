@@ -19,8 +19,8 @@ import 'suite_platform.dart';
 import 'test.dart';
 import 'test_failure.dart';
 import 'test_location.dart';
-import 'zones.dart';
 import 'util/pretty_print.dart';
+import 'zones.dart';
 
 /// A test in this isolate.
 class LocalTest extends Test {
@@ -350,14 +350,15 @@ class Invoker {
         addOutstandingCallback();
         var completer = Completer<void>();
 
-        _waitForOutstandingCallbacks(() {
+        _waitForOutstandingCallbacks(
+          () =>
           runRobustly(
             captured.zone,
             captured.fn as FutureOr<dynamic> Function(),
           ).whenComplete(() {
             if (!completer.isCompleted) completer.complete();
-          });
-        }).then((_) => removeOutstandingCallback()).unawaited;
+              }),
+        ).then((_) => removeOutstandingCallback()).unawaited;
 
         await completer.future;
       }
@@ -602,7 +603,7 @@ class Invoker {
         );
         _errorZone = errorZone;
       }
-      targetZoneToFork = errorZone!;
+      targetZoneToFork = errorZone;
     }
 
     var completer = Completer<bool>();
@@ -621,7 +622,7 @@ class Invoker {
               (_) {
                 if (!completer.isCompleted) completer.complete(true);
               },
-              onError: (error, stackTrace) {
+              onError: (Object error, StackTrace stackTrace) {
                 _handleError(Zone.current, error, stackTrace);
                 if (!completer.isCompleted) completer.complete(false);
               },
