@@ -1,5 +1,7 @@
 ## 0.3.2-wip
 
+- Add `isNotA<R>()` check extension as a convenience in place of
+  `not((it) => it.isA<R>())`.
 - Require Dart 3.11
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.

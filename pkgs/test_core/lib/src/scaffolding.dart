@@ -11,11 +11,10 @@ import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
-import 'runner/reporter/expanded.dart';
+import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
-import 'util/print_sink.dart';
 
 // Hide implementations which don't support being run directly.
 // This file is an almost direct copy of import below, but with the global
@@ -58,13 +57,7 @@ Declarer get _declarer {
     var engine = Engine();
     engine.suiteSink.add(suite);
     engine.suiteSink.close();
-    ExpandedReporter.watch(
-      engine,
-      PrintSink(),
-      color: true,
-      printPath: false,
-      printPlatform: false,
-    );
+    createDirectReporter(engine);
 
     var success = await runZoned(
       () => Invoker.guard(engine.run),

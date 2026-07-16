@@ -406,6 +406,26 @@ void main() {
     await test.shouldExit(0);
   });
 
+  test('DART_TEST_REPORTER overrides dart_test.yaml reporter', () async {
+    await d.file('dart_test.yaml', jsonEncode({'reporter': 'json'})).create();
+
+    await d.file('test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("success", () {});
+      }
+    ''').create();
+
+    var test = await runTest(
+      ['test.dart'],
+      environment: {'DART_TEST_REPORTER': 'expanded'},
+    );
+    expect(test.stdout, neverEmits(contains('"testStart"')));
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
+
   test('uses the specified concurrency', () async {
     await d.file('dart_test.yaml', jsonEncode({'concurrency': 2})).create();
 

@@ -26,6 +26,12 @@ void main() {
         check(1).isA<int>().isGreaterThan(0);
       });
     });
+    test('isNotA', () {
+      check(1).isNotA<String>();
+
+      check(1).isRejectedBy((it) => it.isNotA<int>(), which: ['is a int']);
+      check(1).isRejectedBy((it) => it.isNotA<num>(), which: ['is a num']);
+    });
   });
   group('HasField', () {
     group('has', () {
