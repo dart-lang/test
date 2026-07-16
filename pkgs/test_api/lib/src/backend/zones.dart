@@ -47,9 +47,9 @@ R runInZone<R>(
   of ??= Zone.current;
   values = {
     for (var property in TestZoneProperty.values)
-      if (values == null || !values.containsKey(property))
-        if (zone[property] == null)
-          if (of[property] case final currentValue?) property: currentValue,
+      if ((values == null || !values.containsKey(property)) &&
+          zone[property] == null)
+        property: ?of[property],
     ...?values,
   };
   if (values.isEmpty) values = null;
