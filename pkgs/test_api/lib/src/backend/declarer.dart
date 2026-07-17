@@ -442,7 +442,11 @@ class Declarer {
     }
     var invoker = Invoker.current!;
     for (var setUp in _setUps) {
-      var success = await invoker.runRobustly(setUp.zone, setUp.fn);
+      var success = await invoker.runRobustly(
+        setUp.zone,
+        setUp.fn,
+        values: {#test.declarer: this},
+      );
       if (!success) return false;
     }
     return true;
@@ -458,7 +462,11 @@ class Declarer {
       () async {
         var invoker = Invoker.current!;
         for (var setUp in _setUpAlls) {
-          var success = await invoker.runRobustly(setUp.zone, setUp.fn);
+          var success = await invoker.runRobustly(
+            setUp.zone,
+            setUp.fn,
+            values: {#test.declarer: this},
+          );
           if (!success) return;
         }
       },
@@ -480,7 +488,10 @@ class Declarer {
       _metadata.change(timeout: _timeout),
       () async {
         var invoker = Invoker.current!;
-        await invoker.runTearDowns(_tearDownAlls);
+        await invoker.runTearDowns(
+          _tearDownAlls,
+          values: {#test.declarer: this},
+        );
       },
       trace: _tearDownAllTrace,
       location: _tearDownAllLocation,

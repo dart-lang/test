@@ -322,7 +322,10 @@ class Invoker {
   /// it isn't already failing, but it won't prevent the remaining callbacks
   /// from running. This invoker will not be closeable within the zone that the
   /// teardowns are running in.
-  Future<void> runTearDowns(List<CapturedCallback> tearDowns) async {
+  Future<void> runTearDowns(
+    List<CapturedCallback> tearDowns, {
+    Map<Object?, Object?>? values,
+  }) async {
     heartbeat();
     var oldForceOpen = _isExecutingTearDown;
     _isExecutingTearDown = true;
@@ -334,7 +337,8 @@ class Invoker {
         var completer = Completer<void>();
 
         _waitForOutstandingCallbacks(
-          () => runRobustly(captured.zone, captured.fn).whenComplete(() {
+          () => runRobustly(captured.zone, captured.fn, values: values)
+              .whenComplete(() {
             if (!completer.isCompleted) completer.complete();
           }),
         ).then((_) => removeOutstandingCallback()).unawaited;
@@ -499,55 +503,42 @@ class Invoker {
     _controller.setState(const State(Status.running, Result.success));
 
     _runCount++;
-    Chain.capture(
-      () {
-        _guardIfGuarded(() {
-          runZoned(
-            () async {
-              _mainExecutionZone = Zone.current;
-              // Run the test asynchronously so that the "running" state change
-              // has a chance to hit its event handler(s) before the test produces
-              // an error. If an error is emitted before the first state change is
-              // handled, we can end up with [onError] callbacks firing before the
-              // corresponding [onStateChange], which violates the timing
-              // guarantees.
-              //
-              // Use the event loop over the microtask queue to avoid starvation.
-              await Future(() {});
+    _guardIfGuarded(() {
+      runZoned(
+        () async {
+          _mainExecutionZone = Zone.current;
+          // Run the test asynchronously so that the "running" state change
+          // has a chance to hit its event handler(s) before the test produces
+          // an error. If an error is emitted before the first state change is
+          // handled, we can end up with [onError] callbacks firing before the
+          // corresponding [onStateChange], which violates the timing
+          // guarantees.
+          //
+          // Use the event loop over the microtask queue to avoid starvation.
+          await Future(() {});
 
-              await _waitForOutstandingCallbacks(_test._body);
-              await _waitForOutstandingCallbacks(
-                () => runTearDowns(_tearDowns),
-              );
+          await _waitForOutstandingCallbacks(_test._body);
+          await _waitForOutstandingCallbacks(() => runTearDowns(_tearDowns));
 
-              if (_timeoutTimer != null) _timeoutTimer!.cancel();
+          if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
-              if (liveTest.state.result != Result.success &&
-                  _runCount < liveTest.test.metadata.retry + 1) {
-                _controller.message(
-                  Message.print('Retry: ${liveTest.test.name}'),
-                );
-                _onRun();
-                return;
-              }
+          if (liveTest.state.result != Result.success &&
+              _runCount < liveTest.test.metadata.retry + 1) {
+            _controller.message(Message.print('Retry: ${liveTest.test.name}'));
+            _onRun();
+            return;
+          }
 
-              _controller.setState(
-                State(Status.complete, liveTest.state.result),
-              );
+          _controller.setState(State(Status.complete, liveTest.state.result));
 
-              _controller.completer.complete();
-            },
-            zoneValues: {#test.invoker: this, #runCount: _runCount},
-            zoneSpecification: ZoneSpecification(
-              print: (_, _, _, line) => _print(line),
-            ),
-          );
-        });
-      },
-
-      when: liveTest.test.metadata.chainStackTraces,
-      errorZone: false,
-    );
+          _controller.completer.complete();
+        },
+        zoneValues: {#test.invoker: this, #runCount: _runCount},
+        zoneSpecification: ZoneSpecification(
+          print: (_, _, _, line) => _print(line),
+        ),
+      );
+    });
   }
 
   /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.
@@ -594,24 +585,43 @@ class Invoker {
     runInZone(
       targetZoneToFork,
       () {
+        Object? result;
+        ({Object error, StackTrace stackTrace})? syncError;
+
         try {
-          var result = fn();
-          if (result is Future) {
-            result.then(
-              (_) {
-                if (!completer.isCompleted) completer.complete(true);
-              },
-              onError: (Object error, StackTrace stackTrace) {
-                _handleError(Zone.current, error, stackTrace);
-                if (!completer.isCompleted) completer.complete(false);
-              },
-            );
-          } else {
-            if (!completer.isCompleted) completer.complete(true);
-          }
+          Chain.capture(
+            () {
+              try {
+                result = fn();
+              } catch (error, stackTrace) {
+                syncError = (error: error, stackTrace: stackTrace);
+              }
+            },
+            when: liveTest.test.metadata.chainStackTraces,
+            errorZone: false,
+          );
         } catch (error, stackTrace) {
+          syncError = (error: error, stackTrace: stackTrace);
+        }
+
+        if (syncError case (:var error, :var stackTrace)) {
           _handleError(Zone.current, error, stackTrace);
           if (!completer.isCompleted) completer.complete(false);
+          return;
+        }
+
+        if (result case Future future) {
+          future.then(
+            (_) {
+              if (!completer.isCompleted) completer.complete(true);
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              _handleError(Zone.current, error, stackTrace);
+              if (!completer.isCompleted) completer.complete(false);
+            },
+          );
+        } else {
+          if (!completer.isCompleted) completer.complete(true);
         }
       },
       of: Zone.current,
