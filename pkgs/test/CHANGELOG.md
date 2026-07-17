@@ -4,6 +4,8 @@
   when tests are run directly on platforms which support `dart:io`. The
   environment variable takes precedence over configuration in `dart_test.yaml`
   but is overridden by the `--reporter` flag when passed to the test runner.
+* Include passing test and suite loading messages within the `Passing tests`
+  group in `GithubReporter`.
 
 ## 1.31.2
 

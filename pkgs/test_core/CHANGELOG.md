@@ -1,6 +1,7 @@
 ## 0.6.20-wip
 
 * Add support for `DART_TEST_REPORTER` environment variable.
+* Include passing test and suite loading messages within the `Passing tests` group in `GithubReporter`.
 
 ## 0.6.19
 
