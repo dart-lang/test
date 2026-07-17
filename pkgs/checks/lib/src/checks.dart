@@ -30,16 +30,6 @@ final class Subject<T> {
   Subject._(this._context);
 }
 
-/// A callback that synchronously checks expectations against a subject.
-///
-/// Asynchronous expectations should not be used within a `Condition` callback.
-typedef Condition<T> = void Function(Subject<T>);
-
-/// A callback that asynchronously checks expectations against a subject.
-///
-/// Any expectations may be used within an `AsyncCondition` callback.
-typedef AsyncCondition<T> = FutureOr<void> Function(Subject<T>);
-
 extension SkipExtension<T> on Subject<T> {
   /// Mark the currently running test as skipped and return a [Subject] that
   /// will ignore all expectations.
@@ -54,9 +44,10 @@ extension SkipExtension<T> on Subject<T> {
   ///     ..skip('reason the expectation is temporarily not met').notChecked();
   /// ```
   ///
-  /// If `skip` is used in a callback passed to `softCheck` or `describe` it
-  /// will still mark the test as skipped, even though failing the expectation
-  /// would not have otherwise caused the test to fail.
+  /// If `skip` is invoked by a [Condition] within a call [Condition.softCheck]
+  /// or [Condition.describe] it will still mark the test as skipped, even
+  /// though failing the expectation would not have otherwise caused the test to
+  /// fail.
   Subject<T> skip(String message) {
     TestHandle.current.markSkipped(message);
     return Subject._(_SkippedContext());
@@ -102,104 +93,104 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(
   ),
 );
 
-/// Checks whether [value] satisfies all expectations invoked in [condition],
-/// without throwing an exception.
+/// A set of expectations that can be checked against a [Subject].
 ///
-/// Returns `null` if all expectations are satisfied, otherwise returns the
-/// [CheckFailure] for the first expectation that fails.
+/// Conditions which have asynchronous interactions will return a [Future] from
+/// [apply], [softCheck], and [describe]. Conditions which have had only
+/// synchronous expectations will return a synchronous result from these
+/// methods.
 ///
-/// Asynchronous expectations are not allowed in [condition] and will cause a
-/// runtime error if they are used.
-CheckFailure? softCheck<T>(T value, Condition<T> condition) {
-  CheckFailure? failure;
-  final subject = Subject<T>._(
-    _TestContext._root(
-      value: _Present(value),
-      fail: (f) {
-        failure ??= f;
-      },
-      allowAsync: false,
-      allowUnawaited: false,
-    ),
-  );
-  condition(subject);
-  return failure;
+/// Synchronous variants [applySync], [softCheckSync], and [describeSync] return
+/// non-[Future] values always, but will throw an [AsyncConditionDisallowed]
+/// exception if asynchronous expectations were invoked on the condition.
+abstract final class Condition<T> {
+  static ConditionSubject<T> it<T>() => ._();
+
+  /// Run these exepctations against [subject].
+  FutureOr<void> apply(Subject<T> subject);
+
+  /// Run these expectations against [subject].
+  ///
+  /// Asynchronous expectations are not allowed and will cause a runtime error
+  /// if they were used.
+  void applySync(Subject<T> subject);
+
+  /// Checks whether [value] satisfies all expectations invoked in this
+  /// condition, without throwing an exception.
+  ///
+  /// The future will complete to `null` if all expectations are satisfied,
+  /// otherwise it will complete to the [CheckFailure] for the first expectation
+  /// that fails.
+  FutureOr<CheckFailure?> softCheck(T value);
+
+  /// Checks whether [value] satisfies all expectations invoked in this
+  /// condition, without throwing an exception.
+  ///
+  /// The future will complete to `null` if all expectations are satisfied,
+  /// otherwise it will complete to the [CheckFailure] for the first expectation
+  /// that fails.
+  ///
+  /// Asynchronous expectations are not allowed.
+  CheckFailure? softCheckSync(T value);
+
+  /// Creates a description of the expectations invoked in this condition.
+  ///
+  /// The strings are individual lines of a description.
+  /// The description of an expectation may be one or more adjacent lines.
+  ///
+  /// Matches the "Expected: " lines in the output of a failure message if a
+  /// value did not meet the last expectation in this condition, without the
+  /// first labeled line.
+  FutureOr<Iterable<String>> describe();
+
+  /// Creates a description of the expectations invoked in this condition.
+  ///
+  /// The strings are individual lines of a description.
+  /// The description of an expectation may be one or more adjacent lines.
+  ///
+  /// Matches the "Expected: " lines in the output of a failure message if a
+  /// value did not meet the last expectation in this condition, without the
+  /// first labeled line.
+  ///
+  /// Asynchronous expectations are not allowed.
+  Iterable<String> describeSync();
 }
 
-/// Checks whether [value] satisfies all expectations invoked in [condition],
-/// without throwing an exception.
-///
-/// The future will complete to `null` if all expectations are satisfied,
-/// otherwise it will complete to the [CheckFailure] for the first expectation
-/// that fails.
-///
-/// In contrast to [softCheck], asynchronous expectations are allowed in
-/// [condition].
-Future<CheckFailure?> softCheckAsync<T>(
-  T value,
-  AsyncCondition<T> condition,
-) async {
-  CheckFailure? failure;
-  final subject = Subject<T>._(
-    _TestContext._root(
-      value: _Present(value),
-      fail: (f) {
-        failure ??= f;
-      },
-      allowAsync: true,
-      allowUnawaited: false,
-    ),
-  );
-  await condition(subject);
-  return failure;
-}
+/// A [Subject] that records the checks that are performed and expose them as an
+/// [Condition].
+final class ConditionSubject<T> implements Condition<T>, Subject<T> {
+  ConditionSubject._();
+  @override
+  final _ReplayContext<T> _context = .new();
 
-/// Creates a description of the expectations checked by [condition].
-///
-/// The strings are individual lines of a description.
-/// The description of an expectation may be one or more adjacent lines.
-///
-/// Matches the "Expected: " lines in the output of a failure message if a value
-/// did not meet the last expectation in [condition], without the first labeled
-/// line.
-///
-/// Asynchronous expectations are not allowed in [condition], for async
-/// conditions use [describeAsync].
-Iterable<String> describe<T>(Condition<T> condition) {
-  final context = _TestContext<T>._root(
-    value: _Absent(),
-    fail: (_) {
-      throw UnimplementedError();
-    },
-    allowAsync: false,
-    allowUnawaited: true,
-  );
-  condition(Subject._(context));
-  return context.detail(context).expected.skip(1);
-}
+  @override
+  FutureOr<void> apply(Subject<T> subject) => _context.apply(subject);
 
-/// Creates a description of the expectations checked by [condition].
-///
-/// The strings are individual lines of a description.
-/// The description of an expectation may be one or more adjacent lines.
-///
-/// Matches the "Expected: " lines in the output of a failure message if a value
-/// did not meet the last expectation in [condition], without the first labeled
-/// line.
-///
-/// In contrast to [describe], asynchronous expectations are allowed in
-/// [condition].
-Future<Iterable<String>> describeAsync<T>(AsyncCondition<T> condition) async {
-  final context = _TestContext<T>._root(
-    value: _Absent(),
-    fail: (_) {
-      throw UnimplementedError();
-    },
-    allowAsync: true,
-    allowUnawaited: true,
-  );
-  await condition(Subject._(context));
-  return context.detail(context).expected.skip(1);
+  @override
+  void applySync(Subject<T> subject) {
+    final result = _context.apply(subject);
+    if (result is Future) throw AsyncConditionDisallowed._('Async');
+  }
+
+  @override
+  FutureOr<CheckFailure?> softCheck(T value) =>
+      _context.softCheck(value, allowAsync: true);
+  @override
+  CheckFailure? softCheckSync(T value) {
+    final result = _context.softCheck(value, allowAsync: false);
+    if (result is Future) throw AsyncConditionDisallowed._('Async');
+    return result;
+  }
+
+  @override
+  FutureOr<Iterable<String>> describe() => _context.describe(allowAsync: true);
+
+  @override
+  Iterable<String> describeSync() {
+    final result = _context.describe(allowAsync: false);
+    if (result is Future) throw AsyncConditionDisallowed._('Async');
+    return result;
+  }
 }
 
 extension ContextExtension<T> on Subject<T> {
@@ -355,22 +346,21 @@ extension ContextExtension<T> on Subject<T> {
 /// }
 /// ```
 ///
-/// When an expectation is rejected for a subject within a call to [softCheck]
-/// or [softCheckAsync] a [CheckFailure] will be returned with the rejection, as
-/// well as a [FailureDetail] which could be used to format the same failure
+/// When an expectation is rejected for a subject within a call to
+/// [Condition.softCheck] a [CheckFailure] will be returned with the rejection,
+/// as well as a [FailureDetail] which could be used to format the same failure
 /// message thrown by the [check] subject.
 ///
 /// {@template callbacks_may_be_unused}
 /// The description of an expectation may never be shown to the user, so the
 /// callback may never be invoked.
 /// If all the conditions on a subject succeed, or if the failure detail for a
-/// failed [softCheck] is never read, the descriptions will be unused.
-/// String formatting for the descriptions should be performed in the callback,
-/// not ahead of time.
-///
+/// failed [Condition.softCheck] or [Condition.softCheck] is never read,
+/// the descriptions will be unused. String formatting for the descriptions
+/// should be performed in the callback, not ahead of time.
 ///
 /// The context for a subject may hold a real "actual" value to test against, or
-/// it may have a placeholder within a call to [describe].
+/// it may have a placeholder within a call to [Condition.describe].
 /// A context with a placeholder value will not invoke the callback to check
 /// expectations.
 ///
@@ -383,14 +373,13 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// Some contexts disallow certain interactions.
 /// {@template async_limitations}
-/// Calls to [expectAsync] or [nestAsync] must not be performed by a condition
-/// callback passed to [softCheck] or [describe].
-/// Use [softCheckAsync] or [describeAsync] for any condition which checks async
-/// expectations.
+/// Calls to [expectAsync] or [nestAsync] must not be performed on a
+/// [Condition].
+/// Use [Condition] for any condition which checks async expectations.
 /// {@endtemplate}
 /// {@template unawaited_limitations}
-/// Calls to [expectUnawaited] may not be performed by a condition callback
-/// passed to [softCheck] or [softCheckAsync].
+/// Calls to [expectUnawaited] may not be performed by a [Condition] if the
+/// [Condition.softCheck] method is used.
 /// {@endtemplate}
 ///
 /// Expectation extension methods can access the context for the subject with
@@ -568,7 +557,7 @@ abstract final class Context<T> {
   ///
   /// ```dart
   /// Future<Subject<Result>> someAsyncResult(
-  ///     [AsyncCondition<Result>? resultCondition]) {
+  ///     [Condition<Result>? resultCondition]) {
   ///   return context.nestAsync(() => ['has someAsyncResult'], (actual) async {
   ///     if (await _asyncOperationFailed(actual)) {
   ///       return Extracted.rejection(which: ['cannot read someAsyncResult']);
@@ -580,7 +569,7 @@ abstract final class Context<T> {
   Future<Subject<R>> nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T) extract, [
-    AsyncCondition<R>? nestedCondition,
+    Condition<R>? nestedCondition,
   ]);
 }
 
@@ -812,7 +801,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       _clauses.add(context);
     }
     final subject = Subject<R>._(context);
-    nestedCondition?.call(subject);
+    nestedCondition?.applySync(subject);
     return subject;
   }
 
@@ -820,7 +809,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   Future<Subject<R>> nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T) extract, [
-    AsyncCondition<R>? nestedCondition,
+    Condition<R>? nestedCondition,
   ]) {
     if (!_allowAsync) throw AsyncConditionDisallowed._('Async');
     return _nestAsync(label, extract, nestedCondition);
@@ -829,7 +818,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   Future<Subject<R>> _nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T) extract,
-    AsyncCondition<R>? nestedCondition,
+    Condition<R>? nestedCondition,
   ) async {
     final outstandingWork = TestHandle.current.markPending();
     try {
@@ -845,7 +834,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       final context = _TestContext<R>._child(value, label, this);
       _clauses.add(context);
       final subject = Subject<R>._(context);
-      await nestedCondition?.call(subject);
+      await nestedCondition?.apply(subject);
       return subject;
     } finally {
       outstandingWork.complete();
@@ -931,7 +920,7 @@ final class _SkippedContext<T> implements Context<T> {
     bool atSameLevel = false,
   }) {
     final subject = Subject<R>._(_SkippedContext());
-    nestedCondition?.call(subject);
+    nestedCondition?.applySync(subject);
     return subject;
   }
 
@@ -939,11 +928,135 @@ final class _SkippedContext<T> implements Context<T> {
   Future<Subject<R>> nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T p1) extract, [
-    AsyncCondition<R>? nestedCondition,
+    Condition<R>? nestedCondition,
   ]) async {
     final subject = Subject<R>._(_SkippedContext());
-    await nestedCondition?.call(subject);
+    await nestedCondition?.apply(subject);
     return subject;
+  }
+}
+
+final class _ReplayContext<T> implements Context<T> {
+  final _interactions = <FutureOr<void> Function(Context<T>)>[];
+  final Condition<T>? _nestedCondition;
+
+  _ReplayContext([this._nestedCondition]);
+
+  FutureOr<CheckFailure?> softCheck(T value, {required bool allowAsync}) {
+    CheckFailure? failure;
+    final subject = Subject<T>._(
+      _TestContext._root(
+        value: _Present(value),
+        fail: (f) {
+          failure ??= f;
+        },
+        allowAsync: allowAsync,
+        allowUnawaited: false,
+      ),
+    );
+    final result = apply(subject);
+    if (result is Future) {
+      return result.then((_) => failure);
+    }
+    return failure;
+  }
+
+  FutureOr<void> apply(Subject<T> subject) {
+    final result = _nestedCondition?.apply(subject);
+    if (result is Future) {
+      return result.then((_) => _runInteractions(subject));
+    }
+    return _runInteractions(subject);
+  }
+
+  FutureOr<void> _runInteractions(Subject<T> subject) {
+    for (var i = 0; i < _interactions.length; i++) {
+      final interaction = _interactions[i];
+      final result = interaction(subject.context);
+      if (result is Future) {
+        return result.then((_) => _runInteractionsFrom(subject, i + 1));
+      }
+    }
+  }
+
+  Future<void> _runInteractionsFrom(Subject<T> subject, int startIndex) async {
+    for (var i = startIndex; i < _interactions.length; i++) {
+      await _interactions[i](subject.context);
+    }
+  }
+
+  FutureOr<Iterable<String>> describe({required bool allowAsync}) {
+    final context = _TestContext<T>._root(
+      value: _Absent(),
+      fail: (_) {
+        throw UnimplementedError();
+      },
+      allowAsync: allowAsync,
+      allowUnawaited: true,
+    );
+    final result = apply(Subject._(context));
+    if (result is Future) {
+      return result.then((_) => context.detail(context).expected.skip(1));
+    }
+    return context.detail(context).expected.skip(1);
+  }
+
+  @override
+  void expect(
+    Iterable<String> Function() clause,
+    Rejection? Function(T) predicate,
+  ) {
+    _interactions.add((c) {
+      c.expect(clause, predicate);
+    });
+  }
+
+  @override
+  Future<void> expectAsync(
+    Iterable<String> Function() clause,
+    FutureOr<Rejection?> Function(T) predicate,
+  ) {
+    _interactions.add((c) => c.expectAsync(clause, predicate));
+    return Future.syncValue(null);
+  }
+
+  @override
+  void expectUnawaited(
+    Iterable<String> Function() clause,
+    void Function(T, void Function(Rejection)) predicate,
+  ) {
+    _interactions.add((c) {
+      c.expectUnawaited(clause, predicate);
+    });
+  }
+
+  @override
+  Subject<R> nest<R>(
+    Iterable<String> Function() label,
+    Extracted<R> Function(T) extract, {
+    Condition<R>? nestedCondition,
+    bool atSameLevel = false,
+  }) {
+    final nestedContext = _ReplayContext<R>(nestedCondition);
+    _interactions.add((c) {
+      final subject = c.nest(label, extract, atSameLevel: atSameLevel);
+      return nestedContext.apply(subject);
+    });
+    return Subject._(nestedContext);
+  }
+
+  @override
+  Future<Subject<R>> nestAsync<R>(
+    Iterable<String> Function() label,
+    FutureOr<Extracted<R>> Function(T) extract, [
+    Condition<R>? nestedCondition,
+  ]) {
+    final nestedContext = _ReplayContext<R>(nestedCondition);
+    _interactions.add((c) async {
+      final nested = await c.nestAsync(label, extract);
+      await nestedContext.apply(nested);
+    });
+    return Future.syncValue(Subject._(nestedContext));
   }
 }
 
@@ -979,9 +1092,9 @@ final class CheckFailure {
 
 /// The context for a failed expectation.
 ///
-/// A subject may have some number of succeeding expectations, and the failure may
-/// be for an expectation against a property derived from the value at the root
-/// of the subject. For example, in `check([]).length.equals(1)` the
+/// A subject may have some number of succeeding expectations, and the failure
+/// may be for an expectation against a property derived from the value at the
+/// root of the subject. For example, in `check([]).length.equals(1)` the
 /// specific value that gets rejected is `0` from the length of the list, and
 /// the subject that sees the rejection is nested with the label "has length".
 final class FailureDetail {

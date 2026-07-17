@@ -15,7 +15,7 @@ void main() {
       });
       test('fails for functions that return normally', () {
         check(() {}).isRejectedBy(
-          (it) => it.throws<StateError>(),
+          .it()..throws<StateError>(),
           actual: ['a function that returned <null>'],
           which: ['did not throw'],
         );
@@ -27,7 +27,7 @@ void main() {
             StackTrace.fromString('fake trace'),
           );
         }).isRejectedBy(
-          (it) => it.throws<ArgumentError>(),
+          .it()..throws<ArgumentError>(),
           actual: ['a function that threw error <Bad state: oops!>'],
           which: [
             'threw an exception that is not a ArgumentError at:',
@@ -37,8 +37,8 @@ void main() {
       });
       test('evaluates condition', () {
         check(() => throw StateError('oops!')).isRejectedBy(
-          (it) => it.throws<StateError>(
-            (it) => it.has((e) => e.message, 'message').equals('wrong'),
+          .it()..throws<StateError>(
+            .it()..has((e) => e.message, 'message').equals('wrong'),
           ),
           actual: ["'oops!'"],
           which: ['differs at offset 0:', '  wrong', '  oops!', '  ^'],
@@ -62,14 +62,14 @@ void main() {
             StackTrace.fromString('fake trace'),
           );
         }).isRejectedBy(
-          (it) => it.returnsNormally(),
+          .it()..returnsNormally(),
           actual: ['a function that throws'],
           which: ['threw <Bad state: oops!> at:', '  fake trace'],
         );
       });
       test('evaluates condition', () {
         check(() => 1).isRejectedBy(
-          (it) => it.returnsNormally((it) => it.equals(2)),
+          .it()..returnsNormally(.it()..equals(2)),
           actual: ['<1>'],
           which: ['are not equal'],
         );

@@ -84,14 +84,14 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// ```
   ///
   /// Values in [elements] may be a `T`, a `Condition<T>`, or a
-  /// `Condition<Object?>`. If an expectation is a condition callback it will be
+  /// `Condition<Object?>`. If an expectation is a [Condition] it will be
   /// checked against the actual values, and any other expectations, including
-  /// those that are not a `T` or a condition callback, will be compared with
+  /// those that are not a `T` or a [Condition], will be compared with
   /// the equality operator.
   ///
   /// ```dart
   /// check([1, 0, 2, 0, 3])
-  ///   .containsInOrder([1, (Subject<int> v) => v.isGreaterThan(1), 3]);
+  ///   .containsInOrder([1, Condition.it<int>()..isGreaterThan(1), 3]);
   /// ```
   @Deprecated(
     'Use `containsEqualInOrder` for expectations with values compared'
@@ -109,9 +109,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         for (final element in actual) {
           final currentExpected = expected[expectedIndex];
           final matches = currentExpected is Condition<T>
-              ? softCheck(element, currentExpected) == null
+              ? currentExpected.softCheckSync(element) == null
               : currentExpected is Condition<dynamic>
-              ? softCheck(element, currentExpected) == null
+              ? currentExpected.softCheckSync(element) == null
               : currentExpected == element;
           if (matches && ++expectedIndex >= expected.length) return null;
         }
@@ -151,7 +151,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         var expectedIndex = 0;
         for (final element in actual) {
           final currentExpected = expected[expectedIndex];
-          final matches = softCheck(element, currentExpected) == null;
+          final matches = currentExpected.softCheckSync(element) == null;
           if (matches && ++expectedIndex >= expected.length) return null;
         }
         return Rejection(
@@ -210,14 +210,14 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void any(Condition<T> elementCondition) {
     context.expect(
       () {
-        final conditionDescription = describe(elementCondition);
+        final conditionDescription = elementCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['contains a value that:', ...conditionDescription];
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         for (var e in actual) {
-          if (softCheck(e, elementCondition) == null) return null;
+          if (elementCondition.softCheckSync(e) == null) return null;
         }
         return Rejection(which: ['Contains no matching element']);
       },
@@ -231,7 +231,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void every(Condition<T> elementCondition) {
     context.expect(
       () {
-        final conditionDescription = describe(elementCondition);
+        final conditionDescription = elementCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['only has values that:', ...conditionDescription];
       },
@@ -239,7 +239,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         final iterator = actual.iterator;
         for (var i = 0; iterator.moveNext(); i++) {
           final element = iterator.current;
-          final failure = softCheck(element, elementCondition);
+          final failure = elementCondition.softCheckSync(element);
           if (failure == null) continue;
           final which = failure.rejection.which;
           return Rejection(
@@ -324,10 +324,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
       final which = unorderedCompare(
         actual,
         expected,
-        (actual, expected) => softCheck(actual, expected) == null,
+        (actual, expected) => expected.softCheckSync(actual) == null,
         (expected, index, count) => [
           'has no element matching the condition at index $index:',
-          ...describe(expected),
+          ...expected.describeSync(),
           if (count > 1) 'or ${count - 1} other conditions',
         ],
         (actual, index, count) => [
@@ -395,12 +395,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
             );
           }
           final actualValue = iterator.current;
-          final failure = softCheck(
-            actualValue,
-            elementCondition(expectedValue),
-          );
+          final condition = elementCondition(expectedValue);
+          final failure = condition.softCheckSync(actualValue);
           if (failure == null) continue;
-          final innerDescription = describe<T>(elementCondition(expectedValue));
+          final innerDescription = condition.describeSync();
           final which = failure.rejection.which;
           return Rejection(
             which: [

@@ -14,10 +14,10 @@ void main() {
         check(double.nan).isNaN();
       });
       test('fails for ints', () {
-        check(42).isRejectedBy((it) => it.isNaN());
+        check(42).isRejectedBy(.it()..isNaN());
       });
       test('fails for numeric doubles', () {
-        check(42.1).isRejectedBy((it) => it.isNaN());
+        check(42.1).isRejectedBy(.it()..isNaN());
       });
     });
 
@@ -29,7 +29,7 @@ void main() {
         check(42.1).isNotNaN();
       });
       test('fails for NaN', () {
-        check(double.nan).isRejectedBy((it) => it.isNotNaN());
+        check(double.nan).isRejectedBy(.it()..isNotNaN());
       });
     });
     group('isNegative', () {
@@ -40,9 +40,7 @@ void main() {
         check(-0.0).isNegative();
       });
       test('fails for zero', () {
-        check(
-          0,
-        ).isRejectedBy((it) => it.isNegative(), which: ['is not negative']);
+        check(0).isRejectedBy(.it()..isNegative(), which: ['is not negative']);
       });
     });
     group('isNotNegative', () {
@@ -55,12 +53,10 @@ void main() {
       test('fails for -0.0', () {
         check(
           -0.0,
-        ).isRejectedBy((it) => it.isNotNegative(), which: ['is negative']);
+        ).isRejectedBy(.it()..isNotNegative(), which: ['is negative']);
       });
       test('fails for negative numbers', () {
-        check(
-          -1,
-        ).isRejectedBy((it) => it.isNotNegative(), which: ['is negative']);
+        check(-1).isRejectedBy(.it()..isNotNegative(), which: ['is negative']);
       });
     });
 
@@ -71,17 +67,17 @@ void main() {
       test('fails for NaN', () {
         check(
           double.nan,
-        ).isRejectedBy((it) => it.isFinite(), which: ['is not finite']);
+        ).isRejectedBy(.it()..isFinite(), which: ['is not finite']);
       });
       test('fails for infinity', () {
         check(
           double.infinity,
-        ).isRejectedBy((it) => it.isFinite(), which: ['is not finite']);
+        ).isRejectedBy(.it()..isFinite(), which: ['is not finite']);
       });
       test('fails for negative infinity', () {
         check(
           double.negativeInfinity,
-        ).isRejectedBy((it) => it.isFinite(), which: ['is not finite']);
+        ).isRejectedBy(.it()..isFinite(), which: ['is not finite']);
       });
     });
     group('isNotFinite', () {
@@ -95,7 +91,7 @@ void main() {
         check(double.nan).isNotFinite();
       });
       test('fails for finite numbers', () {
-        check(1).isRejectedBy((it) => it.isNotFinite(), which: ['is finite']);
+        check(1).isRejectedBy(.it()..isNotFinite(), which: ['is finite']);
       });
     });
     group('isInfinite', () {
@@ -108,12 +104,10 @@ void main() {
       test('fails for NaN', () {
         check(
           double.nan,
-        ).isRejectedBy((it) => it.isInfinite(), which: ['is not infinite']);
+        ).isRejectedBy(.it()..isInfinite(), which: ['is not infinite']);
       });
       test('fails for finite numbers', () {
-        check(
-          1,
-        ).isRejectedBy((it) => it.isInfinite(), which: ['is not infinite']);
+        check(1).isRejectedBy(.it()..isInfinite(), which: ['is not infinite']);
       });
     });
 
@@ -127,12 +121,12 @@ void main() {
       test('fails for infinity', () {
         check(
           double.infinity,
-        ).isRejectedBy((it) => it.isNotInfinite(), which: ['is infinite']);
+        ).isRejectedBy(.it()..isNotInfinite(), which: ['is infinite']);
       });
       test('fails for negative infinity', () {
         check(
           double.negativeInfinity,
-        ).isRejectedBy((it) => it.isNotInfinite(), which: ['is infinite']);
+        ).isRejectedBy(.it()..isNotInfinite(), which: ['is infinite']);
       });
     });
     group('closeTo', () {
@@ -148,12 +142,12 @@ void main() {
       test('fails for low values', () {
         check(
           1,
-        ).isRejectedBy((it) => it.isCloseTo(3, 1), which: ['differs by <2>']);
+        ).isRejectedBy(.it()..isCloseTo(3, 1), which: ['differs by <2>']);
       });
       test('fails for high values', () {
         check(
           5,
-        ).isRejectedBy((it) => it.isCloseTo(3, 1), which: ['differs by <2>']);
+        ).isRejectedBy(.it()..isCloseTo(3, 1), which: ['differs by <2>']);
       });
     });
   });

@@ -1,16 +1,26 @@
-## 0.3.2-wip
+## 0.4.0-wip
 
+- **Breaking Changes**
+  - Replace the `typedef Condition` and `AsyncCondition` function type callback
+    arguments with a `Condition` class which has `check`, `softCheck`, and
+    `describe` methods. Use the static `it` method in place of function
+    literals: `(it) => it.someCheck()` becomes `.it()..someCheck()`. Most
+    uses should have the required context type to allow the use of dot
+    shorthands. Within collection literals where there is no context type use
+    `Condition.it<SomeType>()..someCheck()`.
+  - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
+    top level methods in favor of the instance members on `Condition`.
 - Add `isNotA<R>()` check extension as a convenience in place of
   `not((it) => it.isA<R>())`.
 - Require Dart 3.11
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and
-  `Subject.returnsNormally` to accept an optional `Condition` callback to apply
+  `Subject.returnsNormally` to accept an optional `Condition` argument to apply
   to the extracted value.
 - Updated `Subject.completes`, `Subject.throws` (async), `StreamChecks.emits`,
   and `StreamChecks.emitsError` to return `Future<Subject>` in addition to
-  accepting an optional `AsyncCondition` callback.
+  accepting an optional `Condition` argument.
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.
 - Improve formatting for failed String equality checks - indent string diff

@@ -56,14 +56,14 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   void containsKeyThat(Condition<K> keyCondition) {
     context.expect(
       () {
-        final conditionDescription = describe(keyCondition);
+        final conditionDescription = keyCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['contains a key that:', ...conditionDescription];
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty map']);
         for (var k in actual.keys) {
-          if (softCheck(k, keyCondition) == null) return null;
+          if (keyCondition.softCheckSync(k) == null) return null;
         }
         return Rejection(which: ['Contains no matching key']);
       },
@@ -87,14 +87,14 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   void containsValueThat(Condition<V> valueCondition) {
     context.expect(
       () {
-        final conditionDescription = describe(valueCondition);
+        final conditionDescription = valueCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['contains a value that:', ...conditionDescription];
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty map']);
         for (var v in actual.values) {
-          if (softCheck(v, valueCondition) == null) return null;
+          if (valueCondition.softCheckSync(v) == null) return null;
         }
         return Rejection(which: ['Contains no matching value']);
       },
