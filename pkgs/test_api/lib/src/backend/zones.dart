@@ -16,6 +16,7 @@ class TestZoneProperty {
     #test.declarer,
     #runCount,
     #test.managedErrorZone,
+    #test.runner.test_channel,
   ];
 }
 
