@@ -66,7 +66,7 @@ extension CoreChecks<T> on Subject<T> {
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  void which(Condition<T> condition) => condition(this);
+  void which(Condition<T> condition) => condition.applySync(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.
@@ -74,11 +74,11 @@ extension CoreChecks<T> on Subject<T> {
   /// Asynchronous expectations are not allowed in [condition].
   void not(Condition<T> condition) {
     context.expect(
-      () => ['is not a value that:', ...indent(describe(condition))],
+      () => ['is not a value that:', ...indent(condition.describeSync())],
       (actual) {
-        if (softCheck(actual, condition) != null) return null;
+        if (condition.softCheckSync(actual) != null) return null;
         return Rejection(
-          which: ['is a value that: ', ...indent(describe(condition))],
+          which: ['is a value that: ', ...indent(condition.describeSync())],
         );
       },
     );
@@ -93,7 +93,7 @@ extension CoreChecks<T> on Subject<T> {
       () => prefixFirst('matches any condition in ', literal(conditions)),
       (actual) {
         for (final condition in conditions) {
-          if (softCheck(actual, condition) == null) return null;
+          if (condition.softCheckSync(actual) == null) return null;
         }
         return Rejection(which: ['did not match any condition']);
       },

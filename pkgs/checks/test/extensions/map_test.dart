@@ -15,7 +15,7 @@ void main() {
   });
   test('entries', () {
     check(_testMap).entries.any(
-      (it) => it
+      .it()
         ..has((p0) => p0.key, 'key').equals('a')
         ..has((p0) => p0.value, 'value').equals(1),
     );
@@ -34,15 +34,15 @@ void main() {
     test('fails for a missing key', () {
       check(
         _testMap,
-      ).isRejectedBy((it) => it['z'], which: ["does not contain the key 'z'"]);
+      ).isRejectedBy(.it()..['z'], which: ["does not contain the key 'z'"]);
     });
     test('can be described', () {
-      check((Subject<Map<String, Object>> it) => it['some\nlong\nkey'])
-          .description
+      check(Condition.it<Map<String, Object>>()..['some\nlong\nkey'])
+          .hasSyncDescription()
           .deepEquals(["  contains a value for 'some", '  long', "  key'"]);
       check(
-        (Subject<Map<String, Object>> it) => it['some\nlong\nkey'].equals(1),
-      ).description.deepEquals([
+        Condition.it<Map<String, Object>>()..['some\nlong\nkey'].equals(1),
+      ).hasSyncDescription().deepEquals([
         "  contains a value for 'some",
         '  long',
         "  key' that:",
@@ -52,13 +52,13 @@ void main() {
   });
   test('isEmpty', () {
     check(<String, int>{}).isEmpty();
-    check(_testMap).isRejectedBy((it) => it.isEmpty(), which: ['is not empty']);
+    check(_testMap).isRejectedBy(.it()..isEmpty(), which: ['is not empty']);
   });
   test('isNotEmpty', () {
     check(_testMap).isNotEmpty();
     check(
       <Object, Object>{},
-    ).isRejectedBy((it) => it.isNotEmpty(), which: ['is not empty']);
+    ).isRejectedBy(.it()..isNotEmpty(), which: ['is not empty']);
   });
   group('containsKey', () {
     test('succeeds for a key that exists', () {
@@ -66,20 +66,20 @@ void main() {
     });
     test('fails for a missing key', () {
       check(_testMap).isRejectedBy(
-        (it) => it.containsKey('c'),
+        .it()..containsKey('c'),
         which: ["does not contain key 'c'"],
       );
     });
     test('can be described', () {
-      check(
-        (Subject<Map<String, Object>> it) => it.containsKey('some\nlong\nkey'),
-      ).description.deepEquals(["  contains key 'some", '  long', "  key'"]);
+      check(Condition.it<Map<String, Object>>()..containsKey('some\nlong\nkey'))
+          .hasSyncDescription()
+          .deepEquals(["  contains key 'some", '  long', "  key'"]);
     });
   });
   test('containsKeyThat', () {
-    check(_testMap).containsKeyThat((it) => it.equals('a'));
+    check(_testMap).containsKeyThat(.it()..equals('a'));
     check(_testMap).isRejectedBy(
-      (it) => it.containsKeyThat((it) => it.equals('c')),
+      .it()..containsKeyThat(.it()..equals('c')),
       which: ['Contains no matching key'],
     );
   });
@@ -89,21 +89,24 @@ void main() {
     });
     test('fails for missing value', () {
       check(_testMap).isRejectedBy(
-        (it) => it.containsValue(3),
+        .it()..containsValue(3),
         which: ['does not contain value <3>'],
       );
     });
     test('can be described', () {
       check(
-        (Subject<Map<String, String>> it) =>
-            it.containsValue('some\nlong\nkey'),
-      ).description.deepEquals(["  contains value 'some", '  long', "  key'"]);
+        Condition.it<Map<String, String>>()..containsValue('some\nlong\nkey'),
+      ).hasSyncDescription().deepEquals([
+        "  contains value 'some",
+        '  long',
+        "  key'",
+      ]);
     });
   });
   test('containsValueThat', () {
-    check(_testMap).containsValueThat((it) => it.equals(1));
+    check(_testMap).containsValueThat(.it()..equals(1));
     check(_testMap).isRejectedBy(
-      (it) => it.containsValueThat((it) => it.equals(3)),
+      .it()..containsValueThat(.it()..equals(3)),
       which: ['Contains no matching value'],
     );
   });
