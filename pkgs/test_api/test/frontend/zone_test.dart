@@ -60,6 +60,7 @@ void main() {
         checkIn([mainZone, groupZone1], inTest: inTest);
         checkHasValues(const [group1], inTest: inTest);
       }
+
       expectGroup1(inTest: false);
       setUp(() {
         expectGroup1(inTest: false);
@@ -79,6 +80,7 @@ void main() {
           checkIn([mainZone, groupZone1, testZone11], inTest: inTest);
           checkHasValues(const [group1, test11], inTest: inTest);
         }
+
         setUp(() {
           expectTest11(inTest: false);
         });
