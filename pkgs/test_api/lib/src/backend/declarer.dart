@@ -198,7 +198,7 @@ class Declarer {
   /// Defines a test case with the given name and body.
   void test(
     String name,
-    FutureOr<dynamic> Function() body, {
+    FutureOr<void> Function() body, {
     String? testOn,
     Timeout? timeout,
     Object? skip,
@@ -245,7 +245,7 @@ class Declarer {
 
           for (var declarer in parents.reversed) {
             for (var tearDown in declarer._tearDowns) {
-              invoker.addTearDown(tearDown);
+              invoker.addCapturedTearDown(tearDown);
             }
           }
 
@@ -317,9 +317,10 @@ class Declarer {
       _isStandalone,
     );
     declarer.declare(() {
-      // Cast to dynamic to avoid the analyzer complaining about us using the
-      // result of a void method.
-      var result = (body as dynamic)();
+      // Upcast to avoid the analyzer complaining about us using the
+      // result of a void method call.
+      FutureOr<void> Function() nonVoidBody = body;
+      var result = nonVoidBody();
       if (result is! Future) return;
       throw ArgumentError('Groups may not be async.');
     });
@@ -334,43 +335,45 @@ class Declarer {
   String _prefix(String name) => _name == null ? name : '$_name $name';
 
   /// Registers a function to be run before each test in this group.
-  void setUp(dynamic callback) {
+  void setUp(FutureOr<void> Function() callback) {
     _checkNotBuilt('setUp');
-    _setUps.add(_captured(callback));
+    _setUps.add(CapturedCallback(callback, Zone.current));
   }
 
   /// Registers a function to be run after each test in this group.
-  void tearDown(dynamic callback) {
+  void tearDown(FutureOr<void> Function() callback) {
     _checkNotBuilt('tearDown');
-    _tearDowns.add(_captured(callback));
+    _tearDowns.add(CapturedCallback(callback, Zone.current));
   }
 
   /// Registers a function to be run once before all tests.
-  void setUpAll(dynamic callback, {TestLocation? location}) {
+  void setUpAll(FutureOr<void> Function() callback, {TestLocation? location}) {
     _checkNotBuilt('setUpAll');
     if (_collectTraces) _setUpAllTrace ??= Trace.current(2);
     _setUpAllLocation ??= location;
-    _setUpAlls.add(_captured(callback));
+    _setUpAlls.add(CapturedCallback(callback, Zone.current));
   }
 
   /// Registers a function to be run once after all tests.
-  void tearDownAll(dynamic callback, {TestLocation? location}) {
+  void tearDownAll(
+    FutureOr<void> Function() callback, {
+    TestLocation? location,
+  }) {
     _checkNotBuilt('tearDownAll');
     if (_collectTraces) _tearDownAllTrace ??= Trace.current(2);
     _tearDownAllLocation ??= location;
-    _tearDownAlls.add(_captured(callback));
+    _tearDownAlls.add(CapturedCallback(callback, Zone.current));
   }
 
   /// Like [tearDownAll], but called from within a running [setUpAll] test to
   /// dynamically add a [tearDownAll].
-  void addTearDownAll(dynamic callback) {
-    _tearDownAlls.add(_captured(callback));
+  void addTearDownAll(FutureOr<void> Function() callback) {
+    addCapturedTearDownAll(CapturedCallback(callback, Zone.current));
   }
 
-  CapturedCallback _captured(dynamic callback) {
-    if (callback is CapturedCallback) return callback;
-    if (callback is Function) return CapturedCallback(callback, Zone.current);
-    throw ArgumentError('Callback must be a Function or CapturedCallback');
+  /// Like [addTearDownAll], but accepts a [CapturedCallback].
+  void addCapturedTearDownAll(CapturedCallback callback) {
+    _tearDownAlls.add(callback);
   }
 
   /// Finalizes and returns the group being declared.
@@ -441,7 +444,7 @@ class Declarer {
     for (var setUp in _setUps) {
       var success = await invoker.runRobustly(
         setUp.zone,
-        setUp.fn as FutureOr<dynamic> Function(),
+        setUp.fn,
       );
       if (!success) return false;
     }
@@ -460,7 +463,7 @@ class Declarer {
         for (var setUp in _setUpAlls) {
           var success = await invoker.runRobustly(
             setUp.zone,
-            setUp.fn as FutureOr<dynamic> Function(),
+            setUp.fn,
           );
           if (!success) return;
         }

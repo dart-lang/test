@@ -279,24 +279,18 @@ class Invoker {
   ///
   /// The [callback] may return a [Future]. Like all tear-downs, callbacks are
   /// run in the reverse of the order they're declared.
-  void addTearDown(dynamic callback) {
+  void addTearDown(FutureOr<dynamic> Function() callback) {
+    addCapturedTearDown(CapturedCallback(callback, Zone.current));
+  }
+
+  /// Like [addTearDown], but accepts a [CapturedCallback].
+  void addCapturedTearDown(CapturedCallback callback) {
     if (closed) throw ClosedException();
 
-    CapturedCallback captured;
-    if (callback is CapturedCallback) {
-      captured = callback;
-    } else if (callback is Function) {
-      captured = CapturedCallback(callback, Zone.current);
-    } else {
-      throw ArgumentError(
-        'Tear-down callback must be a Function or CapturedCallback',
-      );
-    }
-
     if (_test.isScaffoldAll) {
-      Declarer.current!.addTearDownAll(captured);
+      Declarer.current!.addCapturedTearDownAll(callback);
     } else {
-      _tearDowns.add(captured);
+      _tearDowns.add(callback);
     }
   }
 
@@ -328,24 +322,13 @@ class Invoker {
   /// it isn't already failing, but it won't prevent the remaining callbacks
   /// from running. This invoker will not be closeable within the zone that the
   /// teardowns are running in.
-  Future<void> runTearDowns(List<dynamic> tearDowns) async {
+  Future<void> runTearDowns(List<CapturedCallback> tearDowns) async {
     heartbeat();
     var oldForceOpen = _isExecutingTearDown;
     _isExecutingTearDown = true;
     try {
       while (tearDowns.isNotEmpty) {
-        var tearDown = tearDowns.removeLast();
-
-        CapturedCallback captured;
-        if (tearDown is CapturedCallback) {
-          captured = tearDown;
-        } else if (tearDown is Function) {
-          captured = CapturedCallback(tearDown, Zone.current);
-        } else {
-          throw ArgumentError(
-            'Tear-down callback must be a Function or CapturedCallback',
-          );
-        }
+        var captured = tearDowns.removeLast();
 
         addOutstandingCallback();
         var completer = Completer<void>();
@@ -354,7 +337,7 @@ class Invoker {
           () =>
               runRobustly(
                 captured.zone,
-                captured.fn as FutureOr<dynamic> Function(),
+                captured.fn,
               ).whenComplete(() {
                 if (!completer.isCompleted) completer.complete();
               }),
@@ -587,7 +570,7 @@ class Invoker {
   /// with `true` on success, or `false` on sync/async error, deadlocks, or timeouts.
   Future<bool> runRobustly(
     Zone baseZone,
-    FutureOr<dynamic> Function() fn, {
+    FutureOr<void> Function() fn, {
     Map<Object?, Object?>? values,
     bool completeOnAsyncError = true,
   }) {

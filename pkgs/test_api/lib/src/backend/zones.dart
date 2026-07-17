@@ -21,10 +21,11 @@ class TestZoneProperty {
 
 /// A callback and the zone in which it was declared.
 class CapturedCallback {
-  final Function fn;
+  final FutureOr<void> Function() fn;
   final Zone zone;
 
-  CapturedCallback(this.fn, this.zone);
+  CapturedCallback(FutureOr<void> Function() fn, this.zone)
+    : fn = zone.registerCallback(fn);
 
   @override
   String toString() => 'CapturedCallback($fn in $zone)';
