@@ -250,10 +250,8 @@ void addTearDown(FutureOr<void> Function() callback) {
 /// dependencies between tests that should be isolated. In general, you should
 /// prefer [setUp], and only use [setUpAll] if the callback is prohibitively
 /// slow.
-void setUpAll(
-  FutureOr<void> Function() callback, {
-  TestLocation? location,
-}) => _declarer.setUpAll(callback, location: location);
+void setUpAll(FutureOr<void> Function() callback, {TestLocation? location}) =>
+    _declarer.setUpAll(callback, location: location);
 
 /// Registers a function to be run once after all tests.
 ///

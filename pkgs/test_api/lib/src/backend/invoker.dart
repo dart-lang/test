@@ -334,13 +334,9 @@ class Invoker {
         var completer = Completer<void>();
 
         _waitForOutstandingCallbacks(
-          () =>
-              runRobustly(
-                captured.zone,
-                captured.fn,
-              ).whenComplete(() {
-                if (!completer.isCompleted) completer.complete();
-              }),
+          () => runRobustly(captured.zone, captured.fn).whenComplete(() {
+            if (!completer.isCompleted) completer.complete();
+          }),
         ).then((_) => removeOutstandingCallback()).unawaited;
 
         await completer.future;
