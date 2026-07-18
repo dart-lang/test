@@ -73,10 +73,9 @@ Actual: a Map<String, List<int>> that:
       check(() {
         check(EmptyToString()).equals(EmptyToString());
       }).throwsFailure().equals('''
-Expected: a EmptyToString that:
-  equals <empty toString()>
+Expected: <empty toString()>
 Actual: <empty toString()>
-Which: are not equal''');
+Which: is not equal''');
     });
   });
 }
