@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:matcher/expect.dart' show expect, throwsA, throwsArgumentError;
 import 'package:matcher/matcher.dart';
-import 'package:test/test.dart' show expect, test, throwsArgumentError;
+import 'package:test/test.dart' show test;
 
 import 'test_utils.dart';
 
@@ -85,5 +86,14 @@ void main() {
       () => anyOf([], null, null, null, null, null, 42),
       throwsArgumentError,
     );
+  });
+
+  test('isNot throws ArgumentError for AsyncMatcher', () {
+    expect(() => isNot(throwsA(anything)), throwsArgumentError);
+  });
+
+  test('anyOf throws ArgumentError for AsyncMatcher', () {
+    final matcher = anyOf(throwsA(anything));
+    expect(() => matcher.matches(null, {}), throwsArgumentError);
   });
 }
