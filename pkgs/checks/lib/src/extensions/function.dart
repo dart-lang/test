@@ -17,8 +17,10 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Subject<E> throws<E>() {
-    return context.nest<E>(() => ['throws an error of type $E'], (actual) {
+  Subject<E> throws<E>() => context.nest<E>(
+    () => ['throws an error of type $E'],
+    addPredicate: (predicateNoun) => 'throws $predicateNoun',
+    (actual) {
       try {
         final result = actual();
         return Extracted.rejection(
@@ -35,8 +37,8 @@ extension FunctionChecks<T> on Subject<T Function()> {
           ],
         );
       }
-    });
-  }
+    },
+  );
 
   /// Expects that the function returns without throwing.
   ///
@@ -44,8 +46,10 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Subject<T> returnsNormally() {
-    return context.nest<T>(() => ['returns a value'], (actual) {
+  Subject<T> returnsNormally() => context.nest<T>(
+    () => ['returns a value'],
+    addPredicate: (predicateNoun) => 'returns $predicateNoun',
+    (actual) {
       try {
         return Extracted.value(actual());
       } catch (e, st) {
@@ -57,6 +61,6 @@ extension FunctionChecks<T> on Subject<T Function()> {
           ],
         );
       }
-    });
-  }
+    },
+  );
 }

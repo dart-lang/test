@@ -11,46 +11,75 @@ import 'core.dart';
 extension StringChecks on Subject<String> {
   /// Expects that the value contains [pattern] according to [String.contains];
   void contains(Pattern pattern) {
-    context.expect(() => prefixFirst('contains ', literal(pattern)), (actual) {
-      if (actual.contains(pattern)) return null;
-      return Rejection(
-        which: prefixFirst('Does not contain ', literal(pattern)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('contains ', literal(pattern)),
+      predicateNoun: () {
+        final l = literal(pattern);
+        return l.length == 1 ? 'a string that contains ${l.first}' : null;
+      },
+      (actual) {
+        if (actual.contains(pattern)) return null;
+        return Rejection(
+          which: prefixFirst('does not contain ', literal(pattern)),
+        );
+      },
+    );
   }
 
   Subject<int> get length => has((m) => m.length, 'length');
 
   void isEmpty() {
-    context.expect(() => const ['is empty'], (actual) {
-      if (actual.isEmpty) return null;
-      return Rejection(which: ['is not empty']);
-    });
+    context.expect(
+      () => const ['is empty'],
+      predicateNoun: () => 'an empty string',
+      (actual) {
+        if (actual.isEmpty) return null;
+        return Rejection(which: ['is not empty']);
+      },
+    );
   }
 
   void isNotEmpty() {
-    context.expect(() => const ['is not empty'], (actual) {
-      if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is empty']);
-    });
+    context.expect(
+      () => const ['is not empty'],
+      predicateNoun: () => 'a non-empty string',
+      (actual) {
+        if (actual.isNotEmpty) return null;
+        return Rejection(which: ['is empty']);
+      },
+    );
   }
 
   void startsWith(Pattern other) {
-    context.expect(() => prefixFirst('starts with ', literal(other)), (actual) {
-      if (actual.startsWith(other)) return null;
-      return Rejection(
-        which: prefixFirst('does not start with ', literal(other)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('starts with ', literal(other)),
+      predicateNoun: () {
+        final l = literal(other);
+        return l.length == 1 ? 'a string starting with ${l.single}' : null;
+      },
+      (actual) {
+        if (actual.startsWith(other)) return null;
+        return Rejection(
+          which: prefixFirst('does not start with ', literal(other)),
+        );
+      },
+    );
   }
 
   void endsWith(String other) {
-    context.expect(() => prefixFirst('ends with ', literal(other)), (actual) {
-      if (actual.endsWith(other)) return null;
-      return Rejection(
-        which: prefixFirst('does not end with ', literal(other)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('ends with ', literal(other)),
+      predicateNoun: () {
+        final l = literal(other);
+        return l.length == 1 ? 'a string ending with with ${l.single}' : null;
+      },
+      (actual) {
+        if (actual.endsWith(other)) return null;
+        return Rejection(
+          which: prefixFirst('does not end with ', literal(other)),
+        );
+      },
+    );
   }
 
   /// Expects that the string matches the pattern [expected].
@@ -63,12 +92,19 @@ extension StringChecks on Subject<String> {
   /// check(actual).matchesPattern(RegExp(r'\d'));
   /// ```
   void matchesPattern(Pattern expected) {
-    context.expect(() => prefixFirst('matches ', literal(expected)), (actual) {
-      if (expected.allMatches(actual).isNotEmpty) return null;
-      return Rejection(
-        which: prefixFirst('does not match ', literal(expected)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('matches ', literal(expected)),
+      predicateNoun: () {
+        final l = literal(expected);
+        return l.length == 1 ? 'a string matching ${l.single}' : null;
+      },
+      (actual) {
+        if (expected.allMatches(actual).isNotEmpty) return null;
+        return Rejection(
+          which: prefixFirst('does not match ', literal(expected)),
+        );
+      },
+    );
   }
 
   /// Expects that the `String` contains each of the sub strings in expected
@@ -108,6 +144,7 @@ extension StringChecks on Subject<String> {
   void equals(String expected) {
     context.expect(
       () => prefixFirst('equals ', literal(expected)),
+      predicateNoun: () => literal(expected).singleOrNull,
       (actual) => _findDifference(actual, expected),
     );
   }
@@ -117,6 +154,12 @@ extension StringChecks on Subject<String> {
   void equalsIgnoringCase(String expected) {
     context.expect(
       () => prefixFirst('equals ignoring case ', literal(expected)),
+      predicateNoun: () {
+        final l = literal(expected);
+        return l.length == 1
+            ? 'a string equal to ${l.first} ignoring case'
+            : null;
+      },
       (actual) => _findDifference(
         actual.toLowerCase(),
         expected.toLowerCase(),
