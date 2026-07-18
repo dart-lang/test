@@ -83,29 +83,27 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(
     label: 'a $T',
     fail: (f) {
       final which = f.rejection.which;
-      final collapsedDetails = f.detail.collapsedDetails;
+      final collapsed = f.detail.collapsedDetails;
+      final (depth, expectedLines, actualLines) = collapsed != null
+          ? (0, ['Expected: ${collapsed.$1}'], ['Actual: ${collapsed.$2}'])
+          : (
+              f.detail.depth,
+              prefixFirst('Expected: ', f.detail.expected),
+              [
+                ...prefixFirst('Actual: ', f.detail.actual),
+                if (!f.detail.hasCustomActual)
+                  ...indent(
+                    prefixFirst('Actual: ', f.rejection.actual),
+                    f.detail.depth,
+                  ),
+              ],
+            );
       throw TestFailure(
         [
-          if (collapsedDetails != null)
-            'Expected: ${collapsedDetails.$1}'
-          else
-            ...prefixFirst('Expected: ', f.detail.expected),
-          if (collapsedDetails != null)
-            'Actual: ${collapsedDetails.$2}'
-          else ...[
-            ...prefixFirst('Actual: ', f.detail.actual),
-            if (!f.detail.hasCustomActual)
-              ...indent(
-                prefixFirst('Actual: ', f.rejection.actual),
-                f.detail.depth,
-              ),
-          ],
-
+          ...expectedLines,
+          ...actualLines,
           if (which != null && which.isNotEmpty)
-            ...indent(
-              prefixFirst('Which: ', which),
-              collapsedDetails != null ? 0 : f.detail.depth,
-            ),
+            ...indent(prefixFirst('Which: ', which), depth),
           if (because != null) 'Reason: $because',
         ].join('\n'),
       );
@@ -725,6 +723,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// it, the "that:" will be will be omitted.
   final Iterable<String> Function() _label;
 
+  /// A callback that takes a collapsed single-line predicate noun phrase from a
+  /// nested subject and expands it with the property or condition contributed
+  /// by this subject level.
+  ///
+  /// Should return a combined single-line noun phrase, or `null` if this
+  /// level cannot be collapsed (for example if a key or property is too large).
+  ///
+  /// When `null`, this context level cannot collapse nested predicate nouns via
+  /// custom formatting (though if `_parent == null`, the root context can still
+  /// attempt a fallback formatting with its label).
   final String? Function(String predicateNoun)? _addPredicate;
 
   static Iterable<String> _emptyLabel() => const [];
@@ -931,122 +939,92 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
-    return switch (_clauses) {
-      [] => FailureDetail(
-        _label(),
-        thisContextFailed ? 0 : -1,
-        thisContextFailed ? 0 : -1,
-      ),
-      [final clause] => _singleClauseDetail(
-        clause,
-        failingContext,
-        rejection,
-        thisContextFailed: thisContextFailed,
-      ),
-
-      _ => _multiClauseDetail(
-        failingContext,
-        rejection,
-        thisContextFailed: thisContextFailed,
-      ),
-    };
+    return _tryCollapse(
+          failingContext,
+          rejection,
+          thisContextFailed: thisContextFailed,
+        ) ??
+        _buildDetail(
+          failingContext,
+          rejection,
+          thisContextFailed: thisContextFailed,
+        );
   }
 
-  FailureDetail _singleClauseDetail(
-    _ClauseDescription clause,
+  /// Attempts to collapse a single clause into a single-line expectation and
+  /// actual failure description.
+  ///
+  /// If this context has exactly one clause, and that child clause produces a
+  /// collapsed representation (`childCollapsed`), this method attempts to
+  /// expand that child representation into a single-line failure detail for
+  /// this context level.
+  ///
+  /// Returns `null` if there is not exactly one clause, if the child clause did
+  /// not collapse, or if expanding the child representation at this level fails
+  /// (e.g., if `_addPredicate` returns `null` or the resulting root string
+  /// exceeds length limits).
+  FailureDetail? _tryCollapse(
     _TestContext failingContext,
     Rejection? rejection, {
     required bool thisContextFailed,
   }) {
-    final expected = <String>[];
-    (String, String)? collapsedDetails;
-    Iterable<String>? customActual;
+    final clause = _clauses.singleOrNull;
+    if (clause == null) return null;
     final isFailingClause =
         thisContextFailed || failingContext._nestsUnder(clause);
     final clauseRejection = isFailingClause ? rejection : null;
     final details = clause.detail(failingContext, clauseRejection);
+    final childCollapsed = details.collapsedDetails;
+    if (childCollapsed == null) return null;
+    final (childExpected, childActual) = childCollapsed;
 
-    var handled = false;
+    (String, String)? expandedCollapsed;
+    if (_addPredicate != null) {
+      final exp = _addPredicate(childExpected);
+      final act = _addPredicate(childActual);
+      if (exp != null && act != null) expandedCollapsed = (exp, act);
+    } else if (_parent == null) {
+      if (clause.isLeaf) {
+        expandedCollapsed = (childExpected, childActual);
+      } else {
+        final rootLabel = _label().single;
+        final (exp, act) = rootLabel.isEmpty
+            ? (childExpected, childActual)
+            : (
+                '$rootLabel that $childExpected',
+                '$rootLabel that $childActual',
+              );
 
-    if (details.collapsedDetails case (
-      final childExpected,
-      final childActual,
-    )) {
-      if (_addPredicate != null) {
-        final collapsedExpected = _addPredicate(childExpected);
-        final collapsedActual = _addPredicate(childActual);
-        if (collapsedExpected != null && collapsedActual != null) {
-          collapsedDetails = (collapsedExpected, collapsedActual);
-        }
-      } else if (_parent == null) {
-        if (clause.isLeaf) {
-          collapsedDetails = (childExpected, childActual);
-        } else {
-          final rootLabel = _label().single;
-          final combinedExpected = rootLabel.isEmpty
-              ? childExpected
-              : '$rootLabel that $childExpected';
-          final combinedActual = rootLabel.isEmpty
-              ? childActual
-              : '$rootLabel that $childActual';
-
-          if (combinedExpected.length <= 80 && combinedActual.length <= 80) {
-            collapsedDetails = (combinedExpected, combinedActual);
-          }
+        if (exp.length <= 80 && act.length <= 80) {
+          expandedCollapsed = (exp, act);
         }
       }
-
-      if (collapsedDetails != null) {
-        // Fallback in case a higher level fails to collapse.
-        expected.add(collapsedDetails.$1);
-        handled = true;
-      } else if (!clause.isLeaf) {
-        expected.addAll(postfixLast(' that:', _label()));
-        expected.addAll(indent([childExpected]));
-        customActual = [
-          ...postfixLast(' that:', _label()),
-          ...indent([childActual]),
-        ];
-        handled = true;
-      }
     }
+    if (expandedCollapsed == null) return null;
 
-    if (!handled) {
-      expected.addAll(postfixLast(' that:', _label()));
-      expected.addAll(indent(details.expected));
-      if (details.hasCustomActual) {
-        customActual = [
-          ...postfixLast(' that:', _label()),
-          ...indent(details.actual),
-        ];
-      }
-    }
-
-    var foundDepth = thisContextFailed ? 0 : -1;
-    var foundOverlap = thisContextFailed ? 0 : -1;
-    if (details.depth >= 0) {
-      final increment = collapsedDetails != null ? 0 : 1;
-      foundDepth = details.depth + increment;
-
-      final labelLines = postfixLast(' that:', _label()).length;
-      final overlapIncrement = details.collapsedDetails != null ? 1 : 0;
-      foundOverlap = labelLines + details._actualOverlap + overlapIncrement;
-    }
-    final returnedOverlap = collapsedDetails != null ? -1 : foundOverlap;
+    final depth = details.depth >= 0
+        ? details.depth
+        : (thisContextFailed ? 0 : -1);
     return FailureDetail(
-      expected,
-      returnedOverlap,
-      foundDepth,
-      collapsedDetails: collapsedDetails,
-      actual: customActual,
+      [expandedCollapsed.$1],
+      -1,
+      depth,
+      collapsedDetails: expandedCollapsed,
     );
   }
 
-  FailureDetail _multiClauseDetail(
+  FailureDetail _buildDetail(
     _TestContext failingContext,
     Rejection? rejection, {
     required bool thisContextFailed,
   }) {
+    if (_clauses.isEmpty) {
+      return FailureDetail(
+        _label(),
+        thisContextFailed ? 0 : -1,
+        thisContextFailed ? 0 : -1,
+      );
+    }
     var foundDepth = thisContextFailed ? 0 : -1;
     var foundOverlap = thisContextFailed ? 0 : -1;
 
@@ -1057,14 +1035,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
     var successfulOverlap = 0;
     for (var clause in _clauses) {
-      final isFailingClause = failingContext._nestsUnder(clause);
+      final isFailingClause =
+          thisContextFailed || failingContext._nestsUnder(clause);
       final clauseRejection = isFailingClause ? rejection : null;
       final details = clause.detail(failingContext, clauseRejection);
       expected.addAll(indent(details.expected));
 
       if (isFailingClause) {
-        if (details.collapsedDetails case (_, final childActual)) {
-          actual.addAll(indent([childActual]));
+        final childCollapsed = details.collapsedDetails;
+        if (!clause.isLeaf && childCollapsed != null) {
+          actual.addAll(indent([childCollapsed.$2]));
           didCollapse = true;
         } else if (details.hasCustomActual) {
           actual.addAll(indent(details.actual));
