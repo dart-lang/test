@@ -167,24 +167,19 @@ void main() {
       await test.shouldExit(0);
     });
 
-    test(
-      'compiled with dart2wasm',
-      () async {
-        await d.file('test.dart', _success).create();
-        var test = await runTest([
-          '-p',
-          'node',
-          '--compiler',
-          'dart2wasm',
-          'test.dart',
-        ]);
+    test('compiled with dart2wasm', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runTest([
+        '-p',
+        'node',
+        '--compiler',
+        'dart2wasm',
+        'test.dart',
+      ]);
 
-        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-        await test.shouldExit(0);
-      },
-      // https://github.com/dart-lang/test/issues/2679
-      skip: true /* skipBelowMajorNodeVersion(22) */,
-    );
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    }, skip: skipBelowMajorNodeVersion(22));
   });
 
   test('defines a node environment constant', () async {

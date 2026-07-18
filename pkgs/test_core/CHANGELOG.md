@@ -1,4 +1,8 @@
-## 0.6.19-wip
+## 0.6.20-wip
+
+* Add support for `DART_TEST_REPORTER` environment variable.
+
+## 0.6.19
 
 * Add support for `-c cli` (the native CLI compiler) to the vm platform.
 * Support using the OS platform selector to configure browser tests.
@@ -6,6 +10,8 @@
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
 * Update `parse_metadata.dart` to be compatible with `analyzer >=13.0.0 <15.0.0`.
+* Use the compact or failures-only reporters by default for tests run directly
+  instead of through the test runner.
 
 ## 0.6.18
 

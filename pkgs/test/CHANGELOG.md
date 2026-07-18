@@ -1,4 +1,11 @@
-## 1.31.2-wip
+## 1.32.0-wip
+
+* Add support for `DART_TEST_REPORTER` environment variable in test runner and
+  when tests are run directly on platforms which support `dart:io`. The
+  environment variable takes precedence over configuration in `dart_test.yaml`
+  but is overridden by the `--reporter` flag when passed to the test runner.
+
+## 1.31.2
 
 * Add support for running tests as native CLI bundles (vm platform only).
   * You can run tests this way with `--compiler cli`.
@@ -16,6 +23,8 @@
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
+* Use the compact or failures-only reporters by default for tests run directly
+  instead of through the test runner.
 
 ## 1.31.1
 

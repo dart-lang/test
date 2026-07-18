@@ -40,10 +40,14 @@ Future<Uri> absoluteUri(String path) async {
   }
 }
 
-/// Returns the current package.
-final Future<Package> currentPackage = () async {
+/// Returns the current workspace root package.
+final Future<Package> workspaceRoot = () async {
   return (await currentPackageConfig).packageOf(await packageConfigUri)!;
 }();
+
+Future<Package?> packageOf(String path) async {
+  return (await currentPackageConfig).packageOf(await absoluteUri(path));
+}
 
 /// Returns the names of all the packages in the workspace.
 ///
