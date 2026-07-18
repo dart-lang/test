@@ -939,20 +939,20 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
-    return _tryCollapse(
+    return _collapsedDetails(
           failingContext,
           rejection,
           thisContextFailed: thisContextFailed,
         ) ??
-        _buildDetail(
+        _fullDetails(
           failingContext,
           rejection,
           thisContextFailed: thisContextFailed,
         );
   }
 
-  /// Attempts to collapse a single clause into a single-line expectation and
-  /// actual failure description.
+  /// Returns a collapsed single-line [FailureDetail], or `null` if this context
+  /// cannot be collapsed.
   ///
   /// If this context has exactly one clause, and that child clause produces a
   /// collapsed representation (`childCollapsed`), this method attempts to
@@ -963,7 +963,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// not collapse, or if expanding the child representation at this level fails
   /// (e.g., if `_addPredicate` returns `null` or the resulting root string
   /// exceeds length limits).
-  FailureDetail? _tryCollapse(
+  FailureDetail? _collapsedDetails(
     _TestContext failingContext,
     Rejection? rejection, {
     required bool thisContextFailed,
@@ -976,8 +976,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     final details = clause.detail(failingContext, clauseRejection);
     final childCollapsed = details.collapsedDetails;
     if (childCollapsed == null) return null;
-    final (childExpected, childActual) = childCollapsed;
 
+    final (childExpected, childActual) = childCollapsed;
     (String, String)? expandedCollapsed;
     if (_addPredicate != null) {
       final exp = _addPredicate(childExpected);
@@ -1013,7 +1013,13 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     );
   }
 
-  FailureDetail _buildDetail(
+  /// Computes the uncollapsed, multi-line [FailureDetail] for this context and
+  /// its clauses.
+  ///
+  /// Iterates through all clauses under this context to construct the complete
+  /// multi-line `expected` and `actual` descriptions, including indentation,
+  /// clause nesting, and overlap accounting for failing and passing clauses.
+  FailureDetail _fullDetails(
     _TestContext failingContext,
     Rejection? rejection, {
     required bool thisContextFailed,
