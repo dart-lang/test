@@ -114,6 +114,16 @@ extension CoreChecks<T> on Subject<T> {
     }, atSameLevel: true);
   }
 
+  /// Expects that the value is not assignable to type [R].
+  void isNotA<R>() {
+    context.expect(() => ['is not a $R'], (actual) {
+      if (actual is R) {
+        return Rejection(which: ['is a $R']);
+      }
+      return null;
+    });
+  }
+
   /// Expects that the value is equal to [other] according to [operator ==].
   void equals(T other) {
     context.expect(

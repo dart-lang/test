@@ -1,11 +1,12 @@
-## 0.7.13-wip
+## 0.7.13
 
+* Add `Compiler.cli` (the native CLI compiler).
 * Expose several more backend APIs for use in `flutter_test`.
 * Allow using browser platforms with a specified OS.
 
 ## 0.7.12
 
-* Allow `analyzer` major version 13.
+* Require `analyzer: '>=13.0.0 <15.0.0'`
 
 ## 0.7.11
 

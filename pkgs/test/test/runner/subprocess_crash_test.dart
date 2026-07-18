@@ -13,27 +13,35 @@ import '../io.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  test('gracefully handles a non-exit crash', () async {
-    await d.file('test.dart', '''
-      import 'dart:ffi';
+  for (var compiler in ['exe', 'cli']) {
+    test(
+      'gracefully handles an early test suite exit with the $compiler compiler',
+      () async {
+        await d.file('test.dart', '''
+        import 'dart:io';
 
-      import 'package:test/test.dart';
+        import 'package:test/test.dart';
 
-      void main() {
-        test('runs', () {});
-        test('crashes', () {
-          Pointer.fromAddress(0).cast<Long>()[0] = 0;
-        });
-      }''').create();
+        void main() {
+          test('runs', () {});
+          test('exits', () {
+            exit(0);
+          });
+        }''').create();
 
-    var test = await runTest(['--compiler', 'exe', 'test.dart']);
-    expect(
-      test.stdout,
-      containsInOrder([
-        '+1: [VM, Exe] crashes - did not complete [E]',
-        '+1: Some tests failed.',
-      ]),
+        var test = await runTest(['--compiler', compiler, 'test.dart']);
+        expect(
+          test.stdout,
+          containsInOrder([
+            '+1: [VM, ${compiler == 'exe' ? 'Exe' : 'Cli'}] exits - did not complete [E]',
+            '+1: Some tests failed.',
+          ]),
+        );
+        await test.shouldExit(1);
+      },
+      skip: compiler == 'cli' && !supportsCliCompiler
+          ? 'Dart version does not support build cli'
+          : null,
     );
-    await test.shouldExit(1);
-  });
+  }
 }

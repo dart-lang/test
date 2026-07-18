@@ -1,6 +1,8 @@
 ## 0.3.2-wip
 
-- Require Dart 3.7
+- Add `isNotA<R>()` check extension as a convenience in place of
+  `not((it) => it.isA<R>())`.
+- Require Dart 3.11
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.
 - Improve formatting for failed String equality checks - indent string diff
@@ -9,6 +11,8 @@
   `mayEmitMultiple`. Note that extensions using `nestAsync` should synchronously
   forward exceptions from that call.
 - Output more compact failure messages for simple expectations.
+- Fix a bug when printing a failure message involving a value that returns an
+  empty output from `toString()`.
 
 ## 0.3.1
 

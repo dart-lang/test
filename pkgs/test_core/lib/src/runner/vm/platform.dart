@@ -25,6 +25,7 @@ import '../../runner/plugin/platform_helpers.dart';
 import '../../runner/plugin/shared_platform_helpers.dart';
 import '../../runner/runner_suite.dart';
 import '../../runner/suite.dart';
+import '../../util/dart.dart';
 import '../../util/io.dart';
 import '../../util/package_config.dart';
 import '../package_version.dart';
@@ -57,7 +58,8 @@ class VMPlatform extends PlatformPlugin {
     MultiChannel outerChannel;
     var cleanupCallbacks = <void Function()>[];
     Isolate? isolate;
-    if (platform.compiler == Compiler.exe) {
+    if (platform.compiler == Compiler.exe ||
+        platform.compiler == Compiler.cli) {
       var serverSocket = await ServerSocket.bind('localhost', 0);
       Process process;
       try {
@@ -87,7 +89,10 @@ class VMPlatform extends PlatformPlugin {
           suiteConfig.metadata,
           platform.compiler,
         );
-        if (isolate == null) return null;
+        if (isolate == null) {
+          receivePort.close();
+          return null;
+        }
       } catch (error) {
         receivePort.close();
         rethrow;
@@ -125,32 +130,31 @@ class VMPlatform extends PlatformPlugin {
 
     Environment? environment;
     IsolateRef? isolateRef;
+    String? isolateID;
+    Uri? serverUri;
     if (_config.debug) {
-      if (platform.compiler == Compiler.exe) {
+      if (platform.compiler == Compiler.exe ||
+          platform.compiler == Compiler.cli) {
         throw UnsupportedError(
-          'Unable to debug tests compiled to `exe` (tried to debug $path with '
-          'the `exe` compiler).',
+          'Unable to debug tests compiled to `${platform.compiler.identifier}` '
+          '(tried to debug $path with the `${platform.compiler.identifier}` compiler).',
         );
       }
       var info = await Service.controlWebServer(
         enable: true,
         silenceOutput: true,
       );
-      // ignore: deprecated_member_use, Remove when SDK constraint is at 3.2.0
-      var isolateID = Service.getIsolateID(isolate!)!;
+      serverUri = info.serverUri!;
+      isolateID = Service.getIsolateId(isolate!)!;
 
-      var libraryPath = (await absoluteUri(path)).toString();
-      var serverUri = info.serverUri!;
-      client = await vmServiceConnectUri(_wsUriFor(serverUri).toString());
+      var serviceWebsocket = _wsUriFor(serverUri);
+      client = await vmServiceConnectUri(serviceWebsocket.toString());
       var isolateNumber = int.parse(isolateID.split('/').last);
       isolateRef = (await client.getVM()).isolates!.firstWhere(
         (isolate) => isolate.number == isolateNumber.toString(),
       );
       await client.setName(isolateRef.id!, path);
-      var libraryRef = (await client.getIsolate(
-        isolateRef.id!,
-      )).libraries!.firstWhere((library) => library.uri == libraryPath);
-      var url = _observatoryUrlFor(serverUri, isolateRef.id!, libraryRef.id!);
+      var url = _devtoolsUriFor(serviceWebsocket);
       environment = VMEnvironment(url, isolateRef, client);
     }
 
@@ -163,7 +167,14 @@ class VMPlatform extends PlatformPlugin {
       environment,
       channel.cast(),
       message,
-      gatherCoverage: () => _gatherCoverage(environment!, _config),
+      gatherCoverage: () {
+        if (serverUri == null || isolateID == null) {
+          throw StateError(
+            'VM Service is not running, cannot gather coverage.',
+          );
+        }
+        return _gatherCoverage(serverUri, isolateID, _config);
+      },
     );
 
     if (isolateRef != null) {
@@ -231,13 +242,92 @@ class VMPlatform extends PlatformPlugin {
       );
     }
 
-    var sharedLibrary = await _compileToNative(platform, path, suiteMetadata);
-    return await Process.start(
-      _aotRuntimeFor(platform),
-      [sharedLibrary, socket.address.host, socket.port.toString()],
-      environment: _environmentFor(platform),
-      mode: ProcessStartMode.inheritStdio,
+    switch (platform.compiler) {
+      case Compiler.cli:
+        var executable = await _compileToCli(platform, path, suiteMetadata);
+        return await Process.start(executable, [
+          socket.address.host,
+          socket.port.toString(),
+        ], mode: ProcessStartMode.inheritStdio);
+      case Compiler.exe:
+        var sharedLibrary = await _compileToNative(
+          platform,
+          path,
+          suiteMetadata,
+        );
+        return await Process.start(
+          _aotRuntimeFor(platform),
+          [sharedLibrary, socket.address.host, socket.port.toString()],
+          environment: _environmentFor(platform),
+          mode: ProcessStartMode.inheritStdio,
+        );
+      default:
+        throw StateError(
+          'Unsupported compiler ${platform.compiler} for spawning an executable',
+        );
+    }
+  }
+
+  /// Compiles [path] to a native CLI bundle using `dart build cli`.
+  Future<String> _compileToCli(
+    SuitePlatform platform,
+    String path,
+    Metadata suiteMetadata,
+  ) async {
+    var bootstrapPath = await _bootstrapNativeTestFile(
+      path,
+      suiteMetadata.languageVersionComment ??
+          await rootPackageLanguageVersionComment,
     );
+
+    // Unique output per path to avoid overriding in concurrent tests.
+    var outputDir = p.join(
+      _tempDir.path,
+      'cli_build',
+      p.withoutExtension(path),
+    );
+    // Find the package the test belongs to. If the test is outside the package
+    // config, fall back to workspace root (might be a workspace or a package). In
+    // this case no hooks are run.
+    final rootPackage =
+        (await packageOf(path))?.name ?? (await workspaceRoot).name;
+    var processResult = await Process.run(Platform.resolvedExecutable, [
+      for (var experiment in enabledExperiments)
+        '--enable-experiment=$experiment',
+      'build',
+      'cli',
+      '--target',
+      bootstrapPath,
+      '--output',
+      outputDir,
+      '--packages',
+      (await packageConfigUri).toFilePath(),
+      '--root-package',
+      rootPackage,
+      if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
+      if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
+      if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
+    ]);
+    if (processResult.exitCode != 0) {
+      throw LoadException(path, '''
+exitCode: ${processResult.exitCode}
+stdout: ${processResult.stdout}
+stderr: ${processResult.stderr}''');
+    }
+    var executableSuffix = Platform.isWindows ? '.exe' : '';
+    var executablePath = p.join(
+      outputDir,
+      'bundle',
+      'bin',
+      '${p.basenameWithoutExtension(bootstrapPath)}$executableSuffix',
+    );
+    if (!await File(executablePath).exists()) {
+      throw LoadException(
+        path,
+        'Compiled executable not found at $executablePath',
+      );
+    }
+    return executablePath;
   }
 
   /// Compiles [path] to a native shared library using
@@ -258,6 +348,8 @@ class VMPlatform extends PlatformPlugin {
     );
     var output = File(p.setExtension(bootstrapPath, '.so'));
     var processResult = await Process.run(Platform.resolvedExecutable, [
+      for (var experiment in enabledExperiments)
+        '--enable-experiment=$experiment',
       'compile',
       'aot-snapshot',
       bootstrapPath,
@@ -293,14 +385,14 @@ stderr: ${processResult.stderr}''');
     try {
       var precompiledPath = _config.suiteDefaults.precompiledPath;
       if (precompiledPath != null) {
-        return _spawnPrecompiledIsolate(
+        return await _spawnPrecompiledIsolate(
           path,
           message,
           precompiledPath,
           compiler,
         );
       }
-      return switch (compiler) {
+      return await switch (compiler) {
         Compiler.kernel => _spawnIsolateWithUri(
           await _compileToKernel(path, suiteMetadata),
           message,
@@ -458,19 +550,17 @@ stderr: ${processResult.stderr}''');
 }
 
 Future<Map<String, dynamic>> _gatherCoverage(
-  Environment environment,
+  Uri serviceUri,
+  String isolateId,
   Configuration config,
 ) async {
-  final isolateId = Uri.parse(
-    environment.observatoryUrl!.fragment,
-  ).queryParameters['isolateId'];
   return await collect(
-    environment.observatoryUrl!,
+    serviceUri,
     false,
     false,
     false,
     await _filterCoveragePackages(config.coveragePackages, config.coverageLcov),
-    isolateIds: {isolateId!},
+    isolateIds: {isolateId},
     branchCoverage: config.branchCoverage,
   );
 }
@@ -478,12 +568,16 @@ Future<Map<String, dynamic>> _gatherCoverage(
 Uri _wsUriFor(Uri observatoryUrl) =>
     observatoryUrl.replace(scheme: 'ws').resolve('ws');
 
-Uri _observatoryUrlFor(Uri base, String isolateId, String id) => base.replace(
-  fragment: Uri(
-    path: '/inspect',
-    queryParameters: {'isolateId': isolateId, 'objectId': id},
-  ).toString(),
-);
+Uri _devtoolsUriFor(Uri serviceUri) {
+  assert(serviceUri.isScheme('ws'));
+  return serviceUri
+      .resolve('devtools/debugger')
+      .replace(
+        scheme: 'http',
+        queryParameters: {'uri': '$serviceUri'},
+        fragment: '',
+      );
+}
 
 var _hasRegistered = false;
 void _setupPauseAfterTests() {
@@ -508,7 +602,7 @@ Future<Set<String>> _filterCoveragePackages(
     return {};
   }
   if (coveragePackages == null || coveragePackages.isEmpty) {
-    return workspacePackageNames(await currentPackage);
+    return workspacePackageNames(await workspaceRoot);
   } else {
     return (await currentPackageConfig).packages
         .map((package) => package.name)

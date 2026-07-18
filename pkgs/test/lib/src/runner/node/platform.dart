@@ -294,7 +294,7 @@ const { once } = require('events');
 const { PassThrough } = require('stream');
 
 const main = async () => {
-  const { instantiate, invoke } = await import("./$loader");
+  const dart2wasmJsRuntime = await import("./$loader");
 
   const wasmContents = createReadStream(String.raw`$wasmPath.wasm`);
   const stream = new PassThrough();
@@ -309,9 +309,9 @@ const main = async () => {
       }
     }
   );
-  const instancePromise = WebAssembly.compileStreaming(response);
-  const module = await instantiate(instancePromise, {});
-  invoke(module);
+  const compiledModule = await dart2wasmJsRuntime.compileStreaming(response);
+  const instantiatedModule = await compiledModule.instantiate();
+  instantiatedModule.invokeMain();
 };
 
 main();

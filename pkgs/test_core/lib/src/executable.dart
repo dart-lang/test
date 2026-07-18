@@ -14,6 +14,7 @@ import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: impleme
 import 'runner.dart';
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/configuration/reporters.dart';
 import 'runner/no_tests_found_exception.dart';
 import 'runner/version.dart';
 import 'util/errors.dart';
@@ -107,6 +108,17 @@ Future<void> _execute(List<String> args) async {
     if (File(configuration.configurationPath).existsSync()) {
       fileConfiguration = fileConfiguration.merge(
         Configuration.load(configuration.configurationPath),
+      );
+    }
+
+    if (Platform.environment['DART_TEST_REPORTER'] case final envReporter?) {
+      if (!allReporters.containsKey(envReporter)) {
+        throw FormatException(
+          'Unknown reporter "$envReporter" in DART_TEST_REPORTER.',
+        );
+      }
+      fileConfiguration = fileConfiguration.merge(
+        Configuration.empty.change(reporter: envReporter),
       );
     }
 

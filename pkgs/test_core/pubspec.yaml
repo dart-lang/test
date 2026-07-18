@@ -1,15 +1,15 @@
 name: test_core
-version: 0.6.19-wip
+version: 0.6.20-wip
 description: A basic library for writing tests and running them on the VM.
 repository: https://github.com/dart-lang/test/tree/master/pkgs/test_core
 issue_tracker: https://github.com/dart-lang/test/issues?q=is%3Aissue+is%3Aopen+label%3Apackage%3Atest
 resolution: workspace
 
 environment:
-  sdk: ^3.10.0
+  sdk: ^3.11.0
 
 dependencies:
-  analyzer: '>=8.0.0 <14.0.0'
+  analyzer: '>=13.0.0 <15.0.0'
   args: ^2.0.0
   async: ^2.5.0
   boolean_selector: ^2.1.0
@@ -19,7 +19,7 @@ dependencies:
   glob: ^2.0.0
   io: ^1.0.0
   meta: ^1.16.0
-  package_config: ^2.0.0
+  package_config: ">=2.0.0 <4.0.0"
   path: ^1.8.0
   pool: ^1.5.0
   source_map_stack_trace: ^2.1.0
@@ -28,9 +28,10 @@ dependencies:
   stack_trace: ^1.10.0
   stream_channel: ^2.1.0
   # Use an exact version until the test_api package is stable.
-  test_api: 0.7.13-wip
+  test_api: 0.7.13
   vm_service: '>=6.0.0 <16.0.0'
   yaml: ^3.0.0
 
 dev_dependencies:
   test: any
+  test_descriptor: ^2.0.0

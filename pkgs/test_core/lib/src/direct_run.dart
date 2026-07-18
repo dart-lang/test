@@ -8,15 +8,13 @@ import 'dart:collection';
 import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart';
 
-import 'runner/configuration.dart';
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
 import 'runner/reporter.dart';
-import 'runner/reporter/expanded.dart';
+import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
-import 'util/print_sink.dart';
 
 /// Runs all unskipped test cases declared in [testMain].
 ///
@@ -64,13 +62,7 @@ Future<bool> _directRunTests(
   String? fullTestName,
   required bool allowDuplicateTestNames,
 }) async {
-  reporterFactory ??= (engine) => ExpandedReporter.watch(
-    engine,
-    PrintSink(),
-    color: Configuration.empty.color,
-    printPath: false,
-    printPlatform: false,
-  );
+  reporterFactory ??= createDirectReporter;
   final declarer = Declarer(
     fullTestName: fullTestName,
     allowDuplicateTestNames: allowDuplicateTestNames,

@@ -305,12 +305,12 @@ void main() {
     await d.file('test.dart', '''
       import 'dart:async';
       import 'dart:js_interop';
-      
+
       import 'package:test/test.dart';
-      
+
       @JS('console.log')
       external void log(JSString value);
-      
+
       void main() {
         test('test', () {
           log('Hello,'.toJS);
@@ -363,17 +363,17 @@ void main() {
 
     await d.file('test.dart', '''
       import 'dart:js_interop';
-      
+
       import 'package:test/test.dart';
-      
+
       @JS()
       external MyModule require(String name);
-      
+
       @JS()
       extension type MyModule(JSObject _) implements JSObject {
         external int get value;
       }
-      
+
       void main() {
         test('can load from a module', () {
           expect(require('my_module').value, equals(12));
