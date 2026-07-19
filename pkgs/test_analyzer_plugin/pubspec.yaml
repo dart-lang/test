@@ -1,0 +1,18 @@
+name: test_analyzer_plugin
+description: An analyzer plugin to report improper usage of the test package.
+repository: https://github.com/dart-lang/test/tree/master/pkgs/test_core
+issue_tracker: https://github.com/dart-lang/test/issues?q=is%3Aissue+is%3Aopen
+version: 0.1.0
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  analysis_server_plugin: ^0.3.0
+  analyzer: ^9.0.0
+  analyzer_plugin: ^0.13.5
+
+dev_dependencies:
+  analyzer_testing: ^0.1.7
+  test: any
+  test_reflective_loader: any
