@@ -205,13 +205,34 @@ void main() {
           print("four");
         });''',
         '''
-        ::group::✅ test
+        ::group::✅ Passing tests
+        ✅ test
         one
         two
         three
         four
         ::endgroup::''',
         useContains: true,
+      );
+    });
+
+    test('includes prints from passing tests in passing tests group', () {
+      return _expectReport(
+        '''
+        test('pass 1', () {
+          print("print from pass 1");
+        });
+        test('pass 2', () {
+          print("print from pass 2");
+        });''',
+        '''
+        ::group::✅ Passing tests
+        ✅ pass 1
+        print from pass 1
+        ✅ pass 2
+        print from pass 2
+        ::endgroup::
+        🎉 2 tests passed.''',
       );
     });
 
@@ -387,14 +408,27 @@ void main() {
             test('test 1', () {});
           });''',
       '''
-          ::group::✅ one (setUpAll)
-          one
-          ::endgroup::
           ::group::✅ Passing tests
+          ✅ one (setUpAll)
+          one
           ✅ one test 1
-          ::endgroup::
-          ::group::✅ one (tearDownAll)
+          ✅ one (tearDownAll)
           two
+          ::endgroup::
+          🎉 1 test passed.''',
+    );
+  });
+
+  test('prints during suite load are included in passing tests group', () {
+    return _expectReport(
+      '''
+          print('loading output');
+          test('test 1', () {});''',
+      '''
+          ::group::✅ Passing tests
+          ✅ loading test.dart
+          loading output
+          ✅ test 1
           ::endgroup::
           🎉 1 test passed.''',
     );

@@ -185,7 +185,7 @@ class GithubReporter implements Reporter {
       for (var message in messages) {
         _sink.writeln(message.text);
       }
-    } else if (messages.isEmpty && errors.isEmpty) {
+    } else if (errors.isEmpty) {
       if (_activeGroup.isSkipped) {
         _sink.writeln(_GithubMarkup.endGroup);
       }
@@ -194,6 +194,9 @@ class GithubReporter implements Reporter {
         _activeGroup = _ReportGroup.passing;
       }
       _sink.writeln('$prefix $name$statusSuffix');
+      for (var message in messages) {
+        _sink.writeln(message.text);
+      }
     } else {
       if (!_activeGroup.isUngrouped) {
         _sink.writeln(_GithubMarkup.endGroup);
