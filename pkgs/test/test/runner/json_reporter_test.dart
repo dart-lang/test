@@ -6,6 +6,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -851,6 +852,86 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
       args: ['-p', 'chrome', '--js-trace'],
     );
   }, tags: ['chrome']);
+
+  test('does not emit debug events when --coverage is enabled', () async {
+    var tempDir = await Directory.systemTemp.createTemp('coverage_json_test');
+    try {
+      await d.file('test.dart', '''
+        import 'package:test/test.dart';
+        void main() {
+          test('success', () {});
+        }
+      ''').create();
+
+      var test = await runTest([
+        'test.dart',
+        '--coverage',
+        tempDir.path,
+      ], reporter: 'json');
+      await test.shouldExit(0);
+
+      var stdoutLines = await test.stdoutStream().toList();
+      var events = [
+        for (var line in stdoutLines) jsonDecode(line) as Map<String, dynamic>,
+      ];
+      expect(events.where((e) => e['type'] == 'debug'), isEmpty);
+    } finally {
+      await tempDir.delete(recursive: true);
+    }
+  });
+
+  test('emits debug events when --pause-after-load is enabled', () async {
+    await d.file('test.dart', '''
+      import 'package:test/test.dart';
+      void main() {
+        test('success', () {});
+      }
+    ''').create();
+
+    var test = await runTest([
+      'test.dart',
+      '--pause-after-load',
+    ], reporter: 'json');
+
+    await expectLater(test.stdout, emitsThrough(contains('"type":"debug"')));
+
+    test.stdin.writeln();
+    await test.shouldExit(0);
+  });
+
+  test(
+    'emits debug events when both --pause-after-load and --coverage are enabled',
+    () async {
+      var tempDir = await Directory.systemTemp.createTemp(
+        'coverage_pause_json_test',
+      );
+      try {
+        await d.file('test.dart', '''
+        import 'package:test/test.dart';
+        void main() {
+          test('success', () {});
+        }
+      ''').create();
+
+        var test = await runTest([
+          'test.dart',
+          '--pause-after-load',
+          '--coverage',
+          tempDir.path,
+        ], reporter: 'json');
+
+        await expectLater(
+          test.stdout,
+          emitsThrough(contains('"type":"debug"')),
+        );
+
+        test.stdin.writeln();
+        await test.shouldExit(0);
+      } finally {
+        await tempDir.delete(recursive: true);
+      }
+    },
+  );
 }
 
 /// Asserts that the tests defined by [tests] produce the JSON events in
