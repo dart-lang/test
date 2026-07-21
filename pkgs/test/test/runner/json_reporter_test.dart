@@ -630,14 +630,6 @@ void main() {
             [
               suiteJson(0, platform: 'chrome'),
               testStartJson(1, 'loading test.dart', groupIDs: []),
-              printJson(
-                1,
-                isA<String>().having(
-                  (s) => s.split('\n'),
-                  'lines',
-                  contains(startsWith('Compiled')),
-                ),
-              ),
               testDoneJson(1, hidden: true),
             ],
             [
@@ -847,14 +839,6 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
         [
           suiteJson(0, platform: 'chrome'),
           testStartJson(1, 'loading test.dart', groupIDs: []),
-          printJson(
-            1,
-            isA<String>().having(
-              (s) => s.split('\n'),
-              'lines',
-              contains(startsWith('Compiled')),
-            ),
-          ),
           testDoneJson(1, hidden: true),
         ],
         [
