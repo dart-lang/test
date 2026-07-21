@@ -7,6 +7,8 @@
 * Suppress dart2js compiler output for successful compiles.
 * Include output from passing tests  messages within the `Passing tests` group
   in `GithubReporter`.
+* Use a redirect html file for browser tests to avoid leaking websocket details
+  through process starting arguments.
 
 ## 1.31.2
 
