@@ -86,7 +86,7 @@ void main() {
         containsInOrder([
           'Error: Compilation failed.',
           '-1: loading test.dart [E]',
-          'Failed to load "test.dart": dart2js failed.',
+          'Failed to load "test.dart": Bad state: dart2js failed.',
         ]),
       );
       await test.shouldExit(1);
