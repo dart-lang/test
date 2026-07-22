@@ -3,10 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:path/path.dart' as p;
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -31,14 +29,9 @@ enum ChromiumBasedBrowser {
     settings ??= defaultSettings[runtime];
 
     var dir = createTempDir();
-    var redirect = p.join(dir, 'redirect.html');
-    File(redirect).writeAsStringSync(
-      '<script>location = ${jsonEncode(url.toString())}</script>',
-    );
-
     var args = [
       '--user-data-dir=$dir',
-      redirect,
+      url.toString(),
       '--enable-logging=stderr',
       '--v=0',
       '--disable-extensions',
