@@ -897,7 +897,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
 
     test.stdin.writeln();
     await test.shouldExit(0);
-  });
+  }, testOn: '!windows');
 
   test(
     'emits debug events when both --pause-after-load and --coverage are enabled',
@@ -931,6 +931,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
         await tempDir.delete(recursive: true);
       }
     },
+    testOn: '!windows',
   );
 }
 
