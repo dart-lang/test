@@ -880,24 +880,29 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
     }
   });
 
-  test('emits debug events when --pause-after-load is enabled', () async {
-    await d.file('test.dart', '''
+  test(
+    'emits debug events when --pause-after-load is enabled',
+    () async {
+      await d.file('test.dart', '''
       import 'package:test/test.dart';
       void main() {
         test('success', () {});
       }
     ''').create();
 
-    var test = await runTest([
-      'test.dart',
-      '--pause-after-load',
-    ], reporter: 'json');
+      var test = await runTest([
+        'test.dart',
+        '--pause-after-load',
+      ], reporter: 'json');
 
-    await expectLater(test.stdout, emitsThrough(contains('"type":"debug"')));
+      await expectLater(test.stdout, emitsThrough(contains('"type":"debug"')));
 
-    test.stdin.writeln();
-    await test.shouldExit(0);
-  }, testOn: '!windows');
+      test.stdin.writeln();
+      await test.shouldExit(0);
+    },
+    // TODO(https://github.com/dart-lang/test/issues/1613): Fix pause after load tests on windows.
+    testOn: '!windows',
+  );
 
   test(
     'emits debug events when both --pause-after-load and --coverage are enabled',
@@ -931,6 +936,7 @@ void customTest(String name, dynamic Function() testFn) => test(name, testFn);
         await tempDir.delete(recursive: true);
       }
     },
+    // TODO(https://github.com/dart-lang/test/issues/1613): Fix pause after load tests on windows.
     testOn: '!windows',
   );
 }
