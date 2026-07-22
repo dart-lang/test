@@ -4,6 +4,8 @@
 * Suppress dart2js compiler output for successful compiles.
 * Include passing test  messages within the `Passing tests` group in
   `GithubReporter`.
+* Only include VM debugger in output when using interactive debugging, suppress
+  it when only using coverage.
 
 ## 0.6.19
 
