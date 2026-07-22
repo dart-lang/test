@@ -91,7 +91,7 @@ final _allReporters = <String, ReporterDetails>{
     'A machine-readable format (see '
     'https://dart.dev/go/test-docs/json_reporter.md).',
     (config, engine, sink) =>
-        JsonReporter.watch(engine, sink, isDebugRun: config.debug),
+        JsonReporter.watch(engine, sink, isDebugRun: config.pauseAfterLoad),
   ),
   'silent': ReporterDetails(
     'A reporter with no output. '
