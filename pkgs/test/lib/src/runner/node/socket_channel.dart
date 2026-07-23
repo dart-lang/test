@@ -10,8 +10,12 @@ import 'package:stream_channel/stream_channel.dart';
 @JS('process.argv')
 external JSArray<JSString> get _args;
 
+extension type _Fs._(JSObject _) {
+  external JSString readFileSync(JSString path, JSString encoding);
+}
+
 extension type _Net._(JSObject _) {
-  external _Socket connect(JSString path);
+  external _Socket connect(int port);
 }
 
 extension type _Socket._(JSObject _) {
@@ -21,11 +25,17 @@ extension type _Socket._(JSObject _) {
 }
 
 /// Returns a [StreamChannel] of JSON-encodable objects that communicates over a
-/// socket whose path is given by `process.argv[2]`.
+/// socket whose authentication config file is given by `process.argv[2]`.
 Future<StreamChannel<Object?>> socketChannel() async {
+  final fs = (await importModule('node:fs'.toJS).toDart) as _Fs;
   final net = (await importModule('node:net'.toJS).toDart) as _Net;
 
-  var socket = net.connect(_args.toDart[2]);
+  var authJson = fs.readFileSync(_args.toDart[2], 'utf8'.toJS).toDart;
+  var auth = jsonDecode(authJson) as Map<String, dynamic>;
+  var port = auth['port'] as int;
+  var secret = auth['secret'] as String;
+
+  var socket = net.connect(port);
   socket.setEncoding('utf8'.toJS);
 
   var socketSink = StreamController<Object?>(sync: true)
@@ -37,8 +47,11 @@ Future<StreamChannel<Object?>> socketChannel() async {
     ((JSString chunk) => socketStream.add(chunk.toDart)).toJS,
   );
 
-  return StreamChannel.withCloseGuarantee(
+  var channel = StreamChannel.withCloseGuarantee(
     socketStream.stream.transform(const LineSplitter()).map(jsonDecode),
     socketSink,
   );
+
+  channel.sink.add(secret);
+  return channel;
 }
