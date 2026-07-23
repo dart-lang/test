@@ -6,6 +6,9 @@
 @Tags(['chrome'])
 library;
 
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:test/src/runner/browser/chrome.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
@@ -110,4 +113,30 @@ void main() {
     expect(test.stdout, emitsThrough(contains('Failed to run Chrome:')));
     await test.shouldExit(1);
   });
+
+  test('does not pass target URL directly in command line arguments', () async {
+    var targetUrl = Uri.parse('http://localhost:12345/secret_token_12345');
+    var argsFile = p.join(d.sandbox, 'args.txt');
+    var scriptFile = p.join(d.sandbox, 'fake_chrome.sh');
+    await d.file('fake_chrome.sh', '''
+#!/bin/sh
+echo "\$@" > "$argsFile"
+''').create();
+    await Process.run('chmod', ['+x', scriptFile]);
+
+    var chrome = Chrome(
+      targetUrl,
+      configuration(),
+      settings: ExecutableSettings(
+        linuxExecutable: scriptFile,
+        macOSExecutable: scriptFile,
+        windowsExecutable: scriptFile,
+      ),
+    );
+    await chrome.onExit.catchError((_) {});
+
+    var argsText = await File(argsFile).readAsString();
+    expect(argsText, isNot(contains('secret_token_12345')));
+    expect(argsText, contains('redirect.html'));
+  }, testOn: '!windows');
 }
