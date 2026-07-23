@@ -178,10 +178,7 @@ class NodePlatform extends PlatformPlugin
 
       if (receivedSecret != secret) {
         socket.destroy();
-        throw LoadException(
-          path,
-          'Node test channel authentication failed.',
-        );
+        throw LoadException(path, 'Node test channel authentication failed.');
       }
 
       return (StreamChannel(queue.rest, channel.sink), stackMapper);
