@@ -31,6 +31,7 @@ import 'package:test_core/src/util/package_config.dart'; // ignore: implementati
 import 'package:test_core/src/util/stack_trace_mapper.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
+import '../../util/math.dart';
 import '../../util/package_map.dart';
 import '../executable_settings.dart';
 
@@ -118,13 +119,20 @@ class NodePlatform extends PlatformPlugin
     SuiteConfiguration suiteConfig,
   ) async {
     final servers = await _loopback();
+    var secret = randomUrlSecret();
+
+    var dir = Directory(_compiledDir).createTempSync('node_auth_').path;
+    var authPath = p.join(dir, 'auth.json');
+    File(authPath).writeAsStringSync(
+      jsonEncode({'port': servers.first.port, 'secret': secret}),
+    );
 
     try {
       var (process, stackMapper) = await _spawnProcess(
         path,
         platform,
         suiteConfig,
-        servers.first.port,
+        authPath,
       );
 
       // Forward Node's standard IO to the print handler so it's associated with
@@ -134,7 +142,7 @@ class NodePlatform extends PlatformPlugin
       process.stdout.transform(lineSplitter).listen(print);
       process.stderr.transform(lineSplitter).listen(print);
 
-      // Wait for the first connection (either over ipv4 or v6). If the proccess
+      // Wait for the first connection (either over ipv4 or v6). If the process
       // exits before it connects, throw instead of waiting for a connection
       // indefinitely.
       var socket = await Future.any([
@@ -162,7 +170,18 @@ class NodePlatform extends PlatformPlugin
             ),
           );
 
-      return (channel, stackMapper);
+      var queue = StreamQueue(channel.stream);
+      var receivedSecret = await Future.any([
+        queue.next,
+        process.exitCode.then((_) => null),
+      ]);
+
+      if (receivedSecret != secret) {
+        socket.destroy();
+        throw LoadException(path, 'Node test channel authentication failed.');
+      }
+
+      return (StreamChannel(queue.rest, channel.sink), stackMapper);
     } finally {
       unawaited(
         Future.wait<void>(
@@ -183,14 +202,14 @@ class NodePlatform extends PlatformPlugin
     String path,
     SuitePlatform platform,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String authPath,
   ) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       return _spawnPrecompiledProcess(
         path,
         platform.runtime,
         suiteConfig,
-        socketPort,
+        authPath,
         _config.suiteDefaults.precompiledPath!,
       );
     } else {
@@ -199,13 +218,13 @@ class NodePlatform extends PlatformPlugin
           path,
           platform.runtime,
           suiteConfig,
-          socketPort,
+          authPath,
         ),
         Compiler.dart2wasm => _spawnNormalWasmProcess(
           path,
           platform.runtime,
           suiteConfig,
-          socketPort,
+          authPath,
         ),
         _ => throw StateError('Unsupported compiler ${platform.compiler}'),
       };
@@ -234,7 +253,7 @@ class NodePlatform extends PlatformPlugin
     String testPath,
     Runtime runtime,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String authPath,
   ) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
@@ -262,7 +281,7 @@ class NodePlatform extends PlatformPlugin
       );
     }
 
-    return (await _startProcess(runtime, jsPath, socketPort), mapper);
+    return (await _startProcess(runtime, jsPath, authPath), mapper);
   }
 
   /// Compiles [testPath] with dart2wasm, adds a JS entrypoint and then spawns
@@ -271,7 +290,7 @@ class NodePlatform extends PlatformPlugin
     String testPath,
     Runtime runtime,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String authPath,
   ) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     // dart2wasm will emit a .wasm file and a .mjs file responsible for loading
@@ -317,7 +336,7 @@ const main = async () => {
 main();
 ''');
 
-    return (await _startProcess(runtime, jsPath, socketPort), null);
+    return (await _startProcess(runtime, jsPath, authPath), null);
   }
 
   /// Spawns a Node.js process that loads the Dart test suite at [testPath]
@@ -326,7 +345,7 @@ main();
     String testPath,
     Runtime runtime,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String authPath,
     String precompiledPath,
   ) async {
     StackTraceMapper? mapper;
@@ -343,14 +362,14 @@ main();
       );
     }
 
-    return (await _startProcess(runtime, jsPath, socketPort), mapper);
+    return (await _startProcess(runtime, jsPath, authPath), mapper);
   }
 
   /// Starts the Node.js process for [runtime] with [jsPath].
   Future<Process> _startProcess(
     Runtime runtime,
     String jsPath,
-    int socketPort,
+    String authPath,
   ) async {
     var settings = _settings[runtime]!;
 
@@ -363,7 +382,7 @@ main();
         settings.executable,
         settings.arguments.toList()
           ..add(jsPath)
-          ..add(socketPort.toString()),
+          ..add(authPath),
         environment: {'NODE_PATH': nodePath},
       );
     } catch (error, stackTrace) {

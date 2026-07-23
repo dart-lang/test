@@ -9,6 +9,11 @@
   in `GithubReporter`.
 * Only include VM debugger in output when using interactive debugging, suppress
   it when only using coverage.
+* Migrate out of process VM tests communication channel from TCP sockets to Unix
+  domain sockets inside a restricted temporary directory.
+* Pass Node.js test process connection configuration and secret token via a
+  restricted temporary authentication file to prevent secret leakage in command
+  line process arguments.
 
 ## 1.31.2
 

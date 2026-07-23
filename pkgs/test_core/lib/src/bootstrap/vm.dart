@@ -35,12 +35,13 @@ void internalBootstrapNativeTest(
   Function Function() getMain,
   List<String> args,
 ) async {
-  if (args.length != 2) {
-    throw StateError(
-      'Expected exactly two args, a host and a port, but got $args',
-    );
+  if (args.length != 1) {
+    throw StateError('Expected a socket path, but got $args');
   }
-  var socket = await Socket.connect(args[0], int.parse(args[1]));
+  var socket = await Socket.connect(
+    InternetAddress(args[0], type: InternetAddressType.unix),
+    0,
+  );
   var platformChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
   var testControlChannel = platformChannel.virtualChannel()
     ..pipe(serializeSuite(getMain));
