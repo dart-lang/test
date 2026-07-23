@@ -58,10 +58,6 @@ enum ChromiumBasedBrowser {
         '--headless',
         '--disable-gpu',
       ],
-      if (!configuration.debug)
-        // We don't actually connect to the remote debugger, but Chrome will
-        // close as soon as the page is loaded if we don't turn it on.
-        '--remote-debugging-port=0',
       ...settings.arguments,
       ...additionalArgs,
     ];
