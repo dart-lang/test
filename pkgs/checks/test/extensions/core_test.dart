@@ -9,10 +9,22 @@ import '../test_shared.dart';
 
 void main() {
   group('TypeChecks', () {
-    test('isA', () {
-      check(1).isA<int>();
-
-      check(1).isRejectedBy((it) => it.isA<String>(), which: ['Is a int']);
+    group('isA', () {
+      test('happy case', () {
+        check(1).isA<int>();
+      });
+      test('failure case', () {
+        check(1).isRejectedBy((it) => it.isA<String>(), which: ['Is a int']);
+      });
+      test('evaluates condition', () {
+        check(1).isRejectedBy(
+          (it) => it.isA<int>((it) => it.isGreaterThan(2)),
+          which: ['is not greater than <2>'],
+        );
+      });
+      test('returns valid subject', () {
+        check(1).isA<int>().isGreaterThan(0);
+      });
     });
     test('isNotA', () {
       check(1).isNotA<String>();
@@ -22,21 +34,27 @@ void main() {
     });
   });
   group('HasField', () {
-    test('has', () {
-      check(1).has((v) => v.isOdd, 'isOdd').isTrue();
-
-      check(null).isRejectedBy(
-        (it) => it.has((v) {
-          Error.throwWithStackTrace(
-            UnimplementedError(),
-            StackTrace.fromString('fake trace'),
-          );
-        }, 'foo').isNotNull(),
-        which: [
-          'threw while trying to read foo: <UnimplementedError> at:',
-          '  fake trace',
-        ],
-      );
+    group('has', () {
+      test('happy case', () {
+        check(1).has((v) => v.isOdd, 'isOdd').isTrue();
+      });
+      test('failure case', () {
+        check(null).isRejectedBy(
+          (it) => it.has((v) {
+            Error.throwWithStackTrace(
+              UnimplementedError(),
+              StackTrace.fromString('fake trace'),
+            );
+          }, 'foo').isNotNull(),
+          which: [
+            'threw while trying to read foo: <UnimplementedError> at:',
+            '  fake trace',
+          ],
+        );
+      });
+      test('returns valid subject', () {
+        check(1).has((v) => v.isOdd, 'isOdd').isTrue();
+      });
     });
 
     test('which', () {
@@ -98,10 +116,22 @@ void main() {
     });
   });
   group('NullabilityChecks', () {
-    test('isNotNull', () {
-      check(1).isNotNull();
-
-      check(null).isRejectedBy((it) => it.isNotNull());
+    group('isNotNull', () {
+      test('happy case', () {
+        check(1).isNotNull();
+      });
+      test('failure case', () {
+        check(null).isRejectedBy((it) => it.isNotNull());
+      });
+      test('evaluates condition', () {
+        check(1).isRejectedBy(
+          (it) => it.isNotNull((it) => it.identicalTo(2)),
+          which: ['is not identical'],
+        );
+      });
+      test('returns valid subject', () {
+        check(1).isNotNull().identicalTo(1);
+      });
     });
     test('isNull', () {
       check(null).isNull();
