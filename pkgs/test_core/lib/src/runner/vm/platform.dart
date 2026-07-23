@@ -60,14 +60,19 @@ class VMPlatform extends PlatformPlugin {
     Isolate? isolate;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
-      var serverSocket = await ServerSocket.bind('localhost', 0);
+      var dir = Directory(_tempDir.path).createTempSync('exec_').path;
+      var socketPath = p.join(dir, 'socket.sock');
+      var serverSocket = await ServerSocket.bind(
+        InternetAddress(socketPath, type: InternetAddressType.unix),
+        0,
+      );
       Process process;
       try {
         process = await _spawnExecutable(
           platform,
           path,
           suiteConfig.metadata,
-          serverSocket,
+          socketPath,
         );
       } catch (error) {
         unawaited(serverSocket.close());
@@ -229,12 +234,12 @@ class VMPlatform extends PlatformPlugin {
   /// Compiles [path] to a native executable and spawns it as a process.
   ///
   /// Sets up a communication channel as well by passing command line arguments
-  /// for the host and port of [socket].
+  /// for the socket path of [socketPath].
   Future<Process> _spawnExecutable(
     SuitePlatform platform,
     String path,
     Metadata suiteMetadata,
-    ServerSocket socket,
+    String socketPath,
   ) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       throw UnsupportedError(
@@ -246,8 +251,7 @@ class VMPlatform extends PlatformPlugin {
       case Compiler.cli:
         var executable = await _compileToCli(platform, path, suiteMetadata);
         return await Process.start(executable, [
-          socket.address.host,
-          socket.port.toString(),
+          socketPath,
         ], mode: ProcessStartMode.inheritStdio);
       case Compiler.exe:
         var sharedLibrary = await _compileToNative(
@@ -257,7 +261,7 @@ class VMPlatform extends PlatformPlugin {
         );
         return await Process.start(
           _aotRuntimeFor(platform),
-          [sharedLibrary, socket.address.host, socket.port.toString()],
+          [sharedLibrary, socketPath],
           environment: _environmentFor(platform),
           mode: ProcessStartMode.inheritStdio,
         );

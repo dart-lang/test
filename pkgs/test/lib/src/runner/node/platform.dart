@@ -117,14 +117,19 @@ class NodePlatform extends PlatformPlugin
     SuitePlatform platform,
     SuiteConfiguration suiteConfig,
   ) async {
-    final servers = await _loopback();
+    var dir = Directory(_compiledDir).createTempSync('node_sock_').path;
+    var socketPath = p.join(dir, 'socket.sock');
+    var server = await ServerSocket.bind(
+      InternetAddress(socketPath, type: InternetAddressType.unix),
+      0,
+    );
 
     try {
       var (process, stackMapper) = await _spawnProcess(
         path,
         platform,
         suiteConfig,
-        servers.first.port,
+        socketPath,
       );
 
       // Forward Node's standard IO to the print handler so it's associated with
@@ -134,11 +139,11 @@ class NodePlatform extends PlatformPlugin
       process.stdout.transform(lineSplitter).listen(print);
       process.stderr.transform(lineSplitter).listen(print);
 
-      // Wait for the first connection (either over ipv4 or v6). If the proccess
+      // Wait for the first connection. If the process
       // exits before it connects, throw instead of waiting for a connection
       // indefinitely.
       var socket = await Future.any([
-        StreamGroup.merge(servers).first,
+        server.first,
         process.exitCode.then((_) => null),
       ]);
 
@@ -164,14 +169,7 @@ class NodePlatform extends PlatformPlugin
 
       return (channel, stackMapper);
     } finally {
-      unawaited(
-        Future.wait<void>(
-          servers.map(
-            (s) =>
-                s.close().then<ServerSocket?>((v) => v).onError((_, _) => null),
-          ),
-        ),
-      );
+      unawaited(server.close());
     }
   }
 
@@ -183,14 +181,14 @@ class NodePlatform extends PlatformPlugin
     String path,
     SuitePlatform platform,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String socketPath,
   ) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       return _spawnPrecompiledProcess(
         path,
         platform.runtime,
         suiteConfig,
-        socketPort,
+        socketPath,
         _config.suiteDefaults.precompiledPath!,
       );
     } else {
@@ -199,13 +197,13 @@ class NodePlatform extends PlatformPlugin
           path,
           platform.runtime,
           suiteConfig,
-          socketPort,
+          socketPath,
         ),
         Compiler.dart2wasm => _spawnNormalWasmProcess(
           path,
           platform.runtime,
           suiteConfig,
-          socketPort,
+          socketPath,
         ),
         _ => throw StateError('Unsupported compiler ${platform.compiler}'),
       };
@@ -234,7 +232,7 @@ class NodePlatform extends PlatformPlugin
     String testPath,
     Runtime runtime,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String socketPath,
   ) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     var jsPath = p.join(dir, '${p.basename(testPath)}.node_test.dart.js');
@@ -262,7 +260,7 @@ class NodePlatform extends PlatformPlugin
       );
     }
 
-    return (await _startProcess(runtime, jsPath, socketPort), mapper);
+    return (await _startProcess(runtime, jsPath, socketPath), mapper);
   }
 
   /// Compiles [testPath] with dart2wasm, adds a JS entrypoint and then spawns
@@ -271,7 +269,7 @@ class NodePlatform extends PlatformPlugin
     String testPath,
     Runtime runtime,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String socketPath,
   ) async {
     var dir = Directory(_compiledDir).createTempSync('test_').path;
     // dart2wasm will emit a .wasm file and a .mjs file responsible for loading
@@ -317,7 +315,7 @@ const main = async () => {
 main();
 ''');
 
-    return (await _startProcess(runtime, jsPath, socketPort), null);
+    return (await _startProcess(runtime, jsPath, socketPath), null);
   }
 
   /// Spawns a Node.js process that loads the Dart test suite at [testPath]
@@ -326,7 +324,7 @@ main();
     String testPath,
     Runtime runtime,
     SuiteConfiguration suiteConfig,
-    int socketPort,
+    String socketPath,
     String precompiledPath,
   ) async {
     StackTraceMapper? mapper;
@@ -343,14 +341,14 @@ main();
       );
     }
 
-    return (await _startProcess(runtime, jsPath, socketPort), mapper);
+    return (await _startProcess(runtime, jsPath, socketPath), mapper);
   }
 
   /// Starts the Node.js process for [runtime] with [jsPath].
   Future<Process> _startProcess(
     Runtime runtime,
     String jsPath,
-    int socketPort,
+    String socketPath,
   ) async {
     var settings = _settings[runtime]!;
 
@@ -363,7 +361,7 @@ main();
         settings.executable,
         settings.arguments.toList()
           ..add(jsPath)
-          ..add(socketPort.toString()),
+          ..add(socketPath),
         environment: {'NODE_PATH': nodePath},
       );
     } catch (error, stackTrace) {
@@ -384,64 +382,6 @@ main();
   });
   final _closeMemo = AsyncMemoizer<void>();
 }
-
-Future<List<ServerSocket>> _loopback({int remainingRetries = 5}) async {
-  if (!await _supportsIPv4) {
-    return [await ServerSocket.bind(InternetAddress.loopbackIPv6, 0)];
-  }
-
-  var v4Server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-  if (!await _supportsIPv6) return [v4Server];
-
-  try {
-    // Reuse the IPv4 server's port so that if [port] is 0, both servers use
-    // the same ephemeral port.
-    var v6Server = await ServerSocket.bind(
-      InternetAddress.loopbackIPv6,
-      v4Server.port,
-    );
-    return [v4Server, v6Server];
-  } on SocketException catch (error) {
-    if (error.osError?.errorCode != _addressInUseErrno) rethrow;
-    if (remainingRetries == 0) rethrow;
-
-    // A port being available on IPv4 doesn't necessarily mean that the same
-    // port is available on IPv6. If it's not (which is rare in practice),
-    // we try again until we find one that's available on both.
-    unawaited(v4Server.close());
-    return await _loopback(remainingRetries: remainingRetries - 1);
-  }
-}
-
-/// Whether this computer supports binding to IPv6 addresses.
-final Future<bool> _supportsIPv6 = () async {
-  try {
-    var socket = await ServerSocket.bind(InternetAddress.loopbackIPv6, 0);
-    unawaited(socket.close());
-    return true;
-  } on SocketException catch (_) {
-    return false;
-  }
-}();
-
-/// Whether this computer supports binding to IPv4 addresses.
-final Future<bool> _supportsIPv4 = () async {
-  try {
-    var socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
-    unawaited(socket.close());
-    return true;
-  } on SocketException catch (_) {
-    return false;
-  }
-}();
-
-/// The error code for an error caused by a port already being in use.
-final int _addressInUseErrno = () {
-  if (Platform.isWindows) return 10048;
-  if (Platform.isMacOS) return 48;
-  assert(Platform.isLinux);
-  return 98;
-}();
 
 /// A [StreamChannelTransformer] that converts a chunked string channel to a
 /// line-by-line channel.

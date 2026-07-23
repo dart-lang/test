@@ -11,7 +11,7 @@ import 'package:stream_channel/stream_channel.dart';
 external JSArray<JSString> get _args;
 
 extension type _Net._(JSObject _) {
-  external _Socket connect(int port);
+  external _Socket connect(JSString path);
 }
 
 extension type _Socket._(JSObject _) {
@@ -21,11 +21,11 @@ extension type _Socket._(JSObject _) {
 }
 
 /// Returns a [StreamChannel] of JSON-encodable objects that communicates over a
-/// socket whose port is given by `process.argv[2]`.
+/// socket whose path is given by `process.argv[2]`.
 Future<StreamChannel<Object?>> socketChannel() async {
   final net = (await importModule('node:net'.toJS).toDart) as _Net;
 
-  var socket = net.connect(int.parse(_args.toDart[2].toDart));
+  var socket = net.connect(_args.toDart[2]);
   socket.setEncoding('utf8'.toJS);
 
   var socketSink = StreamController<Object?>(sync: true)

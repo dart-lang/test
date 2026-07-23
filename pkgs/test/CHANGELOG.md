@@ -9,6 +9,8 @@
   in `GithubReporter`.
 * Only include VM debugger in output when using interactive debugging, suppress
   it when only using coverage.
+* Migrate Node.js test platform communication channel from TCP sockets to Unix
+  domain sockets inside a restricted temporary directory.
 
 ## 1.31.2
 
