@@ -12,6 +12,7 @@ import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/metadata.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/suite.dart';
+import 'package:test_api/src/backend/zones.dart';
 
 import '../utils.dart';
 
@@ -527,12 +528,12 @@ void main() {
       var firstTearDownStarted = false;
       var secondTearDownStarted = false;
       await Invoker.current!.runTearDowns([
-        () {
+        CapturedCallback(() {
           firstTearDownStarted = true;
-        },
-        () {
+        }, Zone.current),
+        CapturedCallback(() {
           secondTearDownStarted = true;
-        },
+        }, Zone.current),
       ]);
       expect(secondTearDownStarted, isTrue);
       expect(firstTearDownStarted, isTrue);
@@ -542,12 +543,12 @@ void main() {
       var firstTearDownWork = Completer<void>();
       var secondTearDownStarted = false;
       var result = Invoker.current!.runTearDowns([
-        () {
+        CapturedCallback(() {
           secondTearDownStarted = true;
-        },
-        () async {
+        }, Zone.current),
+        CapturedCallback(() async {
           await firstTearDownWork.future;
-        },
+        }, Zone.current),
       ]);
       await pumpEventQueue();
       expect(secondTearDownStarted, isFalse);
@@ -563,15 +564,15 @@ void main() {
         var secondTearDownStarted = false;
         unawaited(
           Invoker.current!.runTearDowns([
-            () {
+            CapturedCallback(() {
               secondTearDownStarted = true;
-            },
-            () {
+            }, Zone.current),
+            CapturedCallback(() {
               Invoker.current!.addOutstandingCallback();
               firstTearDownAsyncWork.future.whenComplete(
                 Invoker.current!.removeOutstandingCallback,
               );
-            },
+            }, Zone.current),
           ]),
         );
         await pumpEventQueue();
@@ -584,9 +585,9 @@ void main() {
       var liveTest = _localTest(() async {
         Invoker.current!.addOutstandingCallback();
         await Invoker.current!.runTearDowns([
-          () {
+          CapturedCallback(() {
             throw 'oh no';
-          },
+          }, Zone.current),
         ]);
       }).load(suite);
 

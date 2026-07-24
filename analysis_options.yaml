@@ -11,6 +11,7 @@ analyzer:
     avoid_catching_errors: ignore
     avoid_dynamic_calls: ignore
     comment_references: ignore
+    discarded_futures: ignore
     lines_longer_than_80_chars: ignore
     only_throw_errors: ignore
     unawaited_futures: ignore

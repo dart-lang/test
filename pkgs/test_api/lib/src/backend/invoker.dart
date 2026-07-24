@@ -20,6 +20,7 @@ import 'test.dart';
 import 'test_failure.dart';
 import 'test_location.dart';
 import 'util/pretty_print.dart';
+import 'zones.dart';
 
 /// A test in this isolate.
 class LocalTest extends Test {
@@ -141,14 +142,9 @@ class Invoker {
   /// allowed to perform these interactions to facilitate resource cleanup on a
   /// best-effort basis, so the invoker is made to appear open only within the
   /// zones running the teardown callbacks.
-  bool get _forceOpen => Zone.current[_forceOpenForTearDownKey] as bool;
-
-  /// An opaque object used as a key in the zone value map to identify
-  /// [_forceOpen].
-  ///
-  /// This is an instance variable to ensure that multiple invokers don't step
-  /// on one anothers' toes.
-  final _forceOpenForTearDownKey = Object();
+  /// Whether this invoker is executing tear-down callbacks.
+  bool get _forceOpen => _isExecutingTearDown;
+  bool _isExecutingTearDown = false;
 
   /// Whether the test has been closed.
   ///
@@ -166,7 +162,7 @@ class Invoker {
 
   /// The outstanding callback counter for the current zone.
   _AsyncCounter get _outstandingCallbacks {
-    var counter = Zone.current[_counterKey] as _AsyncCounter?;
+    var counter = _currentCounter;
     if (counter != null) return counter;
     throw StateError(
       "Can't add or remove outstanding callbacks outside "
@@ -174,21 +170,57 @@ class Invoker {
     );
   }
 
+  _AsyncCounter? _currentCounter;
+
   /// All the zones created by [_waitForOutstandingCallbacks], in the order they
   /// were created.
   ///
   /// This is used to throw timeout errors in the most recent zone.
   final _outstandingCallbackZones = <Zone>[];
 
-  /// An opaque object used as a key in the zone value map to identify
-  /// [_outstandingCallbacks].
-  ///
-  /// This is an instance variable to ensure that multiple invokers don't step
-  /// on one anothers' toes.
-  final _counterKey = Object();
+  /// The cached error zone for this Invoker, keyed by its baseZone.
+  Zone? _errorZone;
+
+  /// The main execution zone for this test in [_onRun].
+  Zone? _mainExecutionZone;
+
+  /// The Completer for the currently executing robust callback via [runRobustly].
+  Completer<bool>? _currentRobustCompleter;
+
+  /// Whether to complete [_currentRobustCompleter] immediately on an uncaught async error.
+  bool _completeOnAsyncError = true;
 
   /// The number of times this [liveTest] has been run.
   int _runCount = 0;
+
+  /// The [ZoneSpecification] to use for executing callbacks for this invoker.
+  late final ZoneSpecification _cachedZoneSpecification = ZoneSpecification(
+    handleUncaughtError: (self, parent, zone, error, stackTrace) {
+      var invoker = zone[#test.invoker] as Invoker?;
+      if (invoker != null) {
+        invoker._handleError(zone, error, stackTrace);
+        var completer = invoker._currentRobustCompleter;
+        if (completer != null && !completer.isCompleted) {
+          if (invoker._completeOnAsyncError) {
+            completer.complete(false);
+          }
+        }
+      } else {
+        _handleError(zone, error, stackTrace);
+        var completer = _currentRobustCompleter;
+        if (completer != null && !completer.isCompleted) {
+          if (_completeOnAsyncError) {
+            completer.complete(false);
+          }
+        }
+      }
+    },
+    print: (self, parent, zone, line) {
+      _print(line);
+    },
+  );
+
+  ZoneSpecification get zoneSpecification => _cachedZoneSpecification;
 
   /// The current invoker, or `null` if none is defined.
   ///
@@ -223,7 +255,7 @@ class Invoker {
   Timer? _timeoutTimer;
 
   /// The tear-down functions to run when this test finishes.
-  final _tearDowns = <void Function()>[];
+  final _tearDowns = <CapturedCallback>[];
 
   /// Messages to print if and when this test fails.
   final _printsOnFailure = <String>[];
@@ -248,10 +280,15 @@ class Invoker {
   /// The [callback] may return a [Future]. Like all tear-downs, callbacks are
   /// run in the reverse of the order they're declared.
   void addTearDown(FutureOr<dynamic> Function() callback) {
+    addCapturedTearDown(CapturedCallback(callback, Zone.current));
+  }
+
+  /// Like [addTearDown], but accepts a [CapturedCallback].
+  void addCapturedTearDown(CapturedCallback callback) {
     if (closed) throw ClosedException();
 
     if (_test.isScaffoldAll) {
-      Declarer.current!.addTearDownAll(callback);
+      Declarer.current!.addCapturedTearDownAll(callback);
     } else {
       _tearDowns.add(callback);
     }
@@ -285,20 +322,32 @@ class Invoker {
   /// it isn't already failing, but it won't prevent the remaining callbacks
   /// from running. This invoker will not be closeable within the zone that the
   /// teardowns are running in.
-  Future<void> runTearDowns(List<FutureOr<void> Function()> tearDowns) {
+  Future<void> runTearDowns(
+    List<CapturedCallback> tearDowns, {
+    Map<Object?, Object?>? values,
+  }) async {
     heartbeat();
-    return runZoned(() async {
+    var oldForceOpen = _isExecutingTearDown;
+    _isExecutingTearDown = true;
+    try {
       while (tearDowns.isNotEmpty) {
-        var completer = Completer<void>();
+        var captured = tearDowns.removeLast();
 
         addOutstandingCallback();
-        _waitForOutstandingCallbacks(() {
-          Future.sync(tearDowns.removeLast()).whenComplete(completer.complete);
-        }).then((_) => removeOutstandingCallback()).unawaited;
+        var completer = Completer<void>();
+
+        _waitForOutstandingCallbacks(
+          () => runRobustly(captured.zone, captured.fn, values: values)
+              .whenComplete(() {
+                if (!completer.isCompleted) completer.complete();
+              }),
+        ).then((_) => removeOutstandingCallback()).unawaited;
 
         await completer.future;
       }
-    }, zoneValues: {_forceOpenForTearDownKey: true});
+    } finally {
+      _isExecutingTearDown = oldForceOpen;
+    }
   }
 
   /// Runs [fn] and completes once [fn] and all outstanding callbacks registered
@@ -309,20 +358,25 @@ class Invoker {
   Future<void> _waitForOutstandingCallbacks(FutureOr<void> Function() fn) {
     heartbeat();
 
-    Zone? zone;
     var counter = _AsyncCounter();
-    runZoned(() async {
-      zone = Zone.current;
-      _outstandingCallbackZones.add(zone!);
+    var oldCounter = _currentCounter;
+    _currentCounter = counter;
+
+    Zone? zone;
+    zone = Zone.current.fork();
+    _outstandingCallbackZones.add(zone);
+
+    zone.run(() async {
       try {
         await fn();
       } finally {
         counter.decrement();
       }
-    }, zoneValues: {_counterKey: counter});
+    });
 
     return counter.onZero.whenComplete(() {
-      _outstandingCallbackZones.remove(zone!);
+      _outstandingCallbackZones.remove(zone);
+      _currentCounter = oldCounter;
     });
   }
 
@@ -347,8 +401,18 @@ class Invoker {
     }
 
     _timeoutTimer = Zone.root.createTimer(timeout, () {
-      _outstandingCallbackZones.last.run(() {
+      var targetZone = _outstandingCallbackZones.isNotEmpty
+          ? _outstandingCallbackZones.last
+          : (_mainExecutionZone ?? Zone.root);
+
+      targetZone.run(() {
         _handleError(Zone.current, TimeoutException(message(), timeout));
+
+        var robustCompleter = _currentRobustCompleter;
+        if (robustCompleter != null && !robustCompleter.isCompleted) {
+          robustCompleter.complete(false);
+        }
+
         _outstandingCallbacks.complete();
       });
     });
@@ -439,57 +503,42 @@ class Invoker {
     _controller.setState(const State(Status.running, Result.success));
 
     _runCount++;
-    Chain.capture(
-      () {
-        _guardIfGuarded(() {
-          runZoned(
-            () async {
-              // Run the test asynchronously so that the "running" state change
-              // has a chance to hit its event handler(s) before the test produces
-              // an error. If an error is emitted before the first state change is
-              // handled, we can end up with [onError] callbacks firing before the
-              // corresponding [onStateChange], which violates the timing
-              // guarantees.
-              //
-              // Use the event loop over the microtask queue to avoid starvation.
-              await Future(() {});
+    _guardIfGuarded(() {
+      runZoned(
+        () async {
+          _mainExecutionZone = Zone.current;
+          // Run the test asynchronously so that the "running" state change
+          // has a chance to hit its event handler(s) before the test produces
+          // an error. If an error is emitted before the first state change is
+          // handled, we can end up with [onError] callbacks firing before the
+          // corresponding [onStateChange], which violates the timing
+          // guarantees.
+          //
+          // Use the event loop over the microtask queue to avoid starvation.
+          await Future(() {});
 
-              await _waitForOutstandingCallbacks(_test._body);
-              await _waitForOutstandingCallbacks(
-                () => runTearDowns(_tearDowns),
-              );
+          await _waitForOutstandingCallbacks(_test._body);
+          await _waitForOutstandingCallbacks(() => runTearDowns(_tearDowns));
 
-              if (_timeoutTimer != null) _timeoutTimer!.cancel();
+          if (_timeoutTimer != null) _timeoutTimer!.cancel();
 
-              if (liveTest.state.result != Result.success &&
-                  _runCount < liveTest.test.metadata.retry + 1) {
-                _controller.message(
-                  Message.print('Retry: ${liveTest.test.name}'),
-                );
-                _onRun();
-                return;
-              }
+          if (liveTest.state.result != Result.success &&
+              _runCount < liveTest.test.metadata.retry + 1) {
+            _controller.message(Message.print('Retry: ${liveTest.test.name}'));
+            _onRun();
+            return;
+          }
 
-              _controller.setState(
-                State(Status.complete, liveTest.state.result),
-              );
+          _controller.setState(State(Status.complete, liveTest.state.result));
 
-              _controller.completer.complete();
-            },
-            zoneValues: {
-              #test.invoker: this,
-              _forceOpenForTearDownKey: false,
-              #runCount: _runCount,
-            },
-            zoneSpecification: ZoneSpecification(
-              print: (_, _, _, line) => _print(line),
-            ),
-          );
-        });
-      },
-      when: liveTest.test.metadata.chainStackTraces,
-      errorZone: false,
-    );
+          _controller.completer.complete();
+        },
+        zoneValues: {#test.invoker: this, #runCount: _runCount},
+        zoneSpecification: ZoneSpecification(
+          print: (_, _, _, line) => _print(line),
+        ),
+      );
+    });
   }
 
   /// Runs [callback], in a [Invoker.guard] context if [_guarded] is `true`.
@@ -503,6 +552,87 @@ class Invoker {
 
   /// Prints [text] as a message to [_controller].
   void _print(String text) => _controller.message(Message.print(text));
+
+  /// Runs [fn] robustly in [zone], guaranteed to complete the returned [Future]
+  /// with `true` on success, or `false` on sync/async error, deadlocks, or timeouts.
+  Future<bool> runRobustly(
+    Zone baseZone,
+    FutureOr<void> Function() fn, {
+    Map<Object?, Object?>? values,
+    bool completeOnAsyncError = true,
+  }) {
+    Zone targetZoneToFork;
+    if (baseZone[#test.managedErrorZone] == true) {
+      targetZoneToFork = baseZone;
+    } else {
+      var errorZone = _errorZone;
+      if (errorZone == null || !identical(errorZone.parent, baseZone)) {
+        errorZone = baseZone.fork(
+          specification: _cachedZoneSpecification,
+          zoneValues: {#test.managedErrorZone: true},
+        );
+        _errorZone = errorZone;
+      }
+      targetZoneToFork = errorZone;
+    }
+
+    var completer = Completer<bool>();
+    var oldCompleter = _currentRobustCompleter;
+    _currentRobustCompleter = completer;
+    var oldCompleteOnAsyncError = _completeOnAsyncError;
+    _completeOnAsyncError = completeOnAsyncError;
+
+    runInZone(
+      targetZoneToFork,
+      () {
+        Object? result;
+        ({Object error, StackTrace stackTrace})? syncError;
+
+        try {
+          Chain.capture(
+            () {
+              try {
+                result = fn();
+              } catch (error, stackTrace) {
+                syncError = (error: error, stackTrace: stackTrace);
+              }
+            },
+            when: liveTest.test.metadata.chainStackTraces,
+            errorZone: false,
+          );
+        } catch (error, stackTrace) {
+          syncError = (error: error, stackTrace: stackTrace);
+        }
+
+        if (syncError case (:var error, :var stackTrace)) {
+          _handleError(Zone.current, error, stackTrace);
+          if (!completer.isCompleted) completer.complete(false);
+          return;
+        }
+
+        if (result case Future future) {
+          future.then(
+            (_) {
+              if (!completer.isCompleted) completer.complete(true);
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              _handleError(Zone.current, error, stackTrace);
+              if (!completer.isCompleted) completer.complete(false);
+            },
+          );
+        } else {
+          if (!completer.isCompleted) completer.complete(true);
+        }
+      },
+      of: Zone.current,
+      values: {#test.invoker: this, #runCount: _runCount, ...?values},
+    );
+
+    return completer.future.whenComplete(() {
+      _currentRobustCompleter = oldCompleter;
+      _completeOnAsyncError = oldCompleteOnAsyncError;
+    });
+  }
 }
 
 /// A manually incremented/decremented counter that completes a [Future] the

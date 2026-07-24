@@ -1,3 +1,8 @@
+## 0.7.14-wip
+
+* Make group, test, set-up and tear-down callbacks be
+  registered and run in the zone they are declared in.
+
 ## 0.7.13
 
 * Add `Compiler.cli` (the native CLI compiler).
