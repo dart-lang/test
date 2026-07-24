@@ -4,6 +4,9 @@
   when tests are run directly on platforms which support `dart:io`. The
   environment variable takes precedence over configuration in `dart_test.yaml`
   but is overridden by the `--reporter` flag when passed to the test runner.
+* Make group, test, set-up and tear-down callbacks be
+  registered and run in the zone they are declared in.
+
 
 ## 1.31.2
 
