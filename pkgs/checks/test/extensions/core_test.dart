@@ -87,7 +87,7 @@ void main() {
     test('equals', () {
       check(1).equals(1);
 
-      check(1).isRejectedBy((it) => it.equals(2), which: ['are not equal']);
+      check(1).isRejectedBy((it) => it.equals(2), which: ['is not equal']);
     });
     test('identical', () {
       check(1).identicalTo(1);

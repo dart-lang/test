@@ -18,21 +18,25 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [completionCondition] has optionally been checked.
-  Future<void> completes([AsyncCondition<T>? completionCondition]) {
-    return context.nestAsync<T>(() => ['completes to a value'], (actual) async {
-      try {
-        return Extracted.value(await actual);
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: ['a future that completes as an error'],
-          which: [
-            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    }, completionCondition);
-  }
+  Future<void> completes([AsyncCondition<T>? completionCondition]) =>
+      context.nestAsync<T>(
+        () => ['completes to a value'],
+        addPredicate: (predicateNoun) => 'completes to $predicateNoun',
+        (actual) async {
+          try {
+            return Extracted.value(await actual);
+          } catch (e, st) {
+            return Extracted.rejection(
+              actual: ['a future that completes as an error'],
+              which: [
+                ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+                ...indent(LineSplitter.split(st.toString())),
+              ],
+            );
+          }
+        },
+        completionCondition,
+      );
 
   /// Expects that the `Future` never completes as a value or an error.
   ///
@@ -142,28 +146,32 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [emittedCondition] has optionally been checked.
-  Future<void> emits([AsyncCondition<T>? emittedCondition]) {
-    return context.nestAsync<T>(() => ['emits a value'], (actual) async {
-      if (!await actual.hasNext) {
-        return Extracted.rejection(
-          actual: ['a stream'],
-          which: ['closed without emitting enough values'],
-        );
-      }
-      try {
-        await actual.peek;
-        return Extracted.value(await actual.next);
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: prefixFirst('a stream with error ', literal(e)),
-          which: [
-            'emitted an error instead of a value at:',
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    }, emittedCondition);
-  }
+  Future<void> emits([AsyncCondition<T>? emittedCondition]) =>
+      context.nestAsync<T>(
+        () => ['emits a value'],
+        addPredicate: (predicateNoun) => 'emits $predicateNoun',
+        (actual) async {
+          if (!await actual.hasNext) {
+            return Extracted.rejection(
+              actual: ['a stream'],
+              which: ['closed without emitting enough values'],
+            );
+          }
+          try {
+            await actual.peek;
+            return Extracted.value(await actual.next);
+          } catch (e, st) {
+            return Extracted.rejection(
+              actual: prefixFirst('a stream with error ', literal(e)),
+              which: [
+                'emitted an error instead of a value at:',
+                ...indent(LineSplitter.split(st.toString())),
+              ],
+            );
+          }
+        },
+        emittedCondition,
+      );
 
   /// Expects that the stream emits an error of type [E].
   ///
@@ -289,7 +297,15 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
                 if (satisfiedCount > 0)
                   'satisfied $satisfiedCount conditions then',
                 'failed to satisfy the condition at index $satisfiedCount',
-                if (failure.detail.depth > 0) ...[
+                if (failure.detail.collapsedDetails case (
+                  final expected,
+                  final actual,
+                )) ...[
+                  'because it:',
+                  '  Expected: $expected',
+                  '  Actual: $actual',
+                  if (which != null) ...indent(prefixFirst('Which: ', which)),
+                ] else if (failure.detail.depth > 0) ...[
                   'because it:',
                   ...indent(
                     failure.detail.actual.skip(1),
@@ -369,7 +385,14 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           final which = failure.rejection.which;
           final detail = failure.detail;
           final failed = 'failed the condition at index $index';
-          if (detail.depth > 0) {
+          if (detail.collapsedDetails case (final expected, final actual)) {
+            return [
+              '$failed because it:',
+              '  Expected: $expected',
+              '  Actual: $actual',
+              if (which != null) ...indent(prefixFirst('Which: ', which)),
+            ];
+          } else if (detail.depth > 0) {
             return [
               '$failed because it:',
               ...indent(detail.actual.skip(1), detail.depth - 1),

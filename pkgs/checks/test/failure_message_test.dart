@@ -8,23 +8,25 @@ void main() {
       check(() {
         check(1).isGreaterThan(2);
       }).throwsFailure().equals('''
-Expected: a int that:
-  is greater than <2>
+Expected: a value > <2>
 Actual: <1>
 Which: is not greater than <2>''');
     });
 
     test('includes matching portions of actual', () {
       check(() {
-        check(<dynamic>[]).length.equals(1);
+        check(<dynamic>[]).length
+          ..isLessThan(10)
+          ..isGreaterThan(1);
       }).throwsFailure().equals('''
 Expected: a List<dynamic> that:
   has length that:
-    equals <1>
+    is less than <10>
+    is greater than <1>
 Actual: a List<dynamic> that:
   has length that:
   Actual: <0>
-  Which: are not equal''');
+  Which: is not greater than <1>''');
     });
 
     test('includes matching portions of actual when label is multiline', () {
@@ -71,10 +73,9 @@ Actual: a Map<String, List<int>> that:
       check(() {
         check(EmptyToString()).equals(EmptyToString());
       }).throwsFailure().equals('''
-Expected: a EmptyToString that:
-  equals <empty toString()>
+Expected: <empty toString()>
 Actual: <empty toString()>
-Which: are not equal''');
+Which: is not equal''');
     });
   });
 }

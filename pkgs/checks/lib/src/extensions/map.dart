@@ -16,6 +16,10 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   Subject<V> operator [](K key) {
     return context.nest(
       () => prefixFirst('contains a value for ', literal(key)),
+      addPredicate: (predicateNoun) {
+        final l = literal(key);
+        return l.length == 1 ? 'has entry <${l.single}: $predicateNoun>' : null;
+      },
       (actual) {
         if (!actual.containsKey(key)) {
           return Extracted.rejection(
@@ -28,27 +32,42 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   }
 
   void isEmpty() {
-    context.expect(() => const ['is empty'], (actual) {
-      if (actual.isEmpty) return null;
-      return Rejection(which: ['is not empty']);
-    });
+    context.expect(
+      () => const ['is empty'],
+      predicateNoun: () => 'an empty map',
+      (actual) {
+        if (actual.isEmpty) return null;
+        return Rejection(which: ['is not empty']);
+      },
+    );
   }
 
   void isNotEmpty() {
-    context.expect(() => const ['is not empty'], (actual) {
-      if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is not empty']);
-    });
+    context.expect(
+      () => const ['is not empty'],
+      predicateNoun: () => 'a non-empty map',
+      (actual) {
+        if (actual.isNotEmpty) return null;
+        return Rejection(which: ['is not empty']);
+      },
+    );
   }
 
   /// Expects that the map contains [key] according to [Map.containsKey].
   void containsKey(K key) {
-    context.expect(() => prefixFirst('contains key ', literal(key)), (actual) {
-      if (actual.containsKey(key)) return null;
-      return Rejection(
-        which: prefixFirst('does not contain key ', literal(key)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('contains key ', literal(key)),
+      predicateNoun: () {
+        final l = literal(key);
+        return l.length == 1 ? 'a map with key ${l.single}' : null;
+      },
+      (actual) {
+        if (actual.containsKey(key)) return null;
+        return Rejection(
+          which: prefixFirst('does not contain key ', literal(key)),
+        );
+      },
+    );
   }
 
   /// Expects that the map contains some key such that [keyCondition] is
@@ -72,14 +91,19 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains [value] according to [Map.containsValue].
   void containsValue(V value) {
-    context.expect(() => prefixFirst('contains value ', literal(value)), (
-      actual,
-    ) {
-      if (actual.containsValue(value)) return null;
-      return Rejection(
-        which: prefixFirst('does not contain value ', literal(value)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('contains value ', literal(value)),
+      predicateNoun: () {
+        final l = literal(value);
+        return l.length == 1 ? 'a map with value ${l.single}' : null;
+      },
+      (actual) {
+        if (actual.containsValue(value)) return null;
+        return Rejection(
+          which: prefixFirst('does not contain value ', literal(value)),
+        );
+      },
+    );
   }
 
   /// Expects that the map contains some value such that [valueCondition] is
@@ -107,6 +131,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// {@macro deep_collection_equals}
   void deepEquals(Map<Object?, Object?> expected) => context.expect(
     () => prefixFirst('is deeply equal to ', literal(expected)),
+    predicateNoun: () => literal(expected).firstOrNull,
     (actual) {
       final which = deepCollectionEquals(actual, expected);
       if (which == null) return null;

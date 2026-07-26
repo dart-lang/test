@@ -83,16 +83,27 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(
     label: 'a $T',
     fail: (f) {
       final which = f.rejection.which;
+      final collapsed = f.detail.collapsedDetails;
+      final (depth, expectedLines, actualLines) = collapsed != null
+          ? (0, ['Expected: ${collapsed.$1}'], ['Actual: ${collapsed.$2}'])
+          : (
+              f.detail.depth,
+              prefixFirst('Expected: ', f.detail.expected),
+              [
+                ...prefixFirst('Actual: ', f.detail.actual),
+                if (!f.detail.hasCustomActual)
+                  ...indent(
+                    prefixFirst('Actual: ', f.rejection.actual),
+                    f.detail.depth,
+                  ),
+              ],
+            );
       throw TestFailure(
         [
-          ...prefixFirst('Expected: ', f.detail.expected),
-          ...prefixFirst('Actual: ', f.detail.actual),
-          ...indent(
-            prefixFirst('Actual: ', f.rejection.actual),
-            f.detail.depth,
-          ),
+          ...expectedLines,
+          ...actualLines,
           if (which != null && which.isNotEmpty)
-            ...indent(prefixFirst('Which: ', which), f.detail.depth),
+            ...indent(prefixFirst('Which: ', which), depth),
           if (because != null) 'Reason: $because',
         ].join('\n'),
       );
@@ -175,7 +186,7 @@ Iterable<String> describe<T>(Condition<T> condition) {
     allowUnawaited: true,
   );
   condition(Subject._(context));
-  return context.detail(context).expected.skip(1);
+  return context.detail(context, null).expected.skip(1);
 }
 
 /// Creates a description of the expectations checked by [condition].
@@ -199,7 +210,7 @@ Future<Iterable<String>> describeAsync<T>(AsyncCondition<T> condition) async {
     allowUnawaited: true,
   );
   await condition(Subject._(context));
-  return context.detail(context).expected.skip(1);
+  return context.detail(context, null).expected.skip(1);
 }
 
 extension ContextExtension<T> on Subject<T> {
@@ -244,12 +255,20 @@ extension ContextExtension<T> on Subject<T> {
 /// {@template clause_description}
 /// The clause callback returns a description of what is checked which stands
 /// on its own.
-/// For instance the `is equal to <1>` in:
+/// For instance the `starts with 'a'` in:
 ///
 /// ```
-/// Expected: a int that:
-///   is equal to <1>
+/// Expected: a String that:
+///   starts with 'a'
+///   ends with 'z'
 /// ```
+///
+/// An expectation can optionally provide a [predicateNoun] callback.
+/// [predicateNoun] should return a single-line noun phrase including this
+/// expectation modifying the noun (often just a representation of the expected
+/// value) to be used when collapsing simple expectations. If the expected
+/// value's representation is multiline, [predicateNoun] should return `null` to
+/// disable collapsing.
 /// {@endtemplate}
 ///
 ///
@@ -264,9 +283,10 @@ extension ContextExtension<T> on Subject<T> {
 /// For instance the `completes to a value` in:
 ///
 /// ```
-/// Expected a Future<int> that:
+/// Expected a Future<String> that:
 ///   completes to a value that:
-///     is equal to <1>
+///     starts with 'a'
+///     ends with 'z'
 /// ```
 ///
 /// A label should also be sensible when it is read as a clause.
@@ -277,6 +297,14 @@ extension ContextExtension<T> on Subject<T> {
 ///   Expected a Future<int> that:
 ///     completes to a value
 /// ```
+///
+/// A nesting context can optionally provide an [addPredicate] callback.
+/// [addPredicate] takes a noun phrase and modifies it to describe how the
+/// nested noun-phrase is associated with the parent subject. It should return a
+/// combined single-line collapsed description for this nested context (for
+/// example `has` uses `(predicateNoun) => 'has $name $predicateNoun'`). It
+/// should return `null` if this level cannot be collapsed (for example if a key
+/// is too large).
 /// {@endtemplate}
 ///
 ///
@@ -324,13 +352,14 @@ extension ContextExtension<T> on Subject<T> {
 /// rejection are indented to that level of nesting.
 ///
 /// ```
-/// Expected: a Future<int> that:
+/// Expected: a Future<String> that:
 ///   completes to a value that:
-///     equals <1>
-/// Actual: a Future<int> that:
+///     starts with 'a'
+///     ends with 'z'
+/// Actual: a Future<String> that:
 ///   completes to a value that:
-///   Actual: <0>
-///   Which: are not equal
+///   Actual: 'abcd'
+///   Which: does not end with 'z'
 /// ```
 ///
 /// ```dart
@@ -422,8 +451,9 @@ abstract final class Context<T> {
   /// ```
   void expect(
     Iterable<String> Function() clause,
-    Rejection? Function(T) predicate,
-  );
+    Rejection? Function(T) predicate, {
+    String? Function()? predicateNoun,
+  });
 
   /// Expect that [predicate] will not result in a [Rejection] for the checked
   /// value.
@@ -453,8 +483,9 @@ abstract final class Context<T> {
   /// ```
   Future<void> expectAsync(
     Iterable<String> Function() clause,
-    FutureOr<Rejection?> Function(T) predicate,
-  );
+    FutureOr<Rejection?> Function(T) predicate, {
+    String? Function()? predicateNoun,
+  });
 
   /// Expect that [predicate] will not invoke the passed callback with a
   /// [Rejection] at any point.
@@ -493,8 +524,9 @@ abstract final class Context<T> {
   /// ```
   void expectUnawaited(
     Iterable<String> Function() clause,
-    void Function(T, void Function(Rejection)) predicate,
-  );
+    void Function(T, void Function(Rejection)) predicate, {
+    String? Function()? predicateNoun,
+  });
 
   /// Extract a property from the value for further checking.
   ///
@@ -536,6 +568,7 @@ abstract final class Context<T> {
     Iterable<String> Function() label,
     Extracted<R> Function(T) extract, {
     bool atSameLevel = false,
+    String? Function(String predicateNoun)? addPredicate,
   });
 
   /// Extract an asynchronous property from the value for further checking.
@@ -574,8 +607,9 @@ abstract final class Context<T> {
   Future<void> nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T) extract,
-    AsyncCondition<R>? nestedCondition,
-  );
+    AsyncCondition<R>? nestedCondition, {
+    String? Function(String predicateNoun)? addPredicate,
+  });
 }
 
 /// A property extracted from a value being checked, or a rejection.
@@ -689,6 +723,18 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// it, the "that:" will be will be omitted.
   final Iterable<String> Function() _label;
 
+  /// A callback that takes a collapsed single-line predicate noun phrase from a
+  /// nested subject and expands it with the property or condition contributed
+  /// by this subject level.
+  ///
+  /// Should return a combined single-line noun phrase, or `null` if this
+  /// level cannot be collapsed (for example if a key or property is too large).
+  ///
+  /// When `null`, this context level cannot collapse nested predicate nouns via
+  /// custom formatting (though if `_parent == null`, the root context can still
+  /// attempt a fallback formatting with its label).
+  final String? Function(String predicateNoun)? _addPredicate;
+
   static Iterable<String> _emptyLabel() => const [];
 
   /// Create a context appropriate for a subject which is not nested under any
@@ -701,6 +747,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     String? label,
   }) : _value = value,
        _label = (() => [label ?? '']),
+       _addPredicate = null,
        _fail = fail,
        _allowAsync = allowAsync,
        _allowUnawaited = allowUnawaited,
@@ -715,6 +762,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       _fail = original._fail,
       _allowAsync = original._allowAsync,
       _allowUnawaited = original._allowUnawaited,
+      _addPredicate = null,
       // Never read from an aliased context because they are never present in
       // `_clauses`.
       _label = _emptyLabel;
@@ -722,8 +770,12 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// Create a context nested under [parent].
   ///
   /// The [_label] callback should not return an empty iterable.
-  _TestContext._child(this._value, this._label, _TestContext<dynamic> parent)
-    : _parent = parent,
+  _TestContext._child(
+    this._value,
+    this._label,
+    this._addPredicate,
+    _TestContext<dynamic> parent,
+  ) : _parent = parent,
       _fail = parent._fail,
       _allowAsync = parent._allowAsync,
       _allowUnawaited = parent._allowUnawaited,
@@ -733,9 +785,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   void expect(
     Iterable<String> Function() clause,
-    Rejection? Function(T) predicate,
-  ) {
-    _clauses.add(_ExpectationClause(clause));
+    Rejection? Function(T) predicate, {
+    String? Function()? predicateNoun,
+  }) {
+    _clauses.add(_ExpectationClause(clause, predicateNoun));
     final rejection = _value.apply(
       (actual) => predicate(actual)?._fillActual(actual),
     );
@@ -747,17 +800,19 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   Future<void> expectAsync(
     Iterable<String> Function() clause,
-    FutureOr<Rejection?> Function(T) predicate,
-  ) {
+    FutureOr<Rejection?> Function(T) predicate, {
+    String? Function()? predicateNoun,
+  }) {
     if (!_allowAsync) throw AsyncConditionDisallowed._('Async');
-    return _expectAsync(clause, predicate);
+    return _expectAsync(clause, predicate, predicateNoun: predicateNoun);
   }
 
   Future<void> _expectAsync(
     Iterable<String> Function() clause,
-    FutureOr<Rejection?> Function(T) predicate,
-  ) async {
-    _clauses.add(_ExpectationClause(clause));
+    FutureOr<Rejection?> Function(T) predicate, {
+    String? Function()? predicateNoun,
+  }) async {
+    _clauses.add(_ExpectationClause(clause, predicateNoun));
     final outstandingWork = TestHandle.current.markPending();
     try {
       final rejection = await _value.apply(
@@ -773,10 +828,11 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   void expectUnawaited(
     Iterable<String> Function() clause,
-    void Function(T actual, void Function(Rejection) reject) predicate,
-  ) {
+    void Function(T actual, void Function(Rejection) reject) predicate, {
+    String? Function()? predicateNoun,
+  }) {
     if (!_allowUnawaited) throw AsyncConditionDisallowed._('Unawaited');
-    _clauses.add(_ExpectationClause(clause));
+    _clauses.add(_ExpectationClause(clause, predicateNoun));
     _value.apply((actual) {
       predicate(actual, (r) => _fail(_failure(r._fillActual(actual))));
     });
@@ -787,6 +843,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     Iterable<String> Function() label,
     Extracted<R> Function(T) extract, {
     bool atSameLevel = false,
+    String? Function(String predicateNoun)? addPredicate,
   }) {
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
     final rejection = result._rejection;
@@ -801,7 +858,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       _aliases.add(context);
       _clauses.add(_ExpectationClause(label));
     } else {
-      context = _TestContext._child(value, label, this);
+      context = _TestContext._child(value, label, addPredicate, this);
       _clauses.add(context);
     }
     return Subject._(context);
@@ -810,18 +867,25 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   @override
   Future<void> nestAsync<R>(
     Iterable<String> Function() label,
-    FutureOr<Extracted<R>> Function(T) extract, [
-    AsyncCondition<R>? nestedCondition,
-  ]) {
+    FutureOr<Extracted<R>> Function(T) extract,
+    AsyncCondition<R>? nestedCondition, {
+    String? Function(String predicateNoun)? addPredicate,
+  }) {
     if (!_allowAsync) throw AsyncConditionDisallowed._('Async');
-    return _nestAsync(label, extract, nestedCondition);
+    return _nestAsync(
+      label,
+      extract,
+      nestedCondition,
+      addPredicate: addPredicate,
+    );
   }
 
   Future<void> _nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T) extract,
-    AsyncCondition<R>? nestedCondition,
-  ) async {
+    AsyncCondition<R>? nestedCondition, {
+    String? Function(String predicateNoun)? addPredicate,
+  }) async {
     final outstandingWork = TestHandle.current.markPending();
     try {
       final result = await _value.mapAsync(
@@ -833,7 +897,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
         _fail(_failure(rejection));
       }
       final value = result._value ?? _Absent<R>();
-      final context = _TestContext<R>._child(value, label, this);
+      final context = _TestContext<R>._child(value, label, addPredicate, this);
       _clauses.add(context);
       await nestedCondition?.call(Subject<R>._(context));
     } finally {
@@ -842,7 +906,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   CheckFailure _failure(Rejection rejection) =>
-      CheckFailure(rejection, () => _root.detail(this));
+      CheckFailure(rejection, () => _root.detail(this, rejection));
 
   _TestContext get _root {
     _TestContext<dynamic> current = this;
@@ -852,37 +916,174 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     return current;
   }
 
+  /// Returns `true` if this context nests under [clause] (in other words,
+  /// whether [clause] is this context itself or one of its ancestors).
+  ///
+  /// This is used to identify which clauses are on the path to the failing
+  /// expectation, and should therefore be formatted with the rejection details.
+  bool _nestsUnder(_ClauseDescription clause) {
+    if (identical(clause, this)) return true;
+    if (clause.isLeaf) return false;
+    var current = _parent;
+    while (current != null) {
+      if (identical(current, clause)) return true;
+      current = current._parent;
+    }
+    return false;
+  }
+
   @override
-  FailureDetail detail(_TestContext failingContext) {
+  bool get isLeaf => false;
+
+  @override
+  FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
-    var foundDepth = thisContextFailed ? 0 : -1;
-    var foundOverlap = thisContextFailed ? 0 : -1;
-    var successfulOverlap = 0;
-    final expected = <String>[];
-    if (_clauses.isEmpty) {
-      expected.addAll(_label());
-    } else {
-      final label = postfixLast(' that:', _label());
-      expected.addAll(label);
-      final labelLines = label.length;
-      for (var clause in _clauses) {
-        final details = clause.detail(failingContext);
-        expected.addAll(indent(details.expected));
-        if (details.depth >= 0) {
-          assert(foundDepth == -1);
-          assert(foundOverlap == -1);
-          foundDepth = details.depth + 1;
-          foundOverlap =
-              details._actualOverlap + successfulOverlap + labelLines;
-        } else {
-          if (foundDepth == -1) {
-            successfulOverlap += details.expected.length;
-          }
+    return _collapsedDetails(
+          failingContext,
+          rejection,
+          thisContextFailed: thisContextFailed,
+        ) ??
+        _fullDetails(
+          failingContext,
+          rejection,
+          thisContextFailed: thisContextFailed,
+        );
+  }
+
+  /// Returns a collapsed single-line [FailureDetail], or `null` if this context
+  /// cannot be collapsed.
+  ///
+  /// If this context has exactly one clause, and that child clause produces a
+  /// collapsed representation (`childCollapsed`), this method attempts to
+  /// expand that child representation into a single-line failure detail for
+  /// this context level.
+  ///
+  /// Returns `null` if there is not exactly one clause, if the child clause did
+  /// not collapse, or if expanding the child representation at this level fails
+  /// (e.g., if `_addPredicate` returns `null` or the resulting root string
+  /// exceeds length limits).
+  FailureDetail? _collapsedDetails(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required bool thisContextFailed,
+  }) {
+    final clause = _clauses.singleOrNull;
+    if (clause == null) return null;
+    final isFailingClause =
+        thisContextFailed || failingContext._nestsUnder(clause);
+    final clauseRejection = isFailingClause ? rejection : null;
+    final details = clause.detail(failingContext, clauseRejection);
+    final childCollapsed = details.collapsedDetails;
+    if (childCollapsed == null) return null;
+
+    final (childExpected, childActual) = childCollapsed;
+    (String, String)? expandedCollapsed;
+    if (_addPredicate != null) {
+      final exp = _addPredicate(childExpected);
+      final act = _addPredicate(childActual);
+      if (exp != null && act != null) expandedCollapsed = (exp, act);
+    } else if (_parent == null) {
+      if (clause.isLeaf) {
+        expandedCollapsed = (childExpected, childActual);
+      } else {
+        final rootLabel = _label().single;
+        final (exp, act) = rootLabel.isEmpty
+            ? (childExpected, childActual)
+            : (
+                '$rootLabel that $childExpected',
+                '$rootLabel that $childActual',
+              );
+
+        if (exp.length <= 80 && act.length <= 80) {
+          expandedCollapsed = (exp, act);
         }
       }
     }
-    return FailureDetail(expected, foundOverlap, foundDepth);
+    if (expandedCollapsed == null) return null;
+
+    final depth = details.depth >= 0
+        ? details.depth
+        : (thisContextFailed ? 0 : -1);
+    return FailureDetail(
+      [expandedCollapsed.$1],
+      -1,
+      depth,
+      collapsedDetails: expandedCollapsed,
+    );
+  }
+
+  /// Computes the uncollapsed, multi-line [FailureDetail] for this context and
+  /// its clauses.
+  ///
+  /// Iterates through all clauses under this context to construct the complete
+  /// multi-line `expected` and `actual` descriptions, including indentation,
+  /// clause nesting, and overlap accounting for failing and passing clauses.
+  FailureDetail _fullDetails(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required bool thisContextFailed,
+  }) {
+    if (_clauses.isEmpty) {
+      return FailureDetail(
+        _label(),
+        thisContextFailed ? 0 : -1,
+        thisContextFailed ? 0 : -1,
+      );
+    }
+    var foundDepth = thisContextFailed ? 0 : -1;
+    var foundOverlap = thisContextFailed ? 0 : -1;
+
+    final expected = [...postfixLast(' that:', _label())];
+    final actual = [...expected];
+    var canCollapse = true;
+    var didCollapse = false;
+
+    var successfulOverlap = 0;
+    for (var clause in _clauses) {
+      final isFailingClause =
+          thisContextFailed || failingContext._nestsUnder(clause);
+      final clauseRejection = isFailingClause ? rejection : null;
+      final details = clause.detail(failingContext, clauseRejection);
+      expected.addAll(indent(details.expected));
+
+      if (isFailingClause) {
+        final childCollapsed = details.collapsedDetails;
+        if (!clause.isLeaf && childCollapsed != null) {
+          actual.addAll(indent([childCollapsed.$2]));
+          didCollapse = true;
+        } else if (details.hasCustomActual) {
+          actual.addAll(indent(details.actual));
+          didCollapse = true;
+        } else {
+          canCollapse = false;
+        }
+      } else {
+        actual.addAll(indent(details.expected));
+      }
+
+      if (details.depth >= 0) {
+        assert(foundDepth == -1);
+        assert(foundOverlap == -1);
+        foundDepth = details.depth + 1;
+
+        final labelLines = postfixLast(' that:', _label()).length;
+        final overlapIncrement = details.collapsedDetails != null ? 1 : 0;
+        foundOverlap =
+            labelLines +
+            successfulOverlap +
+            details._actualOverlap +
+            overlapIncrement;
+      } else if (foundDepth == -1) {
+        successfulOverlap += details.expected.length;
+      }
+    }
+    return FailureDetail(
+      expected,
+      foundOverlap,
+      foundDepth,
+      actual: (canCollapse && didCollapse) ? actual : null,
+    );
   }
 }
 
@@ -891,24 +1092,27 @@ final class _SkippedContext<T> implements Context<T> {
   @override
   void expect(
     Iterable<String> Function() clause,
-    Rejection? Function(T) predicate,
-  ) {
+    Rejection? Function(T) predicate, {
+    String? Function()? predicateNoun,
+  }) {
     // no-op
   }
 
   @override
   Future<void> expectAsync(
     Iterable<String> Function() clause,
-    FutureOr<Rejection?> Function(T) predicate,
-  ) async {
+    FutureOr<Rejection?> Function(T) predicate, {
+    String? Function()? predicateNoun,
+  }) async {
     // no-op
   }
 
   @override
   void expectUnawaited(
     Iterable<String> Function() clause,
-    void Function(T actual, void Function(Rejection) reject) predicate,
-  ) {
+    void Function(T actual, void Function(Rejection) reject) predicate, {
+    String? Function()? predicateNoun,
+  }) {
     // no-op
   }
 
@@ -917,6 +1121,7 @@ final class _SkippedContext<T> implements Context<T> {
     Iterable<String> Function() label,
     Extracted<R> Function(T p1) extract, {
     bool atSameLevel = false,
+    String? Function(String predicateNoun)? addPredicate,
   }) {
     return Subject._(_SkippedContext());
   }
@@ -925,22 +1130,45 @@ final class _SkippedContext<T> implements Context<T> {
   Future<void> nestAsync<R>(
     Iterable<String> Function() label,
     FutureOr<Extracted<R>> Function(T p1) extract,
-    AsyncCondition<R>? nestedCondition,
-  ) async {
+    AsyncCondition<R>? nestedCondition, {
+    String? Function(String predicateNoun)? addPredicate,
+  }) async {
     // no-op
   }
 }
 
 abstract interface class _ClauseDescription {
-  FailureDetail detail(_TestContext failingContext);
+  FailureDetail detail(_TestContext failingContext, Rejection? rejection);
+  bool get isLeaf;
 }
 
 class _ExpectationClause implements _ClauseDescription {
   final Iterable<String> Function() _expected;
-  _ExpectationClause(this._expected);
+  final String? Function()? _predicateNoun;
+  _ExpectationClause(this._expected, [this._predicateNoun]);
   @override
-  FailureDetail detail(_TestContext failingContext) =>
-      FailureDetail(_expected(), -1, -1);
+  FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
+    final collapsedExpected = _predicateNoun?.call();
+    final actualList = rejection?.actual.toList();
+    final collapsedActualString =
+        (collapsedExpected != null &&
+            actualList != null &&
+            actualList.length == 1)
+        ? actualList.single
+        : null;
+    final collapsedDetails = collapsedActualString != null
+        ? (collapsedExpected!, collapsedActualString)
+        : null;
+    return FailureDetail(
+      _expected(),
+      -1,
+      -1,
+      collapsedDetails: collapsedDetails,
+    );
+  }
+
+  @override
+  bool get isLeaf => true;
 }
 
 /// The result an expectation that failed for a subject..
@@ -965,7 +1193,7 @@ final class CheckFailure {
 ///
 /// A subject may have some number of succeeding expectations, and the failure may
 /// be for an expectation against a property derived from the value at the root
-/// of the subject. For example, in `check([]).length.equals(1)` the
+/// of the subject. For example, in `check([]).length.identicalTo(1)` the
 /// specific value that gets rejected is `0` from the length of the list, and
 /// the subject that sees the rejection is nested with the label "has length".
 final class FailureDetail {
@@ -979,16 +1207,20 @@ final class FailureDetail {
   ///
   /// For example:
   ///
-  ///   a List that:
-  ///     has length that:
-  ///       equals &lt;3&gt;
+  /// ```
+  ///   a List<int> that:
+  ///     has first element that:
+  ///       is greater than <10>
+  ///       is less than <100>
+  /// ``````
+
   final Iterable<String> expected;
 
   /// A description of the conditions the checked value satisfied.
   ///
   /// Matches the format of [expected], except it will be cut off after the
   /// label for the subject that had a failing expectation. For example, if the
-  /// equality check for the length of a list fails:
+  /// identity check for the length of a list fails:
   ///
   ///   a List that:
   ///     has length that:
@@ -997,7 +1229,8 @@ final class FailureDetail {
   /// list. Instead the "Actual: " value from the rejection can be used without
   /// indentation.
   Iterable<String> get actual =>
-      _actualOverlap > 0 ? expected.take(_actualOverlap + 1) : const [];
+      _actual ??
+      (_actualOverlap > 0 ? expected.take(_actualOverlap + 1) : const []);
 
   /// The number of lines from [expected] which describe conditions that were
   /// successful.
@@ -1026,7 +1259,18 @@ final class FailureDetail {
   /// against the `has length` label.
   final int depth;
 
-  FailureDetail(this.expected, this._actualOverlap, this.depth);
+  final (String, String)? collapsedDetails;
+  final Iterable<String>? _actual;
+
+  bool get hasCustomActual => _actual != null;
+
+  FailureDetail(
+    this.expected,
+    this._actualOverlap,
+    this.depth, {
+    this.collapsedDetails,
+    Iterable<String>? actual,
+  }) : _actual = actual;
 }
 
 /// A description of a value that failed an expectation.
@@ -1075,5 +1319,5 @@ class AsyncConditionDisallowed implements Exception {
   final String flavor;
   AsyncConditionDisallowed._(this.flavor);
   @override
-  String toString() => '$flavor expectations cannot be used on this subject';
+  String toString() => '$flavor expectations cannot be used on a this subject';
 }

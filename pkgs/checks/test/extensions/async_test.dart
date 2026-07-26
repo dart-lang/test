@@ -323,9 +323,9 @@ Which: threw 'error' at:
             'satisfied 1 conditions then',
             'failed to satisfy the condition at index 1',
             'because it:',
-            '  emits a value that:',
-            '  Actual: <1>',
-            '  Which: are not equal',
+            '  Expected: emits <2>',
+            '  Actual: emits <1>',
+            '  Which: is not equal',
           ],
         );
       });
@@ -579,9 +579,9 @@ Which: threw 'error' at:
           which: [
             'failed to satisfy any condition',
             'failed the condition at index 0 because it:',
-            '  emits a value that:',
-            '  Actual: <0>',
-            '  Which: are not equal',
+            '  Expected: emits <42>',
+            '  Actual: emits <0>',
+            '  Which: is not equal',
             'failed the condition at index 1 because it:',
             '  ended after emitting 1 elements with none matching',
           ],
