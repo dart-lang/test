@@ -35,6 +35,20 @@ void main() {
           ],
         );
       });
+      test('evaluates condition', () {
+        check(() => throw StateError('oops!')).isRejectedBy(
+          (it) => it.throws<StateError>(
+            (it) => it.has((e) => e.message, 'message').equals('wrong'),
+          ),
+          actual: ["'oops!'"],
+          which: ['differs at offset 0:', '  wrong', '  oops!', '  ^'],
+        );
+      });
+      test('returns valid subject', () {
+        check(
+          () => throw StateError('oops!'),
+        ).throws<StateError>().has((e) => e.message, 'message').equals('oops!');
+      });
     });
 
     group('returnsNormally', () {
@@ -52,6 +66,16 @@ void main() {
           actual: ['a function that throws'],
           which: ['threw <Bad state: oops!> at:', '  fake trace'],
         );
+      });
+      test('evaluates condition', () {
+        check(() => 1).isRejectedBy(
+          (it) => it.returnsNormally((it) => it.equals(2)),
+          actual: ['<1>'],
+          which: ['are not equal'],
+        );
+      });
+      test('returns valid subject', () {
+        check(() => 1).returnsNormally().equals(1);
       });
     });
   });

@@ -40,6 +40,9 @@ void main() {
           ]),
         );
       });
+      test('returns Future<Subject> and can be awaited', () async {
+        (await check(_futureSuccess()).completes()).equals(42);
+      });
     });
 
     group('throws', () {
@@ -82,6 +85,11 @@ void main() {
         ).hasAsyncDescriptionWhich(
           (it) => it.deepEquals(['  completes to an error of type StateError']),
         );
+      });
+      test('returns Future<Subject> and can be awaited', () async {
+        (await check(_futureFail()).throws<UnimplementedError>())
+            .has((p0) => p0.message, 'message')
+            .isNull();
       });
     });
 
@@ -182,6 +190,9 @@ Which: threw 'error' at:
         await softCheckAsync<StreamQueue<int>>(queue, (it) => it.emits());
         await check(queue).emitsError();
       });
+      test('returns Future<Subject> and can be awaited', () async {
+        (await check(_countingStream(5)).emits()).equals(0);
+      });
     });
 
     group('emitsError', () {
@@ -246,6 +257,13 @@ Which: threw 'error' at:
         final queue = _countingStream(1);
         await softCheckAsync<StreamQueue<int>>(queue, (it) => it.emitsError());
         await check(queue).emits((it) => it.equals(0));
+      });
+      test('returns Future<Subject> and can be awaited', () async {
+        (await check(
+              _countingStream(1, errorAt: 0),
+            ).emitsError<UnimplementedError>())
+            .has((e) => e.message, 'message')
+            .equals('Error at 1');
       });
     });
 

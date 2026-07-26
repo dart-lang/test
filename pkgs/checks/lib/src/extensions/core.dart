@@ -103,14 +103,17 @@ extension CoreChecks<T> on Subject<T> {
   /// Expects that the value is assignable to type [T].
   ///
   /// If the value is a [T], returns a [Subject] for further expectations.
-  Subject<R> isA<R>() {
-    return context.nest<R>(() => ['is a $R'], (actual) {
+  Subject<R> isA<R>([Condition<R>? and]) => context.nest<R>(
+    () => ['is a $R'],
+    (actual) {
       if (actual is! R) {
         return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
       }
       return Extracted.value(actual);
-    }, atSameLevel: true);
-  }
+    },
+    nestedCondition: and,
+    atSameLevel: true,
+  );
 
   /// Expects that the value is not assignable to type [R].
   void isNotA<R>() {
@@ -162,12 +165,15 @@ extension BoolChecks on Subject<bool> {
 }
 
 extension NullableChecks<T> on Subject<T?> {
-  Subject<T> isNotNull() {
-    return context.nest<T>(() => ['is not null'], (actual) {
+  Subject<T> isNotNull([Condition<T>? and]) => context.nest<T>(
+    () => ['is not null'],
+    (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
-    }, atSameLevel: true);
-  }
+    },
+    nestedCondition: and,
+    atSameLevel: true,
+  );
 
   void isNull() {
     context.expect(() => const ['is null'], (actual) {
