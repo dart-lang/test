@@ -1,5 +1,7 @@
 ## 0.6.20-wip
 
+* Pass sanitizer environment defaults when running tests compiled as native CLI
+  bundles.
 * Add support for `DART_TEST_REPORTER` environment variable.
 * Suppress dart2js compiler output for successful compiles.
 * Include passing test  messages within the `Passing tests` group in

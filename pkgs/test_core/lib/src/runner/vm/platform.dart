@@ -245,10 +245,12 @@ class VMPlatform extends PlatformPlugin {
     switch (platform.compiler) {
       case Compiler.cli:
         var executable = await _compileToCli(platform, path, suiteMetadata);
-        return await Process.start(executable, [
-          socket.address.host,
-          socket.port.toString(),
-        ], mode: ProcessStartMode.inheritStdio);
+        return await Process.start(
+          executable,
+          [socket.address.host, socket.port.toString()],
+          environment: _environmentFor(platform),
+          mode: ProcessStartMode.inheritStdio,
+        );
       case Compiler.exe:
         var sharedLibrary = await _compileToNative(
           platform,

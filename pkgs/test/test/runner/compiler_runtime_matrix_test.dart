@@ -21,6 +21,18 @@ void main() {
 
   for (var runtime in Runtime.builtIn) {
     for (var compiler in runtime.supportedCompilers) {
+      final sanitizerSuffix = switch (runtime) {
+        Runtime.vmAsan => 'asan',
+        Runtime.vmMsan => 'msan',
+        Runtime.vmTsan => 'tsan',
+        _ => null,
+      };
+      final sanitizerEnvironment = switch (runtime) {
+        Runtime.vmAsan => 'ASAN_OPTIONS',
+        Runtime.vmMsan => 'MSAN_OPTIONS',
+        Runtime.vmTsan => 'TSAN_OPTIONS',
+        _ => null,
+      };
       // Ignore the platforms we can't run on this OS.
       if ((runtime == Runtime.edge && !Platform.isWindows) ||
           (runtime == Runtime.safari && !Platform.isMacOS) ||
@@ -39,16 +51,18 @@ void main() {
         skipReason = 'https://github.com/dart-lang/test/issues/1942';
       } else if (runtime == Runtime.firefox && Platform.isMacOS) {
         skipReason = 'https://github.com/dart-lang/test/pull/2276';
-      } else if (runtime == Runtime.vmAsan &&
-          !File('$sdkDir/bin/dartaotruntime_asan').existsSync()) {
-        skipReason = 'SDK too old';
-      } else if (runtime == Runtime.vmMsan &&
-          !File('$sdkDir/bin/dartaotruntime_msan').existsSync()) {
-        skipReason = 'SDK too old';
-      } else if (runtime == Runtime.vmTsan &&
-          !File('$sdkDir/bin/dartaotruntime_tsan').existsSync()) {
+      } else if (compiler == Compiler.cli &&
+          sanitizerSuffix != null &&
+          !supportsCliCompilerSanitizers) {
         skipReason = 'SDK too old';
       } else if (compiler == Compiler.cli && !supportsCliCompiler) {
+        skipReason = 'SDK too old';
+      } else if (sanitizerSuffix != null &&
+          !File(
+            '$sdkDir/bin/'
+            '${compiler == Compiler.cli ? 'dartcliruntime' : 'dartaotruntime'}'
+            '_$sanitizerSuffix',
+          ).existsSync()) {
         skipReason = 'SDK too old';
       }
       group(
@@ -149,6 +163,43 @@ void main() {
                   : null,
             );
           }
+
+          if (sanitizerEnvironment != null && compiler == Compiler.cli) {
+            test(
+              'sets sanitizer environment defaults',
+              () async {
+                await d
+                    .file(
+                      'test.dart',
+                      _sanitizerEnvironmentTest(
+                        sanitizerEnvironment,
+                        'halt_on_error=1:exitcode=6:symbolize=1',
+                      ),
+                    )
+                    .create();
+                var test = await runTest(testArgs);
+                await test.shouldExit(0);
+              },
+              skip: Platform.environment.containsKey(sanitizerEnvironment)
+                  ? '$sanitizerEnvironment is set by the test environment'
+                  : null,
+            );
+
+            test('preserves sanitizer environment options', () async {
+              const options = 'halt_on_error=1:exitcode=7:symbolize=1';
+              await d
+                  .file(
+                    'test.dart',
+                    _sanitizerEnvironmentTest(sanitizerEnvironment, options),
+                  )
+                  .create();
+              var test = await runTest(
+                testArgs,
+                environment: {sanitizerEnvironment: options},
+              );
+              await test.shouldExit(0);
+            });
+          }
         },
       );
     }
@@ -199,3 +250,16 @@ void main() async {
   stderr.writeln('world');
   test('success', () {});
 }''';
+
+String _sanitizerEnvironmentTest(String name, String value) =>
+    '''
+import 'dart:io';
+
+import 'package:test/test.dart';
+
+void main() {
+  test('sanitizer environment', () {
+    expect(Platform.environment['$name'], '$value');
+  });
+}
+''';
