@@ -1,5 +1,7 @@
 ## 1.32.0-wip
 
+* Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
+  runtimes.
 * Add support for `DART_TEST_REPORTER` environment variable in test runner and
   when tests are run directly on platforms which support `dart:io`. The
   environment variable takes precedence over configuration in `dart_test.yaml`
