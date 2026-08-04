@@ -103,12 +103,11 @@ class _ImportCheck {
     final package = entryPoints.first.pathSegments.first;
     assert(entryPoints.skip(1).every((e) => e.pathSegments.first == package));
 
-    final visited = <Uri>{};
     final queue = Queue<Uri>()..addAll(entryPoints);
+    final seen = <Uri>{...entryPoints};
 
     while (queue.isNotEmpty) {
       final current = queue.removeFirst();
-      if (!visited.add(current)) continue;
 
       final imports = await _findImports(current);
       final samePackageImports = imports
@@ -122,11 +121,7 @@ class _ImportCheck {
 
       yield _Source(current, samePackageImports);
 
-      for (final import in samePackageImports) {
-        if (!visited.contains(import)) {
-          queue.add(import);
-        }
-      }
+      samePackageImports.where(seen.add).forEach(queue.add);
     }
   }
 
