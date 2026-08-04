@@ -129,19 +129,21 @@ class _ImportCheck {
     required Uri startUri,
     required String targetPackage,
   }) async {
-    var queue = Queue<List<Uri>>();
-    queue.add([startUri]);
+    var queue = Queue<Uri>()..add(startUri);
+    var parents = <Uri, Uri?>{startUri: null};
 
-    var visited = {startUri};
+    List<Uri> reconstructPath(Uri end) => [
+      for (Uri? current = end; current != null; current = parents[current])
+        current,
+    ].reversed.toList();
 
     while (queue.isNotEmpty) {
-      var path = queue.removeFirst();
-      var current = path.last;
+      var current = queue.removeFirst();
 
       if (current.isScheme('package') &&
           current.pathSegments.isNotEmpty &&
           current.pathSegments.first == targetPackage) {
-        return path;
+        return reconstructPath(current);
       }
 
       List<Uri> neighbors;
@@ -152,15 +154,14 @@ class _ImportCheck {
       }
 
       for (var neighbor in neighbors) {
-        if (!visited.add(neighbor)) continue;
-
-        var newPath = [...path, neighbor];
-        queue.add(newPath);
+        if (parents.containsKey(neighbor)) continue;
+        parents[neighbor] = current;
+        queue.add(neighbor);
 
         if (neighbor.isScheme('package') &&
             neighbor.pathSegments.isNotEmpty &&
             neighbor.pathSegments.first == targetPackage) {
-          return newPath;
+          return reconstructPath(neighbor);
         }
       }
     }
