@@ -13,7 +13,7 @@ defaults:
     shell: bash
 env:
   PUB_ENVIRONMENT: bot.github
-permissions: read-all
+permissions: read
 
 jobs:
   job_001:
