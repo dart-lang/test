@@ -9,6 +9,7 @@ import 'dart:io' show pid;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
+import 'package:test_api/backend.dart' show SuitePlatform;
 import 'package:test_api/hooks.dart' show TestFailure;
 import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
@@ -18,10 +19,11 @@ import 'package:test_api/src/backend/state.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test_location.dart'; // ignore: implementation_imports
 
-import '../../platform.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import '../runner_suite.dart' show RunnerSuite;
+import '../suite.dart' show SuiteConfiguration;
 import '../version.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.

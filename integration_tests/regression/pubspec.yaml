@@ -4,4 +4,7 @@ environment:
   sdk: ^3.11.0
 resolution: workspace
 dependencies:
+  analyzer: any
+  package_config: any
+  path: any
   test: any

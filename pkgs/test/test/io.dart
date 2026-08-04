@@ -31,6 +31,11 @@ final bool supportsCliCompiler = () {
   return current > Version.parse('3.13.0-159.0.dev');
 }();
 
+final bool supportsCliCompilerSanitizers = () {
+  var current = Version.parse(Platform.version.split(' ').first);
+  return current > Version.parse('3.14.0-62.0.dev');
+}();
+
 /// The platform-specific message emitted when a nonexistent file is loaded.
 final String noSuchFileMessage = Platform.isWindows
     ? 'The system cannot find the file specified'
