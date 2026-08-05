@@ -597,9 +597,13 @@ class Engine {
   Future close() async {
     _closed = true;
     _closedBeforeDone ??= true;
-    await _suiteController.close();
+    if (_runCalled) {
+      await _suiteController.close();
+    }
     await _onSuiteAddedController.close();
-    if (!_group.isClosed) _group.close();
+    if (!_group.isClosed) {
+      _group.close();
+    }
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
