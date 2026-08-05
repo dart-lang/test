@@ -22,7 +22,7 @@ import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: impleme
 
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
-import 'runner/configuration/pre_run_hook.dart';
+import 'runner/configuration/hook.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
 import 'runner/engine.dart';
@@ -35,6 +35,7 @@ import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/reporter/multiplex.dart';
 import 'runner/runner_suite.dart';
+import 'runner/suite.dart';
 import 'util/io.dart';
 
 /// A class that loads and runs tests based on a [Configuration].
@@ -74,8 +75,8 @@ class Runner {
   final _closeMemo = AsyncMemoizer<void>();
   bool get _closed => _closeMemo.hasRun;
 
-  /// The set of active pre-run hooks that have been executed.
-  final _activeHooks = <PreRunHook>{};
+  /// The set of active post-run hooks that will be executed on close.
+  final _activePostRunHooks = <Hook>{};
 
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
@@ -274,24 +275,22 @@ class Runner {
     _sinks.clear();
 
     // Execute post-run teardowns for all active hooks.
-    for (var hook in _activeHooks) {
-      if (hook.postRun != null) {
-        try {
-          var result = await Process.run(
-            hook.postRun!.command,
-            hook.postRun!.args,
-            stdoutEncoding: utf8,
-            stderrEncoding: utf8,
-          );
-          if (result.stdout.toString().isNotEmpty) {
-            stdout.write(result.stdout);
-          }
-          if (result.stderr.toString().isNotEmpty) {
-            stderr.write(result.stderr);
-          }
-        } catch (_) {
-          // Best effort on teardown.
+    for (var hook in _activePostRunHooks) {
+      try {
+        var result = await Process.run(
+          hook.command,
+          hook.args,
+          stdoutEncoding: utf8,
+          stderrEncoding: utf8,
+        );
+        if (result.stdout.toString().isNotEmpty) {
+          stdout.write(result.stdout);
         }
+        if (result.stderr.toString().isNotEmpty) {
+          stderr.write(result.stderr);
+        }
+      } catch (_) {
+        // Best effort on teardown.
       }
     }
   });
@@ -559,23 +558,26 @@ class Runner {
     return results.last as bool;
   }
 
-  /// Finds all pre-run hooks required by the selected test suites and executes them.
+  /// Finds all pre-run and post-run hooks required by the selected test suites and executes pre-run hooks.
   Future<void> _runPreRunHooks() async {
-    final hooksToRun = <PreRunHook>{};
+    final preRunHooksToRun = <Hook>{};
 
     if (_config.suiteDefaults.preRun != null) {
-      hooksToRun.add(_config.suiteDefaults.preRun!);
+      preRunHooksToRun.add(_config.suiteDefaults.preRun!);
+    }
+    if (_config.suiteDefaults.postRun != null) {
+      _activePostRunHooks.add(_config.suiteDefaults.postRun!);
     }
 
     if (_config.suiteDefaults.tags.isNotEmpty) {
-      final tagHooks = <BooleanSelector, PreRunHook>{};
+      final tagConfigs = <BooleanSelector, SuiteConfiguration>{};
       for (var entry in _config.suiteDefaults.tags.entries) {
-        if (entry.value.preRun != null) {
-          tagHooks[entry.key] = entry.value.preRun!;
+        if (entry.value.preRun != null || entry.value.postRun != null) {
+          tagConfigs[entry.key] = entry.value;
         }
       }
 
-      if (tagHooks.isNotEmpty) {
+      if (tagConfigs.isNotEmpty) {
         for (var pathEntry in _config.testSelections.entries) {
           final testPath = pathEntry.key;
           final candidateFiles = <String>[];
@@ -608,9 +610,14 @@ class Runner {
               continue;
             }
 
-            for (var tagEntry in tagHooks.entries) {
+            for (var tagEntry in tagConfigs.entries) {
               if (tagEntry.key.evaluate(metadata.tags.contains)) {
-                hooksToRun.add(tagEntry.value);
+                if (tagEntry.value.preRun != null) {
+                  preRunHooksToRun.add(tagEntry.value.preRun!);
+                }
+                if (tagEntry.value.postRun != null) {
+                  _activePostRunHooks.add(tagEntry.value.postRun!);
+                }
               }
             }
           }
@@ -618,9 +625,8 @@ class Runner {
       }
     }
 
-    for (var hook in hooksToRun) {
+    for (var hook in preRunHooksToRun) {
       if (_closed) return;
-      _activeHooks.add(hook);
       var result = await Process.run(
         hook.command,
         hook.args,

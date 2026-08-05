@@ -220,10 +220,10 @@ void main() {
                 'pre_run': {
                   'command': Platform.resolvedExecutable,
                   'args': ['tool/setup.dart'],
-                  'post_run': {
-                    'command': Platform.resolvedExecutable,
-                    'args': ['tool/teardown.dart'],
-                  },
+                },
+                'post_run': {
+                  'command': Platform.resolvedExecutable,
+                  'args': ['tool/teardown.dart'],
                 },
               },
             },
@@ -270,7 +270,50 @@ void main() {
     );
   });
 
-  test('supports list format for pre_run', () async {
+  test('runs standalone post_run hook after tests complete', () async {
+    await d
+        .file(
+          'dart_test.yaml',
+          jsonEncode({
+            'tags': {
+              'cleanup_only': {
+                'post_run': {
+                  'command': Platform.resolvedExecutable,
+                  'args': ['tool/teardown.dart'],
+                },
+              },
+            },
+          }),
+        )
+        .create();
+
+    await d.dir('tool', [
+      d.file('teardown.dart', '''
+        import 'dart:io';
+
+        void main() {
+          File('cleaned.txt').writeAsStringSync('done');
+        }
+      '''),
+    ]).create();
+
+    await d.file('test.dart', '''
+      @Tags(['cleanup_only'])
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {});
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+
+    expect(File('${d.sandbox}/cleaned.txt').existsSync(), isTrue);
+  });
+
+  test('supports list format for pre_run and post_run', () async {
     await d
         .file(
           'dart_test.yaml',
@@ -278,6 +321,7 @@ void main() {
             'tags': {
               'list_format': {
                 'pre_run': [Platform.resolvedExecutable, 'tool/setup.dart'],
+                'post_run': [Platform.resolvedExecutable, 'tool/teardown.dart'],
               },
             },
           }),
@@ -292,6 +336,13 @@ void main() {
           File('list_done.txt').writeAsStringSync('ready');
         }
       '''),
+      d.file('teardown.dart', '''
+        import 'dart:io';
+
+        void main() {
+          File('list_done.txt').writeAsStringSync('cleaned');
+        }
+      '''),
     ]).create();
 
     await d.file('test.dart', '''
@@ -301,7 +352,7 @@ void main() {
 
       void main() {
         test("test", () {
-          expect(File('list_done.txt').existsSync(), isTrue);
+          expect(File('list_done.txt').readAsStringSync(), equals('ready'));
         });
       }
     ''').create();
@@ -309,36 +360,54 @@ void main() {
     var test = await runTest(['test.dart']);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
+
+    expect(
+      File('${d.sandbox}/list_done.txt').readAsStringSync(),
+      equals('cleaned'),
+    );
   });
 
-  test('does not run pre_run when matching tag is excluded via CLI', () async {
-    await d
-        .file(
-          'dart_test.yaml',
-          jsonEncode({
-            'tags': {
-              'excluded_tag': {
-                'pre_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/setup.dart'],
+  test(
+    'does not run pre_run or post_run when matching tag is excluded via CLI',
+    () async {
+      await d
+          .file(
+            'dart_test.yaml',
+            jsonEncode({
+              'tags': {
+                'excluded_tag': {
+                  'pre_run': {
+                    'command': Platform.resolvedExecutable,
+                    'args': ['tool/setup.dart'],
+                  },
+                  'post_run': {
+                    'command': Platform.resolvedExecutable,
+                    'args': ['tool/teardown.dart'],
+                  },
                 },
               },
-            },
-          }),
-        )
-        .create();
+            }),
+          )
+          .create();
 
-    await d.dir('tool', [
-      d.file('setup.dart', '''
+      await d.dir('tool', [
+        d.file('setup.dart', '''
         import 'dart:io';
 
         void main() {
-          File('ran.txt').writeAsStringSync('ran');
+          File('pre_ran.txt').writeAsStringSync('ran');
         }
       '''),
-    ]).create();
+        d.file('teardown.dart', '''
+        import 'dart:io';
 
-    await d.file('test1_test.dart', '''
+        void main() {
+          File('post_ran.txt').writeAsStringSync('ran');
+        }
+      '''),
+      ]).create();
+
+      await d.file('test1_test.dart', '''
       @Tags(['excluded_tag'])
       import 'package:test/test.dart';
 
@@ -347,7 +416,7 @@ void main() {
       }
     ''').create();
 
-    await d.file('test2_test.dart', '''
+      await d.file('test2_test.dart', '''
       import 'package:test/test.dart';
 
       void main() {
@@ -355,15 +424,17 @@ void main() {
       }
     ''').create();
 
-    var test = await runTest([
-      '--exclude-tag',
-      'excluded_tag',
-      'test1_test.dart',
-      'test2_test.dart',
-    ]);
-    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
-    await test.shouldExit(0);
+      var test = await runTest([
+        '--exclude-tag',
+        'excluded_tag',
+        'test1_test.dart',
+        'test2_test.dart',
+      ]);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
 
-    expect(File('${d.sandbox}/ran.txt').existsSync(), isFalse);
-  });
+      expect(File('${d.sandbox}/pre_ran.txt').existsSync(), isFalse);
+      expect(File('${d.sandbox}/post_ran.txt').existsSync(), isFalse);
+    },
+  );
 }
