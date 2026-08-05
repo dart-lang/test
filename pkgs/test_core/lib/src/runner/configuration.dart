@@ -311,6 +311,7 @@ class Configuration {
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required bool? ignoreTimeouts,
     required Timeout? suiteLoadTimeout,
+    PreRunHook? preRun,
 
     // Test-level configuration
     required Timeout? timeout,
@@ -367,6 +368,7 @@ class Configuration {
         onPlatform: onPlatform,
         ignoreTimeouts: ignoreTimeouts,
         suiteLoadTimeout: suiteLoadTimeout,
+        preRun: preRun,
 
         // Test-level configuration
         timeout: timeout,
@@ -431,6 +433,7 @@ class Configuration {
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
     Timeout? suiteLoadTimeout,
+    PreRunHook? preRun,
 
     // Test-level configuration
     Timeout? timeout,
@@ -484,6 +487,7 @@ class Configuration {
     onPlatform: onPlatform,
     ignoreTimeouts: ignoreTimeouts,
     suiteLoadTimeout: suiteLoadTimeout,
+    preRun: preRun,
     timeout: timeout,
     verboseTrace: verboseTrace,
     chainStackTraces: chainStackTraces,
@@ -559,6 +563,7 @@ class Configuration {
     skipReason: null,
     testOn: null,
     addTags: null,
+    preRun: null,
   );
 
   /// Suite level configuration that is not allowed in the global test
@@ -575,6 +580,7 @@ class Configuration {
     required Iterable<String>? addTags,
     required bool? allowDuplicateTestNames,
     required bool? allowTestRandomization,
+    PreRunHook? preRun,
   }) => Configuration(
     allowDuplicateTestNames: allowDuplicateTestNames,
     allowTestRandomization: allowTestRandomization,
@@ -583,6 +589,7 @@ class Configuration {
     skipReason: skipReason,
     testOn: testOn,
     addTags: addTags,
+    preRun: preRun,
     help: null,
     customHtmlTemplatePath: null,
     version: null,
@@ -1082,6 +1089,7 @@ class Configuration {
     BooleanSelector? excludeTags,
     Map<BooleanSelector, SuiteConfiguration>? tags,
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
+    PreRunHook? preRun,
 
     // Test-level configuration
     Timeout? timeout,
@@ -1134,6 +1142,7 @@ class Configuration {
         runtimes: runtimes,
         tags: tags,
         onPlatform: onPlatform,
+        preRun: preRun,
         timeout: timeout,
         verboseTrace: verboseTrace,
         chainStackTraces: chainStackTraces,

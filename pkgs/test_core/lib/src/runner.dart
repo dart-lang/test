@@ -3,21 +3,26 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
+import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
+import 'runner/configuration/pre_run_hook.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
 import 'runner/engine.dart';
@@ -69,6 +74,9 @@ class Runner {
   final _closeMemo = AsyncMemoizer<void>();
   bool get _closed => _closeMemo.hasRun;
 
+  /// The set of active pre-run hooks that have been executed.
+  final _activeHooks = <PreRunHook>{};
+
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
 
@@ -114,6 +122,8 @@ class Runner {
     }
 
     _warnForUnsupportedPlatforms();
+
+    await _runPreRunHooks();
 
     var suites = _loadSuites();
 
@@ -262,6 +272,28 @@ class Runner {
     // Flush any IOSinks created for file reporters.
     await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
     _sinks.clear();
+
+    // Execute post-run teardowns for all active hooks.
+    for (var hook in _activeHooks) {
+      if (hook.postRun != null) {
+        try {
+          var result = await Process.run(
+            hook.postRun!.command,
+            hook.postRun!.args,
+            stdoutEncoding: utf8,
+            stderrEncoding: utf8,
+          );
+          if (result.stdout.toString().isNotEmpty) {
+            stdout.write(result.stdout);
+          }
+          if (result.stderr.toString().isNotEmpty) {
+            stderr.write(result.stderr);
+          }
+        } catch (_) {
+          // Best effort on teardown.
+        }
+      }
+    }
   });
 
   /// Return a stream of [LoadSuite]s in [_config.testSelections].
@@ -525,5 +557,87 @@ class Runner {
       _engine.run(),
     ], eagerError: true);
     return results.last as bool;
+  }
+
+  /// Finds all pre-run hooks required by the selected test suites and executes them.
+  Future<void> _runPreRunHooks() async {
+    final hooksToRun = <PreRunHook>{};
+
+    if (_config.suiteDefaults.preRun != null) {
+      hooksToRun.add(_config.suiteDefaults.preRun!);
+    }
+
+    if (_config.suiteDefaults.tags.isNotEmpty) {
+      final tagHooks = <BooleanSelector, PreRunHook>{};
+      for (var entry in _config.suiteDefaults.tags.entries) {
+        if (entry.value.preRun != null) {
+          tagHooks[entry.key] = entry.value.preRun!;
+        }
+      }
+
+      if (tagHooks.isNotEmpty) {
+        for (var pathEntry in _config.testSelections.entries) {
+          final testPath = pathEntry.key;
+          final candidateFiles = <String>[];
+          if (Directory(testPath).existsSync()) {
+            candidateFiles.addAll(
+              Directory(testPath)
+                  .listSync(recursive: true)
+                  .whereType<File>()
+                  .where((f) => _config.filename.matches(p.basename(f.path)))
+                  .map((f) => f.path),
+            );
+          } else if (File(testPath).existsSync()) {
+            candidateFiles.add(testPath);
+          }
+
+          for (var filePath in candidateFiles) {
+            Metadata metadata;
+            try {
+              metadata = _loader.parseSuiteMetadata(filePath);
+            } catch (_) {
+              continue;
+            }
+
+            if (_config.excludeTags.evaluate(metadata.tags.contains)) {
+              continue;
+            }
+            if (_config.includeTags != BooleanSelector.all &&
+                metadata.tags.isNotEmpty &&
+                !_config.includeTags.evaluate(metadata.tags.contains)) {
+              continue;
+            }
+
+            for (var tagEntry in tagHooks.entries) {
+              if (tagEntry.key.evaluate(metadata.tags.contains)) {
+                hooksToRun.add(tagEntry.value);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for (var hook in hooksToRun) {
+      if (_closed) return;
+      _activeHooks.add(hook);
+      var result = await Process.run(
+        hook.command,
+        hook.args,
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      );
+      if (result.stdout.toString().isNotEmpty) {
+        stdout.write(result.stdout);
+      }
+      if (result.stderr.toString().isNotEmpty) {
+        stderr.write(result.stderr);
+      }
+      if (result.exitCode != 0) {
+        throw ApplicationException(
+          'Pre-run hook "$hook" failed with exit code ${result.exitCode}.',
+        );
+      }
+    }
   }
 }

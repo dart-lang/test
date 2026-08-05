@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
@@ -61,6 +62,20 @@ class Loader {
   /// variables that are always supported.
   Iterable<String> get _runtimeVariables =>
       _platformCallbacks.keys.map((runtime) => runtime.identifier);
+
+  /// Parses and returns the suite metadata for [path].
+  Metadata parseSuiteMetadata(String path) {
+    if (!File(path).existsSync()) return Metadata.empty;
+    try {
+      return parseMetadata(
+        path,
+        File(path).readAsStringSync(),
+        _runtimeVariables.toSet(),
+      );
+    } catch (_) {
+      return Metadata.empty;
+    }
+  }
 
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].

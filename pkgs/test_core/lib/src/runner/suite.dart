@@ -12,7 +12,10 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 
 import 'compiler_selection.dart';
+import 'configuration/pre_run_hook.dart';
 import 'runtime_selection.dart';
+
+export 'configuration/pre_run_hook.dart' show PreRunHook;
 
 /// A filter on tests cases to run within a test suite.
 ///
@@ -59,7 +62,11 @@ final class SuiteConfiguration {
     metadata: null,
     ignoreTimeouts: null,
     suiteLoadTimeout: null,
+    preRun: null,
   );
+
+  /// An optional hook to execute before running this suite.
+  final PreRunHook? preRun;
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
@@ -170,6 +177,7 @@ final class SuiteConfiguration {
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required bool? ignoreTimeouts,
     required Timeout? suiteLoadTimeout,
+    PreRunHook? preRun,
 
     // Test-level configuration
     required Timeout? timeout,
@@ -195,6 +203,7 @@ final class SuiteConfiguration {
       onPlatform: onPlatform,
       ignoreTimeouts: ignoreTimeouts,
       suiteLoadTimeout: suiteLoadTimeout,
+      preRun: preRun,
       metadata: Metadata(
         timeout: timeout,
         verboseTrace: verboseTrace,
@@ -226,6 +235,7 @@ final class SuiteConfiguration {
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
     Timeout? suiteLoadTimeout,
+    PreRunHook? preRun,
 
     // Test-level configuration
     Timeout? timeout,
@@ -250,6 +260,7 @@ final class SuiteConfiguration {
     ignoreTimeouts: ignoreTimeouts,
     timeout: timeout,
     suiteLoadTimeout: suiteLoadTimeout,
+    preRun: preRun,
     verboseTrace: verboseTrace,
     chainStackTraces: chainStackTraces,
     skip: skip,
@@ -290,6 +301,7 @@ final class SuiteConfiguration {
     required Metadata? metadata,
     required bool? ignoreTimeouts,
     required Timeout? suiteLoadTimeout,
+    required this.preRun,
   }) : _allowDuplicateTestNames = allowDuplicateTestNames,
        _allowTestRandomization = allowTestRandomization,
        _jsTrace = jsTrace,
@@ -325,6 +337,7 @@ final class SuiteConfiguration {
         compilerSelections: null,
         ignoreTimeouts: null,
         suiteLoadTimeout: null,
+        preRun: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -371,6 +384,7 @@ final class SuiteConfiguration {
       onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
       ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
       suiteLoadTimeout: other._suiteLoadTimeout ?? _suiteLoadTimeout,
+      preRun: other.preRun ?? preRun,
       metadata: metadata.merge(other.metadata),
     );
     return config._resolveTags();
@@ -393,6 +407,7 @@ final class SuiteConfiguration {
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
     Timeout? suiteLoadTimeout,
+    PreRunHook? preRun,
 
     // Test-level configuration
     Timeout? timeout,
@@ -419,6 +434,7 @@ final class SuiteConfiguration {
       onPlatform: onPlatform ?? this.onPlatform,
       ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
       suiteLoadTimeout: suiteLoadTimeout ?? _suiteLoadTimeout,
+      preRun: preRun ?? this.preRun,
       metadata: _metadata.change(
         timeout: timeout,
         verboseTrace: verboseTrace,
@@ -457,6 +473,7 @@ final class SuiteConfiguration {
       onPlatform: onPlatform,
       ignoreTimeouts: _ignoreTimeouts,
       suiteLoadTimeout: _suiteLoadTimeout,
+      preRun: preRun,
       metadata: _metadata,
     );
   }

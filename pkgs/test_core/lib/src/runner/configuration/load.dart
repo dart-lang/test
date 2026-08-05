@@ -22,6 +22,7 @@ import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
 import 'custom_runtime.dart';
+import 'pre_run_hook.dart';
 import 'reporters.dart';
 import 'runtime_settings.dart';
 
@@ -209,6 +210,7 @@ class _ConfigurationLoader {
       _disallow('tags');
       _disallow('allow_test_randomization');
       _disallow('allow_duplicate_test_names');
+      _disallow('pre_run');
       return Configuration.empty;
     }
 
@@ -246,6 +248,8 @@ class _ConfigurationLoader {
 
     var allowDuplicateTestNames = _getBool('allow_duplicate_test_names');
 
+    var preRun = _parsePreRunHook('pre_run');
+
     return Configuration.localTest(
       skip: skip,
       retry: retry,
@@ -254,6 +258,7 @@ class _ConfigurationLoader {
       addTags: addTags,
       allowTestRandomization: allowTestRandomization,
       allowDuplicateTestNames: allowDuplicateTestNames,
+      preRun: preRun,
     ).merge(_extractPresets<BooleanSelector>(tags, Configuration.tags));
   }
 
@@ -789,5 +794,86 @@ class _ConfigurationLoader {
       _document.nodes[field]!.span,
       _source,
     );
+  }
+
+  /// Parses a [PreRunHook] from [field].
+  PreRunHook? _parsePreRunHook(String field) {
+    var node = _document.nodes[field];
+    if (node == null || node.value == null) return null;
+
+    PreRunHook parseHook(YamlNode hookNode, String hookField) {
+      if (hookNode.value is String) {
+        final str = (hookNode.value as String).trim();
+        final parts = str.split(RegExp(r'\s+'));
+        return PreRunHook(parts.first, parts.sublist(1));
+      } else if (hookNode is YamlList) {
+        if (hookNode.isEmpty) {
+          throw SourceSpanFormatException(
+            '$hookField list must not be empty.',
+            hookNode.span,
+            _source,
+          );
+        }
+        for (var element in hookNode.nodes) {
+          if (element.value is! String) {
+            throw SourceSpanFormatException(
+              '$hookField elements must be strings.',
+              element.span,
+              _source,
+            );
+          }
+        }
+        final list = hookNode.map((e) => e as String).toList();
+        return PreRunHook(list.first, list.sublist(1));
+      } else if (hookNode is YamlMap) {
+        final commandNode = hookNode.nodes['command'];
+        if (commandNode == null || commandNode.value is! String) {
+          throw SourceSpanFormatException(
+            '$hookField.command must be a string.',
+            commandNode?.span ?? hookNode.span,
+            _source,
+          );
+        }
+        final command = commandNode.value as String;
+
+        var args = <String>[];
+        final argsNode = hookNode.nodes['args'];
+        if (argsNode != null) {
+          if (argsNode is! YamlList) {
+            throw SourceSpanFormatException(
+              '$hookField.args must be a list.',
+              argsNode.span,
+              _source,
+            );
+          }
+          for (var element in argsNode.nodes) {
+            if (element.value is! String) {
+              throw SourceSpanFormatException(
+                '$hookField.args elements must be strings.',
+                element.span,
+                _source,
+              );
+            }
+          }
+          args = argsNode.map((e) => e as String).toList();
+        }
+
+        PreRunHook? postRun;
+        final postRunNode = hookNode.nodes['post_run'];
+        if (postRunNode != null) {
+          postRun = parseHook(postRunNode, '$hookField.post_run');
+        }
+
+        return PreRunHook(command, args, postRun);
+      } else {
+        throw SourceSpanFormatException(
+          '$hookField must be a map, list, or string.',
+          hookNode.span,
+          _source,
+        );
+      }
+    }
+
+    return parseHook(node, field);
   }
 }
