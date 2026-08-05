@@ -596,9 +596,10 @@ class Engine {
   /// the engine indicates that no more output should be emitted.
   Future close() async {
     _closed = true;
-    if (_closedBeforeDone != null) _closedBeforeDone = true;
+    _closedBeforeDone ??= true;
     await _suiteController.close();
     await _onSuiteAddedController.close();
+    if (!_group.isClosed) _group.close();
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
