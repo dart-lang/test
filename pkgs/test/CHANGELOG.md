@@ -1,7 +1,8 @@
 ## 1.32.0-wip
 
 * Support `pre_run` and `post_run` hooks in `dart_test.yaml` under `tags` and
-  suite defaults.
+  suite defaults, providing an isolated temporary session directory in
+  `DART_TEST_SESSION_DIR` with automatic cleanup and stale session garbage collection.
 * Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
   runtimes.
 * Add support for `DART_TEST_REPORTER` environment variable in test runner and

@@ -55,6 +55,8 @@ tags:
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
+  * [`pre_run`](#pre_run)
+  * [`post_run`](#post_run)
 * [Configuring Platforms](#configuring-platforms)
   * [`on_os`](#on_os)
   * [`on_platform`](#on_platform)
@@ -631,6 +633,63 @@ tags:
   safari: {add_tags: [browser]}
   edge: {add_tags: [browser]}
 ```
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### `pre_run`
+
+This field specifies a command or script to execute once before tests with the
+given tag run. It is useful for precompiling binaries, starting backend
+services, or provisioning test resources required by the tagged test suite.
+
+If multiple test files use the same tag, the `pre_run` hook executes only once
+before any matching suites execute. If the `pre_run` process exits with a
+non-zero exit code, the test runner aborts the run.
+
+A hook can be specified as a command string, a list of strings, or a map with
+`command` and optional `args`:
+
+```yaml
+tags:
+  needs_server:
+    pre_run: "dart run tool/start_server.dart"
+```
+
+```yaml
+tags:
+  integration:
+    pre_run:
+      command: dart
+      args: [tool/compile_executable.dart, --mode=release]
+```
+
+When executing a hook, `package:test` creates a unique session directory and
+passes its path in the `DART_TEST_SESSION_DIR` environment variable. The hook can
+write transient artifacts (such as precompiled snapshots or sockets) into this
+directory. Test suites running in the same test session can access this directory
+at `.dart_tool/test/sessions/<pid>/`, where `<pid>` is the process ID of the test
+runner (matching `pid` from `dart:io`).
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### `post_run`
+
+This field specifies a command or script to execute during test runner teardown
+after all tests have completed. It is executed if any test file matching the tag
+was run.
+
+```yaml
+tags:
+  needs_server:
+    post_run: "dart run tool/stop_server.dart"
+```
+
+`post_run` hooks also receive the session directory in `DART_TEST_SESSION_DIR`.
+When the test runner closes, the session directory is automatically deleted.
+If a test run is abruptly killed, stale session directories from previous runs
+are automatically garbage-collected on subsequent `dart test` invocations.
 
 This field is not supported in the
 [global configuration file](#global-configuration).

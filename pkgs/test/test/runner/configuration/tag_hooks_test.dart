@@ -437,4 +437,111 @@ void main() {
       expect(File('${d.sandbox}/post_ran.txt').existsSync(), isFalse);
     },
   );
+
+  test(
+    'provides DART_TEST_SESSION_DIR to pre_run and post_run and cleans up',
+    () async {
+      await d
+          .file(
+            'dart_test.yaml',
+            jsonEncode({
+              'tags': {
+                'session_test': {
+                  'pre_run': {
+                    'command': Platform.resolvedExecutable,
+                    'args': ['tool/setup.dart'],
+                  },
+                  'post_run': {
+                    'command': Platform.resolvedExecutable,
+                    'args': ['tool/teardown.dart'],
+                  },
+                },
+              },
+            }),
+          )
+          .create();
+
+      await d.dir('tool', [
+        d.file('setup.dart', '''
+        import 'dart:io';
+
+        void main() {
+          final sessionDir = Platform.environment['DART_TEST_SESSION_DIR']!;
+          File('\$sessionDir/snapshot.txt').writeAsStringSync('compiled_pub');
+        }
+      '''),
+        d.file('teardown.dart', '''
+        import 'dart:io';
+
+        void main() {
+          final sessionDir = Platform.environment['DART_TEST_SESSION_DIR']!;
+          if (File('\$sessionDir/snapshot.txt').existsSync()) {
+            File('post_saw_snapshot.txt').writeAsStringSync('yes');
+          }
+        }
+      '''),
+      ]).create();
+
+      await d.file('test.dart', '''
+      @Tags(['session_test'])
+      import 'dart:io';
+      import 'package:test/test.dart';
+
+      void main() {
+        test("reads session artifact", () {
+          final sessionDir = '.dart_tool/test/sessions/\$pid';
+          final snapshot = File('\$sessionDir/snapshot.txt');
+          expect(snapshot.existsSync(), isTrue);
+          expect(snapshot.readAsStringSync(), equals('compiled_pub'));
+        });
+      }
+    ''').create();
+
+      var test = await runTest(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+
+      expect(
+        File('${d.sandbox}/post_saw_snapshot.txt').readAsStringSync(),
+        equals('yes'),
+      );
+      final sessionsDir = Directory('${d.sandbox}/.dart_tool/test/sessions');
+      if (sessionsDir.existsSync()) {
+        expect(sessionsDir.listSync().isEmpty, isTrue);
+      }
+    },
+  );
+
+  test(
+    'cleans up stale unlocked sessions from previous runs on startup',
+    () async {
+      await d.dir('.dart_tool', [
+        d.dir('test', [
+          d.dir('sessions', [
+            d.dir('99999', [
+              d.file('session.lock', ''),
+              d.file('stale.txt', 'abandoned'),
+            ]),
+          ]),
+        ]),
+      ]).create();
+
+      await d.file('test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("dummy", () {});
+      }
+    ''').create();
+
+      var test = await runTest(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+
+      expect(
+        Directory('${d.sandbox}/.dart_tool/test/sessions/99999').existsSync(),
+        isFalse,
+      );
+    },
+  );
 }

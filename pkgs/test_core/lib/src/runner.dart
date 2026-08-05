@@ -80,6 +80,12 @@ class Runner {
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
 
+  /// The temporary session directory created for this test run.
+  late final Directory _sessionDir;
+
+  /// The exclusive file lock on the current session directory.
+  RandomAccessFile? _sessionLock;
+
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
     var engine = Engine(
@@ -110,7 +116,9 @@ class Runner {
     );
   });
 
-  Runner._(this._engine, this._reporter, this._sinks);
+  Runner._(this._engine, this._reporter, this._sinks) {
+    _initSessionDir();
+  }
 
   /// Starts the runner.
   ///
@@ -279,6 +287,7 @@ class Runner {
         var result = await Process.run(
           hook.command,
           hook.args,
+          environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
           stdoutEncoding: utf8,
           stderrEncoding: utf8,
         );
@@ -291,6 +300,17 @@ class Runner {
       } catch (_) {
         // Best effort on teardown.
       }
+    }
+
+    try {
+      _sessionLock?.unlockSync();
+      _sessionLock?.closeSync();
+      _sessionLock = null;
+      if (_sessionDir.existsSync()) {
+        _sessionDir.deleteSync(recursive: true);
+      }
+    } catch (_) {
+      // Best effort on session cleanup.
     }
   });
 
@@ -629,6 +649,7 @@ class Runner {
       var result = await Process.run(
         hook.command,
         hook.args,
+        environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
         stdoutEncoding: utf8,
         stderrEncoding: utf8,
       );
@@ -643,6 +664,55 @@ class Runner {
           'Pre-run hook "$hook" failed with exit code ${result.exitCode}.',
         );
       }
+    }
+  }
+
+  /// Initializes the session directory for this test run and acquires a file lock.
+  void _initSessionDir() {
+    _cleanStaleSessions();
+    _sessionDir = Directory(
+      p.absolute(p.join('.dart_tool', 'test', 'sessions', '$pid')),
+    )..createSync(recursive: true);
+    try {
+      final lockFile = File(p.join(_sessionDir.path, 'session.lock'));
+      _sessionLock = lockFile.openSync(mode: FileMode.write);
+      _sessionLock!.lockSync(FileLock.exclusive);
+    } catch (_) {
+      // Best effort locking.
+    }
+  }
+
+  /// Scans `.dart_tool/test/sessions/` for abandoned session directories from
+  /// terminated runner processes and cleans them up.
+  void _cleanStaleSessions() {
+    final sessionsDir = Directory(p.join('.dart_tool', 'test', 'sessions'));
+    if (!sessionsDir.existsSync()) return;
+    try {
+      for (final entity in sessionsDir.listSync().whereType<Directory>()) {
+        if (p.basename(entity.path) == '$pid') continue;
+        final lockFile = File(p.join(entity.path, 'session.lock'));
+        if (!lockFile.existsSync()) {
+          try {
+            entity.deleteSync(recursive: true);
+          } catch (_) {}
+          continue;
+        }
+        try {
+          final raf = lockFile.openSync(mode: FileMode.write);
+          try {
+            raf.lockSync(FileLock.exclusive);
+            raf.unlockSync();
+            raf.closeSync();
+            entity.deleteSync(recursive: true);
+          } catch (_) {
+            raf.closeSync();
+          }
+        } catch (_) {
+          // Lock held by active parallel runner.
+        }
+      }
+    } catch (_) {
+      // Ignore errors when cleaning stale sessions.
     }
   }
 }
