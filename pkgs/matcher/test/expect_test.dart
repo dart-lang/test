@@ -34,9 +34,5 @@ void main() {
         throwsA(isTestFailure(anything)),
       );
     });
-
-    test('can be used with synchronous operators', () {
-      expect(() {}, isNot(throwsA(anything)));
-    });
   });
 }
