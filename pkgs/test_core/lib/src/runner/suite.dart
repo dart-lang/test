@@ -15,7 +15,7 @@ import 'compiler_selection.dart';
 import 'configuration/hook.dart';
 import 'runtime_selection.dart';
 
-export 'configuration/hook.dart' show Hook, PreRunHook, PostRunHook;
+export 'configuration/hook.dart' show Hook, PostRunHook, PreRunHook;
 
 /// A filter on tests cases to run within a test suite.
 ///

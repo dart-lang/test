@@ -22,7 +22,6 @@ import '../configuration.dart';
 import '../runtime_selection.dart';
 import '../suite.dart';
 import 'custom_runtime.dart';
-import 'hook.dart';
 import 'reporters.dart';
 import 'runtime_settings.dart';
 

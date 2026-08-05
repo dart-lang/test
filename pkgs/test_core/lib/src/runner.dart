@@ -22,7 +22,6 @@ import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: impleme
 
 import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
-import 'runner/configuration/hook.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
 import 'runner/engine.dart';
