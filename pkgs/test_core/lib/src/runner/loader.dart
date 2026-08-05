@@ -6,10 +6,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
@@ -29,6 +31,84 @@ import 'vm/platform.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
+  /// Cache of metadata parsed from test files.
+  final _metadataCache = <String, Object>{};
+
+  /// Parses and returns the suite metadata for [path], caching the result.
+  Metadata parseSuiteMetadata(String path) {
+    final cached = _metadataCache.putIfAbsent(path, () {
+      if (!File(path).existsSync()) return Metadata.empty;
+      try {
+        return parseMetadata(
+          path,
+          File(path).readAsStringSync(),
+          _runtimeVariables.toSet(),
+        );
+      } catch (e) {
+        return e;
+      }
+    });
+    if (cached is Metadata) return cached;
+    throw cached;
+  }
+
+  /// Returns whether the test suite at [path] matches target platform and tag filters
+  /// specified in [suiteConfig].
+  bool matchesSuite(String path, SuiteConfiguration suiteConfig) {
+    if (!File(path).existsSync()) return true;
+    Metadata metadata;
+    try {
+      metadata = parseSuiteMetadata(path);
+    } catch (_) {
+      return true;
+    }
+
+    final mergedConfig = suiteConfig.merge(
+      SuiteConfiguration.fromMetadata(metadata),
+    );
+
+    if (_config.excludeTags.evaluate(mergedConfig.metadata.tags.contains)) {
+      return false;
+    }
+
+    if (_config.includeTags != BooleanSelector.all &&
+        mergedConfig.metadata.tags.isNotEmpty) {
+      if (!_config.includeTags.evaluate(mergedConfig.metadata.tags.contains)) {
+        return false;
+      }
+    }
+
+    var hasMatchingPlatform = false;
+    for (var runtimeName in mergedConfig.runtimes) {
+      var runtime = findRuntime(runtimeName);
+      if (runtime == null) continue;
+      final compilers = {
+        for (var selection
+            in mergedConfig.compilerSelections ?? <CompilerSelection>[])
+          if (runtime.supportedCompilers.contains(selection.compiler) &&
+              (selection.platformSelector == null ||
+                  selection.platformSelector!.evaluate(
+                    currentPlatform(runtime, selection.compiler),
+                  )))
+            selection.compiler,
+      };
+      if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
+
+      for (var compiler in compilers) {
+        var platform = currentPlatform(runtime, compiler);
+        if (mergedConfig.metadata.testOn.evaluate(platform)) {
+          hasMatchingPlatform = true;
+          break;
+        }
+      }
+      if (hasMatchingPlatform) break;
+    }
+
+    if (!hasMatchingPlatform) return false;
+
+    return true;
+  }
+
   /// The test runner configuration.
   final _config = Configuration.current;
 
@@ -173,13 +253,7 @@ class Loader {
   ) async* {
     try {
       suiteConfig = suiteConfig.merge(
-        SuiteConfiguration.fromMetadata(
-          parseMetadata(
-            path,
-            File(path).readAsStringSync(),
-            _runtimeVariables.toSet(),
-          ),
-        ),
+        SuiteConfiguration.fromMetadata(parseSuiteMetadata(path)),
       );
     } on ArgumentError catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
