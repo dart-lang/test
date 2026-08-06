@@ -18,6 +18,8 @@
 * Pass Node.js test process connection configuration and secret token via a
   restricted temporary authentication file to prevent secret leakage in command
   line process arguments.
+* Fix race conditions in Chrome coverage collection where tests could finish
+  before DevTools connection and coverage profiling were initialized.
 
 ## 1.31.2
 

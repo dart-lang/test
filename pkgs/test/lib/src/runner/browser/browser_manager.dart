@@ -268,6 +268,10 @@ class BrowserManager {
     );
 
     var suite = _pool.withResource<RunnerSuite>(() async {
+      if (_browser case Chrome chrome) {
+        await chrome.whenReady;
+      }
+
       _channel.sink.add({
         'command': 'loadSuite',
         'url': url.toString(),
