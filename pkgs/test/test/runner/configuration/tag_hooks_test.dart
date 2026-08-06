@@ -485,12 +485,12 @@ void main() {
       await d.file('test.dart', '''
       @Tags(['session_test'])
       import 'dart:io';
+      import 'package:path/path.dart' as p;
       import 'package:test/test.dart';
 
       void main() {
-        test("reads session artifact", () {
-          final sessionDir = '.dart_tool/test/sessions/\$pid';
-          final snapshot = File('\$sessionDir/snapshot.txt');
+        test("reads session artifact via testSessionPath", () {
+          final snapshot = File(p.join(testSessionPath, 'snapshot.txt'));
           expect(snapshot.existsSync(), isTrue);
           expect(snapshot.readAsStringSync(), equals('compiled_pub'));
         });

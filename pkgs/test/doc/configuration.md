@@ -664,12 +664,57 @@ tags:
       args: [tool/compile_executable.dart, --mode=release]
 ```
 
-When executing a hook, `package:test` creates a unique session directory and
-passes its path in the `DART_TEST_SESSION_DIR` environment variable. The hook can
-write transient artifacts (such as precompiled snapshots or sockets) into this
-directory. Test suites running in the same test session can access this directory
-at `.dart_tool/test/sessions/<pid>/`, where `<pid>` is the process ID of the test
-runner (matching `pid` from `dart:io`).
+When executing a hook, `package:test` creates an isolated session directory
+for the test run and provides its path:
+* In Dart code (hooks and test suites), via the top-level `testSessionPath` getter from `package:test/test.dart` (or `package:test/scaffolding.dart`).
+* In external scripts and processes, via the `DART_TEST_SESSION_DIR` environment variable.
+
+The hook can write transient artifacts (such as precompiled snapshots, server ports, or configuration files) into this directory.
+
+#### Example: Sharing a precompiled binary across tests
+
+In `dart_test.yaml`:
+```yaml
+tags:
+  needs_compiled_pub:
+    pre_run: "dart run tool/compile_pub.dart"
+```
+
+In `tool/compile_pub.dart` (the `pre_run` hook):
+```dart
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
+
+void main() {
+  final outputPath = p.join(testSessionPath, 'pub.snapshot');
+  Process.runSync(Platform.resolvedExecutable, [
+    'compile',
+    'kernel',
+    'bin/pub.dart',
+    '-o',
+    outputPath,
+  ]);
+}
+```
+
+In `test/pub_test.dart` (the test suite):
+```dart
+@Tags(['needs_compiled_pub'])
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
+
+void main() {
+  test('invokes precompiled pub snapshot', () {
+    final snapshot = File(p.join(testSessionPath, 'pub.snapshot'));
+    expect(snapshot.existsSync(), isTrue);
+
+    final result = Process.runSync(Platform.resolvedExecutable, [snapshot.path, '--version']);
+    expect(result.exitCode, equals(0));
+  });
+}
+```
 
 This field is not supported in the
 [global configuration file](#global-configuration).
@@ -686,7 +731,7 @@ tags:
     post_run: "dart run tool/stop_server.dart"
 ```
 
-`post_run` hooks also receive the session directory in `DART_TEST_SESSION_DIR`.
+`post_run` hooks also receive the session directory via `testSessionPath` / `DART_TEST_SESSION_DIR`.
 When the test runner closes, the session directory is automatically deleted.
 If a test run is abruptly killed, stale session directories from previous runs
 are automatically garbage-collected on subsequent `dart test` invocations.
