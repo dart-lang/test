@@ -661,7 +661,7 @@ class Runner {
       }
       if (result.exitCode != 0) {
         throw ApplicationException(
-          'Pre-run hook "$hook" failed with exit code ${result.exitCode}.',
+          'Pre-run hook "${hook.script}" failed with exit code ${result.exitCode}.',
         );
       }
     }

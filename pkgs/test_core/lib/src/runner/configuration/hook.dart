@@ -24,9 +24,6 @@ final class Hook {
   @override
   int get hashCode =>
       Object.hash(script, const ListEquality<String>().hash(args));
-
-  @override
-  String toString() => args.isEmpty ? script : '$script ${args.join(' ')}';
 }
 
 typedef PreRunHook = Hook;

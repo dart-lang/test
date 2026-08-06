@@ -643,15 +643,14 @@ This field specifies a Dart script to execute once before tests with the
 given tag run. It is useful for precompiling binaries, starting backend
 services, or provisioning test resources required by the tagged test suite.
 
-Hooks are always executed as Dart scripts using the active Dart SDK running the
-test runner, ensuring cross-platform compatibility across Windows, macOS, and Linux.
+Hooks are always executed as Dart scripts.
 
 If multiple test files use the same tag, the `pre_run` hook executes only once
 before any matching suites execute. If the `pre_run` process exits with a
 non-zero exit code, the test runner aborts the run.
 
-A hook can be specified as a Dart script path or as a map with `script` and
-optional `args`:
+A hook can be specified as a Dart script path or as a map with `script` (a string)
+and optional `args` (a list of strings):
 
 ```yaml
 tags:
