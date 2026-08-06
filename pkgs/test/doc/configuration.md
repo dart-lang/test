@@ -55,6 +55,8 @@ tags:
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
+  * [`pre_run`](#pre_run)
+  * [`post_run`](#post_run)
 * [Configuring Platforms](#configuring-platforms)
   * [`on_os`](#on_os)
   * [`on_platform`](#on_platform)
@@ -631,6 +633,110 @@ tags:
   safari: {add_tags: [browser]}
   edge: {add_tags: [browser]}
 ```
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### `pre_run`
+
+This field specifies a Dart script to execute once before tests with the
+given tag run. It is useful for precompiling binaries, starting backend
+services, or provisioning test resources required by the tagged test suite.
+
+Hooks are always executed as Dart scripts.
+
+If multiple test files use the same tag, the `pre_run` hook executes only once
+before any matching suites execute. If the `pre_run` process exits with a
+non-zero exit code, the test runner aborts the run.
+
+A hook can be specified as a Dart script path or as a map with `script` (a string)
+and optional `args` (a list of strings):
+
+```yaml
+tags:
+  needs_server:
+    pre_run: tool/start_server.dart
+```
+
+```yaml
+tags:
+  integration:
+    pre_run:
+      script: tool/compile_executable.dart
+      args: [--mode=release]
+```
+
+When executing a hook, `package:test` creates an isolated session directory
+for the test run and provides its path:
+* In Dart code (hooks and test suites), via the top-level `testSessionPath` getter from `package:test/test.dart` (or `package:test/scaffolding.dart`).
+* In external scripts and processes, via the `DART_TEST_SESSION_DIR` environment variable.
+
+The hook can write transient artifacts (such as precompiled snapshots, server ports, or configuration files) into this directory.
+
+#### Example: Sharing a precompiled binary across tests
+
+In `dart_test.yaml`:
+```yaml
+tags:
+  needs_compiled_pub:
+    pre_run: tool/compile_pub.dart
+```
+
+In `tool/compile_pub.dart` (the `pre_run` hook):
+```dart
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
+
+void main() {
+  final outputPath = p.join(testSessionPath, 'pub.snapshot');
+  Process.runSync(Platform.resolvedExecutable, [
+    'compile',
+    'kernel',
+    'bin/pub.dart',
+    '-o',
+    outputPath,
+  ]);
+}
+```
+
+In `test/pub_test.dart` (the test suite):
+```dart
+@Tags(['needs_compiled_pub'])
+import 'dart:io';
+import 'package:path/path.dart' as p;
+import 'package:test/test.dart';
+
+void main() {
+  test('invokes precompiled pub snapshot', () {
+    final snapshot = File(p.join(testSessionPath, 'pub.snapshot'));
+    expect(snapshot.existsSync(), isTrue);
+
+    final result = Process.runSync(Platform.resolvedExecutable, [snapshot.path, '--version']);
+    expect(result.exitCode, equals(0));
+  });
+}
+```
+
+This field is not supported in the
+[global configuration file](#global-configuration).
+
+### `post_run`
+
+This field specifies a Dart script to execute during test runner teardown
+after all tests have completed. It is executed if any test file matching the tag
+was run.
+
+```yaml
+tags:
+  needs_server:
+    post_run: tool/stop_server.dart
+```
+
+`post_run` hooks also receive the session directory via `testSessionPath` / `DART_TEST_SESSION_DIR`.
+When the test runner closes, the session directory is automatically deleted.
+If a test run is abruptly killed, stale session directories from previous runs
+are automatically garbage-collected on subsequent `dart test` invocations.
 
 This field is not supported in the
 [global configuration file](#global-configuration).

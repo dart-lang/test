@@ -21,6 +21,8 @@ import 'util/os.dart';
 // declarer added.
 export 'package:test_api/scaffolding.dart'
     hide group, setUp, setUpAll, tearDown, tearDownAll, test;
+export 'util/test_session_path_stub.dart'
+    if (dart.library.io) 'util/test_session_path_io.dart';
 
 /// The global declarer.
 ///

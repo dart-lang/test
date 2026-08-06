@@ -3,20 +3,24 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
+import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
@@ -30,6 +34,7 @@ import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/reporter/multiplex.dart';
 import 'runner/runner_suite.dart';
+import 'runner/suite.dart';
 import 'util/io.dart';
 
 /// A class that loads and runs tests based on a [Configuration].
@@ -69,8 +74,17 @@ class Runner {
   final _closeMemo = AsyncMemoizer<void>();
   bool get _closed => _closeMemo.hasRun;
 
+  /// The set of active post-run hooks that will be executed on close.
+  final _activePostRunHooks = <Hook>{};
+
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
+
+  /// The temporary session directory created for this test run.
+  late final Directory _sessionDir;
+
+  /// The exclusive file lock on the current session directory.
+  RandomAccessFile? _sessionLock;
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
@@ -102,7 +116,9 @@ class Runner {
     );
   });
 
-  Runner._(this._engine, this._reporter, this._sinks);
+  Runner._(this._engine, this._reporter, this._sinks) {
+    _initSessionDir();
+  }
 
   /// Starts the runner.
   ///
@@ -114,6 +130,8 @@ class Runner {
     }
 
     _warnForUnsupportedPlatforms();
+
+    await _runPreRunHooks();
 
     var suites = _loadSuites();
 
@@ -262,6 +280,38 @@ class Runner {
     // Flush any IOSinks created for file reporters.
     await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
     _sinks.clear();
+
+    // Execute post-run teardowns for all active hooks.
+    for (var hook in _activePostRunHooks) {
+      try {
+        var result = await Process.run(
+          Platform.resolvedExecutable,
+          [hook.script, ...hook.args],
+          environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
+          stdoutEncoding: utf8,
+          stderrEncoding: utf8,
+        );
+        if (result.stdout.toString().isNotEmpty) {
+          stdout.write(result.stdout);
+        }
+        if (result.stderr.toString().isNotEmpty) {
+          stderr.write(result.stderr);
+        }
+      } catch (_) {
+        // Best effort on teardown.
+      }
+    }
+
+    try {
+      _sessionLock?.unlockSync();
+      _sessionLock?.closeSync();
+      _sessionLock = null;
+      if (_sessionDir.existsSync()) {
+        _sessionDir.deleteSync(recursive: true);
+      }
+    } catch (_) {
+      // Best effort on session cleanup.
+    }
   });
 
   /// Return a stream of [LoadSuite]s in [_config.testSelections].
@@ -525,5 +575,159 @@ class Runner {
       _engine.run(),
     ], eagerError: true);
     return results.last as bool;
+  }
+
+  /// Finds all pre-run and post-run hooks required by the selected test suites and executes pre-run hooks.
+  Future<void> _runPreRunHooks() async {
+    final preRunHooksToRun = <Hook>{};
+
+    if (_config.suiteDefaults.preRun != null) {
+      preRunHooksToRun.add(_config.suiteDefaults.preRun!);
+    }
+    if (_config.suiteDefaults.postRun != null) {
+      _activePostRunHooks.add(_config.suiteDefaults.postRun!);
+    }
+
+    if (_config.suiteDefaults.tags.isNotEmpty) {
+      final tagConfigs = <BooleanSelector, SuiteConfiguration>{};
+      for (var entry in _config.suiteDefaults.tags.entries) {
+        if (entry.value.preRun != null || entry.value.postRun != null) {
+          tagConfigs[entry.key] = entry.value;
+        }
+      }
+
+      if (tagConfigs.isNotEmpty) {
+        for (var pathEntry in _config.testSelections.entries) {
+          final testPath = pathEntry.key;
+          final candidateFiles = <String>[];
+          if (Directory(testPath).existsSync()) {
+            candidateFiles.addAll(
+              Directory(testPath)
+                  .listSync(recursive: true)
+                  .whereType<File>()
+                  .where((f) => _config.filename.matches(p.basename(f.path)))
+                  .map((f) => f.path),
+            );
+          } else if (File(testPath).existsSync()) {
+            candidateFiles.add(testPath);
+          }
+
+          for (var filePath in candidateFiles) {
+            Metadata metadata;
+            try {
+              metadata = _loader.parseSuiteMetadata(filePath);
+            } catch (_) {
+              continue;
+            }
+
+            if (_config.excludeTags.evaluate(metadata.tags.contains)) {
+              continue;
+            }
+            if (_config.includeTags != BooleanSelector.all &&
+                metadata.tags.isNotEmpty &&
+                !_config.includeTags.evaluate(metadata.tags.contains)) {
+              continue;
+            }
+
+            for (var tagEntry in tagConfigs.entries) {
+              if (tagEntry.key.evaluate(metadata.tags.contains)) {
+                if (tagEntry.value.preRun != null) {
+                  preRunHooksToRun.add(tagEntry.value.preRun!);
+                }
+                if (tagEntry.value.postRun != null) {
+                  _activePostRunHooks.add(tagEntry.value.postRun!);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    for (var hook in preRunHooksToRun) {
+      if (_closed) return;
+      var result = await Process.run(
+        Platform.resolvedExecutable,
+        [hook.script, ...hook.args],
+        environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
+        stdoutEncoding: utf8,
+        stderrEncoding: utf8,
+      );
+      if (result.stdout.toString().isNotEmpty) {
+        stdout.write(result.stdout);
+      }
+      if (result.stderr.toString().isNotEmpty) {
+        stderr.write(result.stderr);
+      }
+      if (result.exitCode != 0) {
+        throw ApplicationException(
+          'Pre-run hook "${hook.script}" failed with exit code ${result.exitCode}.',
+        );
+      }
+    }
+  }
+
+  /// Initializes the session directory for this test run and acquires a file lock.
+  void _initSessionDir() {
+    _cleanStaleSessions();
+    _sessionDir = Directory(
+      p.absolute(p.join('.dart_tool', 'test', 'sessions', '$pid')),
+    )..createSync(recursive: true);
+    try {
+      final lockFile = File(p.join(_sessionDir.path, 'session.lock'));
+      _sessionLock = lockFile.openSync(mode: FileMode.write);
+      _sessionLock!.lockSync(FileLock.exclusive);
+    } catch (_) {
+      // Best effort locking.
+    }
+  }
+
+  /// Scans `.dart_tool/test/sessions/` for abandoned session directories from
+  /// terminated runner processes and cleans them up.
+  void _cleanStaleSessions() {
+    final sessionsDir = Directory(p.join('.dart_tool', 'test', 'sessions'));
+    if (!sessionsDir.existsSync()) return;
+    try {
+      final now = DateTime.now();
+      for (final entity in sessionsDir.listSync().whereType<Directory>()) {
+        if (p.basename(entity.path) == '$pid') continue;
+        final lockFile = File(p.join(entity.path, 'session.lock'));
+        if (!lockFile.existsSync()) {
+          try {
+            entity.deleteSync(recursive: true);
+          } catch (_) {}
+          continue;
+        }
+        try {
+          final raf = lockFile.openSync(mode: FileMode.write);
+          try {
+            raf.lockSync(FileLock.exclusive);
+            raf.unlockSync();
+            raf.closeSync();
+            entity.deleteSync(recursive: true);
+          } catch (_) {
+            raf.closeSync();
+            // If the lock could not be acquired (e.g. frozen process or NFS lease),
+            // but the directory is older than 24 hours, clean it up.
+            try {
+              final stat = entity.statSync();
+              if (now.difference(stat.modified).inHours >= 24) {
+                entity.deleteSync(recursive: true);
+              }
+            } catch (_) {}
+          }
+        } catch (_) {
+          // Lock held by active parallel runner or file inaccessible.
+          try {
+            final stat = entity.statSync();
+            if (now.difference(stat.modified).inHours >= 24) {
+              entity.deleteSync(recursive: true);
+            }
+          } catch (_) {}
+        }
+      }
+    } catch (_) {
+      // Ignore errors when cleaning stale sessions.
+    }
   }
 }
