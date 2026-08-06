@@ -688,6 +688,7 @@ class Runner {
     final sessionsDir = Directory(p.join('.dart_tool', 'test', 'sessions'));
     if (!sessionsDir.existsSync()) return;
     try {
+      final now = DateTime.now();
       for (final entity in sessionsDir.listSync().whereType<Directory>()) {
         if (p.basename(entity.path) == '$pid') continue;
         final lockFile = File(p.join(entity.path, 'session.lock'));
@@ -706,9 +707,23 @@ class Runner {
             entity.deleteSync(recursive: true);
           } catch (_) {
             raf.closeSync();
+            // If the lock could not be acquired (e.g. frozen process or NFS lease),
+            // but the directory is older than 24 hours, clean it up.
+            try {
+              final stat = entity.statSync();
+              if (now.difference(stat.modified).inHours >= 24) {
+                entity.deleteSync(recursive: true);
+              }
+            } catch (_) {}
           }
         } catch (_) {
-          // Lock held by active parallel runner.
+          // Lock held by active parallel runner or file inaccessible.
+          try {
+            final stat = entity.statSync();
+            if (now.difference(stat.modified).inHours >= 24) {
+              entity.deleteSync(recursive: true);
+            }
+          } catch (_) {}
         }
       }
     } catch (_) {
