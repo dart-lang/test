@@ -644,8 +644,9 @@ given tag run. It is useful for precompiling binaries, starting backend
 services, or provisioning test resources required by the tagged test suite.
 
 Hooks are always executed as Dart scripts. Hook scripts must run to
-completion and exit (for example, if launching a background service or container,
-spawn it detached, record its port or metadata in `testSessionPath`, and exit).
+completion and exit with code `0` on success (for example, if launching a background
+service or container, spawn it detached, record its port or metadata in `testSessionPath`,
+and exit with code `0`).
 
 Tag hooks are triggered when any test file annotated with a matching
 file/suite-level `@Tags([...])` annotation (or a tag added transitively via
