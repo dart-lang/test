@@ -33,8 +33,14 @@ class Chrome extends Browser {
   @override
   final Future<Uri?> remoteDebuggerUrl;
 
-  final Future<WipConnection> _tabConnection;
+  final Future<WipConnection?> _tabConnection;
   final Map<String, String> _idToUrl;
+
+  /// A future that completes when Chrome's DevTools connection and coverage
+  /// collection are ready, or immediately if DevTools is not enabled.
+  Future<void> get whenReady async {
+    await _tabConnection;
+  }
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
@@ -45,7 +51,7 @@ class Chrome extends Browser {
   }) {
     settings ??= defaultSettings[Runtime.chrome]!;
     var remoteDebuggerCompleter = Completer<Uri?>.sync();
-    var connectionCompleter = Completer<WipConnection>();
+    var connectionCompleter = Completer<WipConnection?>();
     var idToUrl = <String, String>{};
     return Chrome._(
       () async {
@@ -73,6 +79,7 @@ class Chrome extends Browser {
             connectionCompleter.complete(_connect(process, port, idToUrl, url));
           } else {
             remoteDebuggerCompleter.complete(null);
+            connectionCompleter.complete(null);
           }
 
           return process;
@@ -91,6 +98,7 @@ class Chrome extends Browser {
   /// with `package:coverage`.
   Future<Map<String, dynamic>> gatherCoverage() async {
     var tabConnection = await _tabConnection;
+    if (tabConnection == null) return {};
     var response = await tabConnection.debugger.connection.sendCommand(
       'Profiler.takePreciseCoverage',
       {},
@@ -178,14 +186,16 @@ Future<WipConnection> _connect(
   }
   var tabConnection = await tab.connect();
 
-  // Enable debugging.
-  await tabConnection.debugger.enable();
-
   // Coverage reports are in terms of scriptIds so keep note of URLs.
+  // Register the listener before enabling the debugger so that initial
+  // script events sent during initialization are not missed.
   tabConnection.debugger.onScriptParsed.listen((data) {
     var script = data.script;
     if (script.url.isNotEmpty) idToUrl[script.scriptId] = script.url;
   });
+
+  // Enable debugging.
+  await tabConnection.debugger.enable();
 
   // Enable coverage collection.
   await tabConnection.debugger.connection.sendCommand('Profiler.enable', {});
