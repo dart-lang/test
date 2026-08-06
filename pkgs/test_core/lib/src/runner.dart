@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
@@ -284,19 +283,15 @@ class Runner {
     // Execute post-run teardowns for all active hooks.
     for (var hook in _activePostRunHooks) {
       try {
-        var result = await Process.run(
+        final process = await Process.start(
           Platform.resolvedExecutable,
           [hook.script, ...hook.args],
           environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
-          stdoutEncoding: utf8,
-          stderrEncoding: utf8,
         );
-        if (result.stdout.toString().isNotEmpty) {
-          stdout.write(result.stdout);
-        }
-        if (result.stderr.toString().isNotEmpty) {
-          stderr.write(result.stderr);
-        }
+        final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();
+        final stderrDone = process.stderr.listen(stderr.add).asFuture<void>();
+        await process.exitCode;
+        await Future.wait([stdoutDone, stderrDone]);
       } catch (_) {
         // Best effort on teardown.
       }
@@ -620,17 +615,32 @@ class Runner {
               continue;
             }
 
-            if (_config.excludeTags.evaluate(metadata.tags.contains)) {
+            final allTags = Set<String>.from(metadata.tags);
+            var changed = true;
+            while (changed) {
+              changed = false;
+              for (var tagEntry in _config.suiteDefaults.tags.entries) {
+                if (tagEntry.key.evaluate(allTags.contains)) {
+                  for (var addedTag in tagEntry.value.metadata.tags) {
+                    if (allTags.add(addedTag)) {
+                      changed = true;
+                    }
+                  }
+                }
+              }
+            }
+
+            if (_config.excludeTags.evaluate(allTags.contains)) {
               continue;
             }
             if (_config.includeTags != BooleanSelector.all &&
-                metadata.tags.isNotEmpty &&
-                !_config.includeTags.evaluate(metadata.tags.contains)) {
+                allTags.isNotEmpty &&
+                !_config.includeTags.evaluate(allTags.contains)) {
               continue;
             }
 
             for (var tagEntry in tagConfigs.entries) {
-              if (tagEntry.key.evaluate(metadata.tags.contains)) {
+              if (tagEntry.key.evaluate(allTags.contains)) {
                 if (tagEntry.value.preRun != null) {
                   preRunHooksToRun.add(tagEntry.value.preRun!);
                 }
@@ -646,22 +656,18 @@ class Runner {
 
     for (var hook in preRunHooksToRun) {
       if (_closed) return;
-      var result = await Process.run(
+      final process = await Process.start(
         Platform.resolvedExecutable,
         [hook.script, ...hook.args],
         environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
-        stdoutEncoding: utf8,
-        stderrEncoding: utf8,
       );
-      if (result.stdout.toString().isNotEmpty) {
-        stdout.write(result.stdout);
-      }
-      if (result.stderr.toString().isNotEmpty) {
-        stderr.write(result.stderr);
-      }
-      if (result.exitCode != 0) {
+      final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();
+      final stderrDone = process.stderr.listen(stderr.add).asFuture<void>();
+      final exitCode = await process.exitCode;
+      await Future.wait([stdoutDone, stderrDone]);
+      if (exitCode != 0) {
         throw ApplicationException(
-          'Pre-run hook "${hook.script}" failed with exit code ${result.exitCode}.',
+          'Pre-run hook "${hook.script}" failed with exit code $exitCode.',
         );
       }
     }
@@ -694,7 +700,10 @@ class Runner {
         final lockFile = File(p.join(entity.path, 'session.lock'));
         if (!lockFile.existsSync()) {
           try {
-            entity.deleteSync(recursive: true);
+            final stat = entity.statSync();
+            if (now.difference(stat.modified) > const Duration(minutes: 1)) {
+              entity.deleteSync(recursive: true);
+            }
           } catch (_) {}
           continue;
         }

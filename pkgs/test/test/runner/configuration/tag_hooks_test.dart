@@ -548,4 +548,49 @@ void main() {
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
+
+  test('runs pre_run hook for tag added transitively via add_tags', () async {
+    await d
+        .file(
+          'dart_test.yaml',
+          jsonEncode({
+            'tags': {
+              'integration': {
+                'add_tags': ['needs_setup'],
+              },
+              'needs_setup': {'pre_run': 'tool/setup.dart'},
+            },
+          }),
+        )
+        .create();
+
+    await d.dir('tool', [
+      d.file('setup.dart', '''
+        import 'dart:io';
+
+        void main() {
+          File('transitive_ran.txt').writeAsStringSync('yes');
+        }
+      '''),
+    ]).create();
+
+    await d.file('test.dart', '''
+      @Tags(['integration'])
+      import 'dart:io';
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {
+          expect(
+            File('transitive_ran.txt').existsSync(),
+            isTrue,
+          );
+        });
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
 }

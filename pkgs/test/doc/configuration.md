@@ -643,7 +643,13 @@ This field specifies a Dart script to execute once before tests with the
 given tag run. It is useful for precompiling binaries, starting backend
 services, or provisioning test resources required by the tagged test suite.
 
-Hooks are always executed as Dart scripts.
+Hooks are always executed as Dart scripts. Hook scripts must run to
+completion and exit (for example, if launching a background service or container,
+spawn it detached, record its port or metadata in `testSessionPath`, and exit).
+
+Tag hooks are triggered when any test file annotated with a matching
+file/suite-level `@Tags([...])` annotation (or a tag added transitively via
+[`add_tags`](#add_tags)) is selected to run.
 
 If multiple test files use the same tag, the `pre_run` hook executes only once
 before any matching suites execute. If the `pre_run` process exits with a
