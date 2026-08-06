@@ -290,10 +290,17 @@ class Runner {
         );
         final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();
         final stderrDone = process.stderr.listen(stderr.add).asFuture<void>();
-        await process.exitCode;
+        final hookExitCode = await process.exitCode;
         await Future.wait([stdoutDone, stderrDone]);
-      } catch (_) {
-        // Best effort on teardown.
+        if (hookExitCode != 0) {
+          stderr.writeln(
+            'Post-run hook "${hook.script}" failed with exit code $hookExitCode.',
+          );
+          exitCode = 1;
+        }
+      } catch (error) {
+        stderr.writeln('Post-run hook "${hook.script}" failed: $error');
+        exitCode = 1;
       }
     }
 

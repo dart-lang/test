@@ -741,6 +741,10 @@ tags:
 ```
 
 `post_run` hooks also receive the session directory via `testSessionPath` / `DART_TEST_SESSION_DIR`.
+If a `post_run` hook exits with a non-zero exit code, an error message is printed to
+`stderr` and the overall test run will exit with a non-zero exit code (while still
+completing any remaining teardown hooks and session directory cleanup).
+
 When the test runner closes, the session directory is automatically deleted.
 If a test run is abruptly killed, stale session directories from previous runs
 are automatically garbage-collected on subsequent `dart test` invocations.

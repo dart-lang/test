@@ -593,4 +593,55 @@ void main() {
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
+
+  test(
+    'fails the test run if post_run hook exits with non-zero code',
+    () async {
+      await d
+          .file(
+            'dart_test.yaml',
+            jsonEncode({
+              'tags': {
+                'failing_teardown': {'post_run': 'tool/teardown.dart'},
+              },
+            }),
+          )
+          .create();
+
+      await d.dir('tool', [
+        d.file('teardown.dart', '''
+        import 'dart:io';
+
+        void main() {
+          stderr.writeln('teardown cleanup failed');
+          exit(42);
+        }
+      '''),
+      ]).create();
+
+      await d.file('test.dart', '''
+      @Tags(['failing_teardown'])
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test passes", () {
+          expect(true, isTrue);
+        });
+      }
+    ''').create();
+
+      var test = await runTest(['test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      expect(test.stderr, emitsThrough(contains('teardown cleanup failed')));
+      expect(
+        test.stderr,
+        emitsThrough(
+          contains(
+            'Post-run hook "tool/teardown.dart" failed with exit code 42.',
+          ),
+        ),
+      );
+      await test.shouldExit(1);
+    },
+  );
 }
