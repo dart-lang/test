@@ -22,12 +22,7 @@ void main() {
           'dart_test.yaml',
           jsonEncode({
             'tags': {
-              'needs_setup': {
-                'pre_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/setup.dart'],
-                },
-              },
+              'needs_setup': {'pre_run': 'tool/setup.dart'},
             },
           }),
         )
@@ -69,12 +64,7 @@ void main() {
             'dart_test.yaml',
             jsonEncode({
               'tags': {
-                'needs_setup': {
-                  'pre_run': {
-                    'command': Platform.resolvedExecutable,
-                    'args': ['tool/setup.dart'],
-                  },
-                },
+                'needs_setup': {'pre_run': 'tool/setup.dart'},
               },
             }),
           )
@@ -113,12 +103,7 @@ void main() {
           'dart_test.yaml',
           jsonEncode({
             'tags': {
-              'needs_setup': {
-                'pre_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/setup.dart'],
-                },
-              },
+              'needs_setup': {'pre_run': 'tool/setup.dart'},
             },
           }),
         )
@@ -174,12 +159,7 @@ void main() {
           'dart_test.yaml',
           jsonEncode({
             'tags': {
-              'failing_setup': {
-                'pre_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/fail.dart'],
-                },
-              },
+              'failing_setup': {'pre_run': 'tool/fail.dart'},
             },
           }),
         )
@@ -217,14 +197,8 @@ void main() {
           jsonEncode({
             'tags': {
               'with_teardown': {
-                'pre_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/setup.dart'],
-                },
-                'post_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/teardown.dart'],
-                },
+                'pre_run': 'tool/setup.dart',
+                'post_run': 'tool/teardown.dart',
               },
             },
           }),
@@ -276,12 +250,7 @@ void main() {
           'dart_test.yaml',
           jsonEncode({
             'tags': {
-              'cleanup_only': {
-                'post_run': {
-                  'command': Platform.resolvedExecutable,
-                  'args': ['tool/teardown.dart'],
-                },
-              },
+              'cleanup_only': {'post_run': 'tool/teardown.dart'},
             },
           }),
         )
@@ -320,8 +289,8 @@ void main() {
           jsonEncode({
             'tags': {
               'list_format': {
-                'pre_run': [Platform.resolvedExecutable, 'tool/setup.dart'],
-                'post_run': [Platform.resolvedExecutable, 'tool/teardown.dart'],
+                'pre_run': ['tool/setup.dart'],
+                'post_run': ['tool/teardown.dart'],
               },
             },
           }),
@@ -376,14 +345,8 @@ void main() {
             jsonEncode({
               'tags': {
                 'excluded_tag': {
-                  'pre_run': {
-                    'command': Platform.resolvedExecutable,
-                    'args': ['tool/setup.dart'],
-                  },
-                  'post_run': {
-                    'command': Platform.resolvedExecutable,
-                    'args': ['tool/teardown.dart'],
-                  },
+                  'pre_run': 'tool/setup.dart',
+                  'post_run': 'tool/teardown.dart',
                 },
               },
             }),
@@ -447,14 +410,8 @@ void main() {
             jsonEncode({
               'tags': {
                 'session_test': {
-                  'pre_run': {
-                    'command': Platform.resolvedExecutable,
-                    'args': ['tool/setup.dart'],
-                  },
-                  'post_run': {
-                    'command': Platform.resolvedExecutable,
-                    'args': ['tool/teardown.dart'],
-                  },
+                  'pre_run': 'tool/setup.dart',
+                  'post_run': 'tool/teardown.dart',
                 },
               },
             }),
@@ -544,4 +501,51 @@ void main() {
       );
     },
   );
+
+  test('supports map format with script and args', () async {
+    await d
+        .file(
+          'dart_test.yaml',
+          jsonEncode({
+            'tags': {
+              'with_args': {
+                'pre_run': {
+                  'script': 'tool/setup.dart',
+                  'args': ['--output=ready.txt', 'hello'],
+                },
+              },
+            },
+          }),
+        )
+        .create();
+
+    await d.dir('tool', [
+      d.file('setup.dart', '''
+        import 'dart:io';
+
+        void main(List<String> args) {
+          File('args.txt').writeAsStringSync(args.join(' '));
+        }
+      '''),
+    ]).create();
+
+    await d.file('test.dart', '''
+      @Tags(['with_args'])
+      import 'dart:io';
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test", () {
+          expect(
+            File('args.txt').readAsStringSync(),
+            equals('--output=ready.txt hello'),
+          );
+        });
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
 }

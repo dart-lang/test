@@ -285,8 +285,8 @@ class Runner {
     for (var hook in _activePostRunHooks) {
       try {
         var result = await Process.run(
-          hook.command,
-          hook.args,
+          Platform.resolvedExecutable,
+          [hook.script, ...hook.args],
           environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
           stdoutEncoding: utf8,
           stderrEncoding: utf8,
@@ -647,8 +647,8 @@ class Runner {
     for (var hook in preRunHooksToRun) {
       if (_closed) return;
       var result = await Process.run(
-        hook.command,
-        hook.args,
+        Platform.resolvedExecutable,
+        [hook.script, ...hook.args],
         environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
         stdoutEncoding: utf8,
         stderrEncoding: utf8,

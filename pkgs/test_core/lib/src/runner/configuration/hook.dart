@@ -6,27 +6,27 @@ import 'package:collection/collection.dart';
 
 /// A hook configured to run before or after matching test suites execute.
 final class Hook {
-  /// The command to execute.
-  final String command;
+  /// The path to the Dart script to execute.
+  final String script;
 
-  /// The arguments to pass to [command].
+  /// The arguments to pass to the Dart [script].
   final List<String> args;
 
-  Hook(this.command, [this.args = const []]);
+  Hook(this.script, [this.args = const []]);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is Hook &&
-          command == other.command &&
+          script == other.script &&
           const ListEquality<String>().equals(args, other.args);
 
   @override
   int get hashCode =>
-      Object.hash(command, const ListEquality<String>().hash(args));
+      Object.hash(script, const ListEquality<String>().hash(args));
 
   @override
-  String toString() => args.isEmpty ? command : '$command ${args.join(' ')}';
+  String toString() => args.isEmpty ? script : '$script ${args.join(' ')}';
 }
 
 typedef PreRunHook = Hook;

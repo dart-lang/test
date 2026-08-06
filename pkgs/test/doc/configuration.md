@@ -639,29 +639,32 @@ This field is not supported in the
 
 ### `pre_run`
 
-This field specifies a command or script to execute once before tests with the
+This field specifies a Dart script to execute once before tests with the
 given tag run. It is useful for precompiling binaries, starting backend
 services, or provisioning test resources required by the tagged test suite.
+
+Hooks are always executed as Dart scripts using the active Dart SDK running the
+test runner, ensuring cross-platform compatibility across Windows, macOS, and Linux.
 
 If multiple test files use the same tag, the `pre_run` hook executes only once
 before any matching suites execute. If the `pre_run` process exits with a
 non-zero exit code, the test runner aborts the run.
 
-A hook can be specified as a command string, a list of strings, or a map with
-`command` and optional `args`:
+A hook can be specified as a Dart script path or as a map with `script` and
+optional `args`:
 
 ```yaml
 tags:
   needs_server:
-    pre_run: "dart run tool/start_server.dart"
+    pre_run: tool/start_server.dart
 ```
 
 ```yaml
 tags:
   integration:
     pre_run:
-      command: dart
-      args: [tool/compile_executable.dart, --mode=release]
+      script: tool/compile_executable.dart
+      args: [--mode=release]
 ```
 
 When executing a hook, `package:test` creates an isolated session directory
@@ -677,7 +680,7 @@ In `dart_test.yaml`:
 ```yaml
 tags:
   needs_compiled_pub:
-    pre_run: "dart run tool/compile_pub.dart"
+    pre_run: tool/compile_pub.dart
 ```
 
 In `tool/compile_pub.dart` (the `pre_run` hook):
@@ -721,14 +724,14 @@ This field is not supported in the
 
 ### `post_run`
 
-This field specifies a command or script to execute during test runner teardown
+This field specifies a Dart script to execute during test runner teardown
 after all tests have completed. It is executed if any test file matching the tag
 was run.
 
 ```yaml
 tags:
   needs_server:
-    post_run: "dart run tool/stop_server.dart"
+    post_run: tool/stop_server.dart
 ```
 
 `post_run` hooks also receive the session directory via `testSessionPath` / `DART_TEST_SESSION_DIR`.

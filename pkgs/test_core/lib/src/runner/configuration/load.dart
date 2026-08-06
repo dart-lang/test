@@ -828,15 +828,16 @@ class _ConfigurationLoader {
         final list = hookNode.map((e) => e as String).toList();
         return Hook(list.first, list.sublist(1));
       } else if (hookNode is YamlMap) {
-        final commandNode = hookNode.nodes['command'];
-        if (commandNode == null || commandNode.value is! String) {
+        final scriptNode =
+            hookNode.nodes['script'] ?? hookNode.nodes['command'];
+        if (scriptNode == null || scriptNode.value is! String) {
           throw SourceSpanFormatException(
-            '$hookField.command must be a string.',
-            commandNode?.span ?? hookNode.span,
+            '$hookField.script must be a string.',
+            scriptNode?.span ?? hookNode.span,
             _source,
           );
         }
-        final command = commandNode.value as String;
+        final script = scriptNode.value as String;
 
         var args = <String>[];
         final argsNode = hookNode.nodes['args'];
@@ -860,7 +861,7 @@ class _ConfigurationLoader {
           args = argsNode.map((e) => e as String).toList();
         }
 
-        return Hook(command, args);
+        return Hook(script, args);
       } else {
         throw SourceSpanFormatException(
           '$hookField must be a map, list, or string.',
