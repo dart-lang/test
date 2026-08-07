@@ -289,4 +289,6 @@ void main() {
     expect(() {
       assert(false);
     }, throwsA(isA<AssertionError>()));
+  });
+}
 ''';
