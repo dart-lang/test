@@ -215,7 +215,9 @@ void main() {
             },
             skip: compiler == Compiler.cli
                 ? 'https://github.com/dart-lang/test/issues/2718'
-                : false,
+                : runtime == Runtime.safari
+                ? 'https://github.com/dart-lang/test/issues/2720'
+                : null,
           );
         },
       );
