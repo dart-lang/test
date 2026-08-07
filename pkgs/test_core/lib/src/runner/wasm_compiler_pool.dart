@@ -77,10 +77,11 @@ class WasmCompilerPool extends CompilerPool {
       _processes.remove(process);
       if (closed) return;
 
-      var output = buffer.toString();
-      if (output.isNotEmpty) print(output);
-
-      if (exitCode != 0) throw StateError('dart2wasm failed.');
+      if (exitCode != 0) {
+        var output = buffer.toString();
+        if (output.isNotEmpty) print(output);
+        throw StateError('dart2wasm failed.');
+      }
     });
   }
 

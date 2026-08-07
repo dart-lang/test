@@ -170,8 +170,8 @@ Future<WipConnection> _connect(
     var tabs = await chromeConnection.getTabs();
     tab = tabs.firstWhereOrNull((tab) => tab.url == url.toString());
     if (tab == null) {
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-      if (attempt > 5) {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+      if (attempt > 20) {
         throw StateError('Could not connect to test tab with url: $url');
       }
     }
