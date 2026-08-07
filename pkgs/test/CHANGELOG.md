@@ -4,6 +4,7 @@
   when tests are run directly on platforms which support `dart:io`. The
   environment variable takes precedence over configuration in `dart_test.yaml`
   but is overridden by the `--reporter` flag when passed to the test runner.
+* Enable asserts in the `exe` compiler.
 
 ## 1.31.2
 
