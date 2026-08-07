@@ -70,9 +70,7 @@ class Chrome extends Browser {
             remoteDebuggerCompleter.complete(
               connectionFuture.then((c) => c.$2),
             );
-            connectionCompleter.complete(
-              connectionFuture.then((c) => c.$1),
-            );
+            connectionCompleter.complete(connectionFuture.then((c) => c.$1));
           } else {
             remoteDebuggerCompleter.complete(null);
             connectionCompleter.complete(null);
@@ -202,8 +200,9 @@ Future<(WipConnection, Uri)> _connect(
 
   var base = Uri.http('localhost:$port');
   var devtoolsUrl = tab.devtoolsFrontendUrl;
-  var remoteDebuggerUrl =
-      devtoolsUrl != null ? base.resolve(devtoolsUrl) : base;
+  var remoteDebuggerUrl = devtoolsUrl != null
+      ? base.resolve(devtoolsUrl)
+      : base;
   return (tabConnection, remoteDebuggerUrl);
 }
 
