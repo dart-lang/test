@@ -367,6 +367,7 @@ stderr: ${processResult.stderr}''');
       if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
       if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
       if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
+      '--enable-asserts',
     ]);
     if (processResult.exitCode != 0 || !(await output.exists())) {
       throw LoadException(path, '''
