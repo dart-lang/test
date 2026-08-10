@@ -1,9 +1,8 @@
 ## 1.32.0-wip
 
-* Support `pre_run` and `post_run` hooks in `dart_test.yaml` under `tags` and
-  suite defaults, providing an isolated temporary session directory accessible
-  via `TestEnvironment.sessionDirectory` and `DART_TEST_SESSION_DIR` environment variable
-  with automatic cleanup and stale session garbage collection.
+* Support `globalSetup` and `addGlobalTearDown` in `package:test` /
+  `package:test_api` to execute global setup scripts once on the host runner
+  and cache results across all tests and test suites.
 * Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
   runtimes.
 * Add support for `DART_TEST_REPORTER` environment variable in test runner and

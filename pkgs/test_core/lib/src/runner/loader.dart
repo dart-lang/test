@@ -19,6 +19,7 @@ import '../util/package_config.dart';
 import 'application_exception.dart';
 import 'compiler_selection.dart';
 import 'configuration.dart';
+import 'global_setup.dart';
 import 'hack_register_platform.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
@@ -40,6 +41,9 @@ class Loader {
   final _compiler = TestCompiler(
     p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
   );
+
+  /// Manages global setup hooks.
+  late final GlobalSetupManager globalSetupManager = GlobalSetupManager(this);
 
   /// All suites that have been created by the loader.
   final _suites = <RunnerSuite>{};
@@ -125,6 +129,8 @@ class Loader {
     _config.validateRuntimes(allRuntimes);
 
     _registerRuntimeOverrides();
+
+    GlobalSetupManager.current = globalSetupManager;
   }
 
   /// Registers a [PlatformPlugin] for [runtimes].
@@ -361,6 +367,7 @@ class Loader {
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
     await Future.wait([
+      globalSetupManager.close(),
       _compiler.dispose(),
       Future.wait(
         _platformPlugins.values.map((memo) async {

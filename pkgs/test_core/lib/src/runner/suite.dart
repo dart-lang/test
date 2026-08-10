@@ -12,10 +12,7 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 
 import 'compiler_selection.dart';
-import 'configuration/hook.dart';
 import 'runtime_selection.dart';
-
-export 'configuration/hook.dart' show Hook, PostRunHook, PreRunHook;
 
 /// A filter on tests cases to run within a test suite.
 ///
@@ -62,15 +59,7 @@ final class SuiteConfiguration {
     metadata: null,
     ignoreTimeouts: null,
     suiteLoadTimeout: null,
-    preRun: null,
-    postRun: null,
   );
-
-  /// An optional hook to execute before running this suite.
-  final Hook? preRun;
-
-  /// An optional hook to execute after running this suite.
-  final Hook? postRun;
 
   /// Whether or not duplicate test (or group) names are allowed within the same
   /// test suite.
@@ -181,8 +170,6 @@ final class SuiteConfiguration {
     required Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     required bool? ignoreTimeouts,
     required Timeout? suiteLoadTimeout,
-    Hook? preRun,
-    Hook? postRun,
 
     // Test-level configuration
     required Timeout? timeout,
@@ -208,8 +195,6 @@ final class SuiteConfiguration {
       onPlatform: onPlatform,
       ignoreTimeouts: ignoreTimeouts,
       suiteLoadTimeout: suiteLoadTimeout,
-      preRun: preRun,
-      postRun: postRun,
       metadata: Metadata(
         timeout: timeout,
         verboseTrace: verboseTrace,
@@ -241,8 +226,6 @@ final class SuiteConfiguration {
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
     Timeout? suiteLoadTimeout,
-    Hook? preRun,
-    Hook? postRun,
 
     // Test-level configuration
     Timeout? timeout,
@@ -267,8 +250,6 @@ final class SuiteConfiguration {
     ignoreTimeouts: ignoreTimeouts,
     timeout: timeout,
     suiteLoadTimeout: suiteLoadTimeout,
-    preRun: preRun,
-    postRun: postRun,
     verboseTrace: verboseTrace,
     chainStackTraces: chainStackTraces,
     skip: skip,
@@ -309,8 +290,6 @@ final class SuiteConfiguration {
     required Metadata? metadata,
     required bool? ignoreTimeouts,
     required Timeout? suiteLoadTimeout,
-    required this.preRun,
-    required this.postRun,
   }) : _allowDuplicateTestNames = allowDuplicateTestNames,
        _allowTestRandomization = allowTestRandomization,
        _jsTrace = jsTrace,
@@ -318,8 +297,8 @@ final class SuiteConfiguration {
        dart2jsArgs = _list(dart2jsArgs) ?? const [],
        _runtimes = _list(runtimes),
        compilerSelections = _list(compilerSelections),
-       tags = _map(tags),
-       onPlatform = _map(onPlatform),
+       tags = _map(tags) ?? const {},
+       onPlatform = _map(onPlatform) ?? const {},
        _ignoreTimeouts = ignoreTimeouts,
        _metadata = metadata ?? Metadata.empty,
        _suiteLoadTimeout = suiteLoadTimeout;
@@ -346,8 +325,6 @@ final class SuiteConfiguration {
         compilerSelections: null,
         ignoreTimeouts: null,
         suiteLoadTimeout: null,
-        preRun: null,
-        postRun: null,
       );
 
   /// Returns an unmodifiable copy of [input].
@@ -360,20 +337,24 @@ final class SuiteConfiguration {
     return list;
   }
 
-  /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
-  static Map<K, V> _map<K, V>(Map<K, V>? input) {
-    if (input == null || input.isEmpty) return const <Never, Never>{};
-    return Map.unmodifiable(input);
+  /// Returns an unmodifiable copy of [input].
+  ///
+  /// If [input] is `null` or empty, this returns `null`.
+  static Map<K, V>? _map<K, V>(Map<K, V>? input) {
+    if (input == null) return null;
+    var map = Map<K, V>.unmodifiable(input);
+    if (map.isEmpty) return null;
+    return map;
   }
 
   /// Merges this with [other].
   ///
   /// For most fields, if both configurations have values set, [other]'s value
-  /// takes precedence. However, certain fields are merged together instead.
-  /// This is indicated in those fields' documentation.
+  /// takes precedence. However, [tags] and [onPlatform] are merged
+  /// recursively.
   SuiteConfiguration merge(SuiteConfiguration other) {
-    if (this == SuiteConfiguration.empty) return other;
-    if (other == SuiteConfiguration.empty) return this;
+    if (this == empty) return other;
+    if (other == empty) return this;
     assert(testSelections.isEmpty || other.testSelections.isEmpty);
 
     var config = SuiteConfiguration._(
@@ -394,8 +375,6 @@ final class SuiteConfiguration {
       onPlatform: _mergeConfigMaps(onPlatform, other.onPlatform),
       ignoreTimeouts: other._ignoreTimeouts ?? _ignoreTimeouts,
       suiteLoadTimeout: other._suiteLoadTimeout ?? _suiteLoadTimeout,
-      preRun: other.preRun ?? preRun,
-      postRun: other.postRun ?? postRun,
       metadata: metadata.merge(other.metadata),
     );
     return config._resolveTags();
@@ -418,8 +397,6 @@ final class SuiteConfiguration {
     Map<PlatformSelector, SuiteConfiguration>? onPlatform,
     bool? ignoreTimeouts,
     Timeout? suiteLoadTimeout,
-    Hook? preRun,
-    Hook? postRun,
 
     // Test-level configuration
     Timeout? timeout,
@@ -446,8 +423,6 @@ final class SuiteConfiguration {
       onPlatform: onPlatform ?? this.onPlatform,
       ignoreTimeouts: ignoreTimeouts ?? _ignoreTimeouts,
       suiteLoadTimeout: suiteLoadTimeout ?? _suiteLoadTimeout,
-      preRun: preRun ?? this.preRun,
-      postRun: postRun ?? this.postRun,
       metadata: _metadata.change(
         timeout: timeout,
         verboseTrace: verboseTrace,
@@ -486,8 +461,6 @@ final class SuiteConfiguration {
       onPlatform: onPlatform,
       ignoreTimeouts: _ignoreTimeouts,
       suiteLoadTimeout: _suiteLoadTimeout,
-      preRun: preRun,
-      postRun: postRun,
       metadata: _metadata,
     );
   }

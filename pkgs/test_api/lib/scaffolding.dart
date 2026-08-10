@@ -17,6 +17,7 @@ export 'src/backend/configuration/tags.dart' show Tags;
 export 'src/backend/configuration/test_on.dart' show TestOn;
 export 'src/backend/configuration/timeout.dart' show Timeout;
 export 'src/backend/test_location.dart' show TestLocation;
+export 'src/scaffolding/global_setup.dart' show addGlobalTearDown, globalSetup;
 export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridCode, spawnHybridUri;
 export 'src/scaffolding/test_structure.dart'
     show addTearDown, group, setUp, setUpAll, tearDown, tearDownAll, test;

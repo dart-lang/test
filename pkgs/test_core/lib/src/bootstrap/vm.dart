@@ -56,23 +56,63 @@ void internalBootstrapNativeTest(
   );
 }
 
-/// Bootstraps a vm hook to execute and report results back over an isolate port.
+/// Bootstraps a global setup hook to execute, capture teardowns, and report
+/// results back over an isolate port.
 void internalBootstrapVmHook(
   Function Function() getMain,
   List<String> args,
   SendPort sendPort,
 ) async {
+  final tearDowns = <FutureOr<void> Function()>[];
+  final commandPort = ReceivePort();
+
   try {
     final mainFn = getMain();
-    if (mainFn is FutureOr<Object?> Function(List<String>)) {
-      await mainFn(args);
-    } else if (mainFn is FutureOr<Object?> Function()) {
-      await mainFn();
-    } else {
-      await (Function.apply(mainFn, args.isEmpty ? [] : [args]) as dynamic);
+    final result = await runZoned(() async {
+      if (mainFn is FutureOr<Object?> Function(List<String>)) {
+        return await mainFn(args);
+      } else if (mainFn is FutureOr<Object?> Function()) {
+        return await mainFn();
+      } else {
+        return await (Function.apply(mainFn, args.isEmpty ? [] : [args])
+            as dynamic);
+      }
+    }, zoneValues: {#test.global_teardowns: tearDowns});
+
+    sendPort.send({
+      'success': true,
+      'result': result,
+      'hasTearDown': tearDowns.isNotEmpty,
+      'commandPort': tearDowns.isNotEmpty ? commandPort.sendPort : null,
+    });
+
+    if (tearDowns.isEmpty) {
+      commandPort.close();
+      return;
     }
-    sendPort.send({'success': true});
+
+    await for (var msg in commandPort) {
+      if (msg is Map && msg['command'] == 'teardown') {
+        final replyPort = msg['replyPort'] as SendPort;
+        try {
+          for (var tearDown in tearDowns.reversed) {
+            await tearDown();
+          }
+          replyPort.send({'success': true});
+        } catch (error, stack) {
+          replyPort.send({
+            'success': false,
+            'error': error.toString(),
+            'stackTrace': stack.toString(),
+          });
+        } finally {
+          commandPort.close();
+        }
+        break;
+      }
+    }
   } catch (error, stack) {
+    commandPort.close();
     sendPort.send({
       'success': false,
       'error': error.toString(),

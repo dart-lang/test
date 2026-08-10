@@ -1,9 +1,7 @@
 ## 0.6.20-wip
 
-* Support `pre_run` and `post_run` hooks in `dart_test.yaml` under `tags` and
-  suite defaults, providing an isolated temporary session directory accessible
-  via `TestEnvironment.sessionDirectory` and `DART_TEST_SESSION_DIR` environment variable
-  with automatic cleanup and stale session garbage collection.
+* Support `globalSetup` and `addGlobalTearDown` host runner execution and
+  caching across test suites.
 * Pass sanitizer environment defaults when running tests compiled as native CLI
   bundles.
 * Add support for `DART_TEST_REPORTER` environment variable.

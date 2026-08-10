@@ -209,8 +209,6 @@ class _ConfigurationLoader {
       _disallow('tags');
       _disallow('allow_test_randomization');
       _disallow('allow_duplicate_test_names');
-      _disallow('pre_run');
-      _disallow('post_run');
       return Configuration.empty;
     }
 
@@ -248,9 +246,6 @@ class _ConfigurationLoader {
 
     var allowDuplicateTestNames = _getBool('allow_duplicate_test_names');
 
-    var preRun = _parseHook('pre_run');
-    var postRun = _parseHook('post_run');
-
     return Configuration.localTest(
       skip: skip,
       retry: retry,
@@ -259,8 +254,6 @@ class _ConfigurationLoader {
       addTags: addTags,
       allowTestRandomization: allowTestRandomization,
       allowDuplicateTestNames: allowDuplicateTestNames,
-      preRun: preRun,
-      postRun: postRun,
     ).merge(_extractPresets<BooleanSelector>(tags, Configuration.tags));
   }
 
@@ -796,81 +789,5 @@ class _ConfigurationLoader {
       _document.nodes[field]!.span,
       _source,
     );
-  }
-
-  /// Parses a [Hook] from [field].
-  Hook? _parseHook(String field) {
-    var node = _document.nodes[field];
-    if (node == null || node.value == null) return null;
-
-    Hook parseHook(YamlNode hookNode, String hookField) {
-      if (hookNode.value is String) {
-        final str = (hookNode.value as String).trim();
-        final parts = str.split(RegExp(r'\s+'));
-        return Hook(parts.first, parts.sublist(1));
-      } else if (hookNode is YamlList) {
-        if (hookNode.isEmpty) {
-          throw SourceSpanFormatException(
-            '$hookField list must not be empty.',
-            hookNode.span,
-            _source,
-          );
-        }
-        for (var element in hookNode.nodes) {
-          if (element.value is! String) {
-            throw SourceSpanFormatException(
-              '$hookField elements must be strings.',
-              element.span,
-              _source,
-            );
-          }
-        }
-        final list = hookNode.map((e) => e as String).toList();
-        return Hook(list.first, list.sublist(1));
-      } else if (hookNode is YamlMap) {
-        final scriptNode =
-            hookNode.nodes['script'] ?? hookNode.nodes['command'];
-        if (scriptNode == null || scriptNode.value is! String) {
-          throw SourceSpanFormatException(
-            '$hookField.script must be a string.',
-            scriptNode?.span ?? hookNode.span,
-            _source,
-          );
-        }
-        final script = scriptNode.value as String;
-
-        var args = <String>[];
-        final argsNode = hookNode.nodes['args'];
-        if (argsNode != null) {
-          if (argsNode is! YamlList) {
-            throw SourceSpanFormatException(
-              '$hookField.args must be a list.',
-              argsNode.span,
-              _source,
-            );
-          }
-          for (var element in argsNode.nodes) {
-            if (element.value is! String) {
-              throw SourceSpanFormatException(
-                '$hookField.args elements must be strings.',
-                element.span,
-                _source,
-              );
-            }
-          }
-          args = argsNode.map((e) => e as String).toList();
-        }
-
-        return Hook(script, args);
-      } else {
-        throw SourceSpanFormatException(
-          '$hookField must be a map, list, or string.',
-          hookNode.span,
-          _source,
-        );
-      }
-    }
-
-    return parseHook(node, field);
   }
 }

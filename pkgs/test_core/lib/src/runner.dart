@@ -4,23 +4,19 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
-import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
-import 'runner/application_exception.dart';
 import 'runner/configuration.dart';
 import 'runner/configuration/reporters.dart';
 import 'runner/debugger.dart';
@@ -34,9 +30,7 @@ import 'runner/reporter/compact.dart';
 import 'runner/reporter/expanded.dart';
 import 'runner/reporter/multiplex.dart';
 import 'runner/runner_suite.dart';
-import 'runner/suite.dart';
 import 'util/io.dart';
-import 'util/package_config.dart';
 
 /// A class that loads and runs tests based on a [Configuration].
 ///
@@ -75,17 +69,8 @@ class Runner {
   final _closeMemo = AsyncMemoizer<void>();
   bool get _closed => _closeMemo.hasRun;
 
-  /// The set of active post-run hooks that will be executed on close.
-  final _activePostRunHooks = <Hook>{};
-
   /// Sinks created for each file reporter (if there are any).
   final List<IOSink> _sinks;
-
-  /// The temporary session directory created for this test run.
-  late final Directory _sessionDir;
-
-  /// The exclusive file lock on the current session directory.
-  RandomAccessFile? _sessionLock;
 
   /// Creates a new runner based on [configuration].
   factory Runner(Configuration config) => config.asCurrent(() {
@@ -117,9 +102,7 @@ class Runner {
     );
   });
 
-  Runner._(this._engine, this._reporter, this._sinks) {
-    _initSessionDir();
-  }
+  Runner._(this._engine, this._reporter, this._sinks);
 
   /// Starts the runner.
   ///
@@ -131,8 +114,6 @@ class Runner {
     }
 
     _warnForUnsupportedPlatforms();
-
-    await _runPreRunHooks();
 
     var suites = _loadSuites();
 
@@ -268,16 +249,6 @@ class Runner {
 
     _suiteSubscription = null;
 
-    // Execute post-run teardowns for all active hooks before closing the loader.
-    for (var hook in _activePostRunHooks) {
-      try {
-        await _runHook(hook, prefix: 'Post-run hook');
-      } catch (error) {
-        stderr.writeln('$error');
-        exitCode = 1;
-      }
-    }
-
     // Make sure we close the engine *before* the loader. Otherwise,
     // LoadSuites provided by the loader may get into bad states.
     //
@@ -291,15 +262,6 @@ class Runner {
     // Flush any IOSinks created for file reporters.
     await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
     _sinks.clear();
-
-    try {
-      _sessionLock?.unlockSync();
-      _sessionLock?.closeSync();
-      _sessionLock = null;
-      tryDeleteDirectory(_sessionDir);
-    } on IOException {
-      // Best effort on session lock release.
-    }
   });
 
   /// Return a stream of [LoadSuite]s in [_config.testSelections].
@@ -563,229 +525,5 @@ class Runner {
       _engine.run(),
     ], eagerError: true);
     return results.last as bool;
-  }
-
-  /// Finds all pre-run and post-run hooks required by the selected test suites and executes pre-run hooks.
-  Future<void> _runPreRunHooks() async {
-    final preRunHooksToRun = <Hook>{};
-
-    if (_config.suiteDefaults.preRun != null) {
-      preRunHooksToRun.add(_config.suiteDefaults.preRun!);
-    }
-    if (_config.suiteDefaults.postRun != null) {
-      _activePostRunHooks.add(_config.suiteDefaults.postRun!);
-    }
-
-    if (_config.suiteDefaults.tags.isNotEmpty) {
-      final tagConfigs = <BooleanSelector, SuiteConfiguration>{};
-      for (var entry in _config.suiteDefaults.tags.entries) {
-        if (entry.value.preRun != null || entry.value.postRun != null) {
-          tagConfigs[entry.key] = entry.value;
-        }
-      }
-
-      if (tagConfigs.isNotEmpty) {
-        for (var pathEntry in _config.testSelections.entries) {
-          final testPath = pathEntry.key;
-          final candidateFiles = <String>[];
-          if (Directory(testPath).existsSync()) {
-            candidateFiles.addAll(
-              Directory(testPath)
-                  .listSync(recursive: true)
-                  .whereType<File>()
-                  .where((f) => _config.filename.matches(p.basename(f.path)))
-                  .map((f) => f.path),
-            );
-          } else if (File(testPath).existsSync()) {
-            candidateFiles.add(testPath);
-          }
-
-          for (var filePath in candidateFiles) {
-            Metadata metadata;
-            try {
-              metadata = _loader.parseSuiteMetadata(filePath);
-            } on FormatException {
-              continue;
-            } on IOException {
-              continue;
-            }
-
-            final allTags = Set<String>.from(metadata.tags);
-            var changed = true;
-            while (changed) {
-              changed = false;
-              for (var tagEntry in _config.suiteDefaults.tags.entries) {
-                if (tagEntry.key.evaluate(allTags.contains)) {
-                  for (var addedTag in tagEntry.value.metadata.tags) {
-                    if (allTags.add(addedTag)) {
-                      changed = true;
-                    }
-                  }
-                }
-              }
-            }
-
-            if (_config.excludeTags.evaluate(allTags.contains)) {
-              continue;
-            }
-            if (_config.includeTags != BooleanSelector.all &&
-                allTags.isNotEmpty &&
-                !_config.includeTags.evaluate(allTags.contains)) {
-              continue;
-            }
-
-            for (var tagEntry in tagConfigs.entries) {
-              if (tagEntry.key.evaluate(allTags.contains)) {
-                if (tagEntry.value.preRun != null) {
-                  preRunHooksToRun.add(tagEntry.value.preRun!);
-                }
-                if (tagEntry.value.postRun != null) {
-                  _activePostRunHooks.add(tagEntry.value.postRun!);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    for (var hook in preRunHooksToRun) {
-      if (_closed) return;
-      await _runHook(hook, prefix: 'Pre-run hook');
-    }
-  }
-
-  /// Executes a single hook in an isolate.
-  Future<void> _runHook(Hook hook, {String prefix = 'Hook'}) async {
-    final responsePort = ReceivePort();
-    final errorPort = ReceivePort();
-    try {
-      final dillUri = await _loader.compileHook(hook.script);
-      final isolate = await Isolate.spawnUri(
-        dillUri,
-        hook.args,
-        responsePort.sendPort,
-        packageConfig: await packageConfigUri,
-        onError: errorPort.sendPort,
-      );
-
-      final errorCompleter = Completer<void>();
-      final errorSub = errorPort.listen((errorAndStack) {
-        final list = errorAndStack as List<Object?>;
-        if (!errorCompleter.isCompleted) {
-          errorCompleter.completeError(
-            ApplicationException(
-              '$prefix "${hook.script}" failed:\n${list[0]}\n${list[1]}',
-            ),
-          );
-        }
-      });
-
-      final responseCompleter = Completer<void>();
-      final responseSub = responsePort.listen((response) {
-        final map = response as Map<Object?, Object?>;
-        if (map['success'] == true) {
-          if (!responseCompleter.isCompleted) {
-            responseCompleter.complete();
-          }
-        } else {
-          if (!responseCompleter.isCompleted) {
-            final error = map['error'];
-            final stack = map['stackTrace'];
-            errorCompleter.completeError(
-              ApplicationException(
-                '$prefix "${hook.script}" failed:\n$error'
-                '${stack != null && "$stack".isNotEmpty ? "\n$stack" : ""}',
-              ),
-            );
-          }
-        }
-      });
-
-      await Future.any([responseCompleter.future, errorCompleter.future]);
-      await errorSub.cancel();
-      await responseSub.cancel();
-      isolate.kill();
-    } finally {
-      responsePort.close();
-      errorPort.close();
-    }
-  }
-
-  /// Initializes the session directory for this test run and acquires a file lock.
-  void _initSessionDir() {
-    _cleanStaleSessions();
-    _sessionDir = Directory(
-      p.absolute(p.join('.dart_tool', 'test', 'sessions', '$pid')),
-    )..createSync(recursive: true);
-    try {
-      final lockFile = File(p.join(_sessionDir.path, 'session.lock'));
-      _sessionLock = lockFile.openSync(mode: FileMode.write);
-      _sessionLock!.lockSync(FileLock.exclusive);
-    } on IOException {
-      // Best effort locking.
-    }
-  }
-
-  /// Scans `.dart_tool/test/sessions/` for abandoned session directories from
-  /// terminated runner processes and cleans them up.
-  void _cleanStaleSessions() {
-    final sessionsDir = Directory(p.join('.dart_tool', 'test', 'sessions'));
-    if (!sessionsDir.existsSync()) return;
-    try {
-      final now = DateTime.now();
-      for (final entity in sessionsDir.listSync().whereType<Directory>()) {
-        if (p.basename(entity.path) == '$pid') continue;
-        final lockFile = File(p.join(entity.path, 'session.lock'));
-        if (!lockFile.existsSync()) {
-          try {
-            final stat = entity.statSync();
-            if (now.difference(stat.modified) > const Duration(minutes: 1)) {
-              tryDeleteDirectory(entity);
-            }
-          } on IOException {
-            // Directory modified or deleted concurrently.
-          }
-          continue;
-        }
-        try {
-          final raf = lockFile.openSync(mode: FileMode.write);
-          try {
-            raf.lockSync(FileLock.exclusive);
-            raf.unlockSync();
-            raf.closeSync();
-            tryDeleteDirectory(entity);
-          } on IOException {
-            try {
-              raf.closeSync();
-            } on IOException {
-              // Ignore error closing lock file.
-            }
-            // If the lock could not be acquired (e.g. frozen process or NFS lease),
-            // but the directory is older than 24 hours, clean it up.
-            try {
-              final stat = entity.statSync();
-              if (now.difference(stat.modified).inHours >= 24) {
-                tryDeleteDirectory(entity);
-              }
-            } on IOException {
-              // Entity inaccessible or deleted concurrently.
-            }
-          }
-        } on IOException {
-          // Lock held by active parallel runner or file inaccessible.
-          try {
-            final stat = entity.statSync();
-            if (now.difference(stat.modified).inHours >= 24) {
-              tryDeleteDirectory(entity);
-            }
-          } on IOException {
-            // Entity inaccessible or deleted concurrently.
-          }
-        }
-      }
-    } on IOException {
-      // Ignore IO errors when scanning stale sessions.
-    }
   }
 }
