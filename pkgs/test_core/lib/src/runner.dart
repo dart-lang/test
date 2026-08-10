@@ -266,21 +266,7 @@ class Runner {
 
     _suiteSubscription = null;
 
-    // Make sure we close the engine *before* the loader. Otherwise,
-    // LoadSuites provided by the loader may get into bad states.
-    //
-    // We close the loader's browsers while we're closing the engine because
-    // browser tests don't store any state we care about and we want them to
-    // shut down without waiting for their tear-downs.
-    await Future.wait([_loader.closeEphemeral(), _engine.close()]);
-    timer?.cancel();
-    await _loader.close();
-
-    // Flush any IOSinks created for file reporters.
-    await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
-    _sinks.clear();
-
-    // Execute post-run teardowns for all active hooks.
+    // Execute post-run teardowns for all active hooks before closing the loader.
     for (var hook in _activePostRunHooks) {
       try {
         final scriptExecutable = hook.script.endsWith('.dart')
@@ -306,6 +292,20 @@ class Runner {
         exitCode = 1;
       }
     }
+
+    // Make sure we close the engine *before* the loader. Otherwise,
+    // LoadSuites provided by the loader may get into bad states.
+    //
+    // We close the loader's browsers while we're closing the engine because
+    // browser tests don't store any state we care about and we want them to
+    // shut down without waiting for their tear-downs.
+    await Future.wait([_loader.closeEphemeral(), _engine.close()]);
+    timer?.cancel();
+    await _loader.close();
+
+    // Flush any IOSinks created for file reporters.
+    await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
+    _sinks.clear();
 
     try {
       _sessionLock?.unlockSync();
