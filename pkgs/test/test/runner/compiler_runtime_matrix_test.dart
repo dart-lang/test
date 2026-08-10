@@ -200,6 +200,25 @@ void main() {
               await test.shouldExit(0);
             });
           }
+
+          test(
+            'enables asserts',
+            () async {
+              await d.file('test.dart', _assertionsEnabledTest).create();
+              var test = await runTest(testArgs);
+
+              expect(
+                test.stdout,
+                emitsThrough(contains('+1: All tests passed!')),
+              );
+              await test.shouldExit(0);
+            },
+            skip: compiler == Compiler.cli
+                ? 'https://github.com/dart-lang/test/issues/2718'
+                : runtime == Runtime.safari
+                ? 'https://github.com/dart-lang/test/issues/2720'
+                : null,
+          );
         },
       );
     }
@@ -260,6 +279,18 @@ import 'package:test/test.dart';
 void main() {
   test('sanitizer environment', () {
     expect(Platform.environment['$name'], '$value');
+  });
+}
+''';
+
+final _assertionsEnabledTest = '''
+import 'package:test/test.dart';
+
+void main() {
+  test('asserts are enabled', () {
+    expect(() {
+      assert(false);
+    }, throwsA(isA<AssertionError>()));
   });
 }
 ''';
