@@ -633,7 +633,10 @@ last, just as they would in nested groups. This means that for configuration
 like duration-based timeouts, the last matching value wins.
 
 You can also set up global platform-specific configuration using the
-[package configuration file][configuring platforms].
+[package configuration file][configuring platforms]. The `CHROME_EXECUTABLE`,
+`MS_EDGE_EXECUTABLE`, `FIREFOX_EXECUTABLE`, and `SAFARI_EXECUTABLE` environment
+variables point the runner at a browser binary somewhere else, and take
+precedence over that file.
 
 [configuring platforms]: https://github.com/dart-lang/test/blob/master/pkgs/test/doc/configuration.md#configuring-platforms
 
