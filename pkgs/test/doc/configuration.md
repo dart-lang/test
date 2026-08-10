@@ -55,8 +55,6 @@ tags:
 * [Configuring Tags](#configuring-tags)
   * [`tags`](#tags)
   * [`add_tags`](#add_tags)
-  * [`pre_run`](#pre_run)
-  * [`post_run`](#post_run)
 * [Configuring Platforms](#configuring-platforms)
   * [`on_os`](#on_os)
   * [`on_platform`](#on_platform)
