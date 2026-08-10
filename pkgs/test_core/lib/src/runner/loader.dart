@@ -72,7 +72,9 @@ class Loader {
         File(path).readAsStringSync(),
         _runtimeVariables.toSet(),
       );
-    } catch (_) {
+    } on FormatException {
+      return Metadata.empty;
+    } on IOException {
       return Metadata.empty;
     }
   }

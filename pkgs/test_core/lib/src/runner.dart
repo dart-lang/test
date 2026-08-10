@@ -308,11 +308,9 @@ class Runner {
       _sessionLock?.unlockSync();
       _sessionLock?.closeSync();
       _sessionLock = null;
-      if (_sessionDir.existsSync()) {
-        _sessionDir.deleteSync(recursive: true);
-      }
-    } catch (_) {
-      // Best effort on session cleanup.
+      tryDeleteDirectory(_sessionDir);
+    } on IOException {
+      // Best effort on session lock release.
     }
   });
 
@@ -618,7 +616,9 @@ class Runner {
             Metadata metadata;
             try {
               metadata = _loader.parseSuiteMetadata(filePath);
-            } catch (_) {
+            } on FormatException {
+              continue;
+            } on IOException {
               continue;
             }
 
@@ -690,7 +690,7 @@ class Runner {
       final lockFile = File(p.join(_sessionDir.path, 'session.lock'));
       _sessionLock = lockFile.openSync(mode: FileMode.write);
       _sessionLock!.lockSync(FileLock.exclusive);
-    } catch (_) {
+    } on IOException {
       // Best effort locking.
     }
   }
@@ -709,9 +709,11 @@ class Runner {
           try {
             final stat = entity.statSync();
             if (now.difference(stat.modified) > const Duration(minutes: 1)) {
-              entity.deleteSync(recursive: true);
+              tryDeleteDirectory(entity);
             }
-          } catch (_) {}
+          } on IOException {
+            // Directory modified or deleted concurrently.
+          }
           continue;
         }
         try {
@@ -720,30 +722,38 @@ class Runner {
             raf.lockSync(FileLock.exclusive);
             raf.unlockSync();
             raf.closeSync();
-            entity.deleteSync(recursive: true);
-          } catch (_) {
-            raf.closeSync();
+            tryDeleteDirectory(entity);
+          } on IOException {
+            try {
+              raf.closeSync();
+            } on IOException {
+              // Ignore error closing lock file.
+            }
             // If the lock could not be acquired (e.g. frozen process or NFS lease),
             // but the directory is older than 24 hours, clean it up.
             try {
               final stat = entity.statSync();
               if (now.difference(stat.modified).inHours >= 24) {
-                entity.deleteSync(recursive: true);
+                tryDeleteDirectory(entity);
               }
-            } catch (_) {}
+            } on IOException {
+              // Entity inaccessible or deleted concurrently.
+            }
           }
-        } catch (_) {
+        } on IOException {
           // Lock held by active parallel runner or file inaccessible.
           try {
             final stat = entity.statSync();
             if (now.difference(stat.modified).inHours >= 24) {
-              entity.deleteSync(recursive: true);
+              tryDeleteDirectory(entity);
             }
-          } catch (_) {}
+          } on IOException {
+            // Entity inaccessible or deleted concurrently.
+          }
         }
       }
-    } catch (_) {
-      // Ignore errors when cleaning stale sessions.
+    } on IOException {
+      // Ignore IO errors when scanning stale sessions.
     }
   }
 }
