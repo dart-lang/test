@@ -133,9 +133,12 @@ class BrowserManager {
         });
 
     future
-        .then((webSocket) {
+        .then((webSocket) async {
           if (completer.isCompleted) return;
-          completer.complete(BrowserManager._(browser, runtime, webSocket));
+          var manager = BrowserManager._(browser, runtime, webSocket);
+          await manager._environment;
+          if (completer.isCompleted) return;
+          completer.complete(manager);
         })
         .onError((Object error, StackTrace stackTrace) {
           browser.close();
@@ -268,10 +271,6 @@ class BrowserManager {
     );
 
     var suite = _pool.withResource<RunnerSuite>(() async {
-      if (_browser case Chrome chrome) {
-        await chrome.whenReady;
-      }
-
       _channel.sink.add({
         'command': 'loadSuite',
         'url': url.toString(),

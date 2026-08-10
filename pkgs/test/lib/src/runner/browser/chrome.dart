@@ -36,12 +36,6 @@ class Chrome extends Browser {
   final Future<WipConnection?> _tabConnection;
   final Map<String, String> _idToUrl;
 
-  /// A future that completes when Chrome's DevTools connection and coverage
-  /// collection are ready, or immediately if DevTools is not enabled.
-  Future<void> get whenReady async {
-    await _tabConnection;
-  }
-
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
   factory Chrome(
@@ -72,11 +66,11 @@ class Chrome extends Browser {
           );
 
           if (port != null) {
+            var connectionFuture = _connect(process, port, idToUrl, url);
             remoteDebuggerCompleter.complete(
-              getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')),
+              connectionFuture.then((c) => c.$2),
             );
-
-            connectionCompleter.complete(_connect(process, port, idToUrl, url));
+            connectionCompleter.complete(connectionFuture.then((c) => c.$1));
           } else {
             remoteDebuggerCompleter.complete(null);
             connectionCompleter.complete(null);
@@ -158,7 +152,7 @@ class Chrome extends Browser {
   }
 }
 
-Future<WipConnection> _connect(
+Future<(WipConnection, Uri)> _connect(
   Process process,
   int port,
   Map<String, String> idToUrl,
@@ -204,7 +198,12 @@ Future<WipConnection> _connect(
     {'detailed': true, 'callCount': false},
   );
 
-  return tabConnection;
+  var base = Uri.http('localhost:$port');
+  var devtoolsUrl = tab.devtoolsFrontendUrl;
+  var remoteDebuggerUrl = devtoolsUrl != null
+      ? base.resolve(devtoolsUrl)
+      : base;
+  return (tabConnection, remoteDebuggerUrl);
 }
 
 extension on HttpClient {
