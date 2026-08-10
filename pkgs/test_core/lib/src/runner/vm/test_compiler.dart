@@ -57,11 +57,7 @@ class TestCompiler {
 
   /// Compiles [mainDart], using a separate compiler per language version of
   /// the tests.
-  Future<CompilationResponse> compile(
-    Uri mainDart,
-    Metadata metadata, {
-    bool isBootstrap = true,
-  }) async {
+  Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) async {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var languageVersionComment =
         metadata.languageVersionComment ??
@@ -74,7 +70,7 @@ class TestCompiler {
         _clientFactory,
       ),
     );
-    return compiler.compile(mainDart, isBootstrap: isBootstrap);
+    return compiler.compile(mainDart);
   }
 
   Future<void> dispose() => _closeMemo.runOnce(
@@ -112,51 +108,34 @@ class _TestCompilerForLanguageVersion {
           '$dillCachePrefix.'
           '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  Future<CompilationResponse> compile(Uri mainUri, {bool isBootstrap = true}) =>
-      _compilePool.withResource(
-        () => _compile(mainUri, isBootstrap: isBootstrap),
-      );
+  Future<CompilationResponse> compile(Uri mainUri) =>
+      _compilePool.withResource(() => _compile(mainUri));
 
-  Future<CompilationResponse> _compile(
-    Uri mainUri, {
-    bool isBootstrap = true,
-  }) async {
+  Future<CompilationResponse> _compile(Uri mainUri) async {
     _compileNumber++;
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
-    final Uri entrypointUri;
-    final String entrypointPath;
-    if (isBootstrap) {
-      final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
-        ..writeAsStringSync(
-          testBootstrapContents(
-            testUri: mainUri,
-            packageConfigUri: await packageConfigUri,
-            languageVersionComment: _languageVersionComment,
-            testType: VmTestType.isolate,
-          ),
-        );
-      entrypointUri = tempFile.uri;
-      entrypointPath = tempFile.path;
-    } else {
-      entrypointUri = mainUri;
-      entrypointPath = p.join(
-        _outputDillDirectory.path,
-        '${p.basenameWithoutExtension(mainUri.path)}_hook',
+    final tempFile = File(p.join(_outputDillDirectory.path, 'test.dart'))
+      ..writeAsStringSync(
+        testBootstrapContents(
+          testUri: mainUri,
+          packageConfigUri: await packageConfigUri,
+          languageVersionComment: _languageVersionComment,
+          testType: VmTestType.isolate,
+        ),
       );
-    }
     final testCache = File(_dillCachePath);
 
     try {
       if (_frontendServerClient case final frontendServerClient?) {
         compilerOutput = await frontendServerClient.compile(<Uri>[
-          entrypointUri,
+          tempFile.uri,
         ]);
       } else {
         if (await testCache.exists()) {
           await testCache.copy(_outputDill.path);
         }
-        compilerOutput = await _createCompiler(entrypointUri);
+        compilerOutput = await _createCompiler(tempFile.uri);
         if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
       }
     } catch (e, s) {
@@ -178,7 +157,7 @@ class _TestCompilerForLanguageVersion {
 
     final outputFile = File(outputPath);
     final kernelReadyToRun = await outputFile.copy(
-      '${entrypointPath}_$_compileNumber.dill',
+      '${tempFile.path}_$_compileNumber.dill',
     );
     // Keep the `_dillToCache` file up-to-date and use the size of the
     // kernel file as an approximation for how many packages are included.

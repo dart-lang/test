@@ -269,12 +269,9 @@ class Runner {
     // Execute post-run teardowns for all active hooks before closing the loader.
     for (var hook in _activePostRunHooks) {
       try {
-        final scriptExecutable = hook.script.endsWith('.dart')
-            ? (await _loader.compileHook(hook.script)).toFilePath()
-            : hook.script;
         final process = await Process.start(
           Platform.resolvedExecutable,
-          [scriptExecutable, ...hook.args],
+          [hook.script, ...hook.args],
           environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
         );
         final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();
@@ -666,12 +663,9 @@ class Runner {
 
     for (var hook in preRunHooksToRun) {
       if (_closed) return;
-      final scriptExecutable = hook.script.endsWith('.dart')
-          ? (await _loader.compileHook(hook.script)).toFilePath()
-          : hook.script;
       final process = await Process.start(
         Platform.resolvedExecutable,
-        [scriptExecutable, ...hook.args],
+        [hook.script, ...hook.args],
         environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
       );
       final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();

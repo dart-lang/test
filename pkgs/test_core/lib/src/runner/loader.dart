@@ -15,8 +15,6 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
-import '../util/package_config.dart';
-import 'application_exception.dart';
 import 'compiler_selection.dart';
 import 'configuration.dart';
 import 'hack_register_platform.dart';
@@ -29,17 +27,11 @@ import 'plugin/environment.dart';
 import 'runner_suite.dart';
 import 'suite.dart';
 import 'vm/platform.dart';
-import 'vm/test_compiler.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
   /// The test runner configuration.
   final _config = Configuration.current;
-
-  /// The compiler used for compiling VM tests and hooks incrementally.
-  final _compiler = TestCompiler(
-    p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
-  );
 
   /// All suites that have been created by the loader.
   final _suites = <RunnerSuite>{};
@@ -71,25 +63,6 @@ class Loader {
   Iterable<String> get _runtimeVariables =>
       _platformCallbacks.keys.map((runtime) => runtime.identifier);
 
-  /// Compiles [scriptPath] directly to a kernel dill file without test harness
-  /// bootstrap wrapping.
-  Future<Uri> compileHook(String scriptPath) async {
-    final uri = await absoluteUri(scriptPath);
-    final response = await _compiler.compile(
-      uri,
-      parseSuiteMetadata(scriptPath),
-      isBootstrap: false,
-    );
-    final compiledDill = response.kernelOutputUri?.toFilePath();
-    if (compiledDill == null || response.errorCount > 0) {
-      throw ApplicationException(
-        'Hook "$scriptPath" failed to compile:\n'
-        '${response.compilerOutput ?? "unknown error"}',
-      );
-    }
-    return absoluteUri(compiledDill);
-  }
-
   /// Parses and returns the suite metadata for [path].
   Metadata parseSuiteMetadata(String path) {
     if (!File(path).existsSync()) return Metadata.empty;
@@ -114,7 +87,7 @@ class Loader {
       if (File('$sdkDir/bin/dartaotruntime_asan').existsSync()) Runtime.vmAsan,
       if (File('$sdkDir/bin/dartaotruntime_msan').existsSync()) Runtime.vmMsan,
       if (File('$sdkDir/bin/dartaotruntime_tsan').existsSync()) Runtime.vmTsan,
-    ], () => VMPlatform(compiler: _compiler));
+    ], VMPlatform.new);
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
@@ -361,7 +334,6 @@ class Loader {
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
     await Future.wait([
-      _compiler.dispose(),
       Future.wait(
         _platformPlugins.values.map((memo) async {
           if (!memo.hasRun) return;
