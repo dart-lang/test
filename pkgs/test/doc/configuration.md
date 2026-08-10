@@ -639,9 +639,13 @@ This field is not supported in the
 
 ### `pre_run`
 
-This field specifies a Dart script to execute once before tests with the
-given tag run. It is useful for precompiling binaries, starting backend
-services, or provisioning test resources required by the tagged test suite.
+This field specifies a Dart script to execute once before tests run. It is
+useful for precompiling binaries, starting backend services, or provisioning
+test resources.
+
+`pre_run` can be specified at the **top level** of `dart_test.yaml` (to execute
+unconditionally before any tests run) or under specific **[`tags`](#tags)** (to
+execute only when at least one test suite with that tag is run).
 
 Hooks are compiled with the Frontend Server and executed in an isolate,
 sharing the compiler cache with test suites. Hook scripts can be synchronous or
@@ -649,18 +653,22 @@ asynchronous (`Future<void> main(...)`). A hook succeeds by returning normally;
 if it throws an exception or fails to compile, the test runner aborts the run.
 Hook scripts should not call `exit()` directly.
 
-Tag hooks are triggered when any test file annotated with a matching
-file/suite-level `@Tags([...])` annotation (or a tag added transitively via
-[`add_tags`](#add_tags)) is selected to run.
-
-If multiple test files use the same tag, the `pre_run` hook executes only once
-before any matching suites execute. If the `pre_run` hook throws an exception,
-the test runner aborts the run.
+When specified under a tag, the hook is triggered when any test file annotated
+with a matching file/suite-level `@Tags([...])` annotation (or a tag added
+transitively via [`add_tags`](#add_tags)) is selected to run. If multiple test
+files use the same tag, the `pre_run` hook executes only once before any
+matching suites execute.
 
 A hook can be specified as a Dart script path or as a map with `script` (a string)
 and optional `args` (a list of strings):
 
 ```yaml
+# Top-level (always runs before any test)
+pre_run: tool/global_setup.dart
+```
+
+```yaml
+# Tag-scoped (only runs if a matching tagged suite is executed)
 tags:
   needs_server:
     pre_run: tool/start_server.dart
@@ -732,10 +740,19 @@ This field is not supported in the
 ### `post_run`
 
 This field specifies a Dart script to execute during test runner teardown
-after all tests have completed. It is executed if any test file matching the tag
-was run.
+after all tests have completed.
+
+`post_run` can be specified at the **top level** of `dart_test.yaml` (to execute
+unconditionally when the test run closes) or under specific **[`tags`](#tags)**
+(to execute if any test file matching the tag was run).
 
 ```yaml
+# Top-level (always runs on test runner close)
+post_run: tool/global_teardown.dart
+```
+
+```yaml
+# Tag-scoped (only runs if a matching tagged suite was run)
 tags:
   needs_server:
     post_run: tool/stop_server.dart

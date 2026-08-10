@@ -680,4 +680,55 @@ void main() {
     );
     await test.shouldExit(exit_codes.data);
   });
+
+  test('runs top-level pre_run and post_run hooks unconditionally', () async {
+    await d
+        .file(
+          'dart_test.yaml',
+          jsonEncode({
+            'pre_run': 'tool/global_setup.dart',
+            'post_run': 'tool/global_teardown.dart',
+          }),
+        )
+        .create();
+
+    await d.dir('tool', [
+      d.file('global_setup.dart', '''
+        import 'dart:io';
+
+        void main() {
+          File('global_setup_done.txt').writeAsStringSync('ready');
+        }
+      '''),
+      d.file('global_teardown.dart', '''
+        import 'dart:io';
+
+        void main() {
+          File('global_teardown_done.txt').writeAsStringSync('done');
+        }
+      '''),
+    ]).create();
+
+    await d.file('test.dart', '''
+      import 'dart:io';
+      import 'package:test/test.dart';
+
+      void main() {
+        test("test runs with global setup", () {
+          expect(File('global_setup_done.txt').existsSync(), isTrue);
+          expect(File('global_setup_done.txt').readAsStringSync(), equals('ready'));
+        });
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+
+    expect(File('${d.sandbox}/global_teardown_done.txt').existsSync(), isTrue);
+    expect(
+      File('${d.sandbox}/global_teardown_done.txt').readAsStringSync(),
+      equals('done'),
+    );
+  });
 }
