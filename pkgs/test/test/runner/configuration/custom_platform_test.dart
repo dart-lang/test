@@ -99,6 +99,27 @@ void main() {
         await test.shouldExit(0);
       }, tags: 'chrome');
 
+      test('with an executable from the environment', () async {
+        // The environment override is only reachable through the default
+        // settings, so it has to survive being merged with the user's.
+        await d.file('dart_test.yaml', '''
+          override_platforms:
+            chrome:
+              settings:
+                arguments: --disable-gpu
+        ''').create();
+
+        var test = await runTest(
+          ['-p', 'chrome', 'test.dart'],
+          environment: {'CHROME_EXECUTABLE': '_does_not_exist'},
+        );
+        expect(
+          test.stdout,
+          emitsThrough(contains('Failed to run Chrome: $noSuchFileMessage')),
+        );
+        await test.shouldExit(1);
+      }, tags: 'chrome');
+
       test('with non-headless mode', () async {
         await d.file('dart_test.yaml', '''
           override_platforms:
@@ -382,7 +403,10 @@ void main() {
                   executable: _does_not_exist
           ''').create();
 
-          var test = await runTest(['-p', 'chrome', 'test.dart']);
+          var test = await runTest(
+            ['-p', 'chrome', 'test.dart'],
+            environment: {'CHROME_EXECUTABLE': '_does_not_exist'},
+          );
           expect(
             test.stdout,
             emitsThrough(contains('Failed to run Chrome: $noSuchFileMessage')),
@@ -905,7 +929,10 @@ void main() {
                   executable: _does_not_exist
           ''').create();
 
-          var test = await runTest(['-p', 'chromium', 'test.dart']);
+          var test = await runTest(
+            ['-p', 'chromium', 'test.dart'],
+            environment: {'CHROME_EXECUTABLE': '_does_not_exist'},
+          );
           expect(
             test.stdout,
             emitsThrough(contains('Failed to run Chrome: $noSuchFileMessage')),
