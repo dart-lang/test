@@ -23,6 +23,8 @@
   `SAFARI_EXECUTABLE` overrides working when the browser is also configured
   through `override_platforms` or `define_platforms`. Any setting on those
   platforms used to drop the variable.
+* Fix race conditions in Chrome coverage collection where tests could finish
+  before DevTools connection and coverage profiling were initialized.
 
 ## 1.31.2
 
