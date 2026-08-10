@@ -830,6 +830,52 @@ void main() {
 **Note**: If you write hybrid tests, be sure to add a dependency on the
 `stream_channel` package, since you're using its API!
 
+## Global Setup and Teardown
+
+If tests across multiple files or test suites require shared setup (such as
+precompiling binaries, provisioning test resources, or starting backend services),
+you can use [`globalSetup()`].
+
+The `globalSetup()` function executes a Dart script on the host test runner in an
+isolate compiled with the incremental Frontend Server. The script's `main()`
+function returns a JSON-encodable result that is memoized across all tests and
+test suites in the run:
+
+[`globalSetup()`]: https://pub.dev/documentation/test/latest/test/globalSetup.html
+[`addGlobalTearDown()`]: https://pub.dev/documentation/test/latest/test/addGlobalTearDown.html
+
+```dart
+// ## tool/setup_server.dart
+import 'dart:io';
+import 'package:test/test.dart';
+
+Future<Map<String, dynamic>> main() async {
+  var server = await HttpServer.bind('localhost', 0);
+  // Register teardown when the test runner closes.
+  addGlobalTearDown(() async {
+    await server.close(force: true);
+  });
+
+  return {'port': server.port};
+}
+
+// ## test/my_test.dart
+import 'package:test/test.dart';
+
+void main() {
+  test('uses shared server', () async {
+    final config =
+        await globalSetup<Map<String, dynamic>>('/tool/setup_server.dart');
+    final port = config['port'] as int;
+    // ...
+  });
+}
+```
+
+The setup script only executes once regardless of how many test suites or tests
+call `globalSetup()`. Global teardown callbacks registered with
+[`addGlobalTearDown()`] are executed when the test runner closes.
+
 ## Support for Other Packages
 
 ### `build_runner`
