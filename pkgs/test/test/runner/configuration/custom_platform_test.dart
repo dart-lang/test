@@ -403,7 +403,10 @@ void main() {
                   executable: _does_not_exist
           ''').create();
 
-          var test = await runTest(['-p', 'chrome', 'test.dart']);
+          var test = await runTest(
+            ['-p', 'chrome', 'test.dart'],
+            environment: {'CHROME_EXECUTABLE': '_does_not_exist'},
+          );
           expect(
             test.stdout,
             emitsThrough(contains('Failed to run Chrome: $noSuchFileMessage')),
@@ -926,7 +929,10 @@ void main() {
                   executable: _does_not_exist
           ''').create();
 
-          var test = await runTest(['-p', 'chromium', 'test.dart']);
+          var test = await runTest(
+            ['-p', 'chromium', 'test.dart'],
+            environment: {'CHROME_EXECUTABLE': '_does_not_exist'},
+          );
           expect(
             test.stdout,
             emitsThrough(contains('Failed to run Chrome: $noSuchFileMessage')),
