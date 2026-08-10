@@ -645,7 +645,7 @@ services, or provisioning test resources required by the tagged test suite.
 
 Hooks are always executed as Dart scripts. Hook scripts must run to
 completion and exit with code `0` on success (for example, if launching a background
-service or container, spawn it detached, record its port or metadata in `testSessionPath`,
+service or container, spawn it detached, record its port or metadata in `TestEnvironment.sessionDirectory`,
 and exit with code `0`).
 
 Tag hooks are triggered when any test file annotated with a matching
@@ -675,7 +675,7 @@ tags:
 
 When executing a hook, `package:test` creates an isolated session directory
 for the test run and provides its path:
-* In Dart code (hooks and test suites), via the top-level `testSessionPath` getter from `package:test/test.dart` (or `package:test/scaffolding.dart`).
+* In Dart code (hooks and test suites), via `TestEnvironment.sessionDirectory` from `package:test/test.dart` (or `package:test/scaffolding.dart`).
 * In external scripts and processes, via the `DART_TEST_SESSION_DIR` environment variable.
 
 The hook can write transient artifacts (such as precompiled snapshots, server ports, or configuration files) into this directory.
@@ -696,7 +696,7 @@ import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
-  final outputPath = p.join(testSessionPath, 'pub.snapshot');
+  final outputPath = p.join(TestEnvironment.sessionDirectory, 'pub.snapshot');
   Process.runSync(Platform.resolvedExecutable, [
     'compile',
     'kernel',
@@ -716,7 +716,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('invokes precompiled pub snapshot', () {
-    final snapshot = File(p.join(testSessionPath, 'pub.snapshot'));
+    final snapshot = File(p.join(TestEnvironment.sessionDirectory, 'pub.snapshot'));
     expect(snapshot.existsSync(), isTrue);
 
     final result = Process.runSync(Platform.resolvedExecutable, [snapshot.path, '--version']);
@@ -740,7 +740,7 @@ tags:
     post_run: tool/stop_server.dart
 ```
 
-`post_run` hooks also receive the session directory via `testSessionPath` / `DART_TEST_SESSION_DIR`.
+`post_run` hooks also receive the session directory via `TestEnvironment.sessionDirectory` / `DART_TEST_SESSION_DIR`.
 If a `post_run` hook exits with a non-zero exit code, an error message is printed to
 `stderr` and the overall test run will exit with a non-zero exit code (while still
 completing any remaining teardown hooks and session directory cleanup).

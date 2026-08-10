@@ -446,8 +446,8 @@ void main() {
       import 'package:test/test.dart';
 
       void main() {
-        test("reads session artifact via testSessionPath", () {
-          final snapshot = File(p.join(testSessionPath, 'snapshot.txt'));
+        test("reads session artifact via TestEnvironment.sessionDirectory", () {
+          final snapshot = File(p.join(TestEnvironment.sessionDirectory, 'snapshot.txt'));
           expect(snapshot.existsSync(), isTrue);
           expect(snapshot.readAsStringSync(), equals('compiled_pub'));
         });
