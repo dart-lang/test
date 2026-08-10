@@ -643,18 +643,19 @@ This field specifies a Dart script to execute once before tests with the
 given tag run. It is useful for precompiling binaries, starting backend
 services, or provisioning test resources required by the tagged test suite.
 
-Hooks are always executed as Dart scripts. Hook scripts must run to
-completion and exit with code `0` on success (for example, if launching a background
-service or container, spawn it detached, record its port or metadata in `TestEnvironment.sessionDirectory`,
-and exit with code `0`).
+Hooks are compiled with the Frontend Server and executed in an isolate,
+sharing the compiler cache with test suites. Hook scripts can be synchronous or
+asynchronous (`Future<void> main(...)`). A hook succeeds by returning normally;
+if it throws an exception or fails to compile, the test runner aborts the run.
+Hook scripts should not call `exit()` directly.
 
 Tag hooks are triggered when any test file annotated with a matching
 file/suite-level `@Tags([...])` annotation (or a tag added transitively via
 [`add_tags`](#add_tags)) is selected to run.
 
 If multiple test files use the same tag, the `pre_run` hook executes only once
-before any matching suites execute. If the `pre_run` process exits with a
-non-zero exit code, the test runner aborts the run.
+before any matching suites execute. If the `pre_run` hook throws an exception,
+the test runner aborts the run.
 
 A hook can be specified as a Dart script path or as a map with `script` (a string)
 and optional `args` (a list of strings):
@@ -740,8 +741,8 @@ tags:
     post_run: tool/stop_server.dart
 ```
 
-`post_run` hooks also receive the session directory via `TestEnvironment.sessionDirectory` / `DART_TEST_SESSION_DIR`.
-If a `post_run` hook exits with a non-zero exit code, an error message is printed to
+`post_run` hooks also access the session directory via `TestEnvironment.sessionDirectory`.
+If a `post_run` hook throws an exception or fails, an error message is printed to
 `stderr` and the overall test run will exit with a non-zero exit code (while still
 completing any remaining teardown hooks and session directory cleanup).
 

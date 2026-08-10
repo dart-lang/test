@@ -172,7 +172,7 @@ void main() {
 
         void main() {
           stderr.writeln('Setup crashed');
-          exit(1);
+          throw Exception('Setup failed');
         }
       '''),
     ]).create();
@@ -422,17 +422,19 @@ void main() {
       await d.dir('tool', [
         d.file('setup.dart', '''
         import 'dart:io';
+        import 'package:test/test.dart';
 
         void main() {
-          final sessionDir = Platform.environment['DART_TEST_SESSION_DIR']!;
+          final sessionDir = TestEnvironment.sessionDirectory;
           File('\$sessionDir/snapshot.txt').writeAsStringSync('compiled_pub');
         }
       '''),
         d.file('teardown.dart', '''
         import 'dart:io';
+        import 'package:test/test.dart';
 
         void main() {
-          final sessionDir = Platform.environment['DART_TEST_SESSION_DIR']!;
+          final sessionDir = TestEnvironment.sessionDirectory;
           if (File('\$sessionDir/snapshot.txt').existsSync()) {
             File('post_saw_snapshot.txt').writeAsStringSync('yes');
           }
@@ -615,7 +617,7 @@ void main() {
 
         void main() {
           stderr.writeln('teardown cleanup failed');
-          exit(42);
+          throw Exception('Teardown failed');
         }
       '''),
       ]).create();
@@ -636,17 +638,13 @@ void main() {
       expect(test.stderr, emitsThrough(contains('teardown cleanup failed')));
       expect(
         test.stderr,
-        emitsThrough(
-          contains(
-            'Post-run hook "tool/teardown.dart" failed with exit code 42.',
-          ),
-        ),
+        emitsThrough(contains('Post-run hook "tool/teardown.dart" failed:')),
       );
       await test.shouldExit(1);
     },
   );
 
-  test('aborts test run if pre_run hook has syntax error', () async {
+  test('aborts test run if pre_run hook fails to compile', () async {
     await d
         .file(
           'dart_test.yaml',
@@ -676,12 +674,9 @@ void main() {
     ''').create();
 
     var test = await runTest(['test.dart']);
-    expect(test.stderr, emitsThrough(contains('Error:')));
     expect(
       test.stderr,
-      emitsThrough(
-        contains('Pre-run hook "tool/bad_syntax.dart" failed with exit code'),
-      ),
+      emitsThrough(contains('Hook "tool/bad_syntax.dart" failed to compile:')),
     );
     await test.shouldExit(exit_codes.data);
   });

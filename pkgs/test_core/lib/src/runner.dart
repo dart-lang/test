@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
@@ -35,6 +36,7 @@ import 'runner/reporter/multiplex.dart';
 import 'runner/runner_suite.dart';
 import 'runner/suite.dart';
 import 'util/io.dart';
+import 'util/package_config.dart';
 
 /// A class that loads and runs tests based on a [Configuration].
 ///
@@ -269,23 +271,9 @@ class Runner {
     // Execute post-run teardowns for all active hooks before closing the loader.
     for (var hook in _activePostRunHooks) {
       try {
-        final process = await Process.start(
-          Platform.resolvedExecutable,
-          [hook.script, ...hook.args],
-          environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
-        );
-        final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();
-        final stderrDone = process.stderr.listen(stderr.add).asFuture<void>();
-        final hookExitCode = await process.exitCode;
-        await Future.wait([stdoutDone, stderrDone]);
-        if (hookExitCode != 0) {
-          stderr.writeln(
-            'Post-run hook "${hook.script}" failed with exit code $hookExitCode.',
-          );
-          exitCode = 1;
-        }
+        await _runHook(hook, prefix: 'Post-run hook');
       } catch (error) {
-        stderr.writeln('Post-run hook "${hook.script}" failed: $error');
+        stderr.writeln('$error');
         exitCode = 1;
       }
     }
@@ -663,20 +651,64 @@ class Runner {
 
     for (var hook in preRunHooksToRun) {
       if (_closed) return;
-      final process = await Process.start(
-        Platform.resolvedExecutable,
-        [hook.script, ...hook.args],
-        environment: {'DART_TEST_SESSION_DIR': _sessionDir.path},
+      await _runHook(hook, prefix: 'Pre-run hook');
+    }
+  }
+
+  /// Executes a single hook in an isolate.
+  Future<void> _runHook(Hook hook, {String prefix = 'Hook'}) async {
+    final responsePort = ReceivePort();
+    final errorPort = ReceivePort();
+    try {
+      final dillUri = await _loader.compileHook(hook.script);
+      final isolate = await Isolate.spawnUri(
+        dillUri,
+        hook.args,
+        responsePort.sendPort,
+        packageConfig: await packageConfigUri,
+        onError: errorPort.sendPort,
       );
-      final stdoutDone = process.stdout.listen(stdout.add).asFuture<void>();
-      final stderrDone = process.stderr.listen(stderr.add).asFuture<void>();
-      final exitCode = await process.exitCode;
-      await Future.wait([stdoutDone, stderrDone]);
-      if (exitCode != 0) {
-        throw ApplicationException(
-          'Pre-run hook "${hook.script}" failed with exit code $exitCode.',
-        );
-      }
+
+      final errorCompleter = Completer<void>();
+      final errorSub = errorPort.listen((errorAndStack) {
+        final list = errorAndStack as List<Object?>;
+        if (!errorCompleter.isCompleted) {
+          errorCompleter.completeError(
+            ApplicationException(
+              '$prefix "${hook.script}" failed:\n${list[0]}\n${list[1]}',
+            ),
+          );
+        }
+      });
+
+      final responseCompleter = Completer<void>();
+      final responseSub = responsePort.listen((response) {
+        final map = response as Map<Object?, Object?>;
+        if (map['success'] == true) {
+          if (!responseCompleter.isCompleted) {
+            responseCompleter.complete();
+          }
+        } else {
+          if (!responseCompleter.isCompleted) {
+            final error = map['error'];
+            final stack = map['stackTrace'];
+            errorCompleter.completeError(
+              ApplicationException(
+                '$prefix "${hook.script}" failed:\n$error'
+                '${stack != null && "$stack".isNotEmpty ? "\n$stack" : ""}',
+              ),
+            );
+          }
+        }
+      });
+
+      await Future.any([responseCompleter.future, errorCompleter.future]);
+      await errorSub.cancel();
+      await responseSub.cancel();
+      isolate.kill();
+    } finally {
+      responsePort.close();
+      errorPort.close();
     }
   }
 

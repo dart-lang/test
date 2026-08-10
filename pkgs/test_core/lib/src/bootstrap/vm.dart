@@ -55,3 +55,28 @@ void internalBootstrapNativeTest(
     }),
   );
 }
+
+/// Bootstraps a vm hook to execute and report results back over an isolate port.
+void internalBootstrapVmHook(
+  Function Function() getMain,
+  List<String> args,
+  SendPort sendPort,
+) async {
+  try {
+    final mainFn = getMain();
+    if (mainFn is FutureOr<Object?> Function(List<String>)) {
+      await mainFn(args);
+    } else if (mainFn is FutureOr<Object?> Function()) {
+      await mainFn();
+    } else {
+      await (Function.apply(mainFn, args.isEmpty ? [] : [args]) as dynamic);
+    }
+    sendPort.send({'success': true});
+  } catch (error, stack) {
+    sendPort.send({
+      'success': false,
+      'error': error.toString(),
+      'stackTrace': stack.toString(),
+    });
+  }
+}
