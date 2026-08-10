@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
@@ -644,4 +645,41 @@ void main() {
       await test.shouldExit(1);
     },
   );
+
+  test('aborts test run if pre_run hook fails to compile', () async {
+    await d
+        .file(
+          'dart_test.yaml',
+          jsonEncode({
+            'tags': {
+              'compile_error': {'pre_run': 'tool/bad_syntax.dart'},
+            },
+          }),
+        )
+        .create();
+
+    await d.dir('tool', [
+      d.file('bad_syntax.dart', '''
+        void main() {
+          this is invalid dart syntax ;;;
+        }
+      '''),
+    ]).create();
+
+    await d.file('test.dart', '''
+      @Tags(['compile_error'])
+      import 'package:test/test.dart';
+
+      void main() {
+        test("never runs", () {});
+      }
+    ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(
+      test.stderr,
+      emitsThrough(contains('Hook "tool/bad_syntax.dart" failed to compile:')),
+    );
+    await test.shouldExit(exit_codes.data);
+  });
 }

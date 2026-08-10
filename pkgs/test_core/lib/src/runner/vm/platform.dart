@@ -38,11 +38,16 @@ var _shouldPauseAfterTests = false;
 class VMPlatform extends PlatformPlugin {
   /// The test runner configuration.
   final _config = Configuration.current;
-  final _compiler = TestCompiler(
-    p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
-  );
+  final TestCompiler _compiler;
   final _closeMemo = AsyncMemoizer<void>();
   final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
+
+  VMPlatform({TestCompiler? compiler})
+    : _compiler =
+          compiler ??
+          TestCompiler(
+            p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
+          );
 
   @override
   Future<RunnerSuite?> load(
