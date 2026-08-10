@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/test.dart';
+import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../../io.dart';
@@ -682,6 +683,6 @@ void main() {
         contains('Pre-run hook "tool/bad_syntax.dart" failed with exit code'),
       ),
     );
-    await test.shouldExit(1);
+    await test.shouldExit(exit_codes.data);
   });
 }
