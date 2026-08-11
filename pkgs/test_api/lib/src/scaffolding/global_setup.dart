@@ -17,23 +17,24 @@ import '../backend/remote_exception.dart';
 /// The Dart file at [uri] must define a top-level `main()` function that
 /// returns a JSON-encodable value (or `Future` of one).
 ///
-/// If [uri] is a relative path or [Uri], it is interpreted relative to the test
-/// file's directory. If it is root-relative (starts with `/`), it is interpreted
-/// relative to the package root.
+/// [uri] is resolved according to the following rules:
+/// * **`package:` URIs** (e.g. `Uri.parse('package:my_pkg/tool/setup.dart')`):
+///   Resolved using the package configuration.
+/// * **Root-relative URIs** (paths beginning with `/`, e.g. `Uri.parse('/tool/setup.dart')`):
+///   Interpreted relative to the root of the package (the directory containing `pubspec.yaml`).
+/// * **Relative URIs** (paths without a scheme and without a leading `/`, e.g. `Uri.parse('setup.dart')` or `Uri.parse('../tool/setup.dart')`):
+///   Interpreted relative to the directory containing the test suite file being executed.
+///   Note: When calling [globalSetup] from a shared helper library imported by tests in different directories,
+///   prefer root-relative (`/tool/...`) or `package:` URIs so the path resolves consistently regardless of which
+///   test file imports the helper.
+/// * **`file:` URIs** (e.g. `Uri.file('/abs/path/setup.dart')`):
+///   Interpreted as absolute file paths on the filesystem.
 ///
-/// It is an error if [uri] is not a [String] or [Uri], or if [globalSetup] is
-/// called outside of `dart test`.
+/// It is an error if [globalSetup] is called outside of `dart test`.
 ///
 /// Throws whatever exception was thrown by the setup script if execution fails.
-Future<T> globalSetup<T>(Object uri) async {
-  String url;
-  if (uri is String) {
-    url = uri;
-  } else if (uri is Uri) {
-    url = uri.toString();
-  } else {
-    throw ArgumentError.value(uri, 'uri', 'must be a Uri or a String.');
-  }
+Future<T> globalSetup<T>(Uri uri) async {
+  final url = uri.toString();
 
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {

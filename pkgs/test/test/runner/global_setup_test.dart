@@ -37,7 +37,7 @@ void main() {
 
       void main() {
         test("test 1", () async {
-          final result = await globalSetup<String>('tool/setup.dart');
+          final result = await globalSetup<String>(Uri.parse('tool/setup.dart'));
           expect(result, equals('setup_complete'));
           expect(File('counter.txt').readAsStringSync(), equals('1'));
         });
@@ -50,7 +50,7 @@ void main() {
 
       void main() {
         test("test 2", () async {
-          final result = await globalSetup<String>('tool/setup.dart');
+          final result = await globalSetup<String>(Uri.parse('tool/setup.dart'));
           expect(result, equals('setup_complete'));
           expect(File('counter.txt').readAsStringSync(), equals('1'));
         });
@@ -83,7 +83,9 @@ void main() {
 
       void main() {
         test("receives map from global setup", () async {
-          final config = await globalSetup<Map<String, dynamic>>('tool/config.dart');
+          final config = await globalSetup<Map<String, dynamic>>(
+            Uri.parse('tool/config.dart'),
+          );
           expect(config['port'], equals(8080));
           expect(config['enabled'], isTrue);
           expect(config['tags'], equals(['a', 'b']));
@@ -118,7 +120,7 @@ void main() {
 
       void main() {
         test("uses server", () async {
-          final url = await globalSetup<String>('tool/server.dart');
+          final url = await globalSetup<String>(Uri.parse('tool/server.dart'));
           expect(url, equals('http://localhost:8080'));
           expect(File('server_started.txt').existsSync(), isTrue);
           expect(File('server_stopped.txt').existsSync(), isFalse);
@@ -151,7 +153,7 @@ void main() {
 
       void main() {
         test("test that needs failing setup", () async {
-          await globalSetup('tool/fail.dart');
+          await globalSetup(Uri.parse('tool/fail.dart'));
         });
       }
     ''').create();
@@ -176,7 +178,7 @@ void main() {
 
       void main() {
         test("test with bad setup", () async {
-          await globalSetup('tool/bad.dart');
+          await globalSetup(Uri.parse('tool/bad.dart'));
         });
       }
     ''').create();
@@ -201,7 +203,9 @@ void main() {
 
           void main() {
             test("root relative global setup", () async {
-              final result = await globalSetup<String>('/tool/setup.dart');
+              final result = await globalSetup<String>(
+                Uri.parse('/tool/setup.dart'),
+              );
               expect(result, equals('root_relative_ok'));
             });
           }
@@ -238,7 +242,9 @@ void main() {
 
             void main() {
               test("relative path setup", () async {
-                final result = await globalSetup<int>('../../tool/counter.dart');
+                final result = await globalSetup<int>(
+                  Uri.parse('../../tool/counter.dart'),
+                );
                 expect(result, equals(1));
               });
             }
@@ -250,7 +256,9 @@ void main() {
 
           void main() {
             test("root relative setup", () async {
-              final result = await globalSetup<int>('/tool/counter.dart');
+              final result = await globalSetup<int>(
+                Uri.parse('/tool/counter.dart'),
+              );
               expect(result, equals(1));
             });
           }
@@ -267,4 +275,30 @@ void main() {
       expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('1'));
     },
   );
+
+  test('supports absolute file: URIs', () async {
+    await d.dir('tool', [
+      d.file('setup.dart', '''
+        String main() => 'file_uri_ok';
+      '''),
+    ]).create();
+
+    await d.file('test_test.dart', '''
+      import 'dart:io';
+      import 'package:path/path.dart' as p;
+      import 'package:test/test.dart';
+
+      void main() {
+        test("absolute file URI setup", () async {
+          final absoluteUri = Uri.file(p.absolute('tool/setup.dart'));
+          final result = await globalSetup<String>(absoluteUri);
+          expect(result, equals('file_uri_ok'));
+        });
+      }
+    ''').create();
+
+    var test = await runTest(['test_test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
 }

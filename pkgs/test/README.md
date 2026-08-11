@@ -865,7 +865,7 @@ import 'package:test/test.dart';
 void main() {
   test('uses shared server', () async {
     final config =
-        await globalSetup<Map<String, dynamic>>('/tool/setup_server.dart');
+        await globalSetup<Map<String, dynamic>>(Uri.parse('/tool/setup_server.dart'));
     final port = config['port'] as int;
     // ...
   });
@@ -875,6 +875,18 @@ void main() {
 The setup script only executes once regardless of how many test suites or tests
 call `globalSetup()`. Global teardown callbacks registered with
 [`addGlobalTearDown()`] are executed when the test runner closes.
+
+`globalSetup()` takes a [`Uri`][Uri] resolved with the following rules:
+* **Root-relative URIs** (beginning with `/`, like `Uri.parse('/tool/setup.dart')`):
+  resolved relative to the root of the package (where `pubspec.yaml` lives).
+* **`package:` URIs** (like `Uri.parse('package:my_pkg/tool/setup.dart')`):
+  resolved using the package configuration.
+* **Relative URIs** (without a scheme or leading `/`, like `Uri.parse('../tool/setup.dart')`):
+  resolved relative to the test suite file currently being executed.
+* **`file:` URIs** (like `Uri.file('/abs/path/setup.dart')`):
+  resolved as absolute file paths on the filesystem.
+
+[Uri]: https://api.dart.dev/stable/dart-core/Uri-class.html
 
 ## Support for Other Packages
 
