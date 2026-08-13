@@ -47,7 +47,7 @@ Future<T> globalSetup<T>(Uri uri) async {
     }
     throw UnsupportedError(
       "Can't connect to the test runner.\n"
-      'globalSetup() is currently only supported within "dart test" or when running with package:test.',
+      'globalSetup() is currently only supported within "dart test".',
     );
   }
 
