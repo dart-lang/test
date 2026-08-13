@@ -6,6 +6,7 @@
 /// {@canonicalFor retry.Retry}
 /// {@canonicalFor skip.Skip}
 /// {@canonicalFor tags.Tags}
+/// {@canonicalFor test_failure.TestFailure}
 /// {@canonicalFor test_on.TestOn}
 /// {@canonicalFor timeout.Timeout}
 library;
@@ -16,6 +17,7 @@ export 'src/backend/configuration/skip.dart' show Skip;
 export 'src/backend/configuration/tags.dart' show Tags;
 export 'src/backend/configuration/test_on.dart' show TestOn;
 export 'src/backend/configuration/timeout.dart' show Timeout;
+export 'src/backend/test_failure.dart' show TestFailure;
 export 'src/backend/test_location.dart' show TestLocation;
 export 'src/scaffolding/spawn_hybrid.dart' show spawnHybridCode, spawnHybridUri;
 export 'src/scaffolding/test_structure.dart'
