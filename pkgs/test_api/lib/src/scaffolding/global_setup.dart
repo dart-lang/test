@@ -45,10 +45,7 @@ Future<T> globalSetup<T>(Uri uri) async {
     if (fallback != null) {
       return (await fallback(uri)) as T;
     }
-    throw UnsupportedError(
-      "Can't connect to the test runner.\n"
-      'globalSetup() is currently only supported within "dart test".',
-    );
+    throw UnsupportedError("Can't connect to the test runner.");
   }
 
   var virtualChannel = channel.virtualChannel();
