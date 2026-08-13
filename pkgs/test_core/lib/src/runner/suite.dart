@@ -297,8 +297,8 @@ final class SuiteConfiguration {
        dart2jsArgs = _list(dart2jsArgs) ?? const [],
        _runtimes = _list(runtimes),
        compilerSelections = _list(compilerSelections),
-       tags = _map(tags) ?? const {},
-       onPlatform = _map(onPlatform) ?? const {},
+       tags = _map(tags),
+       onPlatform = _map(onPlatform),
        _ignoreTimeouts = ignoreTimeouts,
        _metadata = metadata ?? Metadata.empty,
        _suiteLoadTimeout = suiteLoadTimeout;
@@ -337,24 +337,20 @@ final class SuiteConfiguration {
     return list;
   }
 
-  /// Returns an unmodifiable copy of [input].
-  ///
-  /// If [input] is `null` or empty, this returns `null`.
-  static Map<K, V>? _map<K, V>(Map<K, V>? input) {
-    if (input == null) return null;
-    var map = Map<K, V>.unmodifiable(input);
-    if (map.isEmpty) return null;
-    return map;
+  /// Returns an unmodifiable copy of [input] or an empty unmodifiable map.
+  static Map<K, V> _map<K, V>(Map<K, V>? input) {
+    if (input == null || input.isEmpty) return const <Never, Never>{};
+    return Map.unmodifiable(input);
   }
 
   /// Merges this with [other].
   ///
   /// For most fields, if both configurations have values set, [other]'s value
-  /// takes precedence. However, [tags] and [onPlatform] are merged
-  /// recursively.
+  /// takes precedence. However, certain fields are merged together instead.
+  /// This is indicated in those fields' documentation.
   SuiteConfiguration merge(SuiteConfiguration other) {
-    if (this == empty) return other;
-    if (other == empty) return this;
+    if (this == SuiteConfiguration.empty) return other;
+    if (other == SuiteConfiguration.empty) return this;
     assert(testSelections.isEmpty || other.testSelections.isEmpty);
 
     var config = SuiteConfiguration._(
