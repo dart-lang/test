@@ -94,17 +94,25 @@ void internalBootstrapVmHook(
     await for (var msg in commandPort) {
       if (msg is Map && msg['command'] == 'teardown') {
         final replyPort = msg['replyPort'] as SendPort;
-        try {
-          for (var tearDown in tearDowns.reversed) {
+        var errors = <(Object, StackTrace)>[];
+        for (var tearDown in tearDowns.reversed) {
+          try {
             await tearDown();
+          } catch (error, stack) {
+            errors.add((error, stack));
           }
-          replyPort.send({'success': true});
-        } catch (error, stack) {
-          replyPort.send({
-            'success': false,
-            'error': error.toString(),
-            'stackTrace': stack.toString(),
-          });
+        }
+
+        try {
+          if (errors.isEmpty) {
+            replyPort.send({'success': true});
+          } else {
+            replyPort.send({
+              'success': false,
+              'error': errors.map((e) => e.$1.toString()).join('\n'),
+              'stackTrace': errors.first.$2.toString(),
+            });
+          }
         } finally {
           commandPort.close();
         }

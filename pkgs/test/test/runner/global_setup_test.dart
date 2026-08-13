@@ -301,4 +301,234 @@ void main() {
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
+
+  test(
+    'runs multiple addGlobalTearDown callbacks in reverse (LIFO) order',
+    () async {
+      await d.dir('tool', [
+        d.file('lifo.dart', '''
+        import 'dart:io';
+        import 'package:test/test.dart';
+
+        String main() {
+          addGlobalTearDown(() async {
+            File('log.txt').writeAsStringSync('first\\n', mode: FileMode.append);
+          });
+          addGlobalTearDown(() async {
+            File('log.txt').writeAsStringSync('second\\n', mode: FileMode.append);
+          });
+          return 'ok';
+        }
+      '''),
+      ]).create();
+
+      await d.file('test_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("lifo teardown test", () async {
+          final result = await globalSetup<String>(Uri.parse('tool/lifo.dart'));
+          expect(result, equals('ok'));
+        });
+      }
+    ''').create();
+
+      var test = await runTest(['test_test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+
+      expect(
+        File('${d.sandbox}/log.txt').readAsStringSync(),
+        equals('second\nfirst\n'),
+      );
+    },
+  );
+
+  test(
+    'supports multiple distinct global setup scripts in the same run',
+    () async {
+      await d.dir('tool', [
+        d.file('setup_a.dart', '''
+        import 'dart:io';
+        import 'package:test/test.dart';
+
+        String main() {
+          File('started_a.txt').writeAsStringSync('yes');
+          addGlobalTearDown(() async {
+            File('stopped_a.txt').writeAsStringSync('yes');
+          });
+          return 'service_a';
+        }
+      '''),
+        d.file('setup_b.dart', '''
+        import 'dart:io';
+        import 'package:test/test.dart';
+
+        String main() {
+          File('started_b.txt').writeAsStringSync('yes');
+          addGlobalTearDown(() async {
+            File('stopped_b.txt').writeAsStringSync('yes');
+          });
+          return 'service_b';
+        }
+      '''),
+      ]).create();
+
+      await d.file('test_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("uses multiple services", () async {
+          final a = await globalSetup<String>(Uri.parse('tool/setup_a.dart'));
+          final b = await globalSetup<String>(Uri.parse('tool/setup_b.dart'));
+          expect(a, equals('service_a'));
+          expect(b, equals('service_b'));
+        });
+      }
+    ''').create();
+
+      var test = await runTest(['test_test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+
+      expect(File('${d.sandbox}/started_a.txt').existsSync(), isTrue);
+      expect(File('${d.sandbox}/started_b.txt').existsSync(), isTrue);
+      expect(File('${d.sandbox}/stopped_a.txt').existsSync(), isTrue);
+      expect(File('${d.sandbox}/stopped_b.txt').existsSync(), isTrue);
+    },
+  );
+
+  test('fails the test run if a global teardown callback throws', () async {
+    await d.dir('tool', [
+      d.file('failing_teardown.dart', '''
+        import 'package:test/test.dart';
+
+        String main() {
+          addGlobalTearDown(() async {
+            throw Exception('Cleanup failed: resource locked');
+          });
+          return 'ready';
+        }
+      '''),
+    ]).create();
+
+    await d.file('test_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("runs successfully during test phase", () async {
+          final result = await globalSetup<String>(
+            Uri.parse('tool/failing_teardown.dart'),
+          );
+          expect(result, equals('ready'));
+        });
+      }
+    ''').create();
+
+    var test = await runTest(['test_test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    expect(
+      test.stderr,
+      emitsThrough(contains('Cleanup failed: resource locked')),
+    );
+    await test.shouldExit(1);
+  });
+
+  test(
+    'handles concurrent globalSetup calls without race conditions',
+    () async {
+      await d.dir('tool', [
+        d.file('slow_setup.dart', '''
+        import 'dart:io';
+
+        Future<int> main() async {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          final file = File('counter.txt');
+          final count = file.existsSync() ? int.parse(file.readAsStringSync()) : 0;
+          file.writeAsStringSync('\${count + 1}');
+          return count + 1;
+        }
+      '''),
+      ]).create();
+
+      await d.file('test_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("concurrent call 1", () async {
+          final result = await globalSetup<int>(Uri.parse('tool/slow_setup.dart'));
+          expect(result, equals(1));
+        });
+
+        test("concurrent call 2", () async {
+          final result = await globalSetup<int>(Uri.parse('tool/slow_setup.dart'));
+          expect(result, equals(1));
+        });
+
+        test("concurrent call 3", () async {
+          final result = await globalSetup<int>(Uri.parse('tool/slow_setup.dart'));
+          expect(result, equals(1));
+        });
+      }
+    ''').create();
+
+      var test = await runTest(['test_test.dart'], concurrency: 3);
+      expect(test.stdout, emitsThrough(contains('+3: All tests passed!')));
+      await test.shouldExit(0);
+
+      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('1'));
+    },
+  );
+
+  test(
+    'throws UnsupportedError if addGlobalTearDown is called outside globalSetup',
+    () async {
+      await d.file('test_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() {
+        test("misuse of addGlobalTearDown", () {
+          expect(
+            () => addGlobalTearDown(() {}),
+            throwsA(isA<UnsupportedError>()),
+          );
+        });
+      }
+    ''').create();
+
+      var test = await runTest(['test_test.dart']);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+    },
+  );
+
+  test(
+    'throws UnsupportedError when globalSetup is called outside dart test',
+    () async {
+      await d.dir('tool', [
+        d.file('setup.dart', 'String main() => "ok";'),
+      ]).create();
+
+      await d.file('direct_test.dart', '''
+      import 'package:test/test.dart';
+
+      void main() async {
+        test("direct run", () async {
+          await globalSetup(Uri.parse('tool/setup.dart'));
+        });
+      }
+    ''').create();
+
+      var test = await runDart(['direct_test.dart']);
+      expect(
+        test.stdout,
+        emitsThrough(
+          contains(
+            'globalSetup() is currently only supported within "dart test"',
+          ),
+        ),
+      );
+      await test.shouldExit(255);
+    },
+  );
 }
