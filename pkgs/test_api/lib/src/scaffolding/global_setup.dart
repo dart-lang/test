@@ -23,14 +23,14 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// returns a JSON-encodable value (or `Future` of one).
 ///
 /// [uri] is resolved according to the following rules:
-/// * **`package:` URIs** (e.g. `Uri.parse('package:my_pkg/tool/setup.dart')`):
+/// * **`package:` URIs** (e.g. `Uri.parse('package:my_pkg/test_helpers.dart')`):
 ///   Resolved using the package configuration.
-/// * **Root-relative URIs** (paths beginning with `/`, e.g. `Uri.parse('/tool/setup.dart')`):
+/// * **Root-relative URIs** (paths beginning with `/`, e.g. `Uri.parse('/test/setup.dart')`):
 ///   Interpreted relative to the root of the package (the directory containing `pubspec.yaml`).
-/// * **Relative URIs** (paths without a scheme and without a leading `/`, e.g. `Uri.parse('setup.dart')` or `Uri.parse('../tool/setup.dart')`):
+/// * **Relative URIs** (paths without a scheme and without a leading `/`, e.g. `Uri.parse('setup.dart')` or `Uri.parse('../setup.dart')`):
 ///   Interpreted relative to the directory containing the test suite file being executed.
 ///   Note: When calling [globalSetup] from a shared helper library imported by tests in different directories,
-///   prefer root-relative (`/tool/...`) or `package:` URIs so the path resolves consistently regardless of which
+///   prefer root-relative (`/test/...`) or `package:` URIs so the path resolves consistently regardless of which
 ///   test file imports the helper.
 /// * **`file:` URIs** (e.g. `Uri.file('/abs/path/setup.dart')`):
 ///   Interpreted as absolute file paths on the filesystem.
