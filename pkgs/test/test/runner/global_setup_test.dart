@@ -503,32 +503,38 @@ void main() {
   );
 
   test(
-    'throws UnsupportedError when globalSetup is called outside dart test',
+    'supports running tests directly via dart command outside dart test',
     () async {
       await d.dir('tool', [
-        d.file('setup.dart', 'String main() => "ok";'),
+        d.file('setup.dart', '''
+        import 'dart:io';
+        import 'package:test/test.dart';
+
+        String main() {
+          addGlobalTearDown(() async {
+            File('direct_stopped.txt').writeAsStringSync('yes');
+          });
+          return 'standalone_ok';
+        }
+      '''),
       ]).create();
 
       await d.file('direct_test.dart', '''
       import 'package:test/test.dart';
 
-      void main() async {
+      void main() {
         test("direct run", () async {
-          await globalSetup(Uri.parse('tool/setup.dart'));
+          final result = await globalSetup<String>(Uri.parse('tool/setup.dart'));
+          expect(result, equals('standalone_ok'));
         });
       }
     ''').create();
 
       var test = await runDart(['direct_test.dart']);
-      expect(
-        test.stdout,
-        emitsThrough(
-          contains(
-            'globalSetup() is currently only supported within "dart test"',
-          ),
-        ),
-      );
-      await test.shouldExit(255);
+      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+      await test.shouldExit(0);
+
+      expect(File('${d.sandbox}/direct_stopped.txt').existsSync(), isTrue);
     },
   );
 }

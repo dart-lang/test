@@ -8,6 +8,11 @@ import 'package:stream_channel/stream_channel.dart';
 
 import '../backend/remote_exception.dart';
 
+/// An optional fallback handler invoked when [globalSetup] is called outside
+/// of the full test runner (for instance, when running a test file directly via
+/// `dart <test_file>.dart`).
+Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
+
 /// Runs a global setup Dart script at [uri] on the host test runner if it
 /// has not yet run, and returns its result.
 ///
@@ -30,17 +35,19 @@ import '../backend/remote_exception.dart';
 /// * **`file:` URIs** (e.g. `Uri.file('/abs/path/setup.dart')`):
 ///   Interpreted as absolute file paths on the filesystem.
 ///
-/// It is an error if [globalSetup] is called outside of `dart test`.
-///
 /// Throws whatever exception was thrown by the setup script if execution fails.
 Future<T> globalSetup<T>(Uri uri) async {
   final url = uri.toString();
 
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {
+    var fallback = globalSetupStandaloneFallback;
+    if (fallback != null) {
+      return (await fallback(uri)) as T;
+    }
     throw UnsupportedError(
       "Can't connect to the test runner.\n"
-      'globalSetup() is currently only supported within "dart test".',
+      'globalSetup() is currently only supported within "dart test" or when running with package:test.',
     );
   }
 
