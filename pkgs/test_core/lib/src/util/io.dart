@@ -286,18 +286,6 @@ extension RetryDelete on FileSystemEntity {
   }
 }
 
-/// Attempts to recursively delete [directory], ignoring any [IOException] that
-/// occurs (for example, if the directory is locked or does not exist).
-void tryDeleteDirectory(Directory directory) {
-  try {
-    if (directory.existsSync()) {
-      directory.deleteSync(recursive: true);
-    }
-  } on IOException {
-    // Best-effort directory deletion.
-  }
-}
-
 extension WindowsFilePaths on String {
   /// Strip out the leading slash before the drive letter on windows.
   ///
