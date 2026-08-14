@@ -44,7 +44,7 @@ Test asserts can be made using [`expect` from `package:matcher`][expect]
 ```dart
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   test('String.split() splits the string on the delimiter', () {
     var string = 'foo,bar,baz';
     expect(string.split(','), equals(['foo', 'bar', 'baz']));
@@ -65,7 +65,7 @@ description is added to the beginning of its test's descriptions.
 ```dart
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   group('String', () {
     test('.split() splits the string on the delimiter', () {
       var string = 'foo,bar,baz';
@@ -98,7 +98,7 @@ fails, to ensure that it has a chance to clean up after itself.
 ```dart
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   late HttpServer server;
   late Uri url;
   setUp(() async {
@@ -301,7 +301,7 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   // ...
 }
 ```
@@ -419,7 +419,7 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   test('Future.value() returns the value', () async {
     var value = await Future.value(10);
     expect(value, equals(10));
@@ -527,7 +527,7 @@ To skip a test suite, put a `@Skip` annotation at the top of the file:
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   // ...
 }
 ```
@@ -542,7 +542,7 @@ example:
 ```dart
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   group('complicated algorithm tests', () {
     // ...
   }, skip: "the algorithm isn't quite right");
@@ -567,7 +567,7 @@ timeout for a test suite, put a `@Timeout` annotation at the top of the file:
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   // ...
 }
 ```
@@ -582,7 +582,7 @@ parameter takes a `Timeout` object just like the annotation. For example:
 ```dart
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   group('slow tests', () {
     // ...
 
@@ -613,7 +613,7 @@ and `group()`. For example:
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   test('do a thing', () {
     // ...
   }, onPlatform: {
@@ -652,7 +652,7 @@ parameter to `test()` and `group()`. For example:
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   test('successfully launches Chrome', () {
     // ...
   }, tags: 'chrome');
@@ -809,7 +809,7 @@ import 'dart:html';
 
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   test('connects to a server-side WebSocket', () async {
     // Each spawnHybrid function returns a StreamChannel that communicates with
     // the hybrid isolate. You can close this channel to kill the isolate.
@@ -863,10 +863,9 @@ Future<Map<String, dynamic>> setUp() async {
 // ## test/my_test.dart
 import 'package:test/test.dart';
 
-void setUp() {
+void main() {
   test('uses shared server', () async {
-    final config =
-        await globalSetup<Map<String, dynamic>>(Uri.parse('/test/setup_server.dart'));
+    final config = await globalSetup(Uri.parse('/test/setup_server.dart')) as Map;
     final port = config['port'] as int;
     // ...
   });
@@ -887,9 +886,12 @@ call `globalSetup()`. Global teardown callbacks registered with
 * **`file:` URIs** (like `Uri.file('/abs/path/setup.dart')`):
   resolved as absolute file paths on the filesystem.
 
+Fragments are automatically removed for consistent compilation caching. Relative and file URIs strictly prohibit query parameters.
+
 [Uri]: https://api.dart.dev/stable/dart-core/Uri-class.html
 
 ## Support for Other Packages
+
 
 ### `build_runner`
 

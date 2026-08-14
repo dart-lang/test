@@ -35,6 +35,9 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// * **`file:` URIs** (e.g. `Uri.file('/abs/path/setup.dart')`):
 ///   Interpreted as absolute file paths on the filesystem.
 ///
+/// Fragments are automatically removed for consistent compilation caching.
+/// Relative, root-relative, and file URIs strictly prohibit query parameters.
+///
 /// If execution fails, throws an exception containing the string representation
 /// and stack trace of the error thrown by the setup script.
 Future<Object?> globalSetup(Uri uri) async {
