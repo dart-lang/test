@@ -37,14 +37,14 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 ///
 /// If execution fails, throws an exception containing the string representation
 /// and stack trace of the error thrown by the setup script.
-Future<T> globalSetup<T>(Uri uri) async {
+Future<Object?> globalSetup(Uri uri) async {
   final url = uri.toString();
 
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;
   if (channel == null) {
     var fallback = globalSetupStandaloneFallback;
     if (fallback != null) {
-      return (await fallback(uri)) as T;
+      return (await fallback(uri));
     }
     throw UnsupportedError("Can't connect to the test runner.");
   }
@@ -56,12 +56,12 @@ Future<T> globalSetup<T>(Uri uri) async {
     'channel': virtualChannel.id,
   });
 
-  final completer = Completer<T>();
+  final completer = Completer<Object?>();
   virtualChannel.stream.listen(
     (message) {
       if (message is Map) {
         if (message['type'] == 'data') {
-          completer.complete(message['data'] as T);
+          completer.complete(message['data']);
         } else if (message['type'] == 'error') {
           final error = RemoteException.deserialize(message['error'] as Map);
           completer.completeError(error.error, error.stackTrace);

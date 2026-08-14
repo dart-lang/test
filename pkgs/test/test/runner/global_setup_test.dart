@@ -34,7 +34,7 @@ void main() {
 
         void main() {
           test("test 1", () async {
-            final result = await globalSetup<String>(Uri.parse('/test/setup.dart'));
+            final result = await globalSetup(Uri.parse('/test/setup.dart'));
             expect(result, equals('setup_complete'));
             expect(File('counter.txt').readAsStringSync(), equals('x'));
           });
@@ -46,7 +46,7 @@ void main() {
 
         void main() {
           test("test 2", () async {
-            final result = await globalSetup<String>(Uri.parse('/test/setup.dart'));
+            final result = await globalSetup(Uri.parse('/test/setup.dart'));
             expect(result, equals('setup_complete'));
             expect(File('counter.txt').readAsStringSync(), equals('x'));
           });
@@ -81,9 +81,7 @@ void main() {
 
         void main() {
           test("receives map from global setup", () async {
-            final config = await globalSetup<Map<String, dynamic>>(
-              Uri.parse('/test/config.dart'),
-            );
+            final config = (await globalSetup(Uri.parse('/test/config.dart'))) as Map;
             expect(config['port'], equals(8080));
             expect(config['enabled'], isTrue);
             expect(config['tags'], equals(['a', 'b']));
@@ -117,7 +115,7 @@ void main() {
 
         void main() {
           test("uses server", () async {
-            final url = await globalSetup<String>(Uri.parse('/test/server.dart'));
+            final url = await globalSetup(Uri.parse('/test/server.dart'));
             expect(url, equals('http://localhost:8080'));
             expect(File('server_started.txt').existsSync(), isTrue);
             expect(File('server_stopped.txt').existsSync(), isFalse);
@@ -196,7 +194,7 @@ void main() {
 
           void main() {
             test("root relative global setup", () async {
-              final result = await globalSetup<String>(
+              final result = await globalSetup(
                 Uri.parse('/test/setup.dart'),
               );
               expect(result, equals('root_relative_ok'));
@@ -231,7 +229,7 @@ void main() {
 
             void main() {
               test("relative path setup", () async {
-                final result = await globalSetup<int>(
+                final result = await globalSetup(
                   Uri.parse('../counter.dart'),
                 );
                 expect(result, equals(1));
@@ -245,7 +243,7 @@ void main() {
 
           void main() {
             test("root relative setup", () async {
-              final result = await globalSetup<int>(
+              final result = await globalSetup(
                 Uri.parse('/test/counter.dart'),
               );
               expect(result, equals(1));
@@ -278,7 +276,7 @@ void main() {
         void main() {
           test("absolute file URI setup", () async {
             final absoluteUri = Uri.file(p.absolute('test/setup.dart'));
-            final result = await globalSetup<String>(absoluteUri);
+            final result = await globalSetup(absoluteUri);
             expect(result, equals('file_uri_ok'));
           });
         }
@@ -313,7 +311,7 @@ void main() {
 
         void main() {
           test("lifo teardown test", () async {
-            final result = await globalSetup<String>(Uri.parse('/test/lifo.dart'));
+            final result = await globalSetup(Uri.parse('/test/lifo.dart'));
             expect(result, equals('ok'));
           });
         }
@@ -364,8 +362,8 @@ void main() {
 
         void main() {
           test("uses multiple services", () async {
-            final a = await globalSetup<String>(Uri.parse('/test/setup_a.dart'));
-            final b = await globalSetup<String>(Uri.parse('/test/setup_b.dart'));
+            final a = await globalSetup(Uri.parse('/test/setup_a.dart'));
+            final b = await globalSetup(Uri.parse('/test/setup_b.dart'));
             expect(a, equals('service_a'));
             expect(b, equals('service_b'));
           });
@@ -401,7 +399,7 @@ void main() {
 
         void main() {
           test("runs successfully during test phase", () async {
-            final result = await globalSetup<String>(
+            final result = await globalSetup(
               Uri.parse('/test/failing_teardown.dart'),
             );
             expect(result, equals('ready'));
@@ -438,17 +436,17 @@ void main() {
 
         void main() {
           test("concurrent call 1", () async {
-            final result = await globalSetup<int>(Uri.parse('/test/slow_setup.dart'));
+            final result = await globalSetup(Uri.parse('/test/slow_setup.dart'));
             expect(result, equals(1));
           });
 
           test("concurrent call 2", () async {
-            final result = await globalSetup<int>(Uri.parse('/test/slow_setup.dart'));
+            final result = await globalSetup(Uri.parse('/test/slow_setup.dart'));
             expect(result, equals(1));
           });
 
           test("concurrent call 3", () async {
-            final result = await globalSetup<int>(Uri.parse('/test/slow_setup.dart'));
+            final result = await globalSetup(Uri.parse('/test/slow_setup.dart'));
             expect(result, equals(1));
           });
         }
@@ -507,7 +505,7 @@ void main() {
 
         void main() {
           test("direct run", () async {
-            final result = await globalSetup<String>(Uri.parse('/test/setup.dart'));
+            final result = await globalSetup(Uri.parse('/test/setup.dart'));
             expect(result, equals('standalone_ok'));
           });
         }
