@@ -15,8 +15,6 @@ import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_im
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
-import '../util/package_config.dart';
-import 'application_exception.dart';
 import 'compiler_selection.dart';
 import 'configuration.dart';
 import 'global_setup.dart';
@@ -43,7 +41,7 @@ class Loader {
   );
 
   /// Manages global setup hooks.
-  late final GlobalSetupManager globalSetupManager = GlobalSetupManager(this);
+  late final GlobalSetupManager globalSetupManager = GlobalSetupManager();
 
   /// All suites that have been created by the loader.
   final _suites = <RunnerSuite>{};
@@ -74,25 +72,6 @@ class Loader {
   /// variables that are always supported.
   Iterable<String> get _runtimeVariables =>
       _platformCallbacks.keys.map((runtime) => runtime.identifier);
-
-  /// Compiles [scriptPath] for isolate execution and returns the URI to the
-  /// compiled dill.
-  Future<Uri> compileHook(String scriptPath) async {
-    final uri = await absoluteUri(scriptPath);
-    final response = await _compiler.compile(
-      uri,
-      parseSuiteMetadata(scriptPath),
-      testType: VmTestType.hook,
-    );
-    final compiledDill = response.kernelOutputUri?.toFilePath();
-    if (compiledDill == null || response.errorCount > 0) {
-      throw ApplicationException(
-        'Hook "$scriptPath" failed to compile:\n'
-        '${response.compilerOutput ?? "unknown error"}',
-      );
-    }
-    return absoluteUri(compiledDill);
-  }
 
   /// Parses and returns the suite metadata for [path].
   Metadata parseSuiteMetadata(String path) {

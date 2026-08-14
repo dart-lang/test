@@ -47,7 +47,7 @@ Future<Object?> globalSetup(Uri uri) async {
   if (channel == null) {
     var fallback = globalSetupStandaloneFallback;
     if (fallback != null) {
-      return (await fallback(uri));
+      return await fallback(uri);
     }
     throw UnsupportedError("Can't connect to the test runner.");
   }

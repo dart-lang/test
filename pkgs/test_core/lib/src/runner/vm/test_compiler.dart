@@ -293,10 +293,6 @@ String testBootstrapContents({
       'List<String> args',
       'internalBootstrapNativeTest(() => test.main, args);',
     ),
-    VmTestType.hook => (
-      'List<String> args, SendPort sendPort',
-      'internalBootstrapVmHook(() => test.setUp, args, sendPort);',
-    ),
   };
   return '''
     $languageVersionComment
@@ -317,4 +313,4 @@ String testBootstrapContents({
   ''';
 }
 
-enum VmTestType { isolate, process, hook }
+enum VmTestType { isolate, process }

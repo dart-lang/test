@@ -5,16 +5,16 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
-
+import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart' show RemoteException;
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-
+import '../util/dart.dart' as dart;
 import '../util/package_config.dart';
 import 'application_exception.dart';
-import 'loader.dart';
+import 'package_version.dart';
 
 final class _ActiveSetup {
   final String url;
@@ -32,12 +32,11 @@ final class _ActiveSetup {
 final class GlobalSetupManager {
   static GlobalSetupManager? current;
 
-  final Loader _loader;
   final _setups = <String, Future<Object?>>{};
   final _activeSetups = <_ActiveSetup>[];
   final _closeMemo = AsyncMemoizer<void>();
 
-  GlobalSetupManager(this._loader);
+  GlobalSetupManager();
 
   StreamChannel<Object?> get(String rawUrl, Suite suite) {
     return StreamChannelCompleter.fromFuture(() async {
@@ -68,15 +67,30 @@ final class GlobalSetupManager {
     final responsePort = ReceivePort();
     final errorPort = ReceivePort();
     try {
-      final scriptPath = Uri.parse(url).toFilePath();
-      final dillUri = await _loader.compileHook(scriptPath);
-      final isolate = await Isolate.spawnUri(
-        dillUri,
-        [],
-        responsePort.sendPort,
-        packageConfig: await packageConfigUri,
-        onError: errorPort.sendPort,
-      );
+      final code =
+          '''
+        ${await _languageVersionCommentFor(url)}
+
+        import "dart:isolate";
+        import "package:test_core/src/bootstrap/vm.dart";
+
+        import "${url.replaceAll(r'$', '%24')}" as lib;
+
+        void main(_, SendPort sendPort) => internalBootstrapVmHook(() => lib.setUp, [], sendPort);
+      ''';
+
+      Isolate isolate;
+      try {
+        isolate = await dart.runInIsolate(
+          code,
+          responsePort.sendPort,
+          onError: errorPort.sendPort,
+        );
+      } on IsolateSpawnException catch (error) {
+        throw ApplicationException(
+          'Global setup "$url" failed to compile:\n$error',
+        );
+      }
 
       final completer = Completer<Object?>();
 
@@ -228,4 +242,39 @@ final class GlobalSetupManager {
 
     return Uri.parse(normalized).removeFragment().toString();
   }
+}
+
+Future<String> _readUri(Uri uri) async => switch (uri.scheme) {
+  '' || 'file' => await File.fromUri(uri).readAsString(),
+  'data' => uri.data!.contentAsString(),
+  _ => throw ArgumentError.value(
+    uri,
+    'uri',
+    'Only data and file uris (as well as relative paths) are supported',
+  ),
+};
+
+Future<String> _languageVersionCommentFor(String url) async {
+  var parsedUri = Uri.parse(url);
+
+  var result = parseString(
+    content: await _readUri(parsedUri),
+    path: parsedUri.scheme == 'data' ? null : p.fromUri(parsedUri),
+    throwIfDiagnostics: false,
+  );
+  var languageVersionComment = result.unit.languageVersionToken?.value();
+  if (languageVersionComment != null) return languageVersionComment.toString();
+
+  if (parsedUri.scheme == 'file' || parsedUri.scheme == '') {
+    var packageConfig = await currentPackageConfig;
+    var package = packageConfig.packageOf(parsedUri);
+    var version = package?.languageVersion;
+    if (version != null) return '// @dart=$version';
+  }
+
+  if (parsedUri.scheme == 'data') {
+    return await rootPackageLanguageVersionComment;
+  }
+
+  return '';
 }
