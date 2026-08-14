@@ -44,7 +44,7 @@ Test asserts can be made using [`expect` from `package:matcher`][expect]
 ```dart
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   test('String.split() splits the string on the delimiter', () {
     var string = 'foo,bar,baz';
     expect(string.split(','), equals(['foo', 'bar', 'baz']));
@@ -65,7 +65,7 @@ description is added to the beginning of its test's descriptions.
 ```dart
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   group('String', () {
     test('.split() splits the string on the delimiter', () {
       var string = 'foo,bar,baz';
@@ -98,7 +98,7 @@ fails, to ensure that it has a chance to clean up after itself.
 ```dart
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   late HttpServer server;
   late Uri url;
   setUp(() async {
@@ -301,7 +301,7 @@ import 'dart:io';
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   // ...
 }
 ```
@@ -419,7 +419,7 @@ import 'dart:async';
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   test('Future.value() returns the value', () async {
     var value = await Future.value(10);
     expect(value, equals(10));
@@ -527,7 +527,7 @@ To skip a test suite, put a `@Skip` annotation at the top of the file:
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   // ...
 }
 ```
@@ -542,7 +542,7 @@ example:
 ```dart
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   group('complicated algorithm tests', () {
     // ...
   }, skip: "the algorithm isn't quite right");
@@ -567,7 +567,7 @@ timeout for a test suite, put a `@Timeout` annotation at the top of the file:
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   // ...
 }
 ```
@@ -582,7 +582,7 @@ parameter takes a `Timeout` object just like the annotation. For example:
 ```dart
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   group('slow tests', () {
     // ...
 
@@ -613,7 +613,7 @@ and `group()`. For example:
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   test('do a thing', () {
     // ...
   }, onPlatform: {
@@ -652,7 +652,7 @@ parameter to `test()` and `group()`. For example:
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   test('successfully launches Chrome', () {
     // ...
   }, tags: 'chrome');
@@ -809,7 +809,7 @@ import 'dart:html';
 
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   test('connects to a server-side WebSocket', () async {
     // Each spawnHybrid function returns a StreamChannel that communicates with
     // the hybrid isolate. You can close this channel to kill the isolate.
@@ -838,7 +838,7 @@ you can use [`globalSetup()`]. Setup scripts should typically live inside your `
 directory (for example, `test/setup_server.dart` or `test/helpers/setup.dart`).
 
 The `globalSetup()` function executes a Dart script on the host test runner in an
-isolate compiled with the incremental Frontend Server. The script's `main()`
+isolate compiled with the incremental Frontend Server. The script's `setUp()`
 function returns a JSON-encodable result that is memoized across all tests and
 test suites in the run:
 
@@ -850,7 +850,7 @@ test suites in the run:
 import 'dart:io';
 import 'package:test/test.dart';
 
-Future<Map<String, dynamic>> main() async {
+Future<Map<String, dynamic>> setUp() async {
   var server = await HttpServer.bind('localhost', 0);
   // Register teardown when the test runner closes.
   addGlobalTearDown(() async {
@@ -863,7 +863,7 @@ Future<Map<String, dynamic>> main() async {
 // ## test/my_test.dart
 import 'package:test/test.dart';
 
-void main() {
+void setUp() {
   test('uses shared server', () async {
     final config =
         await globalSetup<Map<String, dynamic>>(Uri.parse('/test/setup_server.dart'));

@@ -69,13 +69,17 @@ void internalBootstrapVmHook(
   try {
     final mainFn = getMain();
     final result = await runZoned(() async {
-      if (mainFn is FutureOr<Object?> Function(List<String>)) {
+      if (mainFn is FutureOr<Object?> Function(List<String>, SendPort)) {
+        return await mainFn(args, sendPort);
+      } else if (mainFn is FutureOr<Object?> Function(List<String>)) {
         return await mainFn(args);
       } else if (mainFn is FutureOr<Object?> Function()) {
         return await mainFn();
       } else {
-        return await (Function.apply(mainFn, args.isEmpty ? [] : [args])
-            as dynamic);
+        throw ArgumentError(
+          'The global setup script must define a top-level `setUp` function '
+          'with zero arguments, one List<String> argument, or (List<String>, SendPort).',
+        );
       }
     }, zoneValues: {#test.global_teardowns: tearDowns});
 

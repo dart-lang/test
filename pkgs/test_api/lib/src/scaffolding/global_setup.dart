@@ -19,7 +19,7 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// If multiple test suites or tests invoke [globalSetup] with the same [uri],
 /// the script runs only once and all callers receive the same cached result.
 ///
-/// The Dart file at [uri] must define a top-level `main()` function that
+/// The Dart file at [uri] must define a top-level `setUp()` function that
 /// returns a JSON-encodable value (or `Future` of one).
 ///
 /// [uri] is resolved according to the following rules:
@@ -35,7 +35,8 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// * **`file:` URIs** (e.g. `Uri.file('/abs/path/setup.dart')`):
 ///   Interpreted as absolute file paths on the filesystem.
 ///
-/// Throws whatever exception was thrown by the setup script if execution fails.
+/// If execution fails, throws an exception containing the string representation
+/// and stack trace of the error thrown by the setup script.
 Future<T> globalSetup<T>(Uri uri) async {
   final url = uri.toString();
 

@@ -30,7 +30,7 @@ Directory? _standaloneTempDir;
 /// Used as a fallback when running tests directly (e.g. `dart test.dart`)
 /// without `dart test`.
 Future<Object?> standaloneGlobalSetup(Uri uri) async {
-  final normalizedUrl = await _normalizeStandaloneUrl(uri);
+  final normalizedUrl = _normalizeStandaloneUrl(uri);
   return _standaloneSetups.putIfAbsent(
     normalizedUrl,
     () => _runStandaloneSetup(normalizedUrl),
@@ -56,7 +56,7 @@ import 'package:test_core/src/bootstrap/vm.dart';
 import '$scriptUri' as test;
 
 void main(List<String> args, SendPort sendPort) {
-  internalBootstrapVmHook(() => test.main, args, sendPort);
+  internalBootstrapVmHook(() => test.setUp, args, sendPort);
 }
 ''';
 
@@ -85,25 +85,31 @@ void main(List<String> args, SendPort sendPort) {
     });
 
     final responseSub = responsePort.listen((response) {
-      final map = response as Map<Object?, Object?>;
-      if (map['success'] == true) {
-        if (map['hasTearDown'] == true && map['commandPort'] is SendPort) {
+      if (response case {
+        'success': true,
+        'result': var result,
+        'hasTearDown': bool hasTearDown,
+      }) {
+        if (hasTearDown) {
+          final commandPort = (response as Map)['commandPort'] ;
           _standaloneActiveSetups.add(
             _ActiveStandaloneSetup(
               url: url,
               isolate: isolate,
-              commandPort: map['commandPort'] as SendPort,
+              commandPort: commandPort,
             ),
           );
         } else {
           isolate.kill();
         }
-        if (!completer.isCompleted) completer.complete(map['result']);
-      } else {
+        if (!completer.isCompleted) completer.complete(result);
+      } else if (response case {
+        'success': false,
+        'error': var error,
+        'stackTrace': var stack,
+      }) {
         isolate.kill();
         if (!completer.isCompleted) {
-          final error = map['error'];
-          final stack = map['stackTrace'];
           completer.completeError(
             Exception(
               'Global setup "$url" failed:\n$error'
@@ -124,8 +130,7 @@ void main(List<String> args, SendPort sendPort) {
   }
 }
 
-/// Executes all registered teardowns and cleans up isolates for standalone
-/// runs.
+/// Executes all registered teardowns and cleans up isolates for standalone runs.
 Future<void> closeStandaloneGlobalSetups() async {
   for (var active in _standaloneActiveSetups) {
     final replyPort = ReceivePort();
@@ -169,22 +174,44 @@ Future<void> closeStandaloneGlobalSetups() async {
   _standaloneTempDir = null;
 }
 
-Future<String> _normalizeStandaloneUrl(Uri uri) async {
+String _normalizeStandaloneUrl(Uri uri) {
   String normalized;
   switch (uri.scheme) {
     case '':
-      var isRootRelative = uri.path.startsWith('/');
-      if (isRootRelative) {
+      if (uri.hasAbsolutePath) {
+        if (uri.hasQuery) {
+          throw ArgumentError.value(
+            uri,
+            'uri',
+            'root-relative URIs cannot have query parameters',
+          );
+        }
         normalized = p.url.join(
           p.toUri(p.current).toString(),
           uri.path.substring(1),
         );
       } else {
+        if (uri.hasQuery) {
+          throw ArgumentError.value(
+            uri,
+            'uri',
+            'relative URIs cannot have query parameters',
+          );
+        }
         // Relative to current directory/entrypoint
-        normalized = p.url.join(p.toUri(p.current).toString(), uri.toString());
+        normalized = p.url.join(p.toUri(p.current).toString(), uri.path);
       }
+    case 'file':
+      if (uri.hasQuery) {
+        throw ArgumentError.value(
+          uri,
+          'uri',
+          'file: URIs cannot have query parameters',
+        );
+      }
+      normalized = uri.toString();
     case 'package':
-      final resolvedUri = await Isolate.resolvePackageUri(uri);
+      final resolvedUri = Isolate.resolvePackageUriSync(uri);
       if (resolvedUri == null) {
         throw ArgumentError.value(
           uri,
@@ -196,5 +223,6 @@ Future<String> _normalizeStandaloneUrl(Uri uri) async {
     default:
       normalized = uri.toString();
   }
-  return Uri.parse(normalized).normalizePath().toString();
+
+  return Uri.parse(normalized).removeFragment().toString();
 }

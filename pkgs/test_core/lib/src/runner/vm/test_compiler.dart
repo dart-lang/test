@@ -295,7 +295,7 @@ String testBootstrapContents({
     ),
     VmTestType.hook => (
       'List<String> args, SendPort sendPort',
-      'internalBootstrapVmHook(() => test.main, args, sendPort);',
+      'internalBootstrapVmHook(() => test.setUp, args, sendPort);',
     ),
   };
   return '''

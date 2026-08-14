@@ -42,7 +42,7 @@ final class GlobalSetupManager {
   StreamChannel<Object?> get(String rawUrl, Suite suite) {
     return StreamChannelCompleter.fromFuture(() async {
       try {
-        final normalizedUrl = await _normalizeUrl(rawUrl, suite);
+        final normalizedUrl = _normalizeUrl(rawUrl, suite);
         final resultFuture = _setups.putIfAbsent(
           normalizedUrl,
           () => _runSetup(normalizedUrl),
@@ -92,25 +92,31 @@ final class GlobalSetupManager {
       });
 
       final responseSub = responsePort.listen((response) {
-        final map = response as Map<Object?, Object?>;
-        if (map['success'] == true) {
-          if (map['hasTearDown'] == true && map['commandPort'] is SendPort) {
+        if (response case {
+          'success': true,
+          'result': var result,
+          'hasTearDown': bool hasTearDown,
+        }) {
+          if (hasTearDown) {
+            final commandPort = (response as Map)['commandPort'] ;
             _activeSetups.add(
               _ActiveSetup(
                 url: url,
                 isolate: isolate,
-                commandPort: map['commandPort'] as SendPort,
+                commandPort: commandPort,
               ),
             );
           } else {
             isolate.kill();
           }
-          if (!completer.isCompleted) completer.complete(map['result']);
-        } else {
+          if (!completer.isCompleted) completer.complete(result);
+        } else if (response case {
+          'success': false,
+          'error': var error,
+          'stackTrace': var stack,
+        }) {
           isolate.kill();
           if (!completer.isCompleted) {
-            final error = map['error'];
-            final stack = map['stackTrace'];
             completer.completeError(
               ApplicationException(
                 'Global setup "$url" failed:\n$error'
@@ -165,28 +171,49 @@ final class GlobalSetupManager {
     _activeSetups.clear();
   });
 
-  Future<String> _normalizeUrl(String url, Suite suite) async {
+  String _normalizeUrl(String url, Suite suite) {
     final parsedUri = Uri.parse(url);
 
     String normalized;
     switch (parsedUri.scheme) {
       case '':
-        var isRootRelative = parsedUri.path.startsWith('/');
-
-        if (isRootRelative) {
+        if (parsedUri.hasAbsolutePath) {
+          if (parsedUri.hasQuery) {
+            throw ArgumentError.value(
+              url,
+              'uri',
+              'root-relative URIs cannot have query parameters',
+            );
+          }
           normalized = p.url.join(
             p.toUri(p.current).toString(),
             parsedUri.path.substring(1),
           );
         } else {
+          if (parsedUri.hasQuery) {
+            throw ArgumentError.value(
+              url,
+              'uri',
+              'relative URIs cannot have query parameters',
+            );
+          }
           var suitePath = suite.path!;
           normalized = p.url.join(
             p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-            parsedUri.toString(),
+            parsedUri.path,
           );
         }
+      case 'file':
+        if (parsedUri.hasQuery) {
+          throw ArgumentError.value(
+            url,
+            'uri',
+            'file: URIs cannot have query parameters',
+          );
+        }
+        normalized = parsedUri.toString();
       case 'package':
-        final resolvedUri = await Isolate.resolvePackageUri(parsedUri);
+        final resolvedUri = Isolate.resolvePackageUriSync(parsedUri);
         if (resolvedUri == null) {
           throw ArgumentError.value(
             url,
@@ -198,6 +225,7 @@ final class GlobalSetupManager {
       default:
         normalized = url;
     }
-    return Uri.parse(normalized).normalizePath().toString();
+
+    return Uri.parse(normalized).removeFragment().toString();
   }
 }

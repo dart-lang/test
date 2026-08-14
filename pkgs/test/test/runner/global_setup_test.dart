@@ -22,10 +22,9 @@ void main() {
         d.file('setup.dart', '''
         import 'dart:io';
 
-        Future<String> main() async {
+        Future<String> setUp() async {
           final file = File('counter.txt');
-          final count = file.existsSync() ? int.parse(file.readAsStringSync()) : 0;
-          file.writeAsStringSync('\${count + 1}');
+          file.writeAsStringSync('x', mode: FileMode.append);
           return 'setup_complete';
         }
       '''),
@@ -37,7 +36,7 @@ void main() {
           test("test 1", () async {
             final result = await globalSetup<String>(Uri.parse('/test/setup.dart'));
             expect(result, equals('setup_complete'));
-            expect(File('counter.txt').readAsStringSync(), equals('1'));
+            expect(File('counter.txt').readAsStringSync(), equals('x'));
           });
         }
       '''),
@@ -49,7 +48,7 @@ void main() {
           test("test 2", () async {
             final result = await globalSetup<String>(Uri.parse('/test/setup.dart'));
             expect(result, equals('setup_complete'));
-            expect(File('counter.txt').readAsStringSync(), equals('1'));
+            expect(File('counter.txt').readAsStringSync(), equals('x'));
           });
         }
       '''),
@@ -62,14 +61,14 @@ void main() {
       expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
       await test.shouldExit(0);
 
-      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('1'));
+      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('x'));
     },
   );
 
   test('supports Map and JSON-encodable return values', () async {
     await d.dir('test', [
       d.file('config.dart', '''
-        Map<String, dynamic> main() {
+        Map<String, dynamic> setUp() {
           return {
             'port': 8080,
             'enabled': true,
@@ -104,7 +103,7 @@ void main() {
         import 'dart:io';
         import 'package:test/test.dart';
 
-        Future<String> main() async {
+        Future<String> setUp() async {
           File('server_started.txt').writeAsStringSync('yes');
           addGlobalTearDown(() async {
             File('server_stopped.txt').writeAsStringSync('yes');
@@ -141,7 +140,7 @@ void main() {
   test('fails the test if global setup throws an exception', () async {
     await d.dir('test', [
       d.file('fail.dart', '''
-        void main() {
+        void setUp() {
           throw Exception('Database connection refused');
         }
       '''),
@@ -165,7 +164,7 @@ void main() {
   test('fails the test if global setup has compilation error', () async {
     await d.dir('test', [
       d.file('bad.dart', '''
-        void main() {
+        void setUp() {
           invalid syntax ;;;
         }
       '''),
@@ -189,7 +188,7 @@ void main() {
   test('supports root-relative paths', () async {
     await d.dir('test', [
       d.file('setup.dart', '''
-        String main() => 'root_relative_ok';
+        String setUp() => 'root_relative_ok';
       '''),
       d.dir('sub', [
         d.file('nested_test.dart', '''
@@ -219,11 +218,10 @@ void main() {
         d.file('counter.dart', '''
         import 'dart:io';
 
-        int main() {
+        int setUp() {
           final file = File('counter.txt');
-          final count = file.existsSync() ? int.parse(file.readAsStringSync()) : 0;
-          file.writeAsStringSync('\${count + 1}');
-          return count + 1;
+          file.writeAsStringSync('x', mode: FileMode.append);
+          return file.readAsStringSync().length;
         }
       '''),
         d.dir('sub', [
@@ -263,14 +261,14 @@ void main() {
       expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
       await test.shouldExit(0);
 
-      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('1'));
+      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('x'));
     },
   );
 
   test('supports absolute file: URIs', () async {
     await d.dir('test', [
       d.file('setup.dart', '''
-        String main() => 'file_uri_ok';
+        String setUp() => 'file_uri_ok';
       '''),
       d.file('test_test.dart', '''
         import 'dart:io';
@@ -300,7 +298,7 @@ void main() {
         import 'dart:io';
         import 'package:test/test.dart';
 
-        String main() {
+        String setUp() {
           addGlobalTearDown(() async {
             File('log.txt').writeAsStringSync('first\\n', mode: FileMode.append);
           });
@@ -341,7 +339,7 @@ void main() {
         import 'dart:io';
         import 'package:test/test.dart';
 
-        String main() {
+        String setUp() {
           File('started_a.txt').writeAsStringSync('yes');
           addGlobalTearDown(() async {
             File('stopped_a.txt').writeAsStringSync('yes');
@@ -353,7 +351,7 @@ void main() {
         import 'dart:io';
         import 'package:test/test.dart';
 
-        String main() {
+        String setUp() {
           File('started_b.txt').writeAsStringSync('yes');
           addGlobalTearDown(() async {
             File('stopped_b.txt').writeAsStringSync('yes');
@@ -391,7 +389,7 @@ void main() {
       d.file('failing_teardown.dart', '''
         import 'package:test/test.dart';
 
-        String main() {
+        String setUp() {
           addGlobalTearDown(() async {
             throw Exception('Cleanup failed: resource locked');
           });
@@ -428,12 +426,11 @@ void main() {
         d.file('slow_setup.dart', '''
         import 'dart:io';
 
-        Future<int> main() async {
+        Future<int> setUp() async {
           await Future<void>.delayed(const Duration(milliseconds: 50));
           final file = File('counter.txt');
-          final count = file.existsSync() ? int.parse(file.readAsStringSync()) : 0;
-          file.writeAsStringSync('\${count + 1}');
-          return count + 1;
+          file.writeAsStringSync('x', mode: FileMode.append);
+          return file.readAsStringSync().length;
         }
       '''),
         d.file('test_test.dart', '''
@@ -462,7 +459,7 @@ void main() {
       expect(test.stdout, emitsThrough(contains('+3: All tests passed!')));
       await test.shouldExit(0);
 
-      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('1'));
+      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('x'));
     },
   );
 
@@ -498,7 +495,7 @@ void main() {
         import 'dart:io';
         import 'package:test/test.dart';
 
-        String main() {
+        String setUp() {
           addGlobalTearDown(() async {
             File('direct_stopped.txt').writeAsStringSync('yes');
           });
