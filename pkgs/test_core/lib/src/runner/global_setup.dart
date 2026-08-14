@@ -98,7 +98,7 @@ final class GlobalSetupManager {
           'hasTearDown': bool hasTearDown,
         }) {
           if (hasTearDown) {
-            final commandPort = (response as Map)['commandPort'] ;
+            final commandPort = response['commandPort'] as SendPort;
             _activeSetups.add(
               _ActiveSetup(
                 url: url,

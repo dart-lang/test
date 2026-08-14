@@ -91,7 +91,7 @@ void main(List<String> args, SendPort sendPort) {
         'hasTearDown': bool hasTearDown,
       }) {
         if (hasTearDown) {
-          final commandPort = (response as Map)['commandPort'] ;
+          final commandPort = response['commandPort'] as SendPort;
           _standaloneActiveSetups.add(
             _ActiveStandaloneSetup(
               url: url,
