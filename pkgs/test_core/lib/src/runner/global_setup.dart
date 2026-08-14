@@ -138,7 +138,7 @@ final class GlobalSetupManager {
   }
 
   Future<void> close() => _closeMemo.runOnce(() async {
-    for (var active in _activeSetups) {
+    for (var active in _activeSetups.reversed) {
       final replyPort = ReceivePort();
       try {
         active.commandPort.send({

@@ -132,7 +132,7 @@ void main(List<String> args, SendPort sendPort) {
 
 /// Executes all registered teardowns and cleans up isolates for standalone runs.
 Future<void> closeStandaloneGlobalSetups() async {
-  for (var active in _standaloneActiveSetups) {
+  for (var active in _standaloneActiveSetups.reversed) {
     final replyPort = ReceivePort();
     try {
       active.commandPort.send({
