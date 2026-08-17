@@ -135,10 +135,7 @@ Future<void> closeStandaloneGlobalSetups() async {
   for (var active in _standaloneActiveSetups.reversed) {
     final replyPort = ReceivePort();
     try {
-      active.commandPort.send({
-        'command': 'teardown',
-        'replyPort': replyPort.sendPort,
-      });
+      active.commandPort.send([replyPort.sendPort, 'teardown']);
       final response =
           await replyPort.first.timeout(
                 const Duration(seconds: 30),

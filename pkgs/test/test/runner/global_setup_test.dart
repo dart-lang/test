@@ -30,6 +30,7 @@ void main() {
       '''),
         d.file('test1_test.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -42,6 +43,7 @@ void main() {
       '''),
         d.file('test2_test.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -77,6 +79,7 @@ void main() {
         }
       '''),
       d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -99,6 +102,7 @@ void main() {
     await d.dir('test', [
       d.file('server.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         Future<String> setUp() async {
@@ -111,6 +115,7 @@ void main() {
       '''),
       d.file('test_test.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -143,6 +148,7 @@ void main() {
         }
       '''),
       d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -167,6 +173,7 @@ void main() {
         }
       '''),
       d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -190,7 +197,8 @@ void main() {
       '''),
       d.dir('sub', [
         d.file('nested_test.dart', '''
-          import 'package:test/test.dart';
+          import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
 
           void main() {
             test("root relative global setup", () async {
@@ -225,7 +233,8 @@ void main() {
         d.dir('sub', [
           d.file('sub_test.dart', '''
             import 'dart:io';
-            import 'package:test/test.dart';
+            import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
 
             void main() {
               test("relative path setup", () async {
@@ -239,7 +248,8 @@ void main() {
         ]),
         d.file('top_test.dart', '''
           import 'dart:io';
-          import 'package:test/test.dart';
+          import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
 
           void main() {
             test("root relative setup", () async {
@@ -271,6 +281,7 @@ void main() {
       d.file('test_test.dart', '''
         import 'dart:io';
         import 'package:path/path.dart' as p;
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -294,6 +305,7 @@ void main() {
       await d.dir('test', [
         d.file('lifo.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         String setUp() {
@@ -307,6 +319,7 @@ void main() {
         }
       '''),
         d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -335,6 +348,7 @@ void main() {
       await d.dir('test', [
         d.file('setup_a.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         String setUp() {
@@ -347,6 +361,7 @@ void main() {
       '''),
         d.file('setup_b.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         String setUp() {
@@ -358,6 +373,7 @@ void main() {
         }
       '''),
         d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -385,6 +401,7 @@ void main() {
   test('fails the test run if a global teardown callback throws', () async {
     await d.dir('test', [
       d.file('failing_teardown.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         String setUp() {
@@ -395,6 +412,7 @@ void main() {
         }
       '''),
       d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -432,6 +450,7 @@ void main() {
         }
       '''),
         d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -466,6 +485,7 @@ void main() {
     () async {
       await d.dir('test', [
         d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -491,6 +511,7 @@ void main() {
       await d.dir('test', [
         d.file('setup.dart', '''
         import 'dart:io';
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         String setUp() {
@@ -501,6 +522,7 @@ void main() {
         }
       '''),
         d.file('direct_test.dart', '''
+        import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {

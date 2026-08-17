@@ -848,7 +848,7 @@ test suites in the run:
 ```dart
 // ## test/setup_server.dart
 import 'dart:io';
-import 'package:test/test.dart';
+import 'package:test/scaffolding.dart' show addGlobalTearDown;
 
 Future<Map<String, dynamic>> setUp() async {
   var server = await HttpServer.bind('localhost', 0);
@@ -861,6 +861,7 @@ Future<Map<String, dynamic>> setUp() async {
 }
 
 // ## test/my_test.dart
+import 'package:test/scaffolding.dart' show globalSetup;
 import 'package:test/test.dart';
 
 void main() {

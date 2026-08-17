@@ -155,10 +155,7 @@ final class GlobalSetupManager {
     for (var active in _activeSetups.reversed) {
       final replyPort = ReceivePort();
       try {
-        active.commandPort.send({
-          'command': 'teardown',
-          'replyPort': replyPort.sendPort,
-        });
+        active.commandPort.send([replyPort.sendPort, 'teardown']);
         final response =
             await replyPort.first.timeout(
                   const Duration(seconds: 30),

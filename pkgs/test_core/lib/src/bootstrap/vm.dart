@@ -96,8 +96,10 @@ void internalBootstrapVmHook(
     }
 
     await for (var msg in commandPort) {
-      if (msg is Map && msg['command'] == 'teardown') {
-        final replyPort = msg['replyPort'] as SendPort;
+      final tuple = msg is List ? msg : [null, msg];
+      final replyPort = tuple[0] as SendPort?;
+      final command = tuple[1];
+      if (command == 'teardown' && replyPort != null) {
         var errors = <(Object, StackTrace)>[];
         for (var tearDown in tearDowns.reversed) {
           try {
