@@ -345,8 +345,8 @@ class Loader {
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
+    await globalSetupManager.close();
     await Future.wait([
-      globalSetupManager.close(),
       _compiler.dispose(),
       Future.wait(
         _platformPlugins.values.map((memo) async {
