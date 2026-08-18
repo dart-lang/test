@@ -14,8 +14,8 @@ extension StringChecks on Subject<String> {
     context.expect(
       () => prefixFirst('contains ', literal(pattern)),
       predicateNoun: () {
-        final l = literal(pattern);
-        return l.length == 1 ? 'a string that contains ${l.first}' : null;
+        final l = literal(pattern).singleOrNull;
+        return l != null ? 'a string that contains $l' : null;
       },
       (actual) {
         if (actual.contains(pattern)) return null;
@@ -54,8 +54,8 @@ extension StringChecks on Subject<String> {
     context.expect(
       () => prefixFirst('starts with ', literal(other)),
       predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? 'a string starting with ${l.single}' : null;
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a string starting with $l' : null;
       },
       (actual) {
         if (actual.startsWith(other)) return null;
@@ -70,8 +70,8 @@ extension StringChecks on Subject<String> {
     context.expect(
       () => prefixFirst('ends with ', literal(other)),
       predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? 'a string ending with ${l.single}' : null;
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a string ending with $l' : null;
       },
       (actual) {
         if (actual.endsWith(other)) return null;
@@ -95,8 +95,8 @@ extension StringChecks on Subject<String> {
     context.expect(
       () => prefixFirst('matches ', literal(expected)),
       predicateNoun: () {
-        final l = literal(expected);
-        return l.length == 1 ? 'a string matching ${l.single}' : null;
+        final l = literal(expected).singleOrNull;
+        return l != null ? 'a string matching $l' : null;
       },
       (actual) {
         if (expected.allMatches(actual).isNotEmpty) return null;
@@ -155,10 +155,8 @@ extension StringChecks on Subject<String> {
     context.expect(
       () => prefixFirst('equals ignoring case ', literal(expected)),
       predicateNoun: () {
-        final l = literal(expected);
-        return l.length == 1
-            ? 'a string equal to ${l.first} ignoring case'
-            : null;
+        final l = literal(expected).singleOrNull;
+        return l != null ? 'a string equal to $l ignoring case' : null;
       },
       (actual) => _findDifference(
         actual.toLowerCase(),

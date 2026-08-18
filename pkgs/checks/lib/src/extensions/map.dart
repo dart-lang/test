@@ -17,8 +17,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     return context.nest(
       () => prefixFirst('contains a value for ', literal(key)),
       addPredicate: (predicateNoun) {
-        final l = literal(key);
-        return l.length == 1 ? 'has entry <${l.single}: $predicateNoun>' : null;
+        final l = literal(key).singleOrNull;
+        return l != null ? 'has entry <$l: $predicateNoun>' : null;
       },
       (actual) {
         if (!actual.containsKey(key)) {
@@ -58,8 +58,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     context.expect(
       () => prefixFirst('contains key ', literal(key)),
       predicateNoun: () {
-        final l = literal(key);
-        return l.length == 1 ? 'a map with key ${l.single}' : null;
+        final l = literal(key).singleOrNull;
+        return l != null ? 'a map with key $l' : null;
       },
       (actual) {
         if (actual.containsKey(key)) return null;
@@ -94,8 +94,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     context.expect(
       () => prefixFirst('contains value ', literal(value)),
       predicateNoun: () {
-        final l = literal(value);
-        return l.length == 1 ? 'a map with value ${l.single}' : null;
+        final l = literal(value).singleOrNull;
+        return l != null ? 'a map with value $l' : null;
       },
       (actual) {
         if (actual.containsValue(value)) return null;

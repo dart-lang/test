@@ -195,8 +195,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     context.expect(
       () => prefixFirst('is greater than ', literal(other)),
       predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? 'a value > ${l.single}' : null;
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value > $l' : null;
       },
       (actual) {
         if (actual.compareTo(other) > 0) return null;
@@ -212,8 +212,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     context.expect(
       () => prefixFirst('is greater than or equal to ', literal(other)),
       predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? 'a value >= ${l.single}' : null;
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value >= $l' : null;
       },
       (actual) {
         if (actual.compareTo(other) >= 0) return null;
@@ -232,8 +232,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     context.expect(
       () => prefixFirst('is less than ', literal(other)),
       predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? 'a value < ${l.single}' : null;
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value < $l' : null;
       },
       (actual) {
         if (actual.compareTo(other) < 0) return null;
@@ -249,8 +249,8 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
     context.expect(
       () => prefixFirst('is less than or equal to ', literal(other)),
       predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? 'a value <= ${l.single}' : null;
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value <= $l' : null;
       },
       (actual) {
         if (actual.compareTo(other) <= 0) return null;
