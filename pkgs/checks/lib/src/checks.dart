@@ -239,12 +239,14 @@ extension ContextExtension<T> on Subject<T> {
 ///     as [CoreChecks.has] or [FutureChecks.completes]) by calling [nest] or
 ///     [nestAsync].
 ///
+///
 /// Whichever type of operation, an expectation extension method provides two
 /// callbacks.
 /// The first callback is an `Iterable<String> Function()` returning a
 /// description of the expectation.
 /// The second callback always takes the actual value as an argument, and the
 /// specific signature varies by operation.
+///
 ///
 /// In expectation extension methods calling [expect], [expectAsync], or
 /// [expectUnawaited], the `predicate` callback can report a [Rejection] if the
@@ -269,7 +271,6 @@ extension ContextExtension<T> on Subject<T> {
 /// Examples of predicate nouns:
 /// - Equality/identity: `literal(expected).singleOrNull` (e.g. `'<2>'`)
 /// - Relational checks: `'a value > <2>'`
-/// - Boolean values: `'true'`, `'false'`
 /// - Adjective/type descriptions: `'an empty iterable'`, `'a negative number'`,
 ///   `'a string starting with \'a\''`
 ///
@@ -345,7 +346,7 @@ extension ContextExtension<T> on Subject<T> {
 ///    nesting subject that saw a failure, then the "actual" from the rejection.
 /// -  A "Which" description from the rejection, if it was included.
 ///
-/// Failure messages can be presented in one of two firmats:
+/// Failure messages can be presented in one of two formats:
 ///
 /// 1. **Collapsed Single-Line Format**: For simple, single expectations (such as
 ///    `check(1).equals(2)` or `check(user).name.equals('Alice')`), messages

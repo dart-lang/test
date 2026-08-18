@@ -11,12 +11,12 @@
 - Fix a bug when using asynchronous conditions with `mayEmit` or
   `mayEmitMultiple`. Note that extensions using `nestAsync` should synchronously
   forward exceptions from that call.
-- Output more compact failure messages for simple expectations.
 - Fix a bug when printing a failure message involving a value that returns an
   empty output from `toString()`.
 - Annotated async expectations with `@awaitNotRequired` since tests are safely
   held open until expectations complete so it's not always necessary to
   explicitly await them.
+- Output more compact failure messages for simple expectations.
 
 ## 0.3.1
 
