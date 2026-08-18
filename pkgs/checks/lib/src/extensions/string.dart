@@ -71,7 +71,7 @@ extension StringChecks on Subject<String> {
       () => prefixFirst('ends with ', literal(other)),
       predicateNoun: () {
         final l = literal(other);
-        return l.length == 1 ? 'a string ending with with ${l.single}' : null;
+        return l.length == 1 ? 'a string ending with ${l.single}' : null;
       },
       (actual) {
         if (actual.endsWith(other)) return null;

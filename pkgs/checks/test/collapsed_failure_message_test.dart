@@ -4,7 +4,6 @@
 
 import 'package:checks/checks.dart';
 import 'package:test/scaffolding.dart';
-import 'package:test_api/hooks.dart' show TestFailure;
 
 void main() {
   group('collapsed failures', () {
@@ -256,7 +255,7 @@ Which: does not start with 'bar'""");
         check(() {
           check('foo').endsWith('bar');
         }).throwsFailure().equals("""
-Expected: a string ending with with 'bar'
+Expected: a string ending with 'bar'
 Actual: 'foo'
 Which: does not end with 'bar'""");
       });
@@ -421,6 +420,27 @@ Which: does not contain key 'b'""");
 Expected: a map with value <2>
 Actual: {'a': 1}
 Which: does not contain value <2>''');
+      });
+
+      test('deepEquals small map collapses', () {
+        check(() {
+          check({'a': 1}).deepEquals({'a': 2});
+        }).throwsFailure().equals('''
+Expected: {'a': 2}
+Actual: {'a': 1}
+Which: at ['a'] is <1>
+which does not equal <2>''');
+      });
+
+      test('deepEquals large map does not collapse', () {
+        final largeMap1 = {for (var i = 0; i < 30; i++) i: i};
+        final largeMap2 = {for (var i = 0; i < 30; i++) i: i == 0 ? 1 : i};
+        check(() {
+          check(largeMap1).deepEquals(largeMap2);
+        }).throwsFailure().startsWith('''
+Expected: a Map<int, int> that:
+  is deeply equal to {0: 1,
+  1: 1,''');
       });
     });
 

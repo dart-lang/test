@@ -128,10 +128,7 @@ extension CoreChecks<T> on Subject<T> {
   void equals(T other) {
     context.expect(
       () => prefixFirst('equals ', literal(other)),
-      predicateNoun: () {
-        final l = literal(other);
-        return l.length == 1 ? l.single : null;
-      },
+      predicateNoun: () => literal(other).singleOrNull,
       (actual) {
         if (actual == other) return null;
         return Rejection(which: ['is not equal']);

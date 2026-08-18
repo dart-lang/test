@@ -82,8 +82,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     context.expect(
       () => prefixFirst('contains ', literal(element)),
       predicateNoun: () {
-        final l = literal(element);
-        return l.length == 1 ? 'a list containing ${l.first}' : null;
+        final l = literal(element).singleOrNull;
+        return l != null ? 'an iterable containing $l' : null;
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);

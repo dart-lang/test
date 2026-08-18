@@ -105,15 +105,11 @@ extension NumChecks on Subject<num> {
   void isCloseTo(num other, num delta) {
     context.expect(
       () => ['is within <$delta> of <$other>'],
-      predicateNoun: () {
-        if ((literal(other).toList(), literal(delta).toList()) case (
-          [final other],
-          [final delta],
-        )) {
-          return 'a value within $delta of $other';
-        }
-        return null;
-      },
+      predicateNoun: () =>
+          switch ((literal(other).singleOrNull, literal(delta).singleOrNull)) {
+            (final other?, final delta?) => 'a value within $delta of $other',
+            _ => null,
+          },
       (actual) {
         final difference = (other - actual).abs();
         if (difference <= delta) return null;

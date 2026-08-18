@@ -131,7 +131,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// {@macro deep_collection_equals}
   void deepEquals(Map<Object?, Object?> expected) => context.expect(
     () => prefixFirst('is deeply equal to ', literal(expected)),
-    predicateNoun: () => literal(expected).firstOrNull,
+    predicateNoun: () => literal(expected).singleOrNull,
     (actual) {
       final which = deepCollectionEquals(actual, expected);
       if (which == null) return null;

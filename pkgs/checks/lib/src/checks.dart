@@ -14,7 +14,7 @@ import 'extensions/iterable.dart';
 
 /// A target for checking expectations against a value in a test.
 ///
-/// A subject my have a real value, in which case the expectations can be
+/// A subject may have a real value, in which case the expectations can be
 /// validated or rejected; or it may be a placeholder, in which case
 /// expectations describe what would be checked but cannot be rejected.
 ///
@@ -239,7 +239,6 @@ extension ContextExtension<T> on Subject<T> {
 ///     as [CoreChecks.has] or [FutureChecks.completes]) by calling [nest] or
 ///     [nestAsync].
 ///
-///
 /// Whichever type of operation, an expectation extension method provides two
 /// callbacks.
 /// The first callback is an `Iterable<String> Function()` returning a
@@ -247,14 +246,13 @@ extension ContextExtension<T> on Subject<T> {
 /// The second callback always takes the actual value as an argument, and the
 /// specific signature varies by operation.
 ///
-///
 /// In expectation extension methods calling [expect], [expectAsync], or
 /// [expectUnawaited], the `predicate` callback can report a [Rejection] if the
 /// value fails to satisfy the expectation.
 /// The description will be passed in a "clause" callback.
 /// {@template clause_description}
 /// The clause callback returns a description of what is checked which stands
-/// on its own.
+/// on its own as an indented line under a labeled subject.
 /// For instance the `starts with 'a'` in:
 ///
 /// ```
@@ -266,11 +264,18 @@ extension ContextExtension<T> on Subject<T> {
 /// An expectation can optionally provide a [predicateNoun] callback.
 /// [predicateNoun] should return a single-line noun phrase including this
 /// expectation modifying the noun (often just a representation of the expected
-/// value) to be used when collapsing simple expectations. If the expected
-/// value's representation is multiline, [predicateNoun] should return `null` to
-/// disable collapsing.
-/// {@endtemplate}
+/// value) to be used when collapsing simple expectations.
 ///
+/// Examples of predicate nouns:
+/// - Equality/identity: `literal(expected).singleOrNull` (e.g. `'<2>'`)
+/// - Relational checks: `'a value > <2>'`
+/// - Boolean values: `'true'`, `'false'`
+/// - Adjective/type descriptions: `'an empty iterable'`, `'a negative number'`,
+///   `'a string starting with \'a\''`
+///
+/// If the expected value's representation is multiline or cannot be collapsed,
+/// [predicateNoun] should return `null` to disable collapsing.
+/// {@endtemplate}
 ///
 /// In expectation extension methods calling [nest] or [nestAsync], the
 /// `extract` callback can return a [Extracted.rejection] if the value fails to
@@ -283,7 +288,7 @@ extension ContextExtension<T> on Subject<T> {
 /// For instance the `completes to a value` in:
 ///
 /// ```
-/// Expected a Future<String> that:
+/// Expected: a Future<String> that:
 ///   completes to a value that:
 ///     starts with 'a'
 ///     ends with 'z'
@@ -291,20 +296,25 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// A label should also be sensible when it is read as a clause.
 /// If no further expectations are checked on the extracted subject, or if the
-/// extraction is rejected, the "that:" is omitted in the output.
+/// extraction is rejected, the "that:" is omitted in the output:
 ///
 /// ```
-///   Expected a Future<int> that:
-///     completes to a value
+/// Expected: a Future<int> that:
+///   completes to a value
 /// ```
 ///
 /// A nesting context can optionally provide an [addPredicate] callback.
-/// [addPredicate] takes a noun phrase and modifies it to describe how the
-/// nested noun-phrase is associated with the parent subject. It should return a
-/// combined single-line collapsed description for this nested context (for
-/// example `has` uses `(predicateNoun) => 'has $name $predicateNoun'`). It
-/// should return `null` if this level cannot be collapsed (for example if a key
-/// is too large).
+/// [addPredicate] takes a single-line `predicateNoun` string (produced by a
+/// nested expectation or deeper child nesting context) and returns a combined
+/// single-line description attaching that predicate to this parent subject.
+///
+/// For example:
+/// - `has` uses `(predicateNoun) => 'has $name: $predicateNoun'`
+/// - `completes` uses `(predicateNoun) => 'completes to $predicateNoun'`
+/// - `operator []` uses `(predicateNoun) => 'has entry <$key: $predicateNoun>'`
+///
+/// If this level cannot be collapsed (for example, if a property name, key, or
+/// value is multiline), [addPredicate] should return `null`.
 /// {@endtemplate}
 ///
 ///
@@ -324,43 +334,57 @@ extension ContextExtension<T> on Subject<T> {
 /// [Subject].
 ///
 /// When an expectation is rejected for a [check] subject, an exception is
-/// thrown to interrupt the test, so no further checks should happen. The
-/// failure message will include:
-/// -  An "Expected" section with descriptions of all the expectations that
-///    were checked, including the ones that passed, and the last one that
-///    failed.
+/// thrown to interrupt the test, so no further checks should happen.
+/// The failure messages will include:
+/// -  An "Expected" section with descriptions of expectations that were
+///    checked, potentially including the ones that passed, and always including
+///    the last one that failed.
 /// -  An "Actual" section, which may be the description directly from the
 ///    [Rejection] if the failure was on the root subject, or may start with a
 ///    partial version of the "Expected" description up to the label for the
 ///    nesting subject that saw a failure, then the "actual" from the rejection.
 /// -  A "Which" description from the rejection, if it was included.
 ///
-/// For example, if a failure happens on the root subject, the "actual" is taken
-/// directly from the rejection.
+/// Failure messages can be presented in one of two firmats:
 ///
-/// ```
-/// Expected: a Future<int> that:
-///   completes to a value
-/// Actual: a future that completes as an error
-/// Which: threw <UnimplementedError> at:
-/// <stack trace>
-/// ```
+/// 1. **Collapsed Single-Line Format**: For simple, single expectations (such as
+///    `check(1).equals(2)` or `check(user).name.equals('Alice')`), messages
+///    collapse into compact, single-line "Expected:" and "Actual:" lines:
 ///
-/// But if the failure happens on a nested subject, the actual starts with a
-/// description of the nesting or non-nesting expectations that succeeded, up
-/// to nesting point of the failure, then the "actual" and "which" from the
-/// rejection are indented to that level of nesting.
+///    ```
+///    Expected: a User that has name: 'Alice'
+///    Actual: a User that has name: 'Bob'
+///    Which: is not equal
+///    ```
 ///
-/// ```
-/// Expected: a Future<String> that:
-///   completes to a value that:
-///     starts with 'a'
-///     ends with 'z'
-/// Actual: a Future<String> that:
-///   completes to a value that:
-///   Actual: 'abcd'
-///   Which: does not end with 'z'
-/// ```
+///    Collapsing occurs when:
+///    - Exactly one expectation is checked at each nesting level (or only the
+///      first condition in a cascade failed).
+///    - The leaf expectation provides a [predicateNoun] callback that returns a
+///      non-null single-line string.
+///    - All parent nesting contexts provide an [addPredicate] callback that
+///      successfully combines the nested predicate noun into a single-line
+///      description.
+///    - The combined description at the root context does not exceed the
+///      length limit (80 characters for labeled roots).
+///
+/// 2. **Structured Multi-Line Format**: When multiple expectations are checked
+///    on the same subject, when an expectation description spans multiple lines,
+///    or when collapsing is not supported, the message falls back to a
+///    hierarchical multi-line format. The "Actual" section will include the
+///    expectations that succeeded, up to the nesting point of the failure, then
+///    use the "actual" and "which" arguments from the rejection at that level:
+///
+///    ```
+///    Expected: a Future<String> that:
+///      completes to a value that:
+///        starts with 'a'
+///        ends with 'z'
+///    Actual: a Future<String> that:
+///      completes to a value that:
+///      Actual: 'abcd'
+///      Which: does not end with 'z'
+///    ```
 ///
 /// ```dart
 /// extension CustomChecks on Subject<CustomType> {
@@ -1149,12 +1173,8 @@ class _ExpectationClause implements _ClauseDescription {
   @override
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     final collapsedExpected = _predicateNoun?.call();
-    final actualList = rejection?.actual.toList();
-    final collapsedActualString =
-        (collapsedExpected != null &&
-            actualList != null &&
-            actualList.length == 1)
-        ? actualList.single
+    final collapsedActualString = collapsedExpected != null
+        ? rejection?.actual.singleOrNull
         : null;
     final collapsedDetails = collapsedActualString != null
         ? (collapsedExpected!, collapsedActualString)
@@ -1171,7 +1191,7 @@ class _ExpectationClause implements _ClauseDescription {
   bool get isLeaf => true;
 }
 
-/// The result an expectation that failed for a subject..
+/// The result of an expectation that failed for a subject.
 final class CheckFailure {
   /// The specific rejected value within the overall subject that caused the
   /// failure.
@@ -1212,8 +1232,7 @@ final class FailureDetail {
   ///     has first element that:
   ///       is greater than <10>
   ///       is less than <100>
-  /// ``````
-
+  /// ```
   final Iterable<String> expected;
 
   /// A description of the conditions the checked value satisfied.
@@ -1259,9 +1278,17 @@ final class FailureDetail {
   /// against the `has length` label.
   final int depth;
 
+  /// The single-line representation of the expectation failure as a pair of
+  /// `(expected, actual)` strings, or `null` if the failure was not collapsed.
+  ///
+  /// When non-null, the failure message can be displayed compactly on single
+  /// `Expected:` and `Actual:` lines without multi-line nesting structure.
   final (String, String)? collapsedDetails;
   final Iterable<String>? _actual;
 
+  /// Whether this detail provides an explicit, custom [actual] description
+  /// (such as from a partially collapsed child condition) rather than relying
+  /// on the default overlap prefix derived from [expected].
   bool get hasCustomActual => _actual != null;
 
   FailureDetail(
@@ -1319,5 +1346,5 @@ class AsyncConditionDisallowed implements Exception {
   final String flavor;
   AsyncConditionDisallowed._(this.flavor);
   @override
-  String toString() => '$flavor expectations cannot be used on a this subject';
+  String toString() => '$flavor expectations cannot be used on this subject';
 }
