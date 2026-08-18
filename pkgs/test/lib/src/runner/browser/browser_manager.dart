@@ -133,9 +133,12 @@ class BrowserManager {
         });
 
     future
-        .then((webSocket) {
+        .then((webSocket) async {
           if (completer.isCompleted) return;
-          completer.complete(BrowserManager._(browser, runtime, webSocket));
+          var manager = BrowserManager._(browser, runtime, webSocket);
+          await manager._environment;
+          if (completer.isCompleted) return;
+          completer.complete(manager);
         })
         .onError((Object error, StackTrace stackTrace) {
           browser.close();

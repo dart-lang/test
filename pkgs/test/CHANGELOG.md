@@ -1,9 +1,31 @@
 ## 1.32.0-wip
 
+* Export `TestFailure` from `package:test/scaffolding.dart`.
+* Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
+  runtimes.
 * Add support for `DART_TEST_REPORTER` environment variable in test runner and
   when tests are run directly on platforms which support `dart:io`. The
   environment variable takes precedence over configuration in `dart_test.yaml`
   but is overridden by the `--reporter` flag when passed to the test runner.
+* Suppress dart2js compiler output for successful compiles.
+* Include output from passing tests  messages within the `Passing tests` group
+  in `GithubReporter`.
+* Only include VM debugger in output when using interactive debugging, suppress
+  it when only using coverage.
+* Use a redirect html file for browser tests to avoid leaking websocket details
+  through process starting arguments.
+* Migrate out of process VM tests communication channel from TCP sockets to Unix
+  domain sockets inside a restricted temporary directory.
+* Pass Node.js test process connection configuration and secret token via a
+  restricted temporary authentication file to prevent secret leakage in command
+  line process arguments.
+* Enable asserts in the `exe` compiler.
+* Keep the `CHROME_EXECUTABLE`, `MS_EDGE_EXECUTABLE`, `FIREFOX_EXECUTABLE`, and
+  `SAFARI_EXECUTABLE` overrides working when the browser is also configured
+  through `override_platforms` or `define_platforms`. Any setting on those
+  platforms used to drop the variable.
+* Fix race conditions in Chrome coverage collection where tests could finish
+  before DevTools connection and coverage profiling were initialized.
 
 ## 1.31.2
 

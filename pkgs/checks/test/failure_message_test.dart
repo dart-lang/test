@@ -1,6 +1,5 @@
 import 'package:checks/checks.dart';
 import 'package:test/scaffolding.dart';
-import 'package:test_api/hooks.dart' show TestFailure;
 
 void main() {
   group('failures', () {

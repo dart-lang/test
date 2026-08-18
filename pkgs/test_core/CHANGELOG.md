@@ -1,6 +1,16 @@
 ## 0.6.20-wip
 
+* Pass sanitizer environment defaults when running tests compiled as native CLI
+  bundles.
 * Add support for `DART_TEST_REPORTER` environment variable.
+* Suppress dart2js compiler output for successful compiles.
+* Include passing test  messages within the `Passing tests` group in
+  `GithubReporter`.
+* Only include VM debugger in output when using interactive debugging, suppress
+  it when only using coverage.
+* Migrate out of process VM tests communication channel from TCP sockets to Unix
+  domain sockets inside a restricted temporary directory.
+* Enable asserts in the `exe` compiler.
 
 ## 0.6.19
 
