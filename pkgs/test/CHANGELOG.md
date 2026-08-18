@@ -1,5 +1,6 @@
 ## 1.32.0-wip
 
+* Export `TestFailure` from `package:test/scaffolding.dart`.
 * Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
   runtimes.
 * Add support for `DART_TEST_REPORTER` environment variable in test runner and
