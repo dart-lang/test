@@ -1,5 +1,8 @@
 ## 1.32.0-wip
 
+* Precompiled browser tests: stop serving files from outside the precompiled
+  root directory. The static handler no longer sets `serveFilesOutsidePath`,
+  restoring path-containment parity with the dart2js and dart2wasm compilers.
 * Export `TestFailure` from `package:test/scaffolding.dart`.
 * Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
   runtimes.
