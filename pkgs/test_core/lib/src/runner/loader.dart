@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
@@ -238,33 +239,13 @@ class Loader {
 
         yield LoadSuite('loading $path', platformConfig, platform, () async {
           var memo = _platformPlugins[platform.runtime]!;
-
-          var retriesLeft = suiteConfig.metadata.retry;
-          while (true) {
-            try {
-              var plugin = await memo.runOnce(
-                _platformCallbacks[platform.runtime]!,
-              );
-              _customizePlatform(plugin, platform.runtime);
-              var suite = await plugin.load(path, platform, platformConfig, {
-                'platformVariables': _runtimeVariables.toList(),
-              });
-              if (suite != null) _suites.add(suite);
-              return suite;
-            } on Object catch (error, stackTrace) {
-              if (retriesLeft > 0) {
-                retriesLeft--;
-                print('Retrying load of $path in 1s ($retriesLeft remaining)');
-                await Future<void>.delayed(const Duration(seconds: 1));
-                continue;
-              }
-              if (error is LoadException) {
-                rethrow;
-              }
-              await Future<void>.error(LoadException(path, error), stackTrace);
-              return null;
-            }
-          }
+          return _loadSuiteWithRetries(
+            path,
+            platform,
+            platformConfig,
+            memo,
+            suiteConfig.metadata.retry,
+          );
         }, path: path);
       }
     }
@@ -331,4 +312,34 @@ class Loader {
     _suites.clear();
   });
   final _closeMemo = AsyncMemoizer<void>();
+
+  Future<RunnerSuite?> _loadSuiteWithRetries(
+    String path,
+    SuitePlatform platform,
+    SuiteConfiguration platformConfig,
+    AsyncMemoizer<PlatformPlugin> memo,
+    int retriesLeft,
+  ) async {
+    while (true) {
+      try {
+        var plugin = await memo.runOnce(_platformCallbacks[platform.runtime]!);
+        _customizePlatform(plugin, platform.runtime);
+        var suite = await plugin.load(path, platform, platformConfig, {
+          'platformVariables': _runtimeVariables.toList(),
+        });
+        if (suite != null) _suites.add(suite);
+        return suite;
+      } on Object catch (error, stackTrace) {
+        if (retriesLeft > 0) {
+          retriesLeft--;
+          print('Retrying load of $path in 1s ($retriesLeft remaining)');
+          await Future<void>.delayed(const Duration(seconds: 1));
+          continue;
+        }
+        if (error is LoadException) rethrow;
+        await Future<void>.error(LoadException(path, error), stackTrace);
+        return null;
+      }
+    }
+  }
 }
