@@ -14,6 +14,7 @@ import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
 import 'failure_summary.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints each test on its own line.
 ///
@@ -21,55 +22,55 @@ import 'failure_summary.dart';
 /// which can't transitively import `dart:io` but still needs access to a runner
 /// so that test files can be run directly. This means that until issue 6943 is
 /// fixed, this must not import `dart:io`.
-class ExpandedReporter implements Reporter {
+class ExpandedReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  final String _green;
+  final String green;
 
   /// The terminal escape for red text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  final String _red;
+  final String red;
 
   /// The terminal escape for yellow text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _yellow;
+  final String yellow;
 
   /// The terminal escape for gray text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _gray;
+  final String gray;
 
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _bold;
+  final String bold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
-  final String _noColor;
+  final String noColor;
 
   /// The engine used to run the tests.
-  final Engine _engine;
+  final Engine engine;
 
   /// Whether the path to each test's suite should be printed.
-  final bool _printPath;
+  final bool printPath;
 
   /// Whether the platform each test is running on should be printed.
-  final bool _printPlatform;
+  final bool printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
 
-  /// The size of `_engine.passed` last time a progress notification was
+  /// The size of `engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed = 0;
 
-  /// The size of `_engine.skipped` last time a progress notification was
+  /// The size of `engine.skipped` last time a progress notification was
   /// printed.
   int _lastProgressSkipped = 0;
 
-  /// The size of `_engine.failed` last time a progress notification was
+  /// The size of `engine.failed` last time a progress notification was
   /// printed.
   int _lastProgressFailed = 0;
 
@@ -89,7 +90,7 @@ class ExpandedReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
 
-  final StringSink _sink;
+  final StringSink sink;
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
@@ -113,25 +114,25 @@ class ExpandedReporter implements Reporter {
   );
 
   ExpandedReporter._(
-    this._engine,
-    this._sink, {
+    this.engine,
+    this.sink, {
     required bool color,
     required bool printPath,
     required bool printPlatform,
-  }) : _printPath = printPath,
-       _printPlatform = printPlatform,
+  }) : printPath = printPath,
+       printPlatform = printPlatform,
        _color = color,
-       _green = color ? '\u001b[32m' : '',
-       _red = color ? '\u001b[31m' : '',
-       _yellow = color ? '\u001b[33m' : '',
-       _gray = color ? '\u001b[90m' : '',
-       _bold = color ? '\u001b[1m' : '',
-       _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+       green = color ? '\u001b[32m' : '',
+       red = color ? '\u001b[31m' : '',
+       yellow = color ? '\u001b[33m' : '',
+       gray = color ? '\u001b[90m' : '',
+       bold = color ? '\u001b[1m' : '',
+       noColor = color ? '\u001b[0m' : '' {
+    _subscriptions.add(engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    _subscriptions.add(engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -171,7 +172,7 @@ class ExpandedReporter implements Reporter {
 
       // If this is the first non-load test to start, print a progress line so
       // the user knows what's running.
-      if (_engine.active.length == 1) _progressLine(_description(liveTest));
+      if (engine.active.length == 1) _progressLine(formatDescription(liveTest));
 
       // The engine surfaces load tests when there are no other tests running,
       // but because the expanded reporter's output is always visible, we don't
@@ -181,13 +182,13 @@ class ExpandedReporter implements Reporter {
           (state) => _onStateChange(liveTest, state),
         ),
       );
-    } else if (_engine.active.isEmpty &&
-        _engine.activeSuiteLoads.length == 1 &&
-        _engine.activeSuiteLoads.first == liveTest &&
+    } else if (engine.active.isEmpty &&
+        engine.activeSuiteLoads.length == 1 &&
+        engine.activeSuiteLoads.first == liveTest &&
         liveTest.test.name.startsWith('loading ')) {
       // Print a progress line for ongoing suite loading synthetic test since it
       // may be slow (or stuck) depending on the platform.
-      _progressLine(_description(liveTest));
+      _progressLine(formatDescription(liveTest));
     }
 
     _subscriptions.add(
@@ -198,10 +199,10 @@ class ExpandedReporter implements Reporter {
 
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
-        _progressLine(_description(liveTest));
+        _progressLine(formatDescription(liveTest));
         var text = message.text;
-        if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
-        _sink.writeln(text);
+        if (message.type == MessageType.skip) text = '  $yellow$text$noColor';
+        sink.writeln(text);
       }),
     );
   }
@@ -212,8 +213,8 @@ class ExpandedReporter implements Reporter {
 
     // If any tests are running, display the name of the oldest active
     // test.
-    if (_engine.active.isNotEmpty) {
-      _progressLine(_description(_engine.active.first));
+    if (engine.active.isNotEmpty) {
+      _progressLine(formatDescription(engine.active.first));
     }
   }
 
@@ -226,21 +227,21 @@ class ExpandedReporter implements Reporter {
 
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
+    _progressLine(formatDescription(liveTest), suffix: ' $bold$red[E]$noColor');
 
     if (error is! LoadException) {
-      _sink
+      sink
         ..writeln(indent('$error'))
         ..writeln(indent('$stackTrace'));
       return;
     }
 
     // TODO - what type is this?
-    _sink.writeln(indent(error.toString(color: _color)));
+    sink.writeln(indent(error.toString(color: _color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! FormatException && error.innerError is! String) {
-      _sink.writeln(indent('$stackTrace'));
+      sink.writeln(indent('$stackTrace'));
     }
   }
 
@@ -255,32 +256,32 @@ class ExpandedReporter implements Reporter {
     // which case we shouldn't print summary information.
     if (success == null) return;
 
-    if (_engine.liveTests.isEmpty) {
-      _sink.writeln('No tests ran.');
+    if (engine.liveTests.isEmpty) {
+      sink.writeln('No tests ran.');
     } else if (!success) {
-      for (var liveTest in _engine.active) {
+      for (var liveTest in engine.active) {
         _progressLine(
-          _description(liveTest),
-          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+          formatDescription(liveTest),
+          suffix: ' - did not complete $bold$red[E]$noColor',
         );
       }
-      _progressLine('Some tests failed.', color: _red);
+      _progressLine('Some tests failed.', color: red);
 
       writeFailureSummary(
-        _sink,
-        failed: _engine.failed,
-        active: _engine.active,
-        red: _red,
-        noColor: _noColor,
+        sink,
+        failed: engine.failed,
+        active: engine.active,
+        red: red,
+        noColor: noColor,
       );
-    } else if (_engine.passed.isEmpty) {
+    } else if (engine.passed.isEmpty) {
       _progressLine('All tests skipped.');
     } else {
       _progressLine('All tests passed!');
     }
 
     if (_shouldPrintStackTraceChainingNotice) {
-      _sink
+      sink
         ..writeln('')
         ..writeln(
           'Consider enabling the flag chain-stack-traces to '
@@ -297,18 +298,18 @@ class ExpandedReporter implements Reporter {
   /// of [message].
   void _progressLine(String message, {String? color, String? suffix}) {
     // Print nothing if nothing has changed since the last progress line.
-    if (_engine.passed.length == _lastProgressPassed &&
-        _engine.skipped.length == _lastProgressSkipped &&
-        _engine.failed.length == _lastProgressFailed &&
+    if (engine.passed.length == _lastProgressPassed &&
+        engine.skipped.length == _lastProgressSkipped &&
+        engine.failed.length == _lastProgressFailed &&
         message == _lastProgressMessage &&
         // Don't re-print just because a suffix was removed.
         (suffix == null || suffix == _lastProgressSuffix)) {
       return;
     }
 
-    _lastProgressPassed = _engine.passed.length;
-    _lastProgressSkipped = _engine.skipped.length;
-    _lastProgressFailed = _engine.failed.length;
+    _lastProgressPassed = engine.passed.length;
+    _lastProgressSkipped = engine.skipped.length;
+    _lastProgressFailed = engine.failed.length;
     _lastProgressMessage = message;
     _lastProgressSuffix = suffix;
 
@@ -319,31 +320,31 @@ class ExpandedReporter implements Reporter {
 
     // \r moves back to the beginning of the current line.
     buffer.write('${_timeString(duration)} ');
-    buffer.write(_green);
+    buffer.write(green);
     buffer.write('+');
-    buffer.write(_engine.passed.length);
-    buffer.write(_noColor);
+    buffer.write(engine.passed.length);
+    buffer.write(noColor);
 
-    if (_engine.skipped.isNotEmpty) {
-      buffer.write(_yellow);
+    if (engine.skipped.isNotEmpty) {
+      buffer.write(yellow);
       buffer.write(' ~');
-      buffer.write(_engine.skipped.length);
-      buffer.write(_noColor);
+      buffer.write(engine.skipped.length);
+      buffer.write(noColor);
     }
 
-    if (_engine.failed.isNotEmpty) {
-      buffer.write(_red);
+    if (engine.failed.isNotEmpty) {
+      buffer.write(red);
       buffer.write(' -');
-      buffer.write(_engine.failed.length);
-      buffer.write(_noColor);
+      buffer.write(engine.failed.length);
+      buffer.write(noColor);
     }
 
     buffer.write(': ');
     buffer.write(color);
     buffer.write(message);
-    buffer.write(_noColor);
+    buffer.write(noColor);
 
-    _sink.writeln(buffer.toString());
+    sink.writeln(buffer.toString());
   }
 
   /// Returns a representation of [duration] as `MM:SS`.
@@ -356,23 +357,4 @@ class ExpandedReporter implements Reporter {
   ///
   /// This differs from the test's own description in that it may also include
   /// the suite's name.
-  String _description(LiveTest liveTest) {
-    var name = liveTest.test.name;
-
-    if (_printPath &&
-        liveTest.suite is! LoadSuite &&
-        liveTest.suite.path != null) {
-      name = '${liveTest.suite.path}: $name';
-    }
-
-    if (_printPlatform) {
-      name =
-          '[${liveTest.suite.platform.runtime.name}, '
-          '${liveTest.suite.platform.compiler.name}] $name';
-    }
-
-    if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';
-
-    return name;
-  }
 }

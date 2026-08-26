@@ -17,49 +17,50 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
-class CompactReporter implements Reporter {
+class CompactReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
   /// The terminal escape for green text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  final String _green;
+  final String green;
 
   /// The terminal escape for red text, or the empty string if this is Windows
   /// or not outputting to a terminal.
-  final String _red;
+  final String red;
 
   /// The terminal escape for yellow text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _yellow;
+  final String yellow;
 
   /// The terminal escape for gray text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _gray;
+  final String gray;
 
   /// The terminal escape code for cyan text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _cyan;
+  final String cyan;
 
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _bold;
+  final String bold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
-  final String _noColor;
+  final String noColor;
 
   /// The engine used to run the tests.
-  final Engine _engine;
+  final Engine engine;
 
   /// Whether the path to each test's suite should be printed.
-  final bool _printPath;
+  final bool printPath;
 
   /// Whether the platform each test is running on should be printed.
-  final bool _printPlatform;
+  final bool printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -70,15 +71,15 @@ class CompactReporter implements Reporter {
   /// when the reporter is paused.
   var _stopwatchStarted = false;
 
-  /// The size of `_engine.passed` last time a progress notification was
+  /// The size of `engine.passed` last time a progress notification was
   /// printed.
   int _lastProgressPassed = 0;
 
-  /// The size of `_engine.skipped` last time a progress notification was
+  /// The size of `engine.skipped` last time a progress notification was
   /// printed.
   int? _lastProgressSkipped;
 
-  /// The size of `_engine.failed` last time a progress notification was
+  /// The size of `engine.failed` last time a progress notification was
   /// printed.
   int? _lastProgressFailed;
 
@@ -109,7 +110,7 @@ class CompactReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
 
-  final StringSink _sink;
+  final StringSink sink;
 
   /// Watches the tests run by [engine] and prints their results to the
   /// terminal.
@@ -133,26 +134,26 @@ class CompactReporter implements Reporter {
   );
 
   CompactReporter._(
-    this._engine,
-    this._sink, {
+    this.engine,
+    this.sink, {
     required bool color,
     required bool printPath,
     required bool printPlatform,
-  }) : _printPath = printPath,
-       _printPlatform = printPlatform,
+  }) : printPath = printPath,
+       printPlatform = printPlatform,
        _color = color,
-       _green = color ? '\u001b[32m' : '',
-       _red = color ? '\u001b[31m' : '',
-       _yellow = color ? '\u001b[33m' : '',
-       _gray = color ? '\u001b[90m' : '',
-       _cyan = color ? '\u001b[36m' : '',
-       _bold = color ? '\u001b[1m' : '',
-       _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+       green = color ? '\u001b[32m' : '',
+       red = color ? '\u001b[31m' : '',
+       yellow = color ? '\u001b[33m' : '',
+       gray = color ? '\u001b[90m' : '',
+       cyan = color ? '\u001b[36m' : '',
+       bold = color ? '\u001b[1m' : '',
+       noColor = color ? '\u001b[0m' : '' {
+    _subscriptions.add(engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    _subscriptions.add(engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -160,7 +161,7 @@ class CompactReporter implements Reporter {
     if (_paused) return;
     _paused = true;
 
-    if (!_printedNewline) _sink.writeln('');
+    if (!_printedNewline) sink.writeln('');
     _printedNewline = true;
     _stopwatch.stop();
 
@@ -209,11 +210,11 @@ class CompactReporter implements Reporter {
 
     // If this is the first test or suite load to start, print a progress line
     // so the user knows what's running.
-    if ((_engine.active.length == 1 && _engine.active.first == liveTest) ||
-        (_engine.active.isEmpty &&
-            _engine.activeSuiteLoads.length == 1 &&
-            _engine.activeSuiteLoads.first == liveTest)) {
-      _progressLine(_description(liveTest));
+    if ((engine.active.length == 1 && engine.active.first == liveTest) ||
+        (engine.active.isEmpty &&
+            engine.activeSuiteLoads.length == 1 &&
+            engine.activeSuiteLoads.first == liveTest)) {
+      _progressLine(formatDescription(liveTest));
     }
 
     _subscriptions.add(
@@ -229,10 +230,10 @@ class CompactReporter implements Reporter {
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
         if (liveTest.test.metadata.skip) return;
-        _progressLine(_description(liveTest), truncate: false);
-        if (!_printedNewline) _sink.writeln('');
+        _progressLine(formatDescription(liveTest), truncate: false);
+        if (!_printedNewline) sink.writeln('');
         _printedNewline = true;
-        _sink.writeln(message.text);
+        sink.writeln(message.text);
       }),
     );
 
@@ -242,9 +243,9 @@ class CompactReporter implements Reporter {
       var quotedName = Platform.isWindows
           ? '"${liveTest.test.name.replaceAll('"', '"""')}"'
           : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
-      _sink.writeln('');
-      _sink.writeln(
-        '$_bold${_cyan}To run this test again:$_noColor '
+      sink.writeln('');
+      sink.writeln(
+        '$bold${cyan}To run this test again:$noColor '
         '${Platform.executable} test ${liveTest.suite.path} '
         '-p ${liveTest.suite.platform.runtime.identifier} '
         '--plain-name $quotedName',
@@ -262,10 +263,10 @@ class CompactReporter implements Reporter {
 
     // Always display the name of the oldest active test, unless testing
     // is finished in which case display the last test to complete.
-    if (_engine.active.isEmpty) {
-      _progressLine(_description(liveTest));
+    if (engine.active.isEmpty) {
+      _progressLine(formatDescription(liveTest));
     } else {
-      _progressLine(_description(_engine.active.first));
+      _progressLine(formatDescription(engine.active.first));
     }
   }
 
@@ -279,28 +280,28 @@ class CompactReporter implements Reporter {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(
-      _description(liveTest),
+      formatDescription(liveTest),
       truncate: false,
-      suffix: ' $_bold$_red[E]$_noColor',
+      suffix: ' $bold$red[E]$noColor',
     );
-    if (!_printedNewline) _sink.writeln('');
+    if (!_printedNewline) sink.writeln('');
     _printedNewline = true;
 
     if (error is! LoadException) {
-      _sink.writeln(indent(error.toString()));
-      _sink.writeln(indent('$stackTrace'));
+      sink.writeln(indent(error.toString()));
+      sink.writeln(indent('$stackTrace'));
       return;
     }
 
     // TODO - what type is this?
-    _sink.writeln(indent(error.toString(color: _color)));
+    sink.writeln(indent(error.toString(color: _color)));
 
     // Only print stack traces for load errors that come from the user's code.
     if (error.innerError is! IOException &&
         error.innerError is! IsolateSpawnException &&
         error.innerError is! FormatException &&
         error.innerError is! String) {
-      _sink.writeln(indent('$stackTrace'));
+      sink.writeln(indent('$stackTrace'));
     }
   }
 
@@ -317,50 +318,50 @@ class CompactReporter implements Reporter {
     // shouldn't print summary information, we should just make sure the
     // terminal cursor is on its own line.
     if (success == null) {
-      if (!_printedNewline) _sink.writeln('');
+      if (!_printedNewline) sink.writeln('');
       _printedNewline = true;
       return;
     }
 
-    if (_engine.liveTests.isEmpty) {
-      if (!_printedNewline) _sink.write('\r');
+    if (engine.liveTests.isEmpty) {
+      if (!_printedNewline) sink.write('\r');
       var message = 'No tests ran.';
-      _sink.write(message);
+      sink.write(message);
 
       // Add extra padding to overwrite any load messages.
-      if (!_printedNewline) _sink.write(' ' * (lineLength - message.length));
-      _sink.writeln('');
+      if (!_printedNewline) sink.write(' ' * (lineLength - message.length));
+      sink.writeln('');
     } else if (!success) {
-      for (var liveTest in _engine.active) {
+      for (var liveTest in engine.active) {
         _progressLine(
-          _description(liveTest),
+          formatDescription(liveTest),
           truncate: false,
-          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+          suffix: ' - did not complete $bold$red[E]$noColor',
         );
-        _sink.writeln('');
+        sink.writeln('');
       }
-      _progressLine('Some tests failed.', color: _red);
-      _sink.writeln('');
-    } else if (_engine.passed.isEmpty) {
-      _progressLine('${_yellow}All tests skipped.$_noColor');
-      _sink.writeln('');
-    } else if (_engine.skipped.isEmpty) {
+      _progressLine('Some tests failed.', color: red);
+      sink.writeln('');
+    } else if (engine.passed.isEmpty) {
+      _progressLine('${yellow}All tests skipped.$noColor');
+      sink.writeln('');
+    } else if (engine.skipped.isEmpty) {
       _progressLine('All tests passed!');
-      _sink.writeln('');
+      sink.writeln('');
     } else {
-      final skippedCount = _engine.skipped.length;
+      final skippedCount = engine.skipped.length;
       _progressLine(
-        '$_yellow'
+        '$yellow'
         '$skippedCount skipped ${pluralize('test', skippedCount)}.'
-        '$_noColor',
+        '$noColor',
       );
-      _sink.writeln('');
+      sink.writeln('');
       _progressLine('All other tests passed!');
-      _sink.writeln('');
+      sink.writeln('');
     }
 
     if (_shouldPrintStackTraceChainingNotice) {
-      _sink
+      sink
         ..writeln('')
         ..writeln(
           'Consider enabling the flag chain-stack-traces to '
@@ -385,9 +386,9 @@ class CompactReporter implements Reporter {
     var elapsed = _stopwatch.elapsed.inSeconds;
 
     // Print nothing if nothing has changed since the last progress line.
-    if (_engine.passed.length == _lastProgressPassed &&
-        _engine.skipped.length == _lastProgressSkipped &&
-        _engine.failed.length == _lastProgressFailed &&
+    if (engine.passed.length == _lastProgressPassed &&
+        engine.skipped.length == _lastProgressSkipped &&
+        engine.failed.length == _lastProgressFailed &&
         message == _lastProgressMessage &&
         // Don't re-print just because a suffix was removed.
         (suffix == null || suffix == _lastProgressSuffix) &&
@@ -401,9 +402,9 @@ class CompactReporter implements Reporter {
       return false;
     }
 
-    _lastProgressPassed = _engine.passed.length;
-    _lastProgressSkipped = _engine.skipped.length;
-    _lastProgressFailed = _engine.failed.length;
+    _lastProgressPassed = engine.passed.length;
+    _lastProgressSkipped = engine.skipped.length;
+    _lastProgressFailed = engine.failed.length;
     _lastProgressElapsed = elapsed;
     _lastProgressMessage = message;
     _lastProgressSuffix = suffix;
@@ -416,23 +417,23 @@ class CompactReporter implements Reporter {
 
     // \r moves back to the beginning of the current line.
     buffer.write('\r${_timeString(duration)} ');
-    buffer.write(_green);
+    buffer.write(green);
     buffer.write('+');
-    buffer.write(_engine.passed.length);
-    buffer.write(_noColor);
+    buffer.write(engine.passed.length);
+    buffer.write(noColor);
 
-    if (_engine.skipped.isNotEmpty) {
-      buffer.write(_yellow);
+    if (engine.skipped.isNotEmpty) {
+      buffer.write(yellow);
       buffer.write(' ~');
-      buffer.write(_engine.skipped.length);
-      buffer.write(_noColor);
+      buffer.write(engine.skipped.length);
+      buffer.write(noColor);
     }
 
-    if (_engine.failed.isNotEmpty) {
-      buffer.write(_red);
+    if (engine.failed.isNotEmpty) {
+      buffer.write(red);
       buffer.write(' -');
-      buffer.write(_engine.failed.length);
-      buffer.write(_noColor);
+      buffer.write(engine.failed.length);
+      buffer.write(noColor);
     }
 
     buffer.write(': ');
@@ -444,11 +445,11 @@ class CompactReporter implements Reporter {
     var length = withoutColors(buffer.toString()).length;
     if (truncate) message = utils.truncate(message, lineLength - length);
     buffer.write(message);
-    buffer.write(_noColor);
+    buffer.write(noColor);
 
     // Pad the rest of the line so that it looks erased.
     buffer.write(' ' * (lineLength - withoutColors(buffer.toString()).length));
-    _sink.write(buffer.toString());
+    sink.write(buffer.toString());
 
     _printedNewline = false;
     return true;
@@ -464,23 +465,4 @@ class CompactReporter implements Reporter {
   ///
   /// This differs from the test's own description in that it may also include
   /// the suite's name.
-  String _description(LiveTest liveTest) {
-    var name = liveTest.test.name;
-
-    if (_printPath &&
-        liveTest.suite is! LoadSuite &&
-        liveTest.suite.path != null) {
-      name = '${liveTest.suite.path}: $name';
-    }
-
-    if (_printPlatform) {
-      name =
-          '[${liveTest.suite.platform.runtime.name}, '
-          '${liveTest.suite.platform.compiler.name}] $name';
-    }
-
-    if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';
-
-    return name;
-  }
 }
