@@ -268,6 +268,7 @@ class Runner {
   ///
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
+
   Stream<LoadSuite> _loadSuites() {
     return StreamGroup.merge(
       _config.testSelections.entries.map((pathEntry) {
@@ -290,117 +291,8 @@ class Runner {
     ).map((loadSuite) {
       return loadSuite.changeSuite((suite) {
         _warnForUnknownTags(suite);
-
         return _shardSuite(
-          suite.filter((test) {
-            // Skip any tests that don't match all the global patterns.
-            if (!_config.globalPatterns.every(
-              (pattern) => test.name.contains(pattern),
-            )) {
-              return false;
-            }
-
-            // If the user provided tags, skip tests that don't match all of them.
-            if (!_config.includeTags.evaluate(test.metadata.tags.contains)) {
-              return false;
-            }
-
-            // Skip tests that do match any tags the user wants to exclude.
-            if (_config.excludeTags.evaluate(test.metadata.tags.contains)) {
-              return false;
-            }
-
-            final testSelections = suite.config.testSelections;
-            assert(
-              testSelections.isNotEmpty,
-              'Tests should have been selected',
-            );
-            return testSelections.any((selection) {
-              // Skip tests that don't match all the suite specific patterns.
-              if (!selection.testPatterns.every(
-                (pattern) => test.name.contains(pattern),
-              )) {
-                return false;
-              }
-              // Skip tests that don't start on `line` or `col` if specified.
-              var line = selection.line;
-              var col = selection.col;
-              if (line == null && col == null) return true;
-
-              var trace = test.trace;
-              if (trace == null && test.location == null) {
-                throw StateError(
-                  'Cannot filter by line/column for this test suite, no stack'
-                  'trace or location available.',
-                );
-              }
-              var path = suite.path;
-              if (path == null) {
-                throw StateError(
-                  'Cannot filter by line/column for this test suite, no suite'
-                  'path available.',
-                );
-              }
-              // The absolute path as it will appear in stack traces.
-              var suiteUri = File(path).absolute.uri;
-              var absoluteSuitePath = suiteUri.toFilePath();
-
-              /// Helper to check if [uri] matches the suite path.
-              bool matchesUri(Uri uri) {
-                switch (uri.scheme) {
-                  case 'file':
-                    if (uri.toFilePath() != absoluteSuitePath) {
-                      return false;
-                    }
-                  case 'package':
-                    // It is unlikely that the test case is specified in a
-                    // package: URI. Ignore this case.
-                    return false;
-                  default:
-                    // Now we can assume that the kernel is compiled using
-                    // --filesystem-scheme.
-                    // In this case, because we don't know the --filesystem-root, as
-                    // long as the path matches we assume it is the same file.
-                    if (!suiteUri.path.endsWith(uri.path)) {
-                      return false;
-                    }
-                }
-
-                return true;
-              }
-
-              // First check if we're a match for the overridden location for this
-              // item or any parents.
-              var current = test as GroupEntry?;
-              while (current != null) {
-                if (current.location case var location?) {
-                  if ((line == null || location.line == line) &&
-                      (col == null || location.column == col) &&
-                      matchesUri(location.uri)) {
-                    return true;
-                  }
-                }
-                current = current.parent;
-              }
-
-              /// Helper to check if [frame] matches the suite path, line and col.
-              bool matchLineAndCol(Frame frame) {
-                if (!matchesUri(frame.uri)) {
-                  return false;
-                }
-                if (line != null && frame.line != line) {
-                  return false;
-                }
-                if (col != null && frame.column != col) {
-                  return false;
-                }
-                return true;
-              }
-
-              // Check if any frames in the stack trace match.
-              return trace?.frames.any(matchLineAndCol) ?? false;
-            });
-          }),
+          suite.filter((test) => _matchTest(test, _config, suite)),
         );
       });
     });
@@ -526,4 +418,121 @@ class Runner {
     ], eagerError: true);
     return results.last as bool;
   }
+}
+
+bool _matchTest(Test test, Configuration config, RunnerSuite suite) {
+  if (!config.globalPatterns.every((pattern) => test.name.contains(pattern))) {
+    return false;
+  }
+  if (!config.includeTags.evaluate(test.metadata.tags.contains)) {
+    return false;
+  }
+  if (config.excludeTags.evaluate(test.metadata.tags.contains)) {
+    return false;
+  }
+
+  final testSelections = suite.config.testSelections;
+  assert(testSelections.isNotEmpty, 'Tests should have been selected');
+
+  return testSelections.any(
+    (selection) => _matchTestSelection(test, suite, selection),
+  );
+}
+
+bool _matchTestSelection(
+  Test test,
+  RunnerSuite suite,
+  TestSelection selection,
+) {
+  if (!selection.testPatterns.every((pattern) => test.name.contains(pattern))) {
+    return false;
+  }
+
+  var line = selection.line;
+  var col = selection.col;
+  if (line == null && col == null) return true;
+
+  var trace = test.trace;
+  if (trace == null && test.location == null) {
+    throw StateError(
+      'Cannot filter by line/column for this test suite, no stack'
+      'trace or location available.',
+    );
+  }
+
+  var path = suite.path;
+  if (path == null) {
+    throw StateError(
+      'Cannot filter by line/column for this test suite, no suite'
+      'path available.',
+    );
+  }
+
+  var suiteUri = File(path).absolute.uri;
+  var absoluteSuitePath = suiteUri.toFilePath();
+
+  if (_matchesLocation(
+    test as GroupEntry?,
+    line,
+    col,
+    suiteUri,
+    absoluteSuitePath,
+  )) {
+    return true;
+  }
+  return _matchesTrace(trace, line, col, suiteUri, absoluteSuitePath);
+}
+
+bool _matchesLocation(
+  GroupEntry? current,
+  int? line,
+  int? col,
+  Uri suiteUri,
+  String absoluteSuitePath,
+) {
+  while (current != null) {
+    if (current.location case var location?) {
+      if ((line == null || location.line == line) &&
+          (col == null || location.column == col) &&
+          _matchesUri(location.uri, suiteUri, absoluteSuitePath)) {
+        return true;
+      }
+    }
+    current = current.parent;
+  }
+  return false;
+}
+
+bool _matchesTrace(
+  Trace? trace,
+  int? line,
+  int? col,
+  Uri suiteUri,
+  String absoluteSuitePath,
+) {
+  return trace?.frames.any((frame) {
+        if (!_matchesUri(frame.uri, suiteUri, absoluteSuitePath)) return false;
+        if (line != null && frame.line != line) return false;
+        if (col != null && frame.column != col) return false;
+        return true;
+      }) ??
+      false;
+}
+
+bool _matchesUri(Uri uri, Uri suiteUri, String absoluteSuitePath) {
+  switch (uri.scheme) {
+    case 'file':
+      if (uri.toFilePath() != absoluteSuitePath) return false;
+    case 'package':
+      // It is unlikely that the test case is specified in a
+      // package: URI. Ignore this case.
+      return false;
+    default:
+      // Now we can assume that the kernel is compiled using
+      // --filesystem-scheme.
+      // In this case, because we don't know the --filesystem-root, as
+      // long as the path matches we assume it is the same file.
+      if (!suiteUri.path.endsWith(uri.path)) return false;
+  }
+  return true;
 }
