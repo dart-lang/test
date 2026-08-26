@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
@@ -14,6 +12,7 @@ import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
 import 'failure_summary.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints each test on its own line.
 ///
@@ -21,7 +20,7 @@ import 'failure_summary.dart';
 /// which can't transitively import `dart:io` but still needs access to a runner
 /// so that test files can be run directly. This means that until issue 6943 is
 /// fixed, this must not import `dart:io`.
-class ExpandedReporter implements Reporter {
+class ExpandedReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -39,24 +38,29 @@ class ExpandedReporter implements Reporter {
 
   /// The terminal escape for gray text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _gray;
+  @override
+  final String colorGray;
 
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _bold;
+  @override
+  final String colorBold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
-  final String _noColor;
+  @override
+  final String colorNone;
 
   /// The engine used to run the tests.
   final Engine _engine;
 
   /// Whether the path to each test's suite should be printed.
-  final bool _printPath;
+  @override
+  final bool printPath;
 
   /// Whether the platform each test is running on should be printed.
-  final bool _printPlatform;
+  @override
+  final bool printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -86,9 +90,6 @@ class ExpandedReporter implements Reporter {
   // the end of all tests running.
   var _shouldPrintStackTraceChainingNotice = false;
 
-  /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
-
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results to the
@@ -116,22 +117,20 @@ class ExpandedReporter implements Reporter {
     this._engine,
     this._sink, {
     required bool color,
-    required bool printPath,
-    required bool printPlatform,
-  }) : _printPath = printPath,
-       _printPlatform = printPlatform,
-       _color = color,
+    required this.printPath,
+    required this.printPlatform,
+  }) : _color = color,
        _green = color ? '\u001b[32m' : '',
        _red = color ? '\u001b[31m' : '',
        _yellow = color ? '\u001b[33m' : '',
-       _gray = color ? '\u001b[90m' : '',
-       _bold = color ? '\u001b[1m' : '',
-       _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+       colorGray = color ? '\u001b[90m' : '',
+       colorBold = color ? '\u001b[1m' : '',
+       colorNone = color ? '\u001b[0m' : '' {
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -141,7 +140,7 @@ class ExpandedReporter implements Reporter {
 
     _stopwatch.stop();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -152,16 +151,9 @@ class ExpandedReporter implements Reporter {
 
     _stopwatch.start();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
@@ -171,12 +163,12 @@ class ExpandedReporter implements Reporter {
 
       // If this is the first non-load test to start, print a progress line so
       // the user knows what's running.
-      if (_engine.active.length == 1) _progressLine(_description(liveTest));
+      if (_engine.active.length == 1) _progressLine(testDescription(liveTest));
 
       // The engine surfaces load tests when there are no other tests running,
       // but because the expanded reporter's output is always visible, we don't
       // emit information about them unless they fail.
-      _subscriptions.add(
+      subscriptions.add(
         liveTest.onStateChange.listen(
           (state) => _onStateChange(liveTest, state),
         ),
@@ -187,20 +179,22 @@ class ExpandedReporter implements Reporter {
         liveTest.test.name.startsWith('loading ')) {
       // Print a progress line for ongoing suite loading synthetic test since it
       // may be slow (or stuck) depending on the platform.
-      _progressLine(_description(liveTest));
+      _progressLine(testDescription(liveTest));
     }
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
-        _progressLine(_description(liveTest));
+        _progressLine(testDescription(liveTest));
         var text = message.text;
-        if (message.type == MessageType.skip) text = '  $_yellow$text$_noColor';
+        if (message.type == MessageType.skip) {
+          text = '  $_yellow$text$colorNone';
+        }
         _sink.writeln(text);
       }),
     );
@@ -213,7 +207,7 @@ class ExpandedReporter implements Reporter {
     // If any tests are running, display the name of the oldest active
     // test.
     if (_engine.active.isNotEmpty) {
-      _progressLine(_description(_engine.active.first));
+      _progressLine(testDescription(_engine.active.first));
     }
   }
 
@@ -226,7 +220,10 @@ class ExpandedReporter implements Reporter {
 
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
+    _progressLine(
+      testDescription(liveTest),
+      suffix: ' $colorBold$_red[E]$colorNone',
+    );
 
     if (error is! LoadException) {
       _sink
@@ -249,7 +246,7 @@ class ExpandedReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user, in
     // which case we shouldn't print summary information.
@@ -260,8 +257,8 @@ class ExpandedReporter implements Reporter {
     } else if (!success) {
       for (var liveTest in _engine.active) {
         _progressLine(
-          _description(liveTest),
-          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+          testDescription(liveTest),
+          suffix: ' - did not complete $colorBold$_red[E]$colorNone',
         );
       }
       _progressLine('Some tests failed.', color: _red);
@@ -271,7 +268,7 @@ class ExpandedReporter implements Reporter {
         failed: _engine.failed,
         active: _engine.active,
         red: _red,
-        noColor: _noColor,
+        noColor: colorNone,
       );
     } else if (_engine.passed.isEmpty) {
       _progressLine('All tests skipped.');
@@ -318,61 +315,31 @@ class ExpandedReporter implements Reporter {
     var buffer = StringBuffer();
 
     // \r moves back to the beginning of the current line.
-    buffer.write('${_timeString(duration)} ');
+    buffer.write('${formatTimeString(duration)} ');
     buffer.write(_green);
     buffer.write('+');
     buffer.write(_engine.passed.length);
-    buffer.write(_noColor);
+    buffer.write(colorNone);
 
     if (_engine.skipped.isNotEmpty) {
       buffer.write(_yellow);
       buffer.write(' ~');
       buffer.write(_engine.skipped.length);
-      buffer.write(_noColor);
+      buffer.write(colorNone);
     }
 
     if (_engine.failed.isNotEmpty) {
       buffer.write(_red);
       buffer.write(' -');
       buffer.write(_engine.failed.length);
-      buffer.write(_noColor);
+      buffer.write(colorNone);
     }
 
     buffer.write(': ');
     buffer.write(color);
     buffer.write(message);
-    buffer.write(_noColor);
+    buffer.write(colorNone);
 
     _sink.writeln(buffer.toString());
-  }
-
-  /// Returns a representation of [duration] as `MM:SS`.
-  String _timeString(Duration duration) {
-    return "${duration.inMinutes.toString().padLeft(2, '0')}:"
-        "${(duration.inSeconds % 60).toString().padLeft(2, '0')}";
-  }
-
-  /// Returns a description of [liveTest].
-  ///
-  /// This differs from the test's own description in that it may also include
-  /// the suite's name.
-  String _description(LiveTest liveTest) {
-    var name = liveTest.test.name;
-
-    if (_printPath &&
-        liveTest.suite is! LoadSuite &&
-        liveTest.suite.path != null) {
-      name = '${liveTest.suite.path}: $name';
-    }
-
-    if (_printPlatform) {
-      name =
-          '[${liveTest.suite.platform.runtime.name}, '
-          '${liveTest.suite.platform.compiler.name}] $name';
-    }
-
-    if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';
-
-    return name;
   }
 }

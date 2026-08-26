@@ -15,12 +15,12 @@ import '../../util/pretty_print.dart';
 import '../../util/pretty_print.dart' as utils;
 import '../engine.dart';
 import '../load_exception.dart';
-import '../load_suite.dart';
 import '../reporter.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
-class CompactReporter implements Reporter {
+class CompactReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -38,7 +38,8 @@ class CompactReporter implements Reporter {
 
   /// The terminal escape for gray text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _gray;
+  @override
+  final String colorGray;
 
   /// The terminal escape code for cyan text, or the empty string if this is
   /// Windows or not outputting to a terminal.
@@ -46,20 +47,24 @@ class CompactReporter implements Reporter {
 
   /// The terminal escape for bold text, or the empty string if this is
   /// Windows or not outputting to a terminal.
-  final String _bold;
+  @override
+  final String colorBold;
 
   /// The terminal escape for removing test coloring, or the empty string if
   /// this is Windows or not outputting to a terminal.
-  final String _noColor;
+  @override
+  final String colorNone;
 
   /// The engine used to run the tests.
   final Engine _engine;
 
   /// Whether the path to each test's suite should be printed.
-  final bool _printPath;
+  @override
+  final bool printPath;
 
   /// Whether the platform each test is running on should be printed.
-  final bool _printPlatform;
+  @override
+  final bool printPlatform;
 
   /// A stopwatch that tracks the duration of the full run.
   final _stopwatch = Stopwatch();
@@ -106,9 +111,6 @@ class CompactReporter implements Reporter {
   // the end of all tests running.
   var _shouldPrintStackTraceChainingNotice = false;
 
-  /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
-
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results to the
@@ -136,23 +138,21 @@ class CompactReporter implements Reporter {
     this._engine,
     this._sink, {
     required bool color,
-    required bool printPath,
-    required bool printPlatform,
-  }) : _printPath = printPath,
-       _printPlatform = printPlatform,
-       _color = color,
+    required this.printPath,
+    required this.printPlatform,
+  }) : _color = color,
        _green = color ? '\u001b[32m' : '',
        _red = color ? '\u001b[31m' : '',
        _yellow = color ? '\u001b[33m' : '',
-       _gray = color ? '\u001b[90m' : '',
+       colorGray = color ? '\u001b[90m' : '',
        _cyan = color ? '\u001b[36m' : '',
-       _bold = color ? '\u001b[1m' : '',
-       _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+       colorBold = color ? '\u001b[1m' : '',
+       colorNone = color ? '\u001b[0m' : '' {
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -169,7 +169,7 @@ class CompactReporter implements Reporter {
     // during the pause.
     _lastProgressMessage = null;
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -181,16 +181,9 @@ class CompactReporter implements Reporter {
 
     if (_stopwatchStarted) _stopwatch.start();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
@@ -200,7 +193,7 @@ class CompactReporter implements Reporter {
       _stopwatch.start();
 
       // Keep updating the time even when nothing else is happening.
-      _subscriptions.add(
+      subscriptions.add(
         Stream<void>.periodic(
           const Duration(seconds: 1),
         ).listen((_) => _progressLine(_lastProgressMessage ?? '')),
@@ -213,23 +206,23 @@ class CompactReporter implements Reporter {
         (_engine.active.isEmpty &&
             _engine.activeSuiteLoads.length == 1 &&
             _engine.activeSuiteLoads.first == liveTest)) {
-      _progressLine(_description(liveTest));
+      _progressLine(testDescription(liveTest));
     }
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state)),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
         if (liveTest.test.metadata.skip) return;
-        _progressLine(_description(liveTest), truncate: false);
+        _progressLine(testDescription(liveTest), truncate: false);
         if (!_printedNewline) _sink.writeln('');
         _printedNewline = true;
         _sink.writeln(message.text);
@@ -244,7 +237,7 @@ class CompactReporter implements Reporter {
           : "'${liveTest.test.name.replaceAll("'", r"'\''")}'";
       _sink.writeln('');
       _sink.writeln(
-        '$_bold${_cyan}To run this test again:$_noColor '
+        '$colorBold${_cyan}To run this test again:$colorNone '
         '${Platform.executable} test ${liveTest.suite.path} '
         '-p ${liveTest.suite.platform.runtime.identifier} '
         '--plain-name $quotedName',
@@ -263,9 +256,9 @@ class CompactReporter implements Reporter {
     // Always display the name of the oldest active test, unless testing
     // is finished in which case display the last test to complete.
     if (_engine.active.isEmpty) {
-      _progressLine(_description(liveTest));
+      _progressLine(testDescription(liveTest));
     } else {
-      _progressLine(_description(_engine.active.first));
+      _progressLine(testDescription(_engine.active.first));
     }
   }
 
@@ -279,9 +272,9 @@ class CompactReporter implements Reporter {
     if (liveTest.state.status != Status.complete) return;
 
     _progressLine(
-      _description(liveTest),
+      testDescription(liveTest),
       truncate: false,
-      suffix: ' $_bold$_red[E]$_noColor',
+      suffix: ' $colorBold$_red[E]$colorNone',
     );
     if (!_printedNewline) _sink.writeln('');
     _printedNewline = true;
@@ -309,7 +302,7 @@ class CompactReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
     _stopwatch.stop();
 
     // A null success value indicates that the engine was closed before the
@@ -333,16 +326,16 @@ class CompactReporter implements Reporter {
     } else if (!success) {
       for (var liveTest in _engine.active) {
         _progressLine(
-          _description(liveTest),
+          testDescription(liveTest),
           truncate: false,
-          suffix: ' - did not complete $_bold$_red[E]$_noColor',
+          suffix: ' - did not complete $colorBold$_red[E]$colorNone',
         );
         _sink.writeln('');
       }
       _progressLine('Some tests failed.', color: _red);
       _sink.writeln('');
     } else if (_engine.passed.isEmpty) {
-      _progressLine('${_yellow}All tests skipped.$_noColor');
+      _progressLine('${_yellow}All tests skipped.$colorNone');
       _sink.writeln('');
     } else if (_engine.skipped.isEmpty) {
       _progressLine('All tests passed!');
@@ -352,7 +345,7 @@ class CompactReporter implements Reporter {
       _progressLine(
         '$_yellow'
         '$skippedCount skipped ${pluralize('test', skippedCount)}.'
-        '$_noColor',
+        '$colorNone',
       );
       _sink.writeln('');
       _progressLine('All other tests passed!');
@@ -415,24 +408,24 @@ class CompactReporter implements Reporter {
     var buffer = StringBuffer();
 
     // \r moves back to the beginning of the current line.
-    buffer.write('\r${_timeString(duration)} ');
+    buffer.write('\r${formatTimeString(duration)} ');
     buffer.write(_green);
     buffer.write('+');
     buffer.write(_engine.passed.length);
-    buffer.write(_noColor);
+    buffer.write(colorNone);
 
     if (_engine.skipped.isNotEmpty) {
       buffer.write(_yellow);
       buffer.write(' ~');
       buffer.write(_engine.skipped.length);
-      buffer.write(_noColor);
+      buffer.write(colorNone);
     }
 
     if (_engine.failed.isNotEmpty) {
       buffer.write(_red);
       buffer.write(' -');
       buffer.write(_engine.failed.length);
-      buffer.write(_noColor);
+      buffer.write(colorNone);
     }
 
     buffer.write(': ');
@@ -444,7 +437,7 @@ class CompactReporter implements Reporter {
     var length = withoutColors(buffer.toString()).length;
     if (truncate) message = utils.truncate(message, lineLength - length);
     buffer.write(message);
-    buffer.write(_noColor);
+    buffer.write(colorNone);
 
     // Pad the rest of the line so that it looks erased.
     buffer.write(' ' * (lineLength - withoutColors(buffer.toString()).length));
@@ -452,35 +445,5 @@ class CompactReporter implements Reporter {
 
     _printedNewline = false;
     return true;
-  }
-
-  /// Returns a representation of [duration] as `MM:SS`.
-  String _timeString(Duration duration) {
-    return "${duration.inMinutes.toString().padLeft(2, '0')}:"
-        "${(duration.inSeconds % 60).toString().padLeft(2, '0')}";
-  }
-
-  /// Returns a description of [liveTest].
-  ///
-  /// This differs from the test's own description in that it may also include
-  /// the suite's name.
-  String _description(LiveTest liveTest) {
-    var name = liveTest.test.name;
-
-    if (_printPath &&
-        liveTest.suite is! LoadSuite &&
-        liveTest.suite.path != null) {
-      name = '${liveTest.suite.path}: $name';
-    }
-
-    if (_printPlatform) {
-      name =
-          '[${liveTest.suite.platform.runtime.name}, '
-          '${liveTest.suite.platform.compiler.name}] $name';
-    }
-
-    if (liveTest.suite is LoadSuite) name = '$_bold$_gray$name$_noColor';
-
-    return name;
   }
 }
