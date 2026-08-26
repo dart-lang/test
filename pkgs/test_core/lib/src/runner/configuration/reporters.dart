@@ -112,6 +112,3 @@ final defaultReporter = inTestTests
 /// authors**.
 ///
 /// This globally registers a reporter.
-void registerReporter(String name, ReporterDetails reporterDetails) {
-  _allReporters[name] = reporterDetails;
-}
