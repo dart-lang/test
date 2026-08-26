@@ -107,11 +107,3 @@ final defaultReporter = inTestTests
     : canUseSpecialChars
     ? 'compact'
     : 'expanded';
-
-/// **Do not call this function without express permission from the test package
-/// authors**.
-///
-/// This globally registers a reporter.
-void registerReporter(String name, ReporterDetails reporterDetails) {
-  _allReporters[name] = reporterDetails;
-}
