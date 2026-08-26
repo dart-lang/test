@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-@Tags(['safaridriver'])
+@Tags(['safari'])
 library;
 
 import 'package:test/src/runner/browser/safari.dart';
@@ -66,7 +66,7 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(['-p', 'safaridriver', 'test.dart']);
+    var test = await runTest(['-p', 'safari', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
@@ -80,7 +80,7 @@ void main() {
 }
 ''').create();
 
-    var test = await runTest(['-p', 'safaridriver', 'test.dart']);
+    var test = await runTest(['-p', 'safari', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
     await test.shouldExit(1);
   });
@@ -94,7 +94,7 @@ void main() {
 }
 ''').create();
     var test = await runTest(
-      ['-p', 'safaridriver', 'test.dart'],
+      ['-p', 'safari', 'test.dart'],
       environment: {'SAFARI_EXECUTABLE': '/some/bad/path'},
     );
     expect(test.stdout, emitsThrough(contains('Failed to run Safari:')));

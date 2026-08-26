@@ -1,5 +1,6 @@
 ## 1.32.0-wip
 
+* Replace the Safari launch mechanism to use `safaridriver`.
 * Precompiled browser tests: stop serving files from outside the precompiled
   root directory. The static handler no longer sets `serveFilesOutsidePath`,
   restoring path-containment parity with the dart2js and dart2wasm compilers.
@@ -81,7 +82,6 @@
 
 ## 1.30.0
 
-* Replace the Safari launch mechanism to use `safaridriver`.
 * Add a `--suite-load-timeout` argument to allow configuring a timeout for
   compiling and loading individual test suites.
 * Remove the default 12 minute timeout to compile and load test suites.

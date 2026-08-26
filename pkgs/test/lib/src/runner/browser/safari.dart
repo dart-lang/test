@@ -7,6 +7,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
+import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
@@ -38,10 +40,11 @@ class Safari extends Browser {
         '--port',
         port.toString(),
       ]);
-    } catch (_) {
-      stderr.writeln('safaridriver failed to start.');
-      stderr.writeln(_safariDriverInstructions);
-      rethrow;
+    } catch (e) {
+      throw ApplicationException(
+        'Failed to start safaridriver: ${getErrorMessage(e)}.\n\n'
+        '$_safariDriverInstructions',
+      );
     }
 
     Future<void> connect() async {
@@ -59,11 +62,12 @@ class Safari extends Browser {
 
           var value = json['value'] as Map<String, dynamic>?;
           if (value != null && value.containsKey('error')) {
-            stderr.writeln('safaridriver failed to create a session.');
-            stderr.writeln(value['message']);
-            stderr.writeln(_safariDriverInstructions);
+            var message = value['message'] as String? ?? 'Unknown error';
             process.kill();
-            return;
+            throw ApplicationException(
+              'safaridriver failed to create a session: $message\n\n'
+              '$_safariDriverInstructions',
+            );
           }
 
           var sessionId = value!['sessionId'] as String;
@@ -82,6 +86,7 @@ class Safari extends Browser {
         if (!sessionCreated) {
           process.kill();
         }
+        rethrow;
       }
     }
 
@@ -116,16 +121,11 @@ Future<String> _sendRequest(
 }
 
 const _safariDriverInstructions = '''
-A test failed to connect to Safari.
-Safari requires 'safaridriver' to be authenticated to allow remote automation.
-If you are running this on CI or a new Mac, please ensure the following commands are run:
+Safari requires 'safaridriver' to be enabled to allow remote automation.
+To enable it, run:
 
-# Enable the Develop menu
-defaults write com.apple.Safari IncludeDevelopMenu YES
+safaridriver --enable
+(You may need to prefix with sudo: sudo safaridriver --enable)
 
-# Enable Allow Remote Automation
-defaults write com.apple.Safari AllowRemoteAutomation 1
-
-# Authenticate safaridriver for the current session
-sudo safaridriver --enable
+Or in Safari: Settings -> Developer -> Allow Remote Automation.
 ''';
