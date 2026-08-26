@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
@@ -14,6 +12,7 @@ import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
 import 'failure_summary.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints each test on its own line.
 ///
@@ -21,7 +20,7 @@ import 'failure_summary.dart';
 /// which can't transitively import `dart:io` but still needs access to a runner
 /// so that test files can be run directly. This means that until issue 6943 is
 /// fixed, this must not import `dart:io`.
-class ExpandedReporter implements Reporter {
+class ExpandedReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -87,7 +86,6 @@ class ExpandedReporter implements Reporter {
   var _shouldPrintStackTraceChainingNotice = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
 
@@ -127,11 +125,11 @@ class ExpandedReporter implements Reporter {
        _gray = color ? '\u001b[90m' : '',
        _bold = color ? '\u001b[1m' : '',
        _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -141,7 +139,7 @@ class ExpandedReporter implements Reporter {
 
     _stopwatch.stop();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -152,16 +150,9 @@ class ExpandedReporter implements Reporter {
 
     _stopwatch.start();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
@@ -176,7 +167,7 @@ class ExpandedReporter implements Reporter {
       // The engine surfaces load tests when there are no other tests running,
       // but because the expanded reporter's output is always visible, we don't
       // emit information about them unless they fail.
-      _subscriptions.add(
+      subscriptions.add(
         liveTest.onStateChange.listen(
           (state) => _onStateChange(liveTest, state),
         ),
@@ -190,13 +181,13 @@ class ExpandedReporter implements Reporter {
       _progressLine(_description(liveTest));
     }
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
         _progressLine(_description(liveTest));
         var text = message.text;
@@ -249,7 +240,7 @@ class ExpandedReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user, in
     // which case we shouldn't print summary information.

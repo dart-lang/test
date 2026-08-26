@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io' show pid;
 
@@ -25,9 +24,10 @@ import '../reporter.dart';
 import '../runner_suite.dart' show RunnerSuite;
 import '../suite.dart' show SuiteConfiguration;
 import '../version.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
-class JsonReporter implements Reporter {
+class JsonReporter with ReporterMixin implements Reporter {
   /// Whether the test runner will pause for debugging.
   final bool _isDebugRun;
 
@@ -59,7 +59,6 @@ class JsonReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
 
@@ -71,13 +70,13 @@ class JsonReporter implements Reporter {
   }) => JsonReporter._(engine, sink, isDebugRun);
 
   JsonReporter._(this._engine, this._sink, this._isDebugRun) {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
 
-    _subscriptions.add(
+    subscriptions.add(
       _engine.onSuiteAdded.listen(
         null,
         onDone: () {
@@ -103,7 +102,7 @@ class JsonReporter implements Reporter {
 
     _stopwatch.stop();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -115,16 +114,9 @@ class JsonReporter implements Reporter {
 
     if (_stopwatchStarted) _stopwatch.start();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
@@ -164,17 +156,17 @@ class JsonReporter implements Reporter {
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
         _emit('print', {
           'testID': id,
@@ -301,7 +293,7 @@ class JsonReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
     _stopwatch.stop();
 
     _emit('done', {'success': success});

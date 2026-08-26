@@ -11,16 +11,17 @@ import 'package:test_api/src/backend/state.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import '../../util/io.dart';
-import '../../util/pretty_print.dart';
 import '../../util/pretty_print.dart' as utils;
+import '../../util/pretty_print.dart';
 import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
-class CompactReporter implements Reporter {
+class CompactReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -107,7 +108,6 @@ class CompactReporter implements Reporter {
   var _shouldPrintStackTraceChainingNotice = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
 
@@ -148,11 +148,11 @@ class CompactReporter implements Reporter {
        _cyan = color ? '\u001b[36m' : '',
        _bold = color ? '\u001b[1m' : '',
        _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -169,7 +169,7 @@ class CompactReporter implements Reporter {
     // during the pause.
     _lastProgressMessage = null;
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -181,16 +181,9 @@ class CompactReporter implements Reporter {
 
     if (_stopwatchStarted) _stopwatch.start();
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
@@ -200,7 +193,7 @@ class CompactReporter implements Reporter {
       _stopwatch.start();
 
       // Keep updating the time even when nothing else is happening.
-      _subscriptions.add(
+      subscriptions.add(
         Stream<void>.periodic(
           const Duration(seconds: 1),
         ).listen((_) => _progressLine(_lastProgressMessage ?? '')),
@@ -216,17 +209,17 @@ class CompactReporter implements Reporter {
       _progressLine(_description(liveTest));
     }
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state)),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
         if (liveTest.test.metadata.skip) return;
         _progressLine(_description(liveTest), truncate: false);
@@ -309,7 +302,7 @@ class CompactReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
     _stopwatch.stop();
 
     // A null success value indicates that the engine was closed before the

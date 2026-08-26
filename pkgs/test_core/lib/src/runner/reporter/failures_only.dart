@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
-
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
@@ -13,9 +11,10 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that only prints when a test fails.
-class FailuresOnlyReporter implements Reporter {
+class FailuresOnlyReporter with ReporterMixin implements Reporter {
   /// Whether the reporter should emit terminal color escapes.
   final bool _color;
 
@@ -78,7 +77,6 @@ class FailuresOnlyReporter implements Reporter {
   var _shouldPrintStackTraceChainingNotice = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
 
@@ -118,11 +116,11 @@ class FailuresOnlyReporter implements Reporter {
        _gray = color ? '\u001b[90m' : '',
        _bold = color ? '\u001b[1m' : '',
        _noColor = color ? '\u001b[0m' : '' {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
 
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
   }
 
   @override
@@ -130,7 +128,7 @@ class FailuresOnlyReporter implements Reporter {
     if (_paused) return;
     _paused = true;
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -139,27 +137,20 @@ class FailuresOnlyReporter implements Reporter {
   void resume() {
     if (!_paused) return;
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
   }
 
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
-  }
-
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
         if (liveTest.test.metadata.skip) return;
         // TODO - Should this suppress output? Behave like printOnFailure?
@@ -201,7 +192,7 @@ class FailuresOnlyReporter implements Reporter {
   /// [success] will be `true` if all tests passed, `false` if some tests
   /// failed, and `null` if the engine was closed prematurely.
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
     // A null success value indicates that the engine was closed before the
     // tests finished running, probably because of a signal from the user, in
     // which case we shouldn't print summary information.

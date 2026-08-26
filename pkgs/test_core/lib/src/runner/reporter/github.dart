@@ -4,8 +4,6 @@
 
 // ignore_for_file: implementation_imports
 
-import 'dart:async';
-
 import 'package:test_api/src/backend/live_test.dart';
 import 'package:test_api/src/backend/message.dart';
 import 'package:test_api/src/backend/state.dart';
@@ -14,6 +12,7 @@ import 'package:test_api/src/backend/util/pretty_print.dart';
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'reporter_mixin.dart';
 
 /// A reporter that prints test output using formatting for Github Actions.
 ///
@@ -22,7 +21,7 @@ import '../reporter.dart';
 /// for a description of the output format, and
 /// https://github.com/dart-lang/test/issues/1415 for discussions about this
 /// implementation.
-class GithubReporter implements Reporter {
+class GithubReporter with ReporterMixin implements Reporter {
   /// The engine used to run the tests.
   final Engine _engine;
 
@@ -36,7 +35,6 @@ class GithubReporter implements Reporter {
   var _paused = false;
 
   /// The set of all subscriptions to various streams.
-  final _subscriptions = <StreamSubscription>{};
 
   final StringSink _sink;
 
@@ -61,8 +59,8 @@ class GithubReporter implements Reporter {
     this._printPath,
     this._printPlatform,
   ) {
-    _subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
-    _subscriptions.add(_engine.success.asStream().listen(_onDone));
+    subscriptions.add(_engine.onTestStarted.listen(_onTestStarted));
+    subscriptions.add(_engine.success.asStream().listen(_onDone));
 
     // Add a spacer between pre-test output and the test results.
     _sink.writeln();
@@ -73,7 +71,7 @@ class GithubReporter implements Reporter {
     if (_paused) return;
     _paused = true;
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.pause();
     }
   }
@@ -83,34 +81,27 @@ class GithubReporter implements Reporter {
     if (!_paused) return;
     _paused = false;
 
-    for (var subscription in _subscriptions) {
+    for (var subscription in subscriptions) {
       subscription.resume();
     }
-  }
-
-  void _cancel() {
-    for (var subscription in _subscriptions) {
-      subscription.cancel();
-    }
-    _subscriptions.clear();
   }
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onComplete.asStream().listen((_) => _onComplete(liveTest)),
     );
 
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
       ),
     );
 
     // Collect messages from tests as they are emitted.
-    _subscriptions.add(
+    subscriptions.add(
       liveTest.onMessage.listen((message) {
         if (_completedTests.contains(liveTest)) {
           // The test has already completed and it's previous messages were
@@ -246,7 +237,7 @@ class GithubReporter implements Reporter {
   }
 
   void _onDone(bool? success) {
-    _cancel();
+    cancelSubscriptions();
 
     if (!_activeGroup.isUngrouped) {
       _sink.writeln(_GithubMarkup.endGroup);
