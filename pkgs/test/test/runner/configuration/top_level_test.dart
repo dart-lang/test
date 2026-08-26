@@ -366,7 +366,7 @@ void main() {
     test('warns about specific browsers when specific browsers are '
         'supported', () async {
       await d
-          .file('dart_test.yaml', jsonEncode({'test_on': 'safaridriver'}))
+          .file('dart_test.yaml', jsonEncode({'test_on': 'safari'}))
           .create();
 
       await d.file('test.dart', '''
