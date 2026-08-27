@@ -1,4 +1,4 @@
-## 0.6.20-wip
+## 0.6.20
 
 * Pass sanitizer environment defaults when running tests compiled as native CLI
   bundles.
