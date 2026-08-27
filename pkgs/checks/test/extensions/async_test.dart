@@ -8,7 +8,6 @@ import 'package:async/async.dart';
 import 'package:checks/checks.dart';
 import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
-import 'package:test_api/hooks.dart';
 
 import '../test_shared.dart';
 

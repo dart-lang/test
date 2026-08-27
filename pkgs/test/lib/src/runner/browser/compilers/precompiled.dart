@@ -71,7 +71,7 @@ abstract class PrecompiledSupport extends CompilerSupport {
   ) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
-        .add(createStaticHandler(_root, serveFilesOutsidePath: true))
+        .add(createStaticHandler(_root))
         // TODO: This packages dir handler should not be necessary?
         .add(packagesDirHandler())
         // Even for precompiled tests, we will auto-create a bootstrap html file
