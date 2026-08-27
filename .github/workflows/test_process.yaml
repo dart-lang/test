@@ -23,6 +23,9 @@ defaults:
   run:
     working-directory: pkgs/test_process/
 
+permissions:
+  contents: read
+
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
   # against Dart dev.
