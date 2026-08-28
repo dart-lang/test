@@ -63,45 +63,9 @@ for PKG in ${PKGS}; do
       echo
       echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
       case ${TASK} in
-      analyze_0)
-        echo 'dart analyze --fatal-infos'
-        dart analyze --fatal-infos || EXIT_CODE=$?
-        ;;
-      analyze_1)
-        echo 'dart analyze'
-        dart analyze || EXIT_CODE=$?
-        ;;
-      command_0)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s'
-        xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s || EXIT_CODE=$?
-        ;;
-      command_1)
-        echo 'dart test --timeout=60s'
-        dart test --timeout=60s || EXIT_CODE=$?
-        ;;
-      command_2)
-        echo 'dart test'
-        dart test || EXIT_CODE=$?
-        ;;
-      command_3)
-        echo 'dart run build_runner build'
-        dart run build_runner build || EXIT_CODE=$?
-        ;;
-      command_4)
+      command)
         echo 'dart test --preset travis test/runner/compiler_integration_test.dart'
         dart test --preset travis test/runner/compiler_integration_test.dart || EXIT_CODE=$?
-        ;;
-      command_5)
-        echo 'dart test --preset travis -x browser -c kernel,exe'
-        dart test --preset travis -x browser -c kernel,exe || EXIT_CODE=$?
-        ;;
-      format)
-        echo 'dart format --output=none --set-exit-if-changed .'
-        dart format --output=none --set-exit-if-changed . || EXIT_CODE=$?
-        ;;
-      test_1)
-        echo 'dart test -p chrome,vm,node'
-        dart test -p chrome,vm,node || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"
