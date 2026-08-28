@@ -44,7 +44,7 @@ void main() {
         'vm',
         '-c',
         'exe',
-      ], concurrency: 4);
+      ], concurrency: 4, forwardStdio: true, reporter: 'expanded');
 
       expect(test.stdout, emitsThrough(contains('All tests passed!')));
       await test.shouldExit(0);
