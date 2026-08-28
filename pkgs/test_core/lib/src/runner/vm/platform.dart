@@ -60,6 +60,11 @@ class VMPlatform extends PlatformPlugin {
     Isolate? isolate;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
+      var (executable, arguments) = await _compileExecutable(
+        platform,
+        path,
+        suiteConfig.metadata,
+      );
       var dir = Directory(_tempDir.path).createTempSync('exec_').path;
       var socketPath = p.join(dir, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
@@ -68,11 +73,11 @@ class VMPlatform extends PlatformPlugin {
       );
       Process process;
       try {
-        process = await _spawnExecutable(
-          platform,
-          path,
-          suiteConfig.metadata,
-          socketPath,
+        process = await Process.start(
+          executable,
+          [...arguments, socketPath],
+          environment: _environmentFor(platform),
+          mode: ProcessStartMode.inheritStdio,
         );
       } catch (error) {
         unawaited(serverSocket.close());
@@ -231,15 +236,14 @@ class VMPlatform extends PlatformPlugin {
         : {envKey: 'halt_on_error=1:exitcode=6:symbolize=1'};
   }
 
-  /// Compiles [path] to a native executable and spawns it as a process.
+  /// Compiles [path] to an executable or AOT snapshot for [platform].
   ///
-  /// Sets up a communication channel as well by passing command line arguments
-  /// for the socket path of [socketPath].
-  Future<Process> _spawnExecutable(
+  /// Returns a record of the executable to invoke and the initial arguments
+  /// before any additional arguments (such as the socket path).
+  Future<(String, List<String>)> _compileExecutable(
     SuitePlatform platform,
     String path,
     Metadata suiteMetadata,
-    String socketPath,
   ) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       throw UnsupportedError(
@@ -250,24 +254,14 @@ class VMPlatform extends PlatformPlugin {
     switch (platform.compiler) {
       case Compiler.cli:
         var executable = await _compileToCli(platform, path, suiteMetadata);
-        return await Process.start(
-          executable,
-          [socketPath],
-          environment: _environmentFor(platform),
-          mode: ProcessStartMode.inheritStdio,
-        );
+        return (executable, const <String>[]);
       case Compiler.exe:
         var sharedLibrary = await _compileToNative(
           platform,
           path,
           suiteMetadata,
         );
-        return await Process.start(
-          _aotRuntimeFor(platform),
-          [sharedLibrary, socketPath],
-          environment: _environmentFor(platform),
-          mode: ProcessStartMode.inheritStdio,
-        );
+        return (_aotRuntimeFor(platform), [sharedLibrary]);
       default:
         throw StateError(
           'Unsupported compiler ${platform.compiler} for spawning an executable',
