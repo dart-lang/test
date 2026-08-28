@@ -11,32 +11,14 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
-final _slowSuite = '''
-import 'dart:io';
-import 'package:analyzer/dart/analysis/analysis_context.dart';
+String _testSuite([int delaySeconds = 0]) =>
+    '''
 import 'package:test/test.dart';
 
 void main() {
-  test('slow suite', () {
-    File('slow_suite_done.txt').writeAsStringSync('done');
-    expect(AnalysisContext, isNotNull);
-  });
-}
-''';
-
-final _fastSuite = '''
-import 'dart:io';
-import 'package:test/test.dart';
-
-void main() {
-  test('fast suite waits for slow suite', () async {
-    final sw = Stopwatch()..start();
-    while (!File('slow_suite_done.txt').existsSync()) {
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-      if (sw.elapsed > const Duration(seconds: 30)) {
-        fail('Timed out waiting for slow suite');
-      }
-    }
+  test('primary', () async {
+    ${delaySeconds > 0 ? "await Future<void>.delayed(const Duration(seconds: $delaySeconds));" : ""}
+    expect(1, equals(1));
   });
 }
 ''';
@@ -48,11 +30,13 @@ void main() {
 
   group('multiplatform runner', () {
     test('can run multiple vm exe suites concurrently', () async {
-      await d.file('slow_test.dart', _slowSuite).create();
-      await d.file('fast_test.dart', _fastSuite).create();
+      final names = ['test0.dart', 'test1.dart', 'test2.dart', 'test3.dart'];
+      for (var name in names) {
+        await d.file(name, _testSuite(2)).create();
+      }
       var test = await runTest(
-        ['slow_test.dart', 'fast_test.dart', '-p', 'vm', '-c', 'exe'],
-        concurrency: 2,
+        [...names, '-p', 'vm', '-c', 'exe'],
+        concurrency: 4,
         forwardStdio: true,
         reporter: 'expanded',
       );
@@ -61,18 +45,13 @@ void main() {
       await test.shouldExit(0);
     });
 
-    test('can run chrome and vm exe suites concurrently', () async {
-      await d.file('slow_test.dart', _slowSuite).create();
-      await d.file('fast_test.dart', _fastSuite).create();
+    test('can run vm exe and chrome suites concurrently', () async {
+      final names = ['test0.dart', 'test1.dart'];
+      for (var name in names) {
+        await d.file(name, _testSuite(2)).create();
+      }
       var test = await runTest(
-        [
-          'slow_test.dart',
-          'fast_test.dart',
-          '-p',
-          'chrome,vm',
-          '-c',
-          'dart2js,exe',
-        ],
+        [...names, '-p', 'vm,chrome', '-c', 'exe,dart2js'],
         concurrency: 4,
         forwardStdio: true,
         reporter: 'expanded',
@@ -83,19 +62,14 @@ void main() {
     }, tags: 'chrome');
 
     test(
-      'can run chrome and vm cli suites concurrently',
+      'can run vm cli and chrome suites concurrently',
       () async {
-        await d.file('slow_test.dart', _slowSuite).create();
-        await d.file('fast_test.dart', _fastSuite).create();
+        final names = ['test0.dart', 'test1.dart'];
+        for (var name in names) {
+          await d.file(name, _testSuite(2)).create();
+        }
         var test = await runTest(
-          [
-            'slow_test.dart',
-            'fast_test.dart',
-            '-p',
-            'chrome,vm',
-            '-c',
-            'dart2js,cli',
-          ],
+          [...names, '-p', 'vm,chrome', '-c', 'cli,dart2js'],
           concurrency: 4,
           forwardStdio: true,
           reporter: 'expanded',
