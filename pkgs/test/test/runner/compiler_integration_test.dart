@@ -11,21 +11,35 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
-String _testSuite(int numTests) {
-  final sb = StringBuffer('''
+final _slowSuite = '''
+import 'dart:io';
+import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('primary', () async {
-    await Future<void>.delayed(const Duration(seconds: 2));
+  test('slow suite', () {
+    File('slow_suite_done.txt').writeAsStringSync('done');
+    expect(AnalysisContext, isNotNull);
   });
-''');
-  for (var i = 0; i < numTests; i++) {
-    sb.writeln("  test('dummy $i', () { expect($i, $i); });");
-  }
-  sb.writeln('}');
-  return sb.toString();
 }
+''';
+
+final _fastSuite = '''
+import 'dart:io';
+import 'package:test/test.dart';
+
+void main() {
+  test('fast suite waits for slow suite', () async {
+    final sw = Stopwatch()..start();
+    while (!File('slow_suite_done.txt').existsSync()) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      if (sw.elapsed > const Duration(seconds: 30)) {
+        fail('Timed out waiting for slow suite');
+      }
+    }
+  });
+}
+''';
 
 void main() {
   setUpAll(() async {
@@ -34,34 +48,35 @@ void main() {
 
   group('multiplatform runner', () {
     test('can run multiple vm exe suites concurrently', () async {
-      final counts = [1, 50, 100, 200, 1, 50, 100, 200, 1, 50, 100, 200];
-      for (var i = 0; i < counts.length; i++) {
-        await d.file('test$i.dart', _testSuite(counts[i])).create();
-      }
-      var test = await runTest([
-        for (var i = 0; i < counts.length; i++) 'test$i.dart',
-        '-p',
-        'vm',
-        '-c',
-        'exe',
-      ], concurrency: 4, forwardStdio: true, reporter: 'expanded');
+      await d.file('slow_test.dart', _slowSuite).create();
+      await d.file('fast_test.dart', _fastSuite).create();
+      var test = await runTest(
+        ['slow_test.dart', 'fast_test.dart', '-p', 'vm', '-c', 'exe'],
+        concurrency: 2,
+        forwardStdio: true,
+        reporter: 'expanded',
+      );
 
       expect(test.stdout, emitsThrough(contains('All tests passed!')));
       await test.shouldExit(0);
     });
 
     test('can run chrome and vm exe suites concurrently', () async {
-      final counts = [1, 50, 100, 200];
-      for (var i = 0; i < counts.length; i++) {
-        await d.file('test$i.dart', _testSuite(counts[i])).create();
-      }
-      var test = await runTest([
-        for (var i = 0; i < counts.length; i++) 'test$i.dart',
-        '-p',
-        'chrome,vm',
-        '-c',
-        'dart2js,exe',
-      ], concurrency: 8);
+      await d.file('slow_test.dart', _slowSuite).create();
+      await d.file('fast_test.dart', _fastSuite).create();
+      var test = await runTest(
+        [
+          'slow_test.dart',
+          'fast_test.dart',
+          '-p',
+          'chrome,vm',
+          '-c',
+          'dart2js,exe',
+        ],
+        concurrency: 4,
+        forwardStdio: true,
+        reporter: 'expanded',
+      );
 
       expect(test.stdout, emitsThrough(contains('All tests passed!')));
       await test.shouldExit(0);
@@ -70,17 +85,21 @@ void main() {
     test(
       'can run chrome and vm cli suites concurrently',
       () async {
-        final counts = [1, 50, 100, 200];
-        for (var i = 0; i < counts.length; i++) {
-          await d.file('test$i.dart', _testSuite(counts[i])).create();
-        }
-        var test = await runTest([
-          for (var i = 0; i < counts.length; i++) 'test$i.dart',
-          '-p',
-          'chrome,vm',
-          '-c',
-          'dart2js,cli',
-        ], concurrency: 8);
+        await d.file('slow_test.dart', _slowSuite).create();
+        await d.file('fast_test.dart', _fastSuite).create();
+        var test = await runTest(
+          [
+            'slow_test.dart',
+            'fast_test.dart',
+            '-p',
+            'chrome,vm',
+            '-c',
+            'dart2js,cli',
+          ],
+          concurrency: 4,
+          forwardStdio: true,
+          reporter: 'expanded',
+        );
 
         expect(test.stdout, emitsThrough(contains('All tests passed!')));
         await test.shouldExit(0);
