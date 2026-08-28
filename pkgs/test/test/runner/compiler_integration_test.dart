@@ -18,17 +18,6 @@ void main() {
 
   group('multiplatform runner', () {
     test('can run multiple vm exe suites concurrently', () async {
-      await d.file('fast_test.dart', '''
-import 'package:test/test.dart';
-
-void main() {
-  test('quick to compile, long to run', () async {
-    await Future<void>.delayed(const Duration(seconds: 25));
-    expect(1, equals(1));
-  });
-}
-''').create();
-
       await d.file('slow_test.dart', '''
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:test/test.dart';
@@ -40,17 +29,36 @@ void main() {
 }
 ''').create();
 
+      final fastNames = [
+        'fast0.dart',
+        'fast1.dart',
+        'fast2.dart',
+        'fast3.dart',
+      ];
+      for (var name in fastNames) {
+        await d.file(name, '''
+import 'package:test/test.dart';
+
+void main() {
+  test('quick to compile, long to run', () async {
+    await Future<void>.delayed(const Duration(seconds: 25));
+    expect(1, equals(1));
+  });
+}
+''').create();
+      }
+
       var test = await runTest(
         [
-          'fast_test.dart',
           'slow_test.dart',
+          ...fastNames,
           '-p',
           'vm',
           '-c',
           'exe',
           '--suite-load-timeout=15s',
         ],
-        concurrency: 2,
+        concurrency: 5,
         forwardStdio: true,
         reporter: 'expanded',
       );
