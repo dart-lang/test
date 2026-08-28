@@ -1,8 +1,10 @@
 name: Socket Cancellation Repro
 
 on:
-  pull_request:
+  push:
     branches: [unawaited-socket-cancel]
+  pull_request:
+    branches: [master]
   workflow_dispatch:
 
 jobs:
