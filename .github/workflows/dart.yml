@@ -1121,7 +1121,7 @@ jobs:
       - job_006
       - job_007
   job_028:
-    name: "unit_test; windows; Dart dev; PKG: pkgs/test; `dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\"`"
+    name: "unit_test; windows; Dart dev; PKG: pkgs/test; `dart test --preset travis test/runner/compiler_integration_test.dart`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
@@ -1138,8 +1138,8 @@ jobs:
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: pkgs/test
-      - name: "pkgs/test; dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\""
-        run: "dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\""
+      - name: "pkgs/test; dart test --preset travis test/runner/compiler_integration_test.dart"
+        run: dart test --preset travis test/runner/compiler_integration_test.dart
         if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/test
     needs:

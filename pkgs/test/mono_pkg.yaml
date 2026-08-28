@@ -5,7 +5,7 @@ sdk:
 
 stages:
 - unit_test:
-  - command: dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n "concurrently"
+  - command: dart test --preset travis test/runner/compiler_integration_test.dart
     os:
     - windows
     sdk:

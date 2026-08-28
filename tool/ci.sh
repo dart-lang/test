@@ -88,8 +88,8 @@ for PKG in ${PKGS}; do
         dart run build_runner build || EXIT_CODE=$?
         ;;
       command_4)
-        echo 'dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n "concurrently"'
-        dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n "concurrently" || EXIT_CODE=$?
+        echo 'dart test --preset travis test/runner/compiler_integration_test.dart'
+        dart test --preset travis test/runner/compiler_integration_test.dart || EXIT_CODE=$?
         ;;
       command_5)
         echo 'dart test --preset travis -x browser -c kernel,exe'
