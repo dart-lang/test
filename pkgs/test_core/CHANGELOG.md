@@ -11,6 +11,7 @@
 * Migrate out of process VM tests communication channel from TCP sockets to Unix
   domain sockets inside a restricted temporary directory.
 * Enable asserts in the `exe` compiler.
+* Fix deadlock that may occur running tests with the `exe` compiler.
 
 ## 0.6.19
 
