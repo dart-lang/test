@@ -9,6 +9,7 @@ import 'dart:isolate';
 
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
+import 'package:test_api/backend.dart';
 
 import '../runner/plugin/remote_platform_helpers.dart';
 import '../runner/plugin/shared_platform_helpers.dart';
@@ -35,23 +36,55 @@ void internalBootstrapNativeTest(
   Function Function() getMain,
   List<String> args,
 ) async {
-  if (args.length != 1) {
-    throw StateError('Expected a socket path, but got $args');
-  }
-  var socket = await Socket.connect(
-    InternetAddress(args[0], type: InternetAddressType.unix),
-    0,
-  );
-  var platformChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
-  var testControlChannel = platformChannel.virtualChannel()
-    ..pipe(serializeSuite(getMain));
-  platformChannel.sink.add(testControlChannel.id);
+  try {
+    print(
+      '[DEBUG-BOOTSTRAP] [${debugTimestamp()}] [PID $pid] '
+      'internalBootstrapNativeTest starting with args: $args',
+    );
+    if (args.length != 1) {
+      throw StateError('Expected a socket path, but got $args');
+    }
+    print(
+      '[DEBUG-BOOTSTRAP] [${debugTimestamp()}] [PID $pid] '
+      'Connecting to unix socket: ${args[0]}',
+    );
+    var socket = await Socket.connect(
+      InternetAddress(args[0], type: InternetAddressType.unix),
+      0,
+      timeout: const Duration(seconds: 30),
+    );
+    print(
+      '[DEBUG-BOOTSTRAP] [${debugTimestamp()}] [PID $pid] '
+      'Connected to unix socket',
+    );
+    var platformChannel = MultiChannel<Object?>(
+      jsonSocketStreamChannel(socket),
+    );
+    var testControlChannel = platformChannel.virtualChannel()
+      ..pipe(serializeSuite(getMain));
+    print(
+      '[DEBUG-BOOTSTRAP] [${debugTimestamp()}] [PID $pid] '
+      'Sending testControlChannel.id ${testControlChannel.id}',
+    );
+    platformChannel.sink.add(testControlChannel.id);
+    print(
+      '[DEBUG-BOOTSTRAP] [${debugTimestamp()}] [PID $pid] '
+      'Sent testControlChannel.id, listening on stream',
+    );
 
-  unawaited(
-    platformChannel.stream.forEach((message) {
-      assert(message == 'debug');
-      debugger(message: 'Paused by test runner');
-      platformChannel.sink.add('done');
-    }),
-  );
+    unawaited(
+      platformChannel.stream.forEach((message) {
+        assert(message == 'debug');
+        debugger(message: 'Paused by test runner');
+        platformChannel.sink.add('done');
+      }),
+    );
+  } catch (error, stackTrace) {
+    stderr.writeln(
+      '[DEBUG-BOOTSTRAP] [${debugTimestamp()}] [PID $pid] '
+      'Error in internalBootstrapNativeTest: $error\n$stackTrace',
+    );
+    await stderr.flush();
+    exit(1);
+  }
 }

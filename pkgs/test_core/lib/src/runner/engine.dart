@@ -100,11 +100,13 @@ class Engine {
   /// running.
   Future<bool?> get success async {
     if (!await _done) return null;
-    return liveTests.every(
+    var allPassing = liveTests.every(
       (liveTest) =>
           liveTest.state.result.isPassing &&
           liveTest.state.status == Status.complete,
     );
+    if (_closed) return allPassing ? null : false;
+    return allPassing;
   }
 
   /// A group of futures for each test suite.

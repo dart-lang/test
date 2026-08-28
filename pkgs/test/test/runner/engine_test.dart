@@ -78,6 +78,25 @@ void main() {
     completer.complete();
   });
 
+  test('returns null if engine is closed when all completed tests passed',
+      () async {
+    var completer = Completer<void>();
+    var tests = declare(() {
+      test('completes', () {});
+    });
+    var engine = Engine.withSuites([
+      runnerSuite(tests.asRootGroup()),
+      loadSuite('hung', () async {
+        await completer.future;
+        return runnerSuite(Group.root([]));
+      }),
+    ]);
+    expect(engine.run(), completion(isNull));
+    await pumpEventQueue();
+    unawaited(engine.close());
+    completer.complete();
+  });
+
   test('emits each test before it starts running and after the previous test '
       'finished', () {
     var testsRun = 0;

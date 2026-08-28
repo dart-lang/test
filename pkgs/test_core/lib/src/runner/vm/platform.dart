@@ -89,22 +89,85 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
 
-      print('[DEBUG-VM] Awaiting serverSocket.first for $path');
-      var socket = await serverSocket.first;
-      print('[DEBUG-VM] serverSocket.first connected for $path');
+      var socketCompleter = Completer<Socket>();
+      var serverSubscription = serverSocket.listen(
+        (s) {
+          if (!socketCompleter.isCompleted) socketCompleter.complete(s);
+        },
+        onError: (Object e, StackTrace st) {
+          if (!socketCompleter.isCompleted) {
+            socketCompleter.completeError(e, st);
+          }
+        },
+        onDone: () {
+          if (!socketCompleter.isCompleted) {
+            socketCompleter.completeError(
+              StateError('Server socket closed before receiving a connection'),
+            );
+          }
+        },
+      );
+
+      unawaited(
+        process.exitCode.then((exitCode) {
+          if (!socketCompleter.isCompleted) {
+            socketCompleter.completeError(
+              LoadException(
+                path,
+                'Executable process (PID ${process.pid}) exited with code '
+                '$exitCode before connecting to test runner on $socketPath',
+              ),
+            );
+          }
+        }),
+      );
+
+      print(
+        '[DEBUG-VM] [${debugTimestamp()}] Awaiting socket connection for $path',
+      );
+      Socket socket;
+      try {
+        socket = await socketCompleter.future.timeout(
+          const Duration(seconds: 30),
+          onTimeout: () {
+            throw TimeoutException(
+              'Timed out waiting for executable (PID ${process.pid}) to connect '
+              'to test runner on $socketPath',
+            );
+          },
+        );
+      } catch (error) {
+        print(
+          '[DEBUG-VM] [${debugTimestamp()}] Failed to receive socket connection '
+          'from PID ${process.pid} for $path: $error',
+        );
+        process.kill();
+        unawaited(serverSocket.close());
+        await serverSubscription.cancel();
+        if (error is LoadException) rethrow;
+        throw LoadException(path, error);
+      } finally {
+        await serverSubscription.cancel();
+      }
+
+      print('[DEBUG-VM] [${debugTimestamp()}] Socket connected for $path');
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(() {
-          print('[DEBUG-VM] cleanupCallback: socket.destroy for $path');
+          print(
+            '[DEBUG-VM] [${debugTimestamp()}] cleanupCallback: socket.destroy for $path',
+          );
           socket.destroy();
         })
         ..add(() {
-          print('[DEBUG-VM] cleanupCallback: serverSocket.close for $path');
+          print(
+            '[DEBUG-VM] [${debugTimestamp()}] cleanupCallback: serverSocket.close for $path',
+          );
           serverSocket.close();
         })
         ..add(() {
           print(
-            '[DEBUG-VM] cleanupCallback: process.kill for $path (pid ${process.pid})',
+            '[DEBUG-VM] [${debugTimestamp()}] cleanupCallback: process.kill for $path (pid ${process.pid})',
           );
           process.kill();
         });
@@ -146,9 +209,34 @@ class VMPlatform extends PlatformPlugin {
     // additional communication directly between the test bootstrapping and this
     // platform to enable pausing after tests for debugging.
     var outerQueue = StreamQueue(outerChannel.stream);
-    print('[DEBUG-VM] Awaiting channelId from outerQueue for $path');
-    var channelId = (await outerQueue.next) as int;
-    print('[DEBUG-VM] Received channelId $channelId from outerQueue for $path');
+    print(
+      '[DEBUG-VM] [${debugTimestamp()}] Awaiting channelId from outerQueue for $path',
+    );
+    int channelId;
+    try {
+      channelId =
+          (await outerQueue.next.timeout(
+                const Duration(seconds: 30),
+                onTimeout: () {
+                  throw TimeoutException(
+                    'Timed out waiting for channelId from test process for $path',
+                  );
+                },
+              ))
+              as int;
+    } catch (error) {
+      print(
+        '[DEBUG-VM] [${debugTimestamp()}] Failed to receive channelId for $path: $error',
+      );
+      for (var fn in cleanupCallbacks) {
+        fn();
+      }
+      if (error is LoadException) rethrow;
+      throw LoadException(path, error);
+    }
+    print(
+      '[DEBUG-VM] [${debugTimestamp()}] Received channelId $channelId from outerQueue for $path',
+    );
     var channel = outerChannel
         .virtualChannel(channelId)
         .transformStream(
