@@ -22,7 +22,8 @@ void main() {
 import 'package:test/test.dart';
 
 void main() {
-  test('quick test', () {
+  test('quick to compile, long to run', () async {
+    await Future<void>.delayed(const Duration(seconds: 35));
     expect(1, equals(1));
   });
 }
@@ -33,9 +34,8 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('slow test', () async {
+  test('slow to compile, quick to run', () {
     expect(AnalysisContext, isNotNull);
-    await Future<void>.delayed(const Duration(seconds: 15));
   });
 }
 ''').create();
@@ -48,7 +48,7 @@ void main() {
           'vm',
           '-c',
           'exe',
-          '--suite-load-timeout=8s',
+          '--suite-load-timeout=20s',
         ],
         concurrency: 2,
         forwardStdio: true,
@@ -57,7 +57,7 @@ void main() {
 
       expect(test.stdout, emitsThrough(contains('All tests passed!')));
       await test.shouldExit(0);
-    });
+    }, timeout: const Timeout(Duration(minutes: 2)));
 
     test('can run vm exe and chrome suites concurrently', () async {
       await d.file('vm_test.dart', '''
