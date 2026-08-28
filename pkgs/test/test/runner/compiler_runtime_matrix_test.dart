@@ -161,22 +161,20 @@ void main() {
           if (runtime.isDartVM &&
               (compiler == Compiler.exe || compiler == Compiler.cli)) {
             test('can run multiple suites concurrently', () async {
-              await d.file('test1.dart', _concurrencyTest(1, 3)).create();
-              await d.file('test2.dart', _concurrencyTest(2, 3)).create();
-              await d.file('test3.dart', _concurrencyTest(3, 3)).create();
+              for (var i = 1; i <= 6; i++) {
+                await d.file('test$i.dart', _concurrencyTest(i, 6)).create();
+              }
               var test = await runTest([
-                'test1.dart',
-                'test2.dart',
-                'test3.dart',
+                for (var i = 1; i <= 6; i++) 'test$i.dart',
                 '-p',
                 runtime.identifier,
                 '-c',
                 compiler.identifier,
-              ], concurrency: 3);
+              ], concurrency: 6);
 
               expect(
                 test.stdout,
-                emitsThrough(contains('+3: All tests passed!')),
+                emitsThrough(contains('+6: All tests passed!')),
               );
               await test.shouldExit(0);
             });
