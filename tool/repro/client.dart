@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:io';
 
 void main(List<String> args) async {
@@ -25,13 +26,14 @@ void main(List<String> args) async {
   }
   print('[CLIENT] Connected successfully!');
 
-  if (mode == 'send_data') {
-    socket.writeln('hello from client');
+  if (mode == 'handshake' || mode == 'send_data') {
+    // Exactly what jsonSocketStreamChannel does on connect:
+    socket.writeln(jsonEncode([1, 1]));
     await socket.flush();
-    print('[CLIENT] Sent data');
+    print('[CLIENT] Sent handshake data');
   }
 
-  if (mode == 'stay_alive' || mode == 'send_data') {
+  if (mode == 'stay_alive' || mode == 'handshake' || mode == 'send_data') {
     print('[CLIENT] Staying alive until server closes connection...');
     try {
       await socket.fold<void>(null, (_, __) {});

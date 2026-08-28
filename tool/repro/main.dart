@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
@@ -48,141 +49,89 @@ void main() async {
   print('Running reproduction test on OS: ${Platform.operatingSystem} ${Platform.operatingSystemVersion}');
   print('Dart SDK: ${Platform.version}');
   var clientScript = p.join(p.dirname(Platform.script.toFilePath()), 'client.dart');
+  var aotRuntime = p.join(
+    p.dirname(Platform.resolvedExecutable),
+    Platform.isWindows ? 'dartaotruntime.exe' : 'dartaotruntime',
+  );
 
-  // Scenario 1: Same process client, serverSocket.first
-  await runScenario('1. Same process, serverSocket.first', (tempDir, socketPath) async {
+  // Precompile client to AOT snapshot once
+  var globalTempDir = Directory.systemTemp.createTempSync('global_aot_');
+  var aotClientPath = p.join(globalTempDir.path, 'client.aot');
+  print('Compiling client.dart to AOT snapshot...');
+  var compileResult = await Process.run(Platform.resolvedExecutable, [
+    'compile',
+    'aot-snapshot',
+    clientScript,
+    '-o',
+    aotClientPath,
+  ]);
+  if (compileResult.exitCode != 0) {
+    print('AOT compilation failed:\n${compileResult.stderr}');
+    exit(1);
+  }
+  print('AOT snapshot ready at $aotClientPath');
+
+  // Scenario 8: Client sends data (handshake) immediately with inheritStdio
+  await runScenario('8. AOT client sending handshake, serverSocket.first', (tempDir, socketPath) async {
     var server = await ServerSocket.bind(
       InternetAddress(socketPath, type: InternetAddressType.unix),
       0,
     );
     var firstFuture = server.first;
-    var client = await Socket.connect(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
+    var proc = await Process.start(
+      aotRuntime,
+      [aotClientPath, socketPath, 'handshake'],
+      mode: ProcessStartMode.inheritStdio,
     );
+
+    print('Awaiting server.first...');
     var serverSide = await firstFuture;
-    print('Received server-side socket: $serverSide');
-    client.destroy();
+    print('server.first completed: $serverSide');
     serverSide.destroy();
+    proc.kill();
     await server.close();
   });
 
-  // Scenario 2: Same process client, explicit await sub.cancel()
-  await runScenario('2. Same process, explicit await sub.cancel()', (tempDir, socketPath) async {
-    var server = await ServerSocket.bind(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
-    );
-    var completer = Completer<Socket>();
-    late StreamSubscription<Socket> sub;
-    sub = server.listen((s) async {
-      print('Calling await sub.cancel()...');
-      var cancelFuture = sub.cancel();
-      print('sub.cancel() returned $cancelFuture, awaiting...');
-      await cancelFuture;
-      print('await sub.cancel() finished!');
-      completer.complete(s);
+  // Scenario 9: 4 concurrent AOT suites connecting at once
+  await runScenario('9. 4 concurrent AOT suites, serverSocket.first', (tempDir, socketPath) async {
+    var futures = <Future<void>>[];
+    for (var i = 0; i < 4; i++) {
+      var sPath = p.join(tempDir.path, 'socket_$i.sock');
+      futures.add(() async {
+        var server = await ServerSocket.bind(
+          InternetAddress(sPath, type: InternetAddressType.unix),
+          0,
+        );
+        var firstFuture = server.first;
+        var proc = await Process.start(
+          aotRuntime,
+          [aotClientPath, sPath, 'handshake'],
+          mode: ProcessStartMode.inheritStdio,
+        );
+        var serverSide = await firstFuture;
+        serverSide.destroy();
+        proc.kill();
+        await server.close();
+      }());
+    }
+    await Future.wait(futures);
+  });
+
+  // Scenario 10: Local HttpServer + WebSocket active, while AOT client connects
+  await runScenario('10. HttpServer + WebSocket active, serverSocket.first', (tempDir, socketPath) async {
+    var httpServer = await HttpServer.bind('localhost', 0);
+    httpServer.listen((request) async {
+      if (WebSocketTransformer.isUpgradeRequest(request)) {
+        var ws = await WebSocketTransformer.upgrade(request);
+        ws.listen((_) {});
+      } else {
+        request.response.write('ok');
+        await request.response.close();
+      }
     });
-    var client = await Socket.connect(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
-    );
-    var serverSide = await completer.future;
-    client.destroy();
-    serverSide.destroy();
-    await server.close();
-  });
 
-  // Scenario 3: Subprocess client (ProcessStartMode.normal), serverSocket.first
-  await runScenario('3. Subprocess (normal mode), serverSocket.first', (tempDir, socketPath) async {
-    var server = await ServerSocket.bind(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
-    );
-    var firstFuture = server.first;
-    var proc = await Process.start(
-      Platform.resolvedExecutable,
-      [clientScript, socketPath, 'stay_alive'],
-    );
-    proc.stdout.listen(stdout.add);
-    proc.stderr.listen(stderr.add);
-
-    print('Awaiting server.first...');
-    var serverSide = await firstFuture;
-    print('server.first completed with: $serverSide');
-    serverSide.destroy();
-    proc.kill();
-    await server.close();
-  });
-
-  // Scenario 4: Subprocess client (ProcessStartMode.inheritStdio), serverSocket.first
-  await runScenario('4. Subprocess (inheritStdio mode), serverSocket.first', (tempDir, socketPath) async {
-    var server = await ServerSocket.bind(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
-    );
-    var firstFuture = server.first;
-    var proc = await Process.start(
-      Platform.resolvedExecutable,
-      [clientScript, socketPath, 'stay_alive'],
-      mode: ProcessStartMode.inheritStdio,
-    );
-
-    print('Awaiting server.first...');
-    var serverSide = await firstFuture;
-    print('server.first completed with: $serverSide');
-    serverSide.destroy();
-    proc.kill();
-    await server.close();
-  });
-
-  // Scenario 5: Background process running during bind and serverSocket.first
-  await runScenario('5. Background process running, serverSocket.first', (tempDir, socketPath) async {
-    // Start a background process that keeps running
-    var bgProc = await Process.start(
-      Platform.resolvedExecutable,
-      [clientScript, socketPath, 'stay_alive'], // Will fail or wait
-      mode: ProcessStartMode.inheritStdio,
-    );
-
-    var server = await ServerSocket.bind(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
-    );
-    var firstFuture = server.first;
-    var proc = await Process.start(
-      Platform.resolvedExecutable,
-      [clientScript, socketPath, 'stay_alive'],
-      mode: ProcessStartMode.inheritStdio,
-    );
-
-    print('Awaiting server.first with background process active...');
-    var serverSide = await firstFuture;
-    print('server.first completed with: $serverSide');
-    serverSide.destroy();
-    proc.kill();
-    bgProc.kill();
-    await server.close();
-  });
-
-  // Scenario 6: AOT-snapshot compiled client with inheritStdio (exactly matching VMPlatform.load)
-  await runScenario('6. AOT client with inheritStdio, serverSocket.first', (tempDir, socketPath) async {
-    var aotPath = p.join(tempDir.path, 'client.aot');
-    var compileResult = await Process.run(Platform.resolvedExecutable, [
-      'compile',
-      'aot-snapshot',
-      clientScript,
-      '-o',
-      aotPath,
-    ]);
-    if (compileResult.exitCode != 0) {
-      print('AOT compilation failed:\n${compileResult.stderr}');
-      return;
-    }
-    var aotRuntime = p.join(
-      p.dirname(Platform.resolvedExecutable),
-      Platform.isWindows ? 'dartaotruntime.exe' : 'dartaotruntime',
-    );
+    var wsClient = await WebSocket.connect('ws://localhost:${httpServer.port}');
+    wsClient.add('ping');
 
     var server = await ServerSocket.bind(
       InternetAddress(socketPath, type: InternetAddressType.unix),
@@ -191,55 +140,144 @@ void main() async {
     var firstFuture = server.first;
     var proc = await Process.start(
       aotRuntime,
-      [aotPath, socketPath, 'stay_alive'],
+      [aotClientPath, socketPath, 'handshake'],
       mode: ProcessStartMode.inheritStdio,
     );
 
-    print('Awaiting server.first with AOT client...');
+    print('Awaiting server.first with active WebSocket...');
     var serverSide = await firstFuture;
-    print('server.first completed with: $serverSide');
+    print('server.first completed: $serverSide');
     serverSide.destroy();
     proc.kill();
     await server.close();
+    await wsClient.close();
+    await httpServer.close(force: true);
   });
 
-  // Scenario 7: AOT client with fastFirst (verifying resolution)
-  await runScenario('7. AOT client with inheritStdio, serverSocket.fastFirst', (tempDir, socketPath) async {
-    var aotPath = p.join(tempDir.path, 'client.aot');
-    var compileResult = await Process.run(Platform.resolvedExecutable, [
-      'compile',
-      'aot-snapshot',
-      clientScript,
-      '-o',
-      aotPath,
-    ]);
-    if (compileResult.exitCode != 0) {
-      print('AOT compilation failed:\n${compileResult.stderr}');
-      return;
+  // Find Chrome executable if available
+  String? chromePath;
+  if (Platform.isWindows) {
+    for (var path in [
+      Platform.environment['CHROME_EXECUTABLE'],
+      r'C:\Program Files\Google\Chrome\Application\chrome.exe',
+      r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+    ]) {
+      if (path != null && File(path).existsSync()) {
+        chromePath = path;
+        break;
+      }
     }
-    var aotRuntime = p.join(
-      p.dirname(Platform.resolvedExecutable),
-      Platform.isWindows ? 'dartaotruntime.exe' : 'dartaotruntime',
-    );
+  } else if (Platform.isLinux) {
+    for (var path in ['/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium']) {
+      if (File(path).existsSync()) {
+        chromePath = path;
+        break;
+      }
+    }
+  }
+  print('Detected Chrome executable: $chromePath');
 
-    var server = await ServerSocket.bind(
-      InternetAddress(socketPath, type: InternetAddressType.unix),
-      0,
-    );
-    var fastFirstFuture = server.fastFirst;
-    var proc = await Process.start(
-      aotRuntime,
-      [aotPath, socketPath, 'stay_alive'],
-      mode: ProcessStartMode.inheritStdio,
-    );
+  if (chromePath != null) {
+    // Scenario 11: Chrome running headless in background, serverSocket.first
+    await runScenario('11. Chrome running in background, serverSocket.first', (tempDir, socketPath) async {
+      var chromeUserDataDir = p.join(tempDir.path, 'chrome_user_data');
+      var chromeProc = await Process.start(chromePath!, [
+        '--headless',
+        '--disable-gpu',
+        '--user-data-dir=$chromeUserDataDir',
+        'about:blank',
+      ]);
 
-    print('Awaiting server.fastFirst with AOT client...');
-    var serverSide = await fastFirstFuture;
-    print('server.fastFirst completed with: $serverSide');
-    serverSide.destroy();
-    proc.kill();
-    await server.close();
-  });
+      var server = await ServerSocket.bind(
+        InternetAddress(socketPath, type: InternetAddressType.unix),
+        0,
+      );
+      var firstFuture = server.first;
+      var proc = await Process.start(
+        aotRuntime,
+        [aotClientPath, socketPath, 'handshake'],
+        mode: ProcessStartMode.inheritStdio,
+      );
+
+      print('Awaiting server.first with Chrome running...');
+      var serverSide = await firstFuture;
+      print('server.first completed: $serverSide');
+      serverSide.destroy();
+      proc.kill();
+      chromeProc.kill();
+      await server.close();
+    });
+
+    // Scenario 12: Full BrowserPlatform simulation (HttpServer + Chrome connected + 4 AOT suites)
+    await runScenario('12. Full simulation: HttpServer + Chrome connected + 4 AOT suites, serverSocket.first', (tempDir, socketPath) async {
+      var httpServer = await HttpServer.bind('localhost', 0);
+      var wsCompleter = Completer<WebSocket>();
+      httpServer.listen((request) async {
+        if (WebSocketTransformer.isUpgradeRequest(request)) {
+          var ws = await WebSocketTransformer.upgrade(request);
+          if (!wsCompleter.isCompleted) wsCompleter.complete(ws);
+          ws.listen((_) {});
+        } else {
+          request.response.headers.contentType = ContentType.html;
+          request.response.write('''
+            <html><body><script>
+              var ws = new WebSocket("ws://localhost:${httpServer.port}");
+              ws.onopen = function() {
+                setInterval(function() { ws.send("heartbeat"); }, 100);
+              };
+            </script></body></html>
+          ''');
+          await request.response.close();
+        }
+      });
+
+      var chromeUserDataDir = p.join(tempDir.path, 'chrome_user_data_12');
+      var chromeProc = await Process.start(chromePath!, [
+        '--headless',
+        '--disable-gpu',
+        '--user-data-dir=$chromeUserDataDir',
+        'http://localhost:${httpServer.port}',
+      ]);
+
+      // Wait for Chrome to connect to WebSocket
+      try {
+        await wsCompleter.future.timeout(const Duration(seconds: 5));
+        print('Chrome connected to server WebSocket!');
+      } catch (e) {
+        print('Chrome did not connect within 5s, proceeding anyway...');
+      }
+
+      // Now run 4 concurrent AOT suites with serverSocket.first
+      var futures = <Future<void>>[];
+      for (var i = 0; i < 4; i++) {
+        var sPath = p.join(tempDir.path, 'socket_sim_$i.sock');
+        futures.add(() async {
+          var server = await ServerSocket.bind(
+            InternetAddress(sPath, type: InternetAddressType.unix),
+            0,
+          );
+          var firstFuture = server.first;
+          var proc = await Process.start(
+            aotRuntime,
+            [aotClientPath, sPath, 'handshake'],
+            mode: ProcessStartMode.inheritStdio,
+          );
+          var serverSide = await firstFuture;
+          serverSide.destroy();
+          proc.kill();
+          await server.close();
+        }());
+      }
+      await Future.wait(futures);
+
+      chromeProc.kill();
+      await httpServer.close(force: true);
+    });
+  }
+
+  try {
+    globalTempDir.deleteSync(recursive: true);
+  } catch (_) {}
 
   print('\n=== All Scenarios Complete ===');
 }
