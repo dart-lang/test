@@ -79,7 +79,7 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
 
-      var socket = await serverSocket.first;
+      var socket = await serverSocket.take(0).first;
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(socket.destroy)
