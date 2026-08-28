@@ -71,63 +71,27 @@ for PKG in ${PKGS}; do
         echo 'dart analyze'
         dart analyze || EXIT_CODE=$?
         ;;
-      command_00)
+      command_0)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s'
         xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s || EXIT_CODE=$?
         ;;
-      command_01)
+      command_1)
         echo 'dart test --timeout=60s'
         dart test --timeout=60s || EXIT_CODE=$?
         ;;
-      command_02)
+      command_2)
         echo 'dart test'
         dart test || EXIT_CODE=$?
         ;;
-      command_03)
+      command_3)
         echo 'dart run build_runner build'
         dart run build_runner build || EXIT_CODE=$?
         ;;
-      command_04)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0'
-        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
+      command_4)
+        echo 'dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n "concurrently"'
+        dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n "concurrently" || EXIT_CODE=$?
         ;;
-      command_05)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1'
-        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
-        ;;
-      command_06)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2'
-        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
-        ;;
-      command_07)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3'
-        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
-        ;;
-      command_08)
-        echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4'
-        xvfb-run -s "-screen 0 1024x768x24" dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
-        ;;
-      command_09)
-        echo 'dart test --preset travis --total-shards 5 --shard-index 0'
-        dart test --preset travis --total-shards 5 --shard-index 0 || EXIT_CODE=$?
-        ;;
-      command_10)
-        echo 'dart test --preset travis --total-shards 5 --shard-index 1'
-        dart test --preset travis --total-shards 5 --shard-index 1 || EXIT_CODE=$?
-        ;;
-      command_11)
-        echo 'dart test --preset travis --total-shards 5 --shard-index 2'
-        dart test --preset travis --total-shards 5 --shard-index 2 || EXIT_CODE=$?
-        ;;
-      command_12)
-        echo 'dart test --preset travis --total-shards 5 --shard-index 3'
-        dart test --preset travis --total-shards 5 --shard-index 3 || EXIT_CODE=$?
-        ;;
-      command_13)
-        echo 'dart test --preset travis --total-shards 5 --shard-index 4'
-        dart test --preset travis --total-shards 5 --shard-index 4 || EXIT_CODE=$?
-        ;;
-      command_14)
+      command_5)
         echo 'dart test --preset travis -x browser -c kernel,exe'
         dart test --preset travis -x browser -c kernel,exe || EXIT_CODE=$?
         ;;
