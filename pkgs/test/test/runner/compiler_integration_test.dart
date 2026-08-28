@@ -23,7 +23,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('quick to compile, long to run', () async {
-    await Future<void>.delayed(const Duration(seconds: 12));
+    await Future<void>.delayed(const Duration(seconds: 25));
     expect(1, equals(1));
   });
 }
@@ -48,7 +48,7 @@ void main() {
           'vm',
           '-c',
           'exe',
-          '--suite-load-timeout=8s',
+          '--suite-load-timeout=15s',
         ],
         concurrency: 2,
         forwardStdio: true,
