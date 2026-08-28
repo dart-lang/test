@@ -15,7 +15,9 @@ final _test = '''
 import 'package:test/test.dart';
 
 void main() {
-  test("success", () {});
+  test("success", () async {
+    await Future<void>.delayed(const Duration(seconds: 2));
+  });
 }
 ''';
 
@@ -35,7 +37,7 @@ void main() {
         'chrome,vm',
         '-c',
         'dart2js,exe',
-      ]);
+      ], concurrency: 4);
 
       expect(test.stdout, emitsThrough(contains('+6: All tests passed!')));
       await test.shouldExit(0);
@@ -53,7 +55,7 @@ void main() {
           'chrome,vm',
           '-c',
           'dart2js,cli',
-        ]);
+        ], concurrency: 4);
 
         expect(test.stdout, emitsThrough(contains('+6: All tests passed!')));
         await test.shouldExit(0);
