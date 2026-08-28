@@ -1,0 +1,18 @@
+name: Socket Cancellation Repro
+
+on:
+  pull_request:
+    branches: [unawaited-socket-cancel]
+  workflow_dispatch:
+
+jobs:
+  repro:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: dev
+      - name: Run repro
+        run: dart tool/repro/main.dart
