@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:test_api/backend.dart' show debugTimestamp;
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 // ignore: implementation_imports
@@ -30,4 +32,5 @@ Future<void> main(List<String> args) async {
   print(
     '[DEBUG-PACKAGE-TEST] [${debugTimestamp()}] test_core executable.main returned',
   );
+  await Future.wait([stdout.flush(), stderr.flush()]);
 }

@@ -44,6 +44,7 @@ Future<void> main(List<String> args) async {
   );
   completeShutdown();
   print('[DEBUG-EXECUTABLE] [${debugTimestamp()}] main completed');
+  await Future.wait([stdout.flush(), stderr.flush()]);
 }
 
 // ignore: unreachable_from_main
