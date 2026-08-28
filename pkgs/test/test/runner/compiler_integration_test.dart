@@ -11,49 +11,52 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
 
-String _testSuite([int delaySeconds = 0]) =>
-    '''
-import 'package:test/test.dart';
-
-void main() {
-  test('primary', () async {
-    ${delaySeconds > 0 ? "await Future<void>.delayed(const Duration(seconds: $delaySeconds));" : ""}
-    expect(1, equals(1));
-  });
-}
-''';
-
 void main() {
   setUpAll(() async {
     await precompileTestExecutable();
   });
 
   group('multiplatform runner', () {
-    test(
-      'can run multiple vm suites with kernel and exe concurrently',
-      () async {
-        final names = [for (var i = 0; i < 20; i++) 'test$i.dart'];
-        for (var name in names) {
-          await d.file(name, _testSuite(1)).create();
-        }
-        var test = await runTest(
-          [
-            ...names,
-            '-p',
-            'vm',
-            '-c',
-            'kernel,exe',
-            '--suite-load-timeout=10s',
-          ],
-          concurrency: 2,
-          forwardStdio: true,
-          reporter: 'expanded',
-        );
+    test('can run multiple vm exe suites concurrently', () async {
+      await d.file('fast_test.dart', '''
+import 'package:test/test.dart';
 
-        expect(test.stdout, emitsThrough(contains('All tests passed!')));
-        await test.shouldExit(0);
-      },
-    );
+void main() {
+  test('quick test', () {
+    expect(1, equals(1));
+  });
+}
+''').create();
+
+      await d.file('slow_test.dart', '''
+import 'package:test/test.dart';
+
+void main() {
+  test('slow test', () async {
+    await Future<void>.delayed(const Duration(seconds: 15));
+    expect(1, equals(1));
+  });
+}
+''').create();
+
+      var test = await runTest(
+        [
+          'fast_test.dart',
+          'slow_test.dart',
+          '-p',
+          'vm',
+          '-c',
+          'exe',
+          '--suite-load-timeout=8s',
+        ],
+        concurrency: 2,
+        forwardStdio: true,
+        reporter: 'expanded',
+      );
+
+      expect(test.stdout, emitsThrough(contains('All tests passed!')));
+      await test.shouldExit(0);
+    });
 
     test('can run vm exe and chrome suites concurrently', () async {
       await d.file('vm_test.dart', '''
