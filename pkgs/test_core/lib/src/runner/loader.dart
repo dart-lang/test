@@ -237,21 +237,39 @@ class Loader {
         }
 
         yield LoadSuite('loading $path', platformConfig, platform, () async {
+          print(
+            '[DEBUG-LOADER] LoadSuite callback running for $path on ${platform.runtime.name} (${platform.compiler.name})',
+          );
           var memo = _platformPlugins[platform.runtime]!;
 
           var retriesLeft = suiteConfig.metadata.retry;
           while (true) {
             try {
-              var plugin = await memo.runOnce(
-                _platformCallbacks[platform.runtime]!,
+              var plugin = await memo.runOnce(() {
+                print(
+                  '[DEBUG-LOADER] Initializing platform plugin for ${platform.runtime.name}',
+                );
+                return _platformCallbacks[platform.runtime]!();
+              });
+              print(
+                '[DEBUG-LOADER] Acquired plugin for ${platform.runtime.name}, calling customizePlatform',
               );
               _customizePlatform(plugin, platform.runtime);
+              print(
+                '[DEBUG-LOADER] Calling plugin.load for $path on ${platform.runtime.name}',
+              );
               var suite = await plugin.load(path, platform, platformConfig, {
                 'platformVariables': _runtimeVariables.toList(),
               });
+              print(
+                '[DEBUG-LOADER] plugin.load returned suite=$suite for $path on ${platform.runtime.name}',
+              );
               if (suite != null) _suites.add(suite);
               return suite;
             } on Object catch (error, stackTrace) {
+              print(
+                '[DEBUG-LOADER] Error loading $path on ${platform.runtime.name}: $error',
+              );
               if (retriesLeft > 0) {
                 retriesLeft--;
                 print('Retrying load of $path in 1s ($retriesLeft remaining)');
@@ -306,29 +324,53 @@ class Loader {
   }
 
   Future closeEphemeral() async {
+    print(
+      '[DEBUG-LOADER] closeEphemeral started (${_platformPlugins.length} plugins registered)',
+    );
     await Future.wait(
-      _platformPlugins.values.map((memo) async {
+      _platformPlugins.values.toSet().map((memo) async {
         if (!memo.hasRun) return;
-        await (await memo.future).closeEphemeral();
+        var plugin = await memo.future;
+        print('[DEBUG-LOADER] Calling closeEphemeral on ${plugin.runtimeType}');
+        await plugin.closeEphemeral();
+        print(
+          '[DEBUG-LOADER] closeEphemeral completed on ${plugin.runtimeType}',
+        );
       }),
     );
+    print('[DEBUG-LOADER] closeEphemeral finished');
   }
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
+    print('[DEBUG-LOADER] Loader.close started');
     await Future.wait([
       Future.wait(
-        _platformPlugins.values.map((memo) async {
+        _platformPlugins.values.toSet().map((memo) async {
           if (!memo.hasRun) return;
-          await (await memo.future).close();
+          var plugin = await memo.future;
+          print('[DEBUG-LOADER] Calling close on plugin ${plugin.runtimeType}');
+          await plugin.close();
+          print(
+            '[DEBUG-LOADER] Close completed on plugin ${plugin.runtimeType}',
+          );
         }),
       ),
-      Future.wait(_suites.map((suite) => suite.close())),
+      Future.wait(
+        _suites.map((suite) async {
+          print(
+            '[DEBUG-LOADER] Closing suite ${suite.path} on ${suite.platform.runtime.name}',
+          );
+          await suite.close();
+          print('[DEBUG-LOADER] Suite closed: ${suite.path}');
+        }),
+      ),
     ]);
 
     _platformPlugins.clear();
     _platformCallbacks.clear();
     _suites.clear();
+    print('[DEBUG-LOADER] Loader.close finished');
   });
   final _closeMemo = AsyncMemoizer<void>();
 }

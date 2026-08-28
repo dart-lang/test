@@ -278,20 +278,36 @@ class Engine {
       throw StateError('Engine.run() may not be called more than once.');
     }
     _runCalled = true;
+    print('[DEBUG-ENGINE] Engine.run started');
 
     var subscription = _suiteController.stream.listen(null);
     subscription
       ..onData((suite) {
+        print(
+          '[DEBUG-ENGINE] _suiteController onData: ${suite.path} on ${suite.platform.runtime.name} (${suite.platform.compiler.name})',
+        );
         _addedSuites.add(suite);
         _onSuiteAddedController.add(suite);
 
         _group.add(() async {
+          print(
+            '[DEBUG-ENGINE] Requesting runPool resource for ${suite.path} on ${suite.platform.runtime.name}',
+          );
           var resource = await _runPool.request();
+          print(
+            '[DEBUG-ENGINE] Acquired runPool resource for ${suite.path} on ${suite.platform.runtime.name}',
+          );
           LiveSuiteController? controller;
           try {
             if (suite is LoadSuite) {
               await _onUnpaused;
+              print(
+                '[DEBUG-ENGINE] Adding LoadSuite for ${suite.path} on ${suite.platform.runtime.name}',
+              );
               controller = await _addLoadSuite(suite);
+              print(
+                '[DEBUG-ENGINE] _addLoadSuite returned controller=$controller for ${suite.path}',
+              );
               if (controller == null) return;
             } else {
               controller = LiveSuiteController(suite);
@@ -299,8 +315,19 @@ class Engine {
 
             _addLiveSuite(controller.liveSuite);
 
-            if (_closed) return;
+            if (_closed) {
+              print(
+                '[DEBUG-ENGINE] Engine closed, skipping group run for ${suite.path}',
+              );
+              return;
+            }
+            print(
+              '[DEBUG-ENGINE] Running group for ${suite.path} on ${suite.platform.runtime.name}',
+            );
             await _runGroup(controller, controller.liveSuite.suite.group, []);
+            print(
+              '[DEBUG-ENGINE] Running group finished for ${suite.path} on ${suite.platform.runtime.name}',
+            );
             controller.noMoreLiveTests();
             if (_coverage != null || _coverageLcov != null) {
               _allCoverageData.merge(
@@ -308,15 +335,25 @@ class Engine {
               );
             }
           } finally {
-            resource.allowRelease(() => controller?.close());
+            print(
+              '[DEBUG-ENGINE] Releasing runPool resource for ${suite.path} on ${suite.platform.runtime.name}',
+            );
+            resource.allowRelease(() {
+              print(
+                '[DEBUG-ENGINE] Closing controller for ${suite.path} on ${suite.platform.runtime.name}',
+              );
+              return controller?.close();
+            });
           }
         }());
       })
       ..onDone(() async {
+        print('[DEBUG-ENGINE] _suiteController onDone fired');
         _subscriptions.remove(subscription);
         _onSuiteAddedController.close();
         _group.close();
         _runPool.close();
+        print('[DEBUG-ENGINE] _group.close() and _runPool.close() called');
 
         if (_coverageLcov != null && await _done) {
           await writeCoverageLcov(_coverageLcov, _allCoverageData);
@@ -324,7 +361,10 @@ class Engine {
       });
     _subscriptions.add(subscription);
 
-    return success;
+    return success.then((val) {
+      print('[DEBUG-ENGINE] Engine.run: success completed with val=$val');
+      return val;
+    });
   }
 
   /// Runs all the entries in [group] in sequence.
@@ -595,6 +635,7 @@ class Engine {
   /// Closing [suiteSink] indicates that no more input will be provided, closing
   /// the engine indicates that no more output should be emitted.
   Future close() async {
+    print('[DEBUG-ENGINE] Engine.close started');
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
     await _suiteController.close();
@@ -603,18 +644,32 @@ class Engine {
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
     var allLiveTests = liveTests.toSet()..addAll(_activeSuiteLoads);
+    print(
+      '[DEBUG-ENGINE] Engine.close: closing ${allLiveTests.length} live tests',
+    );
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
     // Closing the run pool will close the test suites as soon as their tests
     // are done. For browser suites this is effectively immediate since their
     // tests shut down as soon as they're closed, but for VM suites we may need
     // to wait for tearDowns or tearDownAlls to run.
+    print('[DEBUG-ENGINE] Engine.close: closing _runPool');
     futures.add(_runPool.close());
     await Future.wait(futures, eagerError: true);
+    print('[DEBUG-ENGINE] Engine.close finished');
   }
 
   Future<bool> get _done async {
-    await Future.wait(<Future>[_group.future, _runPool.done], eagerError: true);
+    print('[DEBUG-ENGINE] Engine._done: awaiting _group.future and _runPool.done');
+    await Future.wait(<Future>[
+      _group.future.then(
+        (_) => print('[DEBUG-ENGINE] Engine._done: _group.future completed'),
+      ),
+      _runPool.done.then(
+        (_) => print('[DEBUG-ENGINE] Engine._done: _runPool.done completed'),
+      ),
+    ], eagerError: true);
+    print('[DEBUG-ENGINE] Engine._done ready (closedBeforeDone=$_closedBeforeDone)');
     return !_closedBeforeDone!;
   }
 }

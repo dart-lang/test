@@ -52,6 +52,9 @@ class VMPlatform extends PlatformPlugin {
     Map<String, Object?> message,
   ) async {
     assert(platform.runtime == Runtime.vm);
+    print(
+      '[DEBUG-VM] VMPlatform.load started for $path (${platform.compiler.name})',
+    );
 
     _setupPauseAfterTests();
 
@@ -60,32 +63,53 @@ class VMPlatform extends PlatformPlugin {
     Isolate? isolate;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
+      print('[DEBUG-VM] Binding unix domain socket for $path');
       var dir = Directory(_tempDir.path).createTempSync('exec_').path;
       var socketPath = p.join(dir, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
       );
+      print('[DEBUG-VM] ServerSocket bound at $socketPath for $path');
       Process process;
       try {
+        print('[DEBUG-VM] Spawning executable for $path');
         process = await _spawnExecutable(
           platform,
           path,
           suiteConfig.metadata,
           socketPath,
         );
+        print(
+          '[DEBUG-VM] Executable spawned with PID ${process.pid} for $path',
+        );
       } catch (error) {
+        print('[DEBUG-VM] Error spawning executable for $path: $error');
         unawaited(serverSocket.close());
         rethrow;
       }
 
+      print('[DEBUG-VM] Awaiting serverSocket.first for $path');
       var socket = await serverSocket.first;
+      print('[DEBUG-VM] serverSocket.first connected for $path');
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
-        ..add(socket.destroy)
-        ..add(serverSocket.close)
-        ..add(process.kill);
+        ..add(() {
+          print('[DEBUG-VM] cleanupCallback: socket.destroy for $path');
+          socket.destroy();
+        })
+        ..add(() {
+          print('[DEBUG-VM] cleanupCallback: serverSocket.close for $path');
+          serverSocket.close();
+        })
+        ..add(() {
+          print(
+            '[DEBUG-VM] cleanupCallback: process.kill for $path (pid ${process.pid})',
+          );
+          process.kill();
+        });
     } else {
+      print('[DEBUG-VM] Spawning isolate for $path');
       var receivePort = ReceivePort();
       try {
         isolate = await _spawnIsolate(
@@ -95,17 +119,26 @@ class VMPlatform extends PlatformPlugin {
           platform.compiler,
         );
         if (isolate == null) {
+          print('[DEBUG-VM] Isolate is null for $path, closing receivePort');
           receivePort.close();
           return null;
         }
+        print('[DEBUG-VM] Isolate spawned for $path');
       } catch (error) {
+        print('[DEBUG-VM] Error spawning isolate for $path: $error');
         receivePort.close();
         rethrow;
       }
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
-      cleanupCallbacks.add(isolate.kill);
+      cleanupCallbacks.add(() {
+        print('[DEBUG-VM] cleanupCallback: isolate.kill for $path');
+        isolate!.kill();
+      });
     }
-    cleanupCallbacks.add(outerChannel.sink.close);
+    cleanupCallbacks.add(() {
+      print('[DEBUG-VM] cleanupCallback: outerChannel.sink.close for $path');
+      outerChannel.sink.close();
+    });
 
     VmService? client;
     StreamSubscription<Event>? eventSub;
@@ -113,22 +146,33 @@ class VMPlatform extends PlatformPlugin {
     // additional communication directly between the test bootstrapping and this
     // platform to enable pausing after tests for debugging.
     var outerQueue = StreamQueue(outerChannel.stream);
+    print('[DEBUG-VM] Awaiting channelId from outerQueue for $path');
     var channelId = (await outerQueue.next) as int;
+    print('[DEBUG-VM] Received channelId $channelId from outerQueue for $path');
     var channel = outerChannel
         .virtualChannel(channelId)
         .transformStream(
           StreamTransformer.fromHandlers(
             handleDone: (sink) async {
+              print(
+                '[DEBUG-VM] virtualChannel handleDone fired for $path (${platform.compiler.name})',
+              );
               if (_shouldPauseAfterTests) {
                 outerChannel.sink.add('debug');
                 await outerQueue.next;
               }
+              print(
+                '[DEBUG-VM] Running ${cleanupCallbacks.length} cleanupCallbacks for $path',
+              );
               for (var fn in cleanupCallbacks) {
                 fn();
               }
               unawaited(eventSub?.cancel());
               unawaited(client?.dispose());
               sink.close();
+              print(
+                '[DEBUG-VM] virtualChannel handleDone finished for $path (${platform.compiler.name})',
+              );
             },
           ),
         );
@@ -199,9 +243,19 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(
-    () => Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]),
-  );
+  Future close() => _closeMemo.runOnce(() {
+    print('[DEBUG-VM] VMPlatform.close started');
+    return Future.wait([
+      _compiler.dispose().then(
+        (_) => print('[DEBUG-VM] _compiler.dispose() completed'),
+      ),
+      _tempDir.deleteWithRetry().then(
+        (_) => print('[DEBUG-VM] _tempDir.deleteWithRetry() completed'),
+      ),
+    ]).then((_) {
+      print('[DEBUG-VM] VMPlatform.close finished');
+    });
+  });
 
   String _aotRuntimeFor(SuitePlatform platform) {
     final sanSuffix = switch (platform.runtime) {

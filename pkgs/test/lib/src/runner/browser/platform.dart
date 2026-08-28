@@ -163,6 +163,9 @@ class BrowserPlatform extends PlatformPlugin
     Map<String, Object?> message,
   ) async {
     var browser = platform.runtime;
+    print(
+      '[DEBUG-BROWSER-PLATFORM] BrowserPlatform.load started for $path on ${browser.name} (${platform.compiler.name})',
+    );
     assert(suiteConfig.runtimes.contains(browser.identifier));
 
     if (!browser.isBrowser) {
@@ -170,6 +173,9 @@ class BrowserPlatform extends PlatformPlugin
     }
 
     var compiler = platform.compiler;
+    print(
+      '[DEBUG-BROWSER-PLATFORM] Getting compilerSupport for ${compiler.name}',
+    );
     var support = await compilerSupport(compiler);
 
     var htmlPathFromTestPath = '${p.withoutExtension(path)}.html';
@@ -203,23 +209,48 @@ class BrowserPlatform extends PlatformPlugin
       _checkHtmlCorrectness(htmlTemplatePath, path);
     }
 
-    if (_closed) return null;
+    if (_closed) {
+      print(
+        '[DEBUG-BROWSER-PLATFORM] BrowserPlatform closed before compileSuite for $path',
+      );
+      return null;
+    }
+    print(
+      '[DEBUG-BROWSER-PLATFORM] Compiling suite for $path with ${compiler.name}',
+    );
     await support.compileSuite(path, suiteConfig, platform);
+    print(
+      '[DEBUG-BROWSER-PLATFORM] Compiled suite for $path with ${compiler.name}',
+    );
 
     var suiteUrl = support.serverUrl.resolveUri(
       p.toUri('${p.withoutExtension(p.relative(path, from: _root))}.html'),
     );
 
-    if (_closed) return null;
+    if (_closed) {
+      print(
+        '[DEBUG-BROWSER-PLATFORM] BrowserPlatform closed before _browserManagerFor for $path',
+      );
+      return null;
+    }
 
+    print(
+      '[DEBUG-BROWSER-PLATFORM] Getting browser manager for (${browser.name}, ${compiler.name})',
+    );
     var browserManager = await _browserManagerFor(browser, compiler);
-    if (_closed || browserManager == null) return null;
+    if (_closed || browserManager == null) {
+      print(
+        '[DEBUG-BROWSER-PLATFORM] Closed or browserManager is null for $path',
+      );
+      return null;
+    }
 
     var timeout = const Duration(seconds: 30);
     if (suiteConfig.metadata.timeout.apply(timeout) case final suiteTimeout?
         when suiteTimeout > timeout) {
       timeout = suiteTimeout;
     }
+    print('[DEBUG-BROWSER-PLATFORM] Calling browserManager.load for $path');
     var suite = await browserManager.load(
       path,
       suiteUrl,
@@ -228,6 +259,9 @@ class BrowserPlatform extends PlatformPlugin
       platform.compiler,
       mapper: (await compilerSupport(compiler)).stackTraceMapperForPath(path),
       timeout: timeout,
+    );
+    print(
+      '[DEBUG-BROWSER-PLATFORM] browserManager.load returned suite=$suite for $path',
     );
     if (_closed) return null;
     return suite;
@@ -293,15 +327,27 @@ class BrowserPlatform extends PlatformPlugin
   /// loaded, they'll just spawn new browsers.
   @override
   Future<List<void>> closeEphemeral() {
+    print(
+      '[DEBUG-BROWSER-PLATFORM] BrowserPlatform.closeEphemeral started (${_browserManagers.length} managers)',
+    );
     var managers = _browserManagers.values.toList();
     _browserManagers.clear();
     return Future.wait(
       managers.map((manager) async {
         var result = await manager;
         if (result == null) return;
+        print(
+          '[DEBUG-BROWSER-PLATFORM] Calling manager.close in closeEphemeral for $result',
+        );
         await result.close();
+        print(
+          '[DEBUG-BROWSER-PLATFORM] manager.close completed in closeEphemeral for $result',
+        );
       }),
-    );
+    ).then((val) {
+      print('[DEBUG-BROWSER-PLATFORM] BrowserPlatform.closeEphemeral finished');
+      return val;
+    });
   }
 
   /// Closes the server and releases all its resources.
@@ -310,12 +356,33 @@ class BrowserPlatform extends PlatformPlugin
   /// resources have been fully released.
   @override
   Future<void> close() async => _closeMemo.runOnce(
-    () => Future.wait([
-      for (var browser in _browserManagers.values)
-        browser.then((b) => b?.close()),
-      for (var support in _compilerSupport.values)
-        support.then((s) => s.close()),
-    ]),
+    () {
+      print('[DEBUG-BROWSER-PLATFORM] BrowserPlatform.close started');
+      return Future.wait([
+        for (var browser in _browserManagers.values)
+          browser.then((b) async {
+            print(
+              '[DEBUG-BROWSER-PLATFORM] Closing browser manager $b in BrowserPlatform.close',
+            );
+            await b?.close();
+            print(
+              '[DEBUG-BROWSER-PLATFORM] Browser manager $b closed in BrowserPlatform.close',
+            );
+          }),
+        for (var support in _compilerSupport.values)
+          support.then((s) async {
+            print(
+              '[DEBUG-BROWSER-PLATFORM] Closing compilerSupport $s in BrowserPlatform.close',
+            );
+            await s.close();
+            print(
+              '[DEBUG-BROWSER-PLATFORM] CompilerSupport $s closed in BrowserPlatform.close',
+            );
+          }),
+      ]).then((_) {
+        print('[DEBUG-BROWSER-PLATFORM] BrowserPlatform.close finished');
+      });
+    },
   );
   final _closeMemo = AsyncMemoizer<void>();
 }

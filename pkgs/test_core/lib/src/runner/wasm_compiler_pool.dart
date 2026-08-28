@@ -54,6 +54,9 @@ class WasmCompilerPool extends CompilerPool {
         outWasmPath,
         wrapperPath,
       ]);
+      print(
+        '[DEBUG-WASM-POOL] dart2wasm compiler process started (pid ${process.pid}) for $path',
+      );
       if (closed) {
         process.kill();
         return;
@@ -74,6 +77,9 @@ class WasmCompilerPool extends CompilerPool {
       ]);
 
       var exitCode = await process.exitCode;
+      print(
+        '[DEBUG-WASM-POOL] dart2wasm compiler process exited with $exitCode (pid ${process.pid}) for $path',
+      );
       _processes.remove(process);
       if (closed) return;
 
@@ -92,11 +98,17 @@ class WasmCompilerPool extends CompilerPool {
   /// have been killed and all resources released.
   @override
   Future<void> closeInternal() async {
+    print(
+      '[DEBUG-WASM-POOL] WasmCompilerPool.closeInternal started (${_processes.length} processes)',
+    );
     await Future.wait(
       _processes.map((process) async {
+        print('[DEBUG-WASM-POOL] Killing compiler process ${process.pid}');
         process.kill();
         await process.exitCode;
+        print('[DEBUG-WASM-POOL] Compiler process ${process.pid} exited');
       }),
     );
+    print('[DEBUG-WASM-POOL] WasmCompilerPool.closeInternal finished');
   }
 }

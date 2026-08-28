@@ -114,6 +114,9 @@ class BrowserManager {
     Configuration configuration,
     int attempt,
   ) {
+    print(
+      '[DEBUG-BROWSER-MANAGER] Starting browser for ${runtime.name}, attempt $attempt',
+    );
     var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
@@ -122,11 +125,19 @@ class BrowserManager {
     // tests complete.
     browser.onExit
         .then<void>(
-          (_) => throw ApplicationException(
-            '${runtime.name} exited before connecting.',
-          ),
+          (_) {
+            print(
+              '[DEBUG-BROWSER-MANAGER] Browser ${runtime.name} onExit completed',
+            );
+            throw ApplicationException(
+              '${runtime.name} exited before connecting.',
+            );
+          },
         )
         .onError<Object>((error, stackTrace) {
+          print(
+            '[DEBUG-BROWSER-MANAGER] Browser ${runtime.name} onExit error: $error',
+          );
           if (!completer.isCompleted) {
             completer.completeError(error, stackTrace);
           }
@@ -134,13 +145,25 @@ class BrowserManager {
 
     future
         .then((webSocket) async {
+          print(
+            '[DEBUG-BROWSER-MANAGER] WebSocket connection received for ${runtime.name}',
+          );
           if (completer.isCompleted) return;
           var manager = BrowserManager._(browser, runtime, webSocket);
+          print(
+            '[DEBUG-BROWSER-MANAGER] Awaiting manager._environment for ${runtime.name}',
+          );
           await manager._environment;
+          print(
+            '[DEBUG-BROWSER-MANAGER] manager._environment ready for ${runtime.name}',
+          );
           if (completer.isCompleted) return;
           completer.complete(manager);
         })
         .onError((Object error, StackTrace stackTrace) {
+          print(
+            '[DEBUG-BROWSER-MANAGER] WebSocket error for ${runtime.name}: $error',
+          );
           browser.close();
           if (completer.isCompleted) return;
           completer.completeError(error, stackTrace);
@@ -210,7 +233,12 @@ class BrowserManager {
     _environment = _loadBrowserEnvironment();
     _channel.stream.listen(
       (message) => _onMessage(message as Map<Object, Object?>),
-      onDone: close,
+      onDone: () {
+        print(
+          '[DEBUG-BROWSER-MANAGER] _channel.stream onDone for ${_runtime.name}',
+        );
+        close();
+      },
     );
   }
 
@@ -252,6 +280,9 @@ class BrowserManager {
     var suiteID = _suiteID++;
     RunnerSuiteController? controller;
     void closeIframe() {
+      print(
+        '[DEBUG-BROWSER-MANAGER] closeIframe called for suite $suiteID ($path) on ${_runtime.name} (closed=$_closed)',
+      );
       if (_closed) return;
       if (controller != null) _controllers.remove(controller);
       _channel.sink.add({'command': 'closeSuite', 'id': suiteID});
@@ -264,6 +295,9 @@ class BrowserManager {
     var suiteChannel = virtualChannel.transformStream(
       StreamTransformer.fromHandlers(
         handleDone: (sink) {
+          print(
+            '[DEBUG-BROWSER-MANAGER] virtual suiteChannel handleDone for suite $suiteID ($path) on ${_runtime.name}',
+          );
           closeIframe();
           sink.close();
         },
@@ -364,12 +398,22 @@ class BrowserManager {
   /// Closes the manager and releases any resources it owns, including closing
   /// the browser.
   Future<void> close() => _closeMemoizer.runOnce(() {
+    print(
+      '[DEBUG-BROWSER-MANAGER] BrowserManager.close started for ${_runtime.name}',
+    );
     _closed = true;
     _timer.cancel();
     _pauseCompleter?.complete();
     _pauseCompleter = null;
     _controllers.clear();
-    return _browser.close();
+    print(
+      '[DEBUG-BROWSER-MANAGER] Calling _browser.close() for ${_runtime.name}',
+    );
+    return _browser.close().then((_) {
+      print(
+        '[DEBUG-BROWSER-MANAGER] _browser.close() completed for ${_runtime.name}',
+      );
+    });
   });
   final _closeMemoizer = AsyncMemoizer<void>();
 }

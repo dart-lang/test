@@ -60,6 +60,9 @@ class Dart2JsCompilerPool extends CompilerPool {
       if (config.color) args.add('--enable-diagnostic-colors');
 
       var process = await Process.start(Platform.resolvedExecutable, args);
+      print(
+        '[DEBUG-DART2JS-POOL] dart2js compiler process started (pid ${process.pid}) for $path',
+      );
       if (closed) {
         process.kill();
         return;
@@ -80,6 +83,9 @@ class Dart2JsCompilerPool extends CompilerPool {
       ]);
 
       var exitCode = await process.exitCode;
+      print(
+        '[DEBUG-DART2JS-POOL] dart2js compiler process exited with $exitCode (pid ${process.pid}) for $path',
+      );
       _processes.remove(process);
       if (closed) return;
 
@@ -122,11 +128,17 @@ class Dart2JsCompilerPool extends CompilerPool {
   /// have been killed and all resources released.
   @override
   Future<void> closeInternal() async {
+    print(
+      '[DEBUG-DART2JS-POOL] Dart2JsCompilerPool.closeInternal started (${_processes.length} processes)',
+    );
     await Future.wait(
       _processes.map((process) async {
+        print('[DEBUG-DART2JS-POOL] Killing compiler process ${process.pid}');
         process.kill();
         await process.exitCode;
+        print('[DEBUG-DART2JS-POOL] Compiler process ${process.pid} exited');
       }),
     );
+    print('[DEBUG-DART2JS-POOL] Dart2JsCompilerPool.closeInternal finished');
   }
 }

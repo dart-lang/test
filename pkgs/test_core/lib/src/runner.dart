@@ -109,12 +109,14 @@ class Runner {
   /// This starts running tests and printing their progress. It returns whether
   /// or not they ran successfully.
   Future<bool> run() => _config.asCurrent(() async {
+    print('[DEBUG-RUNNER] Runner.run started');
     if (_closed) {
       throw StateError('run() may not be called on a closed Runner.');
     }
 
     _warnForUnsupportedPlatforms();
 
+    print('[DEBUG-RUNNER] Calling _loadSuites()');
     var suites = _loadSuites();
 
     if (_config.coverage != null) {
@@ -125,15 +127,40 @@ class Runner {
     if (_config.pauseAfterLoad) {
       success = await _loadThenPause(suites);
     } else {
+      print('[DEBUG-RUNNER] Listening to suites stream');
       var subscription = _suiteSubscription = suites.listen(
-        _engine.suiteSink.add,
+        (suite) {
+          print(
+            '[DEBUG-RUNNER] suites stream emitted: ${suite.path} '
+            '(${suite.platform.runtime.name}, ${suite.platform.compiler.name})',
+          );
+          _engine.suiteSink.add(suite);
+        },
+        onDone: () {
+          print('[DEBUG-RUNNER] suites stream onDone fired');
+        },
+      );
+      print(
+        '[DEBUG-RUNNER] Awaiting Future.wait([subscription.asFuture(), _engine.run()])',
       );
       var results = await Future.wait(<Future>[
-        subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
-        _engine.run(),
+        subscription.asFuture<void>().then((_) {
+          print(
+            '[DEBUG-RUNNER] subscription.asFuture completed, closing _engine.suiteSink',
+          );
+          _engine.suiteSink.close();
+        }),
+        _engine.run().then((res) {
+          print('[DEBUG-RUNNER] _engine.run() completed with: $res');
+          return res;
+        }),
       ], eagerError: true);
+      print('[DEBUG-RUNNER] Future.wait([suites, engine.run]) completed');
       success = results.last as bool?;
     }
+    print(
+      '[DEBUG-RUNNER] Runner.run finishing (success=$success, closed=$_closed)',
+    );
 
     if (_closed) return false;
 
@@ -230,6 +257,9 @@ class Runner {
   /// currently-running VM tests, in case they have stuff to clean up on the
   /// filesystem.
   Future close() => _closeMemo.runOnce(() async {
+    print(
+      '[DEBUG-RUNNER] Runner.close started (engine isIdle=${_engine.isIdle})',
+    );
     Timer? timer;
     if (!_engine.isIdle) {
       // Wait a bit to print this message, since printing it eagerly looks weird
@@ -244,6 +274,9 @@ class Runner {
       });
     }
 
+    print(
+      '[DEBUG-RUNNER] Runner.close: cancelling debugOperation and suiteSubscription',
+    );
     await _debugOperation?.cancel();
     await _suiteSubscription?.cancel();
 
@@ -255,13 +288,29 @@ class Runner {
     // We close the loader's browsers while we're closing the engine because
     // browser tests don't store any state we care about and we want them to
     // shut down without waiting for their tear-downs.
-    await Future.wait([_loader.closeEphemeral(), _engine.close()]);
+    print(
+      '[DEBUG-RUNNER] Runner.close: awaiting Future.wait([_loader.closeEphemeral(), _engine.close()])',
+    );
+    await Future.wait([
+      _loader.closeEphemeral().then((_) {
+        print('[DEBUG-RUNNER] _loader.closeEphemeral() completed');
+      }),
+      _engine.close().then((_) {
+        print('[DEBUG-RUNNER] _engine.close() completed');
+      }),
+    ]);
     timer?.cancel();
+    print('[DEBUG-RUNNER] Runner.close: awaiting _loader.close()');
     await _loader.close();
+    print('[DEBUG-RUNNER] Runner.close: _loader.close() completed');
 
     // Flush any IOSinks created for file reporters.
+    print(
+      '[DEBUG-RUNNER] Runner.close: flushing file reporter sinks (${_sinks.length})',
+    );
     await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
     _sinks.clear();
+    print('[DEBUG-RUNNER] Runner.close finished');
   });
 
   /// Return a stream of [LoadSuite]s in [_config.testSelections].

@@ -73,12 +73,17 @@ class TestCompiler {
     return compiler.compile(mainDart);
   }
 
-  Future<void> dispose() => _closeMemo.runOnce(
-    () => Future.wait([
+  Future<void> dispose() => _closeMemo.runOnce(() {
+    print(
+      '[DEBUG-TEST-COMPILER] TestCompiler.dispose started (${_compilerForLanguageVersion.length} compilers)',
+    );
+    return Future.wait([
       for (var compiler in _compilerForLanguageVersion.values)
         compiler.dispose(),
-    ]),
-  );
+    ]).then((_) {
+      print('[DEBUG-TEST-COMPILER] TestCompiler.dispose finished');
+    });
+  });
 }
 
 class _TestCompilerForLanguageVersion {
@@ -222,9 +227,18 @@ class _TestCompilerForLanguageVersion {
   }
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
+    print(
+      '[DEBUG-TEST-COMPILER] _TestCompilerForLanguageVersion.dispose started for $_languageVersionComment',
+    );
     _frontendServerClient?.kill();
     _frontendServerClient = null;
+    print(
+      '[DEBUG-TEST-COMPILER] frontendServerClient killed, closing compilePool for $_languageVersionComment',
+    );
     await _compilePool.close();
+    print(
+      '[DEBUG-TEST-COMPILER] compilePool closed for $_languageVersionComment',
+    );
     if (_dillToCache != null) {
       var testCache = File(_dillCachePath);
       if (!testCache.parent.existsSync()) {
@@ -235,6 +249,9 @@ class _TestCompilerForLanguageVersion {
     if (_outputDillDirectory.existsSync()) {
       await _outputDillDirectory.deleteWithRetry();
     }
+    print(
+      '[DEBUG-TEST-COMPILER] _TestCompilerForLanguageVersion.dispose finished for $_languageVersionComment',
+    );
   });
 }
 

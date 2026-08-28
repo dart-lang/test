@@ -36,8 +36,11 @@ final String _globalConfigPath = () {
 }();
 
 Future<void> main(List<String> args) async {
+  print('[DEBUG-EXECUTABLE] main started with args: $args');
   await _execute(args);
+  print('[DEBUG-EXECUTABLE] _execute returned, calling completeShutdown()');
   completeShutdown();
+  print('[DEBUG-EXECUTABLE] main completed');
 }
 
 // ignore: unreachable_from_main
@@ -46,13 +49,16 @@ Future<void> runTests(List<String> args) async {
 }
 
 void completeShutdown() {
+  print('[DEBUG-EXECUTABLE] completeShutdown called (isShutdown=$isShutdown)');
   if (isShutdown) return;
   if (signalSubscription != null) {
+    print('[DEBUG-EXECUTABLE] cancelling signalSubscription');
     signalSubscription!.cancel();
     signalSubscription = null;
   }
   isShutdown = true;
   cancelStdinLines();
+  print('[DEBUG-EXECUTABLE] completeShutdown finished');
 }
 
 Future<void> _execute(List<String> args) async {
@@ -167,8 +173,11 @@ Future<void> _execute(List<String> args) async {
   });
 
   try {
+    print('[DEBUG-EXECUTABLE] Creating Runner instance');
     runner = Runner(configuration);
+    print('[DEBUG-EXECUTABLE] Calling runner.run()');
     exitCode = (await runner.run()) ? 0 : 1;
+    print('[DEBUG-EXECUTABLE] runner.run() returned with exitCode=$exitCode');
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
@@ -191,7 +200,9 @@ Future<void> _execute(List<String> args) async {
     );
     exitCode = exit_codes.software;
   } finally {
+    print('[DEBUG-EXECUTABLE] in finally block: awaiting runner?.close()');
     await runner?.close();
+    print('[DEBUG-EXECUTABLE] in finally block: runner?.close() completed');
   }
 
   return;

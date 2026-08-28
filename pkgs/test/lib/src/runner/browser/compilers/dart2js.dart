@@ -183,13 +183,19 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
 
   @override
   Future<void> close() async {
+    print('[DEBUG-DART2JS] Dart2JsSupport.close started (closed=$_closed)');
     if (_closed) return;
     _closed = true;
     await Future.wait([
-      Directory(_compiledDir).deleteWithRetry(),
-      _compilerPool.close(),
-      _server.close(),
+      Directory(_compiledDir).deleteWithRetry().then(
+        (_) => print('[DEBUG-DART2JS] deleted compiledDir'),
+      ),
+      _compilerPool.close().then(
+        (_) => print('[DEBUG-DART2JS] closed _compilerPool'),
+      ),
+      _server.close().then((_) => print('[DEBUG-DART2JS] closed _server')),
     ]);
+    print('[DEBUG-DART2JS] Dart2JsSupport.close finished');
   }
 
   @override
@@ -203,6 +209,9 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
     // package:shelf_web_socket v2.
     var path = _webSocketHandler.create(
       webSocketHandler((WebSocketChannel ws, _) {
+        print(
+          '[DEBUG-DART2JS] WebSocket connection established for webSocketHandler',
+        );
         completer.complete(ws);
       }),
     );

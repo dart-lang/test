@@ -11,6 +11,7 @@ import 'runner/browser/platform.dart';
 import 'runner/node/platform.dart';
 
 Future<void> main(List<String> args) async {
+  print('[DEBUG-PACKAGE-TEST] package:test main started with args: $args');
   registerPlatformPlugin([Runtime.nodeJS], NodePlatform.new);
   registerPlatformPlugin([
     Runtime.chrome,
@@ -19,5 +20,7 @@ Future<void> main(List<String> args) async {
     Runtime.safari,
   ], BrowserPlatform.start);
 
+  print('[DEBUG-PACKAGE-TEST] calling test_core executable.main');
   await executable.main(args);
+  print('[DEBUG-PACKAGE-TEST] test_core executable.main returned');
 }

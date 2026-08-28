@@ -118,6 +118,9 @@ RunnerSuiteController deserializeSuite(
     },
     onError: handleError,
     onDone: () {
+      print(
+        '[DEBUG-PLATFORM-HELPERS] suiteChannel.stream onDone for $path on ${platform.runtime.name} (completed=${completer.isCompleted})',
+      );
       if (completer.isCompleted) return;
       completer.completeError(
         LoadException(path, 'Connection closed before test suite loaded.'),
@@ -133,7 +136,16 @@ RunnerSuiteController deserializeSuite(
     completer.future,
     platform,
     path: path,
-    onClose: () => disconnector.disconnect().onError(handleError),
+    onClose: () {
+      print(
+        '[DEBUG-PLATFORM-HELPERS] RunnerSuiteController.onClose called for $path on ${platform.runtime.name}',
+      );
+      disconnector.disconnect().onError(handleError).then((_) {
+        print(
+          '[DEBUG-PLATFORM-HELPERS] disconnector.disconnect() finished for $path on ${platform.runtime.name}',
+        );
+      });
+    },
     gatherCoverage: gatherCoverage,
   );
 }

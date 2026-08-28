@@ -60,6 +60,7 @@ abstract class Browser {
     runZonedGuarded(
       () async {
         var process = await startBrowser();
+        print('[DEBUG-BROWSER] Browser $name process started (pid ${process.pid})');
         _processCompleter.complete(process);
 
         void drainOutput(Stream<List<int>> stream) {
@@ -78,6 +79,9 @@ abstract class Browser {
         drainOutput(process.stderr);
 
         var exitCode = await process.exitCode;
+        print(
+          '[DEBUG-BROWSER] Browser $name process exited with exitCode $exitCode (pid ${process.pid}, closed=$_closed)',
+        );
 
         // This hack dodges an otherwise intractable race condition. When the user
         // presses Control-C, the signal is sent to the browser and the test
@@ -106,6 +110,7 @@ abstract class Browser {
         _onExitCompleter.complete();
       },
       (error, stackTrace) {
+        print('[DEBUG-BROWSER] Browser $name error in runZonedGuarded: $error');
         // Ignore any errors after the browser has been closed.
         if (_closed) return;
 
@@ -128,18 +133,24 @@ abstract class Browser {
   /// Returns the same [Future] as [onExit], except that it won't emit
   /// exceptions.
   Future<void> close() async {
+    print('[DEBUG-BROWSER] Browser.close started for $name (closed=$_closed)');
     _closed = true;
 
     // If we don't manually close the stream the test runner can hang.
     // For example this happens with Chrome Headless.
     // See SDK issue: https://github.com/dart-lang/sdk/issues/31264
     for (var stream in _ioSubscriptions) {
+      print('[DEBUG-BROWSER] Cancelling io subscription for $name');
       unawaited(stream.cancel());
     }
 
-    (await _process).kill();
+    var process = await _process;
+    print('[DEBUG-BROWSER] Killing browser process ${process.pid} for $name');
+    process.kill();
 
-    // Swallow exceptions. The user should explicitly use [onExit] for these.
-    return onExit.onError((_, _) {});
+    print('[DEBUG-BROWSER] Awaiting onExit for $name (pid ${process.pid})');
+    return onExit.onError((_, _) {}).then((_) {
+      print('[DEBUG-BROWSER] onExit completed for $name (pid ${process.pid})');
+    });
   }
 }

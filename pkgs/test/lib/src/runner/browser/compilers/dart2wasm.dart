@@ -201,13 +201,19 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
 
   @override
   Future<void> close() async {
+    print('[DEBUG-DART2WASM] Dart2WasmSupport.close started (closed=$_closed)');
     if (_closed) return;
     _closed = true;
     await Future.wait([
-      Directory(_compiledDir).deleteWithRetry(),
-      _compilerPool.close(),
-      _server.close(),
+      Directory(_compiledDir).deleteWithRetry().then(
+        (_) => print('[DEBUG-DART2WASM] deleted compiledDir'),
+      ),
+      _compilerPool.close().then(
+        (_) => print('[DEBUG-DART2WASM] closed _compilerPool'),
+      ),
+      _server.close().then((_) => print('[DEBUG-DART2WASM] closed _server')),
     ]);
+    print('[DEBUG-DART2WASM] Dart2WasmSupport.close finished');
   }
 
   @override
@@ -221,6 +227,9 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
     // package:shelf_web_socket v2.
     var path = _webSocketHandler.create(
       webSocketHandler((WebSocketChannel ws, _) {
+        print(
+          '[DEBUG-DART2WASM] WebSocket connection established for webSocketHandler',
+        );
         completer.complete(ws);
       }),
     );
