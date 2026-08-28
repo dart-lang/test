@@ -66,6 +66,7 @@ class VMPlatform extends PlatformPlugin {
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
       );
+      var socketFuture = serverSocket.first;
       Process process;
       try {
         process = await _spawnExecutable(
@@ -79,7 +80,7 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
 
-      var socket = await serverSocket.first;
+      var socket = await socketFuture;
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(socket.destroy)
