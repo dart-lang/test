@@ -158,6 +158,28 @@ void main() {
             });
           }
 
+          if (runtime.isDartVM &&
+              (compiler == Compiler.exe || compiler == Compiler.cli)) {
+            test('can run multiple suites concurrently', () async {
+              await d.file('test1.dart', _delayedGoodTest).create();
+              await d.file('test2.dart', _delayedGoodTest).create();
+              var test = await runTest([
+                'test1.dart',
+                'test2.dart',
+                '-p',
+                runtime.identifier,
+                '-c',
+                compiler.identifier,
+              ], concurrency: 2);
+
+              expect(
+                test.stdout,
+                emitsThrough(contains('+2: All tests passed!')),
+              );
+              await test.shouldExit(0);
+            });
+          }
+
           if (sanitizerEnvironment != null && compiler == Compiler.cli) {
             test(
               'sets sanitizer environment defaults',
@@ -224,6 +246,16 @@ final _goodTest = '''
 
   void main() {
     test("success", () {});
+  }
+''';
+
+final _delayedGoodTest = '''
+  import 'package:test/test.dart';
+
+  void main() {
+    test("success", () async {
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+    });
   }
 ''';
 
