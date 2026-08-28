@@ -75,13 +75,15 @@ class TestCompiler {
 
   Future<void> dispose() => _closeMemo.runOnce(() {
     print(
-      '[DEBUG-TEST-COMPILER] TestCompiler.dispose started (${_compilerForLanguageVersion.length} compilers)',
+      '[DEBUG-TEST-COMPILER] [${debugTimestamp()}] TestCompiler.dispose started (${_compilerForLanguageVersion.length} compilers)',
     );
     return Future.wait([
       for (var compiler in _compilerForLanguageVersion.values)
         compiler.dispose(),
     ]).then((_) {
-      print('[DEBUG-TEST-COMPILER] TestCompiler.dispose finished');
+      print(
+        '[DEBUG-TEST-COMPILER] [${debugTimestamp()}] TestCompiler.dispose finished',
+      );
     });
   });
 }
@@ -228,16 +230,16 @@ class _TestCompilerForLanguageVersion {
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
     print(
-      '[DEBUG-TEST-COMPILER] _TestCompilerForLanguageVersion.dispose started for $_languageVersionComment',
+      '[DEBUG-TEST-COMPILER] [${debugTimestamp()}] _TestCompilerForLanguageVersion.dispose started for $_languageVersionComment',
     );
     _frontendServerClient?.kill();
     _frontendServerClient = null;
     print(
-      '[DEBUG-TEST-COMPILER] frontendServerClient killed, closing compilePool for $_languageVersionComment',
+      '[DEBUG-TEST-COMPILER] [${debugTimestamp()}] frontendServerClient killed, closing compilePool for $_languageVersionComment',
     );
     await _compilePool.close();
     print(
-      '[DEBUG-TEST-COMPILER] compilePool closed for $_languageVersionComment',
+      '[DEBUG-TEST-COMPILER] [${debugTimestamp()}] compilePool closed for $_languageVersionComment',
     );
     if (_dillToCache != null) {
       var testCache = File(_dillCachePath);
@@ -250,7 +252,7 @@ class _TestCompilerForLanguageVersion {
       await _outputDillDirectory.deleteWithRetry();
     }
     print(
-      '[DEBUG-TEST-COMPILER] _TestCompilerForLanguageVersion.dispose finished for $_languageVersionComment',
+      '[DEBUG-TEST-COMPILER] [${debugTimestamp()}] _TestCompilerForLanguageVersion.dispose finished for $_languageVersionComment',
     );
   });
 }

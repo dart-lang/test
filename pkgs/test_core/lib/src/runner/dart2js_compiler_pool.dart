@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:test_api/backend.dart' show debugTimestamp;
 
 import '../util/dart.dart';
 import '../util/io.dart';
@@ -129,16 +130,22 @@ class Dart2JsCompilerPool extends CompilerPool {
   @override
   Future<void> closeInternal() async {
     print(
-      '[DEBUG-DART2JS-POOL] Dart2JsCompilerPool.closeInternal started (${_processes.length} processes)',
+      '[DEBUG-DART2JS-POOL] [${debugTimestamp()}] Dart2JsCompilerPool.closeInternal started (${_processes.length} processes)',
     );
     await Future.wait(
       _processes.map((process) async {
-        print('[DEBUG-DART2JS-POOL] Killing compiler process ${process.pid}');
+        print(
+          '[DEBUG-DART2JS-POOL] [${debugTimestamp()}] Killing compiler process ${process.pid}',
+        );
         process.kill();
         await process.exitCode;
-        print('[DEBUG-DART2JS-POOL] Compiler process ${process.pid} exited');
+        print(
+          '[DEBUG-DART2JS-POOL] [${debugTimestamp()}] Compiler process ${process.pid} exited',
+        );
       }),
     );
-    print('[DEBUG-DART2JS-POOL] Dart2JsCompilerPool.closeInternal finished');
+    print(
+      '[DEBUG-DART2JS-POOL] [${debugTimestamp()}] Dart2JsCompilerPool.closeInternal finished',
+    );
   }
 }

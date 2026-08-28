@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:test_api/backend.dart' show debugTimestamp;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 
@@ -133,24 +134,34 @@ abstract class Browser {
   /// Returns the same [Future] as [onExit], except that it won't emit
   /// exceptions.
   Future<void> close() async {
-    print('[DEBUG-BROWSER] Browser.close started for $name (closed=$_closed)');
+    print(
+      '[DEBUG-BROWSER] [${debugTimestamp()}] Browser.close started for $name (closed=$_closed)',
+    );
     _closed = true;
 
     // If we don't manually close the stream the test runner can hang.
     // For example this happens with Chrome Headless.
     // See SDK issue: https://github.com/dart-lang/sdk/issues/31264
     for (var stream in _ioSubscriptions) {
-      print('[DEBUG-BROWSER] Cancelling io subscription for $name');
+      print(
+        '[DEBUG-BROWSER] [${debugTimestamp()}] Cancelling io subscription for $name',
+      );
       unawaited(stream.cancel());
     }
 
     var process = await _process;
-    print('[DEBUG-BROWSER] Killing browser process ${process.pid} for $name');
+    print(
+      '[DEBUG-BROWSER] [${debugTimestamp()}] Killing browser process ${process.pid} for $name',
+    );
     process.kill();
 
-    print('[DEBUG-BROWSER] Awaiting onExit for $name (pid ${process.pid})');
+    print(
+      '[DEBUG-BROWSER] [${debugTimestamp()}] Awaiting onExit for $name (pid ${process.pid})',
+    );
     return onExit.onError((_, _) {}).then((_) {
-      print('[DEBUG-BROWSER] onExit completed for $name (pid ${process.pid})');
+      print(
+        '[DEBUG-BROWSER] [${debugTimestamp()}] onExit completed for $name (pid ${process.pid})',
+      );
     });
   }
 }

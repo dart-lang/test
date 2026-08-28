@@ -8,7 +8,8 @@ import 'dart:convert';
 import 'package:async/async.dart';
 import 'package:pool/pool.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/backend.dart' show Compiler, Runtime, StackTraceMapper;
+import 'package:test_api/backend.dart'
+    show Compiler, Runtime, StackTraceMapper, debugTimestamp;
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/environment.dart'; // ignore: implementation_imports
@@ -399,7 +400,7 @@ class BrowserManager {
   /// the browser.
   Future<void> close() => _closeMemoizer.runOnce(() {
     print(
-      '[DEBUG-BROWSER-MANAGER] BrowserManager.close started for ${_runtime.name}',
+      '[DEBUG-BROWSER-MANAGER] [${debugTimestamp()}] BrowserManager.close started for ${_runtime.name}',
     );
     _closed = true;
     _timer.cancel();
@@ -407,11 +408,11 @@ class BrowserManager {
     _pauseCompleter = null;
     _controllers.clear();
     print(
-      '[DEBUG-BROWSER-MANAGER] Calling _browser.close() for ${_runtime.name}',
+      '[DEBUG-BROWSER-MANAGER] [${debugTimestamp()}] Calling _browser.close() for ${_runtime.name}',
     );
     return _browser.close().then((_) {
       print(
-        '[DEBUG-BROWSER-MANAGER] _browser.close() completed for ${_runtime.name}',
+        '[DEBUG-BROWSER-MANAGER] [${debugTimestamp()}] _browser.close() completed for ${_runtime.name}',
       );
     });
   });

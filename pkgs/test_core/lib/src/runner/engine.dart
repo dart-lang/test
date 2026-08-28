@@ -8,6 +8,7 @@ import 'dart:math';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
+import 'package:test_api/backend.dart' show debugTimestamp;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
@@ -362,7 +363,9 @@ class Engine {
     _subscriptions.add(subscription);
 
     return success.then((val) {
-      print('[DEBUG-ENGINE] Engine.run: success completed with val=$val');
+      print(
+        '[DEBUG-ENGINE] [${debugTimestamp()}] Engine.run: success completed with val=$val',
+      );
       return val;
     });
   }
@@ -635,7 +638,7 @@ class Engine {
   /// Closing [suiteSink] indicates that no more input will be provided, closing
   /// the engine indicates that no more output should be emitted.
   Future close() async {
-    print('[DEBUG-ENGINE] Engine.close started');
+    print('[DEBUG-ENGINE] [${debugTimestamp()}] Engine.close started');
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
     await _suiteController.close();
@@ -645,7 +648,7 @@ class Engine {
     // finish before we close their suites and cause them to become unloaded.
     var allLiveTests = liveTests.toSet()..addAll(_activeSuiteLoads);
     print(
-      '[DEBUG-ENGINE] Engine.close: closing ${allLiveTests.length} live tests',
+      '[DEBUG-ENGINE] [${debugTimestamp()}] Engine.close: closing ${allLiveTests.length} live tests',
     );
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
@@ -653,23 +656,33 @@ class Engine {
     // are done. For browser suites this is effectively immediate since their
     // tests shut down as soon as they're closed, but for VM suites we may need
     // to wait for tearDowns or tearDownAlls to run.
-    print('[DEBUG-ENGINE] Engine.close: closing _runPool');
+    print(
+      '[DEBUG-ENGINE] [${debugTimestamp()}] Engine.close: closing _runPool',
+    );
     futures.add(_runPool.close());
     await Future.wait(futures, eagerError: true);
-    print('[DEBUG-ENGINE] Engine.close finished');
+    print('[DEBUG-ENGINE] [${debugTimestamp()}] Engine.close finished');
   }
 
   Future<bool> get _done async {
-    print('[DEBUG-ENGINE] Engine._done: awaiting _group.future and _runPool.done');
+    print(
+      '[DEBUG-ENGINE] [${debugTimestamp()}] Engine._done: awaiting _group.future and _runPool.done',
+    );
     await Future.wait(<Future>[
       _group.future.then(
-        (_) => print('[DEBUG-ENGINE] Engine._done: _group.future completed'),
+        (_) => print(
+          '[DEBUG-ENGINE] [${debugTimestamp()}] Engine._done: _group.future completed',
+        ),
       ),
       _runPool.done.then(
-        (_) => print('[DEBUG-ENGINE] Engine._done: _runPool.done completed'),
+        (_) => print(
+          '[DEBUG-ENGINE] [${debugTimestamp()}] Engine._done: _runPool.done completed',
+        ),
       ),
     ], eagerError: true);
-    print('[DEBUG-ENGINE] Engine._done ready (closedBeforeDone=$_closedBeforeDone)');
+    print(
+      '[DEBUG-ENGINE] [${debugTimestamp()}] Engine._done ready (closedBeforeDone=$_closedBeforeDone)',
+    );
     return !_closedBeforeDone!;
   }
 }

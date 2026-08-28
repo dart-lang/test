@@ -9,6 +9,7 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:stack_trace/stack_trace.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import 'runner.dart';
@@ -36,11 +37,13 @@ final String _globalConfigPath = () {
 }();
 
 Future<void> main(List<String> args) async {
-  print('[DEBUG-EXECUTABLE] main started with args: $args');
+  print('[DEBUG-EXECUTABLE] [${debugTimestamp()}] main started with args: $args');
   await _execute(args);
-  print('[DEBUG-EXECUTABLE] _execute returned, calling completeShutdown()');
+  print(
+    '[DEBUG-EXECUTABLE] [${debugTimestamp()}] _execute returned, calling completeShutdown()',
+  );
   completeShutdown();
-  print('[DEBUG-EXECUTABLE] main completed');
+  print('[DEBUG-EXECUTABLE] [${debugTimestamp()}] main completed');
 }
 
 // ignore: unreachable_from_main
@@ -49,16 +52,20 @@ Future<void> runTests(List<String> args) async {
 }
 
 void completeShutdown() {
-  print('[DEBUG-EXECUTABLE] completeShutdown called (isShutdown=$isShutdown)');
+  print(
+    '[DEBUG-EXECUTABLE] [${debugTimestamp()}] completeShutdown called (isShutdown=$isShutdown)',
+  );
   if (isShutdown) return;
   if (signalSubscription != null) {
-    print('[DEBUG-EXECUTABLE] cancelling signalSubscription');
+    print(
+      '[DEBUG-EXECUTABLE] [${debugTimestamp()}] cancelling signalSubscription',
+    );
     signalSubscription!.cancel();
     signalSubscription = null;
   }
   isShutdown = true;
   cancelStdinLines();
-  print('[DEBUG-EXECUTABLE] completeShutdown finished');
+  print('[DEBUG-EXECUTABLE] [${debugTimestamp()}] completeShutdown finished');
 }
 
 Future<void> _execute(List<String> args) async {
@@ -173,11 +180,13 @@ Future<void> _execute(List<String> args) async {
   });
 
   try {
-    print('[DEBUG-EXECUTABLE] Creating Runner instance');
+    print('[DEBUG-EXECUTABLE] [${debugTimestamp()}] Creating Runner instance');
     runner = Runner(configuration);
-    print('[DEBUG-EXECUTABLE] Calling runner.run()');
+    print('[DEBUG-EXECUTABLE] [${debugTimestamp()}] Calling runner.run()');
     exitCode = (await runner.run()) ? 0 : 1;
-    print('[DEBUG-EXECUTABLE] runner.run() returned with exitCode=$exitCode');
+    print(
+      '[DEBUG-EXECUTABLE] [${debugTimestamp()}] runner.run() returned with exitCode=$exitCode',
+    );
   } on ApplicationException catch (error) {
     stderr.writeln(error.message);
     exitCode = exit_codes.data;
@@ -200,9 +209,13 @@ Future<void> _execute(List<String> args) async {
     );
     exitCode = exit_codes.software;
   } finally {
-    print('[DEBUG-EXECUTABLE] in finally block: awaiting runner?.close()');
+    print(
+      '[DEBUG-EXECUTABLE] [${debugTimestamp()}] in finally block: awaiting runner?.close()',
+    );
     await runner?.close();
-    print('[DEBUG-EXECUTABLE] in finally block: runner?.close() completed');
+    print(
+      '[DEBUG-EXECUTABLE] [${debugTimestamp()}] in finally block: runner?.close() completed',
+    );
   }
 
   return;

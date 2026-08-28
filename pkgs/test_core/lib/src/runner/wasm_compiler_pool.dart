@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:test_api/backend.dart' show debugTimestamp;
 
 import '../util/dart.dart';
 import '../util/io.dart';
@@ -99,16 +100,22 @@ class WasmCompilerPool extends CompilerPool {
   @override
   Future<void> closeInternal() async {
     print(
-      '[DEBUG-WASM-POOL] WasmCompilerPool.closeInternal started (${_processes.length} processes)',
+      '[DEBUG-WASM-POOL] [${debugTimestamp()}] WasmCompilerPool.closeInternal started (${_processes.length} processes)',
     );
     await Future.wait(
       _processes.map((process) async {
-        print('[DEBUG-WASM-POOL] Killing compiler process ${process.pid}');
+        print(
+          '[DEBUG-WASM-POOL] [${debugTimestamp()}] Killing compiler process ${process.pid}',
+        );
         process.kill();
         await process.exitCode;
-        print('[DEBUG-WASM-POOL] Compiler process ${process.pid} exited');
+        print(
+          '[DEBUG-WASM-POOL] [${debugTimestamp()}] Compiler process ${process.pid} exited',
+        );
       }),
     );
-    print('[DEBUG-WASM-POOL] WasmCompilerPool.closeInternal finished');
+    print(
+      '[DEBUG-WASM-POOL] [${debugTimestamp()}] WasmCompilerPool.closeInternal finished',
+    );
   }
 }

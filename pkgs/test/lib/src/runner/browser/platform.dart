@@ -7,7 +7,8 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart' show Compiler, Runtime, SuitePlatform;
+import 'package:test_api/backend.dart'
+    show Compiler, Runtime, SuitePlatform, debugTimestamp;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/load_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/platform.dart'; // ignore: implementation_imports
@@ -328,7 +329,7 @@ class BrowserPlatform extends PlatformPlugin
   @override
   Future<List<void>> closeEphemeral() {
     print(
-      '[DEBUG-BROWSER-PLATFORM] BrowserPlatform.closeEphemeral started (${_browserManagers.length} managers)',
+      '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] BrowserPlatform.closeEphemeral started (${_browserManagers.length} managers)',
     );
     var managers = _browserManagers.values.toList();
     _browserManagers.clear();
@@ -337,15 +338,17 @@ class BrowserPlatform extends PlatformPlugin
         var result = await manager;
         if (result == null) return;
         print(
-          '[DEBUG-BROWSER-PLATFORM] Calling manager.close in closeEphemeral for $result',
+          '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] Calling manager.close in closeEphemeral for $result',
         );
         await result.close();
         print(
-          '[DEBUG-BROWSER-PLATFORM] manager.close completed in closeEphemeral for $result',
+          '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] manager.close completed in closeEphemeral for $result',
         );
       }),
     ).then((val) {
-      print('[DEBUG-BROWSER-PLATFORM] BrowserPlatform.closeEphemeral finished');
+      print(
+        '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] BrowserPlatform.closeEphemeral finished',
+      );
       return val;
     });
   }
@@ -357,30 +360,34 @@ class BrowserPlatform extends PlatformPlugin
   @override
   Future<void> close() async => _closeMemo.runOnce(
     () {
-      print('[DEBUG-BROWSER-PLATFORM] BrowserPlatform.close started');
+      print(
+        '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] BrowserPlatform.close started',
+      );
       return Future.wait([
         for (var browser in _browserManagers.values)
           browser.then((b) async {
             print(
-              '[DEBUG-BROWSER-PLATFORM] Closing browser manager $b in BrowserPlatform.close',
+              '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] Closing browser manager $b in BrowserPlatform.close',
             );
             await b?.close();
             print(
-              '[DEBUG-BROWSER-PLATFORM] Browser manager $b closed in BrowserPlatform.close',
+              '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] Browser manager $b closed in BrowserPlatform.close',
             );
           }),
         for (var support in _compilerSupport.values)
           support.then((s) async {
             print(
-              '[DEBUG-BROWSER-PLATFORM] Closing compilerSupport $s in BrowserPlatform.close',
+              '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] Closing compilerSupport $s in BrowserPlatform.close',
             );
             await s.close();
             print(
-              '[DEBUG-BROWSER-PLATFORM] CompilerSupport $s closed in BrowserPlatform.close',
+              '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] CompilerSupport $s closed in BrowserPlatform.close',
             );
           }),
       ]).then((_) {
-        print('[DEBUG-BROWSER-PLATFORM] BrowserPlatform.close finished');
+        print(
+          '[DEBUG-BROWSER-PLATFORM] [${debugTimestamp()}] BrowserPlatform.close finished',
+        );
       });
     },
   );

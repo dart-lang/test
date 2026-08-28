@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:test_api/backend.dart' show debugTimestamp;
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 // ignore: implementation_imports
 import 'package:test_core/src/executable.dart' as executable;
@@ -11,7 +12,9 @@ import 'runner/browser/platform.dart';
 import 'runner/node/platform.dart';
 
 Future<void> main(List<String> args) async {
-  print('[DEBUG-PACKAGE-TEST] package:test main started with args: $args');
+  print(
+    '[DEBUG-PACKAGE-TEST] [${debugTimestamp()}] package:test main started with args: $args',
+  );
   registerPlatformPlugin([Runtime.nodeJS], NodePlatform.new);
   registerPlatformPlugin([
     Runtime.chrome,
@@ -20,7 +23,11 @@ Future<void> main(List<String> args) async {
     Runtime.safari,
   ], BrowserPlatform.start);
 
-  print('[DEBUG-PACKAGE-TEST] calling test_core executable.main');
+  print(
+    '[DEBUG-PACKAGE-TEST] [${debugTimestamp()}] calling test_core executable.main',
+  );
   await executable.main(args);
-  print('[DEBUG-PACKAGE-TEST] test_core executable.main returned');
+  print(
+    '[DEBUG-PACKAGE-TEST] [${debugTimestamp()}] test_core executable.main returned',
+  );
 }

@@ -20,3 +20,4 @@ export 'src/backend/state.dart' show State;
 export 'src/backend/suite_platform.dart' show SuitePlatform;
 export 'src/backend/test.dart' show Test;
 export 'src/backend/test_location.dart' show TestLocation;
+export 'test_api.dart' show debugTimestamp, testDebugStopwatch;

@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
+import 'package:test_api/backend.dart' show debugTimestamp;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
@@ -325,44 +326,50 @@ class Loader {
 
   Future closeEphemeral() async {
     print(
-      '[DEBUG-LOADER] closeEphemeral started (${_platformPlugins.length} plugins registered)',
+      '[DEBUG-LOADER] [${debugTimestamp()}] closeEphemeral started (${_platformPlugins.length} plugins registered)',
     );
     await Future.wait(
       _platformPlugins.values.toSet().map((memo) async {
         if (!memo.hasRun) return;
         var plugin = await memo.future;
-        print('[DEBUG-LOADER] Calling closeEphemeral on ${plugin.runtimeType}');
+        print(
+          '[DEBUG-LOADER] [${debugTimestamp()}] Calling closeEphemeral on ${plugin.runtimeType}',
+        );
         await plugin.closeEphemeral();
         print(
-          '[DEBUG-LOADER] closeEphemeral completed on ${plugin.runtimeType}',
+          '[DEBUG-LOADER] [${debugTimestamp()}] closeEphemeral completed on ${plugin.runtimeType}',
         );
       }),
     );
-    print('[DEBUG-LOADER] closeEphemeral finished');
+    print('[DEBUG-LOADER] [${debugTimestamp()}] closeEphemeral finished');
   }
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
-    print('[DEBUG-LOADER] Loader.close started');
+    print('[DEBUG-LOADER] [${debugTimestamp()}] Loader.close started');
     await Future.wait([
       Future.wait(
         _platformPlugins.values.toSet().map((memo) async {
           if (!memo.hasRun) return;
           var plugin = await memo.future;
-          print('[DEBUG-LOADER] Calling close on plugin ${plugin.runtimeType}');
+          print(
+            '[DEBUG-LOADER] [${debugTimestamp()}] Calling close on plugin ${plugin.runtimeType}',
+          );
           await plugin.close();
           print(
-            '[DEBUG-LOADER] Close completed on plugin ${plugin.runtimeType}',
+            '[DEBUG-LOADER] [${debugTimestamp()}] Close completed on plugin ${plugin.runtimeType}',
           );
         }),
       ),
       Future.wait(
         _suites.map((suite) async {
           print(
-            '[DEBUG-LOADER] Closing suite ${suite.path} on ${suite.platform.runtime.name}',
+            '[DEBUG-LOADER] [${debugTimestamp()}] Closing suite ${suite.path} on ${suite.platform.runtime.name}',
           );
           await suite.close();
-          print('[DEBUG-LOADER] Suite closed: ${suite.path}');
+          print(
+            '[DEBUG-LOADER] [${debugTimestamp()}] Suite closed: ${suite.path}',
+          );
         }),
       ),
     ]);
@@ -370,7 +377,7 @@ class Loader {
     _platformPlugins.clear();
     _platformCallbacks.clear();
     _suites.clear();
-    print('[DEBUG-LOADER] Loader.close finished');
+    print('[DEBUG-LOADER] [${debugTimestamp()}] Loader.close finished');
   });
   final _closeMemo = AsyncMemoizer<void>();
 }

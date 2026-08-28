@@ -9,7 +9,7 @@ import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
-    show PlatformSelector, Runtime, SuitePlatform;
+    show PlatformSelector, Runtime, SuitePlatform, debugTimestamp;
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
@@ -127,39 +127,45 @@ class Runner {
     if (_config.pauseAfterLoad) {
       success = await _loadThenPause(suites);
     } else {
-      print('[DEBUG-RUNNER] Listening to suites stream');
+      print('[DEBUG-RUNNER] [${debugTimestamp()}] Listening to suites stream');
       var subscription = _suiteSubscription = suites.listen(
         (suite) {
           print(
-            '[DEBUG-RUNNER] suites stream emitted: ${suite.path} '
+            '[DEBUG-RUNNER] [${debugTimestamp()}] suites stream emitted: ${suite.path} '
             '(${suite.platform.runtime.name}, ${suite.platform.compiler.name})',
           );
           _engine.suiteSink.add(suite);
         },
         onDone: () {
-          print('[DEBUG-RUNNER] suites stream onDone fired');
+          print(
+            '[DEBUG-RUNNER] [${debugTimestamp()}] suites stream onDone fired',
+          );
         },
       );
       print(
-        '[DEBUG-RUNNER] Awaiting Future.wait([subscription.asFuture(), _engine.run()])',
+        '[DEBUG-RUNNER] [${debugTimestamp()}] Awaiting Future.wait([subscription.asFuture(), _engine.run()])',
       );
       var results = await Future.wait(<Future>[
         subscription.asFuture<void>().then((_) {
           print(
-            '[DEBUG-RUNNER] subscription.asFuture completed, closing _engine.suiteSink',
+            '[DEBUG-RUNNER] [${debugTimestamp()}] subscription.asFuture completed, closing _engine.suiteSink',
           );
           _engine.suiteSink.close();
         }),
         _engine.run().then((res) {
-          print('[DEBUG-RUNNER] _engine.run() completed with: $res');
+          print(
+            '[DEBUG-RUNNER] [${debugTimestamp()}] _engine.run() completed with: $res',
+          );
           return res;
         }),
       ], eagerError: true);
-      print('[DEBUG-RUNNER] Future.wait([suites, engine.run]) completed');
+      print(
+        '[DEBUG-RUNNER] [${debugTimestamp()}] Future.wait([suites, engine.run]) completed',
+      );
       success = results.last as bool?;
     }
     print(
-      '[DEBUG-RUNNER] Runner.run finishing (success=$success, closed=$_closed)',
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.run finishing (success=$success, closed=$_closed)',
     );
 
     if (_closed) return false;
@@ -258,7 +264,7 @@ class Runner {
   /// filesystem.
   Future close() => _closeMemo.runOnce(() async {
     print(
-      '[DEBUG-RUNNER] Runner.close started (engine isIdle=${_engine.isIdle})',
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close started (engine isIdle=${_engine.isIdle})',
     );
     Timer? timer;
     if (!_engine.isIdle) {
@@ -275,7 +281,7 @@ class Runner {
     }
 
     print(
-      '[DEBUG-RUNNER] Runner.close: cancelling debugOperation and suiteSubscription',
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close: cancelling debugOperation and suiteSubscription',
     );
     await _debugOperation?.cancel();
     await _suiteSubscription?.cancel();
@@ -289,28 +295,36 @@ class Runner {
     // browser tests don't store any state we care about and we want them to
     // shut down without waiting for their tear-downs.
     print(
-      '[DEBUG-RUNNER] Runner.close: awaiting Future.wait([_loader.closeEphemeral(), _engine.close()])',
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close: awaiting Future.wait([_loader.closeEphemeral(), _engine.close()])',
     );
     await Future.wait([
       _loader.closeEphemeral().then((_) {
-        print('[DEBUG-RUNNER] _loader.closeEphemeral() completed');
+        print(
+          '[DEBUG-RUNNER] [${debugTimestamp()}] _loader.closeEphemeral() completed',
+        );
       }),
       _engine.close().then((_) {
-        print('[DEBUG-RUNNER] _engine.close() completed');
+        print(
+          '[DEBUG-RUNNER] [${debugTimestamp()}] _engine.close() completed',
+        );
       }),
     ]);
     timer?.cancel();
-    print('[DEBUG-RUNNER] Runner.close: awaiting _loader.close()');
+    print(
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close: awaiting _loader.close()',
+    );
     await _loader.close();
-    print('[DEBUG-RUNNER] Runner.close: _loader.close() completed');
+    print(
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close: _loader.close() completed',
+    );
 
     // Flush any IOSinks created for file reporters.
     print(
-      '[DEBUG-RUNNER] Runner.close: flushing file reporter sinks (${_sinks.length})',
+      '[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close: flushing file reporter sinks (${_sinks.length})',
     );
     await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
     _sinks.clear();
-    print('[DEBUG-RUNNER] Runner.close finished');
+    print('[DEBUG-RUNNER] [${debugTimestamp()}] Runner.close finished');
   });
 
   /// Return a stream of [LoadSuite]s in [_config.testSelections].

@@ -12,7 +12,8 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:test_api/backend.dart' show StackTraceMapper, SuitePlatform;
+import 'package:test_api/backend.dart'
+    show StackTraceMapper, SuitePlatform, debugTimestamp;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/dart2js_compiler_pool.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
@@ -183,19 +184,29 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
 
   @override
   Future<void> close() async {
-    print('[DEBUG-DART2JS] Dart2JsSupport.close started (closed=$_closed)');
+    print(
+      '[DEBUG-DART2JS] [${debugTimestamp()}] Dart2JsSupport.close started (closed=$_closed)',
+    );
     if (_closed) return;
     _closed = true;
     await Future.wait([
       Directory(_compiledDir).deleteWithRetry().then(
-        (_) => print('[DEBUG-DART2JS] deleted compiledDir'),
+        (_) => print(
+          '[DEBUG-DART2JS] [${debugTimestamp()}] deleted compiledDir',
+        ),
       ),
       _compilerPool.close().then(
-        (_) => print('[DEBUG-DART2JS] closed _compilerPool'),
+        (_) => print(
+          '[DEBUG-DART2JS] [${debugTimestamp()}] closed _compilerPool',
+        ),
       ),
-      _server.close().then((_) => print('[DEBUG-DART2JS] closed _server')),
+      _server.close().then(
+        (_) => print('[DEBUG-DART2JS] [${debugTimestamp()}] closed _server'),
+      ),
     ]);
-    print('[DEBUG-DART2JS] Dart2JsSupport.close finished');
+    print(
+      '[DEBUG-DART2JS] [${debugTimestamp()}] Dart2JsSupport.close finished',
+    );
   }
 
   @override

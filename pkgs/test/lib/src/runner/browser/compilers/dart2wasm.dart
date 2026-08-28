@@ -12,7 +12,8 @@ import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_packages_handler/shelf_packages_handler.dart';
 import 'package:shelf_static/shelf_static.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
-import 'package:test_api/backend.dart' show StackTraceMapper, SuitePlatform;
+import 'package:test_api/backend.dart'
+    show StackTraceMapper, SuitePlatform, debugTimestamp;
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/package_version.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
@@ -201,19 +202,29 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
 
   @override
   Future<void> close() async {
-    print('[DEBUG-DART2WASM] Dart2WasmSupport.close started (closed=$_closed)');
+    print(
+      '[DEBUG-DART2WASM] [${debugTimestamp()}] Dart2WasmSupport.close started (closed=$_closed)',
+    );
     if (_closed) return;
     _closed = true;
     await Future.wait([
       Directory(_compiledDir).deleteWithRetry().then(
-        (_) => print('[DEBUG-DART2WASM] deleted compiledDir'),
+        (_) => print(
+          '[DEBUG-DART2WASM] [${debugTimestamp()}] deleted compiledDir',
+        ),
       ),
       _compilerPool.close().then(
-        (_) => print('[DEBUG-DART2WASM] closed _compilerPool'),
+        (_) => print(
+          '[DEBUG-DART2WASM] [${debugTimestamp()}] closed _compilerPool',
+        ),
       ),
-      _server.close().then((_) => print('[DEBUG-DART2WASM] closed _server')),
+      _server.close().then(
+        (_) => print('[DEBUG-DART2WASM] [${debugTimestamp()}] closed _server'),
+      ),
     ]);
-    print('[DEBUG-DART2WASM] Dart2WasmSupport.close finished');
+    print(
+      '[DEBUG-DART2WASM] [${debugTimestamp()}] Dart2WasmSupport.close finished',
+    );
   }
 
   @override

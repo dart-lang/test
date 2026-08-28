@@ -244,16 +244,20 @@ class VMPlatform extends PlatformPlugin {
 
   @override
   Future close() => _closeMemo.runOnce(() {
-    print('[DEBUG-VM] VMPlatform.close started');
+    print('[DEBUG-VM] [${debugTimestamp()}] VMPlatform.close started');
     return Future.wait([
       _compiler.dispose().then(
-        (_) => print('[DEBUG-VM] _compiler.dispose() completed'),
+        (_) => print(
+          '[DEBUG-VM] [${debugTimestamp()}] _compiler.dispose() completed',
+        ),
       ),
       _tempDir.deleteWithRetry().then(
-        (_) => print('[DEBUG-VM] _tempDir.deleteWithRetry() completed'),
+        (_) => print(
+          '[DEBUG-VM] [${debugTimestamp()}] _tempDir.deleteWithRetry() completed',
+        ),
       ),
     ]).then((_) {
-      print('[DEBUG-VM] VMPlatform.close finished');
+      print('[DEBUG-VM] [${debugTimestamp()}] VMPlatform.close finished');
     });
   });
 
