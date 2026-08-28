@@ -258,7 +258,7 @@ final _delayedGoodTest = '''
 
   void main() {
     test("success", () async {
-      await Future<void>.delayed(const Duration(seconds: 8));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
     });
   }
 ''';

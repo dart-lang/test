@@ -66,7 +66,6 @@ class VMPlatform extends PlatformPlugin {
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
       );
-      var socketFuture = serverSocket.first;
       Process process;
       try {
         process = await _spawnExecutable(
@@ -80,7 +79,7 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
 
-      var socket = await socketFuture;
+      var socket = await serverSocket.fastFirst;
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(socket.destroy)
@@ -620,15 +619,15 @@ Future<Set<String>> _filterCoveragePackages(
   }
 }
 
-// extension<T> on Stream<T> {
-//   /// Like [first] but does not wait for the Future returned when cancelling the
-//   /// stream subscription.
-//   Future<T> get fastFirst {
-//     final completer = Completer<T>();
-//     final subscription = listen(
-//       completer.complete,
-//       onError: completer.completeError,
-//     );
-//     return completer.future..whenComplete(subscription.cancel);
-//   }
-// }
+extension<T> on Stream<T> {
+  /// Like [first] but does not wait for the Future returned when cancelling the
+  /// stream subscription.
+  Future<T> get fastFirst {
+    final completer = Completer<T>();
+    final subscription = listen(
+      completer.complete,
+      onError: completer.completeError,
+    );
+    return completer.future..whenComplete(subscription.cancel);
+  }
+}
