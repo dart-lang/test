@@ -5,9 +5,8 @@ sdk:
 
 stages:
 - unit_test:
-  - command: dart test --preset travis test/runner/compiler_integration_test.dart
+  - command: dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s
     os:
     - windows
     sdk:
     - dev
-

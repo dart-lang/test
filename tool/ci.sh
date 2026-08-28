@@ -64,8 +64,8 @@ for PKG in ${PKGS}; do
       echo -e "\033[1mPKG: ${PKG}; TASK: ${TASK}\033[22m"
       case ${TASK} in
       command)
-        echo 'dart test --preset travis test/runner/compiler_integration_test.dart'
-        dart test --preset travis test/runner/compiler_integration_test.dart || EXIT_CODE=$?
+        echo 'dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s'
+        dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s || EXIT_CODE=$?
         ;;
       *)
         echo -e "\033[31mUnknown TASK '${TASK}' - TERMINATING JOB\033[0m"

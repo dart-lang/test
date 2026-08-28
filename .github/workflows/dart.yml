@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   job_001:
-    name: "unit_test; `dart test --preset travis test/runner/compiler_integration_test.dart`"
+    name: "unit_test; `dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
@@ -30,15 +30,15 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
+      - id: integration_tests_cross_compiler_hang_pub_upgrade
+        name: integration_tests/cross_compiler_hang; dart pub upgrade
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; dart test --preset travis test/runner/compiler_integration_test.dart"
-        run: dart test --preset travis test/runner/compiler_integration_test.dart
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
+        working-directory: integration_tests/cross_compiler_hang
+      - name: "integration_tests/cross_compiler_hang; dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s"
+        run: "dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s"
+        if: "always() && steps.integration_tests_cross_compiler_hang_pub_upgrade.conclusion == 'success'"
+        working-directory: integration_tests/cross_compiler_hang
   job_002:
     name: Notify failure
     runs-on: ubuntu-latest
