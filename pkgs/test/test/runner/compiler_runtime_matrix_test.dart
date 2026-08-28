@@ -161,24 +161,22 @@ void main() {
           if (runtime.isDartVM &&
               (compiler == Compiler.exe || compiler == Compiler.cli)) {
             test('can run multiple suites concurrently', () async {
-              await d.file('test1.dart', _delayedGoodTest).create();
-              await d.file('test2.dart', _delayedGoodTest).create();
-              await d.file('test3.dart', _delayedGoodTest).create();
-              await d.file('test4.dart', _delayedGoodTest).create();
+              await d.file('test1.dart', _concurrencyTest(1, 3)).create();
+              await d.file('test2.dart', _concurrencyTest(2, 3)).create();
+              await d.file('test3.dart', _concurrencyTest(3, 3)).create();
               var test = await runTest([
                 'test1.dart',
                 'test2.dart',
                 'test3.dart',
-                'test4.dart',
                 '-p',
                 runtime.identifier,
                 '-c',
                 compiler.identifier,
-              ], concurrency: 4);
+              ], concurrency: 3);
 
               expect(
                 test.stdout,
-                emitsThrough(contains('+4: All tests passed!')),
+                emitsThrough(contains('+3: All tests passed!')),
               );
               await test.shouldExit(0);
             });
@@ -253,12 +251,21 @@ final _goodTest = '''
   }
 ''';
 
-final _delayedGoodTest = '''
+String _concurrencyTest(int id, int total) =>
+    '''
+  import 'dart:io';
   import 'package:test/test.dart';
 
   void main() {
-    test("success", () async {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+    test("concurrent test $id", () async {
+      File("test_$id.txt").writeAsStringSync("started");
+      final stopwatch = Stopwatch()..start();
+      while (![for (var i = 1; i <= $total; i++) File("test_\$i.txt").existsSync()].every((e) => e)) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+        if (stopwatch.elapsed > const Duration(seconds: 15)) {
+          fail("Timed out waiting for all $total suites to run concurrently");
+        }
+      }
     });
   }
 ''';
