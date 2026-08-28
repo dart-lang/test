@@ -1061,36 +1061,6 @@ jobs:
       - job_006
       - job_007
   job_026:
-    name: "unit_test; windows; Dart dev; PKG: pkgs/test; `dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\"`"
-    runs-on: windows-latest
-    steps:
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
-        with:
-          sdk: dev
-      - id: checkout
-        name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-      - id: pkgs_test_pub_upgrade
-        name: pkgs/test; dart pub upgrade
-        run: dart pub upgrade
-        if: "always() && steps.checkout.conclusion == 'success'"
-        working-directory: pkgs/test
-      - name: "pkgs/test; dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\""
-        run: "dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\""
-        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
-        working-directory: pkgs/test
-    needs:
-      - job_001
-      - job_002
-      - job_003
-      - job_004
-      - job_005
-      - job_006
-      - job_007
-  job_027:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1120,7 +1090,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_028:
+  job_027:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/wasm; `dart test --timeout=60s`"
     runs-on: windows-latest
     steps:
@@ -1142,6 +1112,36 @@ jobs:
         run: "dart test --timeout=60s"
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+      - job_007
+  job_028:
+    name: "unit_test; windows; Dart dev; PKG: pkgs/test; `dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\"`"
+    runs-on: windows-latest
+    steps:
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+        with:
+          sdk: dev
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - id: pkgs_test_pub_upgrade
+        name: pkgs/test; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/test
+      - name: "pkgs/test; dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\""
+        run: "dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\""
+        if: "always() && steps.pkgs_test_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/test
     needs:
       - job_001
       - job_002
