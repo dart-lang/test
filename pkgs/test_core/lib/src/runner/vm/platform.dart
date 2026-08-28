@@ -92,6 +92,9 @@ class VMPlatform extends PlatformPlugin {
       var socketCompleter = Completer<Socket>();
       var serverSubscription = serverSocket.listen(
         (s) {
+          print(
+            '[DEBUG-VM] [${debugTimestamp()}] serverSocket.listen received connection for $path',
+          );
           if (!socketCompleter.isCompleted) socketCompleter.complete(s);
         },
         onError: (Object e, StackTrace st) {
@@ -143,11 +146,11 @@ class VMPlatform extends PlatformPlugin {
         );
         process.kill();
         unawaited(serverSocket.close());
-        await serverSubscription.cancel();
+        unawaited(serverSubscription.cancel());
         if (error is LoadException) rethrow;
         throw LoadException(path, error);
       } finally {
-        await serverSubscription.cancel();
+        unawaited(serverSubscription.cancel());
       }
 
       print('[DEBUG-VM] [${debugTimestamp()}] Socket connected for $path');
