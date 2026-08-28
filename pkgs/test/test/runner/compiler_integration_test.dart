@@ -28,36 +28,36 @@ void main() {
 
   group('multiplatform runner', () {
     test('can run chrome and vm exe suites concurrently', () async {
-      for (var i = 1; i <= 3; i++) {
+      for (var i = 1; i <= 4; i++) {
         await d.file('test$i.dart', _test).create();
       }
       var test = await runTest([
-        for (var i = 1; i <= 3; i++) 'test$i.dart',
+        for (var i = 1; i <= 4; i++) 'test$i.dart',
         '-p',
         'chrome,vm',
         '-c',
         'dart2js,exe',
-      ], concurrency: 4);
+      ], concurrency: 8);
 
-      expect(test.stdout, emitsThrough(contains('+6: All tests passed!')));
+      expect(test.stdout, emitsThrough(contains('+8: All tests passed!')));
       await test.shouldExit(0);
     }, tags: 'chrome');
 
     test(
       'can run chrome and vm cli suites concurrently',
       () async {
-        for (var i = 1; i <= 3; i++) {
+        for (var i = 1; i <= 4; i++) {
           await d.file('test$i.dart', _test).create();
         }
         var test = await runTest([
-          for (var i = 1; i <= 3; i++) 'test$i.dart',
+          for (var i = 1; i <= 4; i++) 'test$i.dart',
           '-p',
           'chrome,vm',
           '-c',
           'dart2js,cli',
-        ], concurrency: 4);
+        ], concurrency: 8);
 
-        expect(test.stdout, emitsThrough(contains('+6: All tests passed!')));
+        expect(test.stdout, emitsThrough(contains('+8: All tests passed!')));
         await test.shouldExit(0);
       },
       tags: 'chrome',
