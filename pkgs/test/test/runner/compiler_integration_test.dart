@@ -29,21 +29,31 @@ void main() {
   });
 
   group('multiplatform runner', () {
-    test('can run multiple vm exe suites concurrently', () async {
-      final names = ['test0.dart', 'test1.dart', 'test2.dart', 'test3.dart'];
-      for (var name in names) {
-        await d.file(name, _testSuite(2)).create();
-      }
-      var test = await runTest(
-        [...names, '-p', 'vm', '-c', 'exe'],
-        concurrency: 4,
-        forwardStdio: true,
-        reporter: 'expanded',
-      );
+    test(
+      'can run multiple vm suites with kernel and exe concurrently',
+      () async {
+        final names = [for (var i = 0; i < 20; i++) 'test$i.dart'];
+        for (var name in names) {
+          await d.file(name, _testSuite(1)).create();
+        }
+        var test = await runTest(
+          [
+            ...names,
+            '-p',
+            'vm',
+            '-c',
+            'kernel,exe',
+            '--suite-load-timeout=10s',
+          ],
+          concurrency: 2,
+          forwardStdio: true,
+          reporter: 'expanded',
+        );
 
-      expect(test.stdout, emitsThrough(contains('All tests passed!')));
-      await test.shouldExit(0);
-    });
+        expect(test.stdout, emitsThrough(contains('All tests passed!')));
+        await test.shouldExit(0);
+      },
+    );
 
     test('can run vm exe and chrome suites concurrently', () async {
       await d.file('vm_test.dart', '''
