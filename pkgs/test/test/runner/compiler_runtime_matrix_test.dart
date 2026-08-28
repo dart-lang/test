@@ -163,18 +163,22 @@ void main() {
             test('can run multiple suites concurrently', () async {
               await d.file('test1.dart', _delayedGoodTest).create();
               await d.file('test2.dart', _delayedGoodTest).create();
+              await d.file('test3.dart', _delayedGoodTest).create();
+              await d.file('test4.dart', _delayedGoodTest).create();
               var test = await runTest([
                 'test1.dart',
                 'test2.dart',
+                'test3.dart',
+                'test4.dart',
                 '-p',
                 runtime.identifier,
                 '-c',
                 compiler.identifier,
-              ], concurrency: 2);
+              ], concurrency: 4);
 
               expect(
                 test.stdout,
-                emitsThrough(contains('+2: All tests passed!')),
+                emitsThrough(contains('+4: All tests passed!')),
               );
               await test.shouldExit(0);
             });
@@ -254,7 +258,7 @@ final _delayedGoodTest = '''
 
   void main() {
     test("success", () async {
-      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(seconds: 1));
     });
   }
 ''';
