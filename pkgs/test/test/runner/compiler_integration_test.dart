@@ -46,12 +46,42 @@ void main() {
     });
 
     test('can run vm exe and chrome suites concurrently', () async {
-      final names = ['test0.dart', 'test1.dart'];
-      for (var name in names) {
-        await d.file(name, _testSuite(2)).create();
-      }
+      await d.file('vm_test.dart', '''
+@TestOn('vm')
+library;
+
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:test/test.dart';
+
+void main() {
+  test('vm test', () {
+    expect(AnalysisContext, isNotNull);
+  });
+}
+''').create();
+
+      await d.file('chrome_test.dart', '''
+@TestOn('browser')
+library;
+
+import 'package:test/test.dart';
+
+void main() {
+  test('chrome test', () {
+    expect(1, equals(1));
+  });
+}
+''').create();
+
       var test = await runTest(
-        [...names, '-p', 'vm,chrome', '-c', 'exe,dart2js'],
+        [
+          'vm_test.dart',
+          'chrome_test.dart',
+          '-p',
+          'vm,chrome',
+          '-c',
+          'exe,dart2js',
+        ],
         concurrency: 4,
         forwardStdio: true,
         reporter: 'expanded',
@@ -64,12 +94,42 @@ void main() {
     test(
       'can run vm cli and chrome suites concurrently',
       () async {
-        final names = ['test0.dart', 'test1.dart'];
-        for (var name in names) {
-          await d.file(name, _testSuite(2)).create();
-        }
+        await d.file('vm_test.dart', '''
+@TestOn('vm')
+library;
+
+import 'package:analyzer/dart/analysis/analysis_context.dart';
+import 'package:test/test.dart';
+
+void main() {
+  test('vm test', () {
+    expect(AnalysisContext, isNotNull);
+  });
+}
+''').create();
+
+        await d.file('chrome_test.dart', '''
+@TestOn('browser')
+library;
+
+import 'package:test/test.dart';
+
+void main() {
+  test('chrome test', () {
+    expect(1, equals(1));
+  });
+}
+''').create();
+
         var test = await runTest(
-          [...names, '-p', 'vm,chrome', '-c', 'cli,dart2js'],
+          [
+            'vm_test.dart',
+            'chrome_test.dart',
+            '-p',
+            'vm,chrome',
+            '-c',
+            'cli,dart2js',
+          ],
           concurrency: 4,
           forwardStdio: true,
           reporter: 'expanded',
