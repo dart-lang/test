@@ -84,3 +84,13 @@ By completing the `Future` as soon as the socket arrives and invoking
 `subscription.cancel()` unawaited, the runner can immediately begin
 communicating over the connection without blocking on Windows kernel handle
 cleanup.
+
+## Reducing the Socket Listening Window
+
+In addition to `fastFirst`, `VMPlatform.load` compiles the test suite
+(via `_compileExecutable`) *before* creating the temporary directory and
+binding `ServerSocket`. This eliminates the multi-second compilation window
+during which the listening socket handle previously sat open in the runner
+process, reducing the window from several seconds to a few milliseconds and
+substantially lowering the likelihood that any concurrently spawned process
+inherits the socket.
