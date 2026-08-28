@@ -1061,13 +1061,13 @@ jobs:
       - job_006
       - job_007
   job_026:
-    name: "unit_test; windows; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\"`"
+    name: "unit_test; windows; Dart dev; PKG: pkgs/test; `dart test --preset travis test/runner/compiler_runtime_matrix_test.dart -n \"concurrently\"`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
         with:
-          sdk: "3.11.0"
+          sdk: dev
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1

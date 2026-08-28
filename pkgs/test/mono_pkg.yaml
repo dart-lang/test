@@ -9,4 +9,4 @@ stages:
     os:
     - windows
     sdk:
-    - pubspec
+    - dev
