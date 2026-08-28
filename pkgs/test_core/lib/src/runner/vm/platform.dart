@@ -62,10 +62,12 @@ class VMPlatform extends PlatformPlugin {
         platform.compiler == Compiler.cli) {
       var dir = Directory(_tempDir.path).createTempSync('exec_').path;
       var socketPath = p.join(dir, 'socket.sock');
+      print('[DEBUG-VM] Binding server socket for $path');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
       );
+      print('[DEBUG-VM] Bound server socket for $path');
       Process process;
       try {
         process = await _spawnExecutable(
@@ -78,8 +80,10 @@ class VMPlatform extends PlatformPlugin {
         unawaited(serverSocket.close());
         rethrow;
       }
-
+      print('[DEBUG-VM] Spawned executable PID ${process.pid} for $path');
+      print('[DEBUG-VM] Awaiting serverSocket.fastFirst for $path');
       var socket = await serverSocket.fastFirst;
+      print('[DEBUG-VM] serverSocket.fastFirst connected for $path');
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(socket.destroy)
