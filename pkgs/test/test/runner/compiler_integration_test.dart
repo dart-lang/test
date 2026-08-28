@@ -16,7 +16,7 @@ import 'package:test/test.dart';
 
 void main() {
   test("success", () async {
-    await Future<void>.delayed(const Duration(seconds: 2));
+    await Future<void>.delayed(const Duration(seconds: 15));
   });
 }
 ''';
@@ -27,6 +27,22 @@ void main() {
   });
 
   group('multiplatform runner', () {
+    test('can run multiple vm exe suites concurrently', () async {
+      for (var i = 1; i <= 4; i++) {
+        await d.file('test$i.dart', _test).create();
+      }
+      var test = await runTest([
+        for (var i = 1; i <= 4; i++) 'test$i.dart',
+        '-p',
+        'vm',
+        '-c',
+        'exe',
+      ], concurrency: 4);
+
+      expect(test.stdout, emitsThrough(contains('+4: All tests passed!')));
+      await test.shouldExit(0);
+    });
+
     test('can run chrome and vm exe suites concurrently', () async {
       for (var i = 1; i <= 4; i++) {
         await d.file('test$i.dart', _test).create();
