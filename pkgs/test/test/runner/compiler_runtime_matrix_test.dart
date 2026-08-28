@@ -161,21 +161,18 @@ void main() {
           if (runtime.isDartVM &&
               (compiler == Compiler.exe || compiler == Compiler.cli)) {
             test('can run multiple suites concurrently', () async {
-              for (var i = 1; i <= 6; i++) {
-                await d.file('test$i.dart', _concurrencyTest(i, 6)).create();
-              }
+              await d.file('slow_test.dart', _slowSuite()).create();
+              await d.file('fast_test.dart', _fastSuite()).create();
               var test = await runTest([
-                for (var i = 1; i <= 6; i++) 'test$i.dart',
+                'slow_test.dart',
+                'fast_test.dart',
                 '-p',
                 runtime.identifier,
                 '-c',
                 compiler.identifier,
-              ], concurrency: 6);
+              ], concurrency: 2);
 
-              expect(
-                test.stdout,
-                emitsThrough(contains('+6: All tests passed!')),
-              );
+              expect(test.stdout, emitsThrough(contains('All tests passed!')));
               await test.shouldExit(0);
             });
           }
@@ -249,23 +246,38 @@ final _goodTest = '''
   }
 ''';
 
-String _concurrencyTest(int id, int total) =>
-    '''
-  import 'dart:io';
-  import 'package:test/test.dart';
+String _slowSuite() {
+  final sb = StringBuffer('''
+import 'dart:io';
+import 'package:test/test.dart';
 
-  void main() {
-    test("concurrent test $id", () async {
-      File("test_$id.txt").writeAsStringSync("started");
-      final stopwatch = Stopwatch()..start();
-      while (![for (var i = 1; i <= $total; i++) File("test_\$i.txt").existsSync()].every((e) => e)) {
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-        if (stopwatch.elapsed > const Duration(seconds: 15)) {
-          fail("Timed out waiting for all $total suites to run concurrently");
-        }
-      }
-    });
+void main() {
+  test('slow suite', () async {
+    File('suite1_started.txt').writeAsStringSync('started');
+  });
+''');
+  for (var i = 0; i < 400; i++) {
+    sb.writeln("  test('dummy $i', () { expect($i, $i); });");
   }
+  sb.writeln('}');
+  return sb.toString();
+}
+
+String _fastSuite() => '''
+import 'dart:io';
+import 'package:test/test.dart';
+
+void main() {
+  test('fast suite waits for slow suite', () async {
+    final sw = Stopwatch()..start();
+    while (!File('suite1_started.txt').existsSync()) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      if (sw.elapsed > const Duration(seconds: 15)) {
+        fail('Timed out waiting for slow suite to start');
+      }
+    }
+  });
+}
 ''';
 
 final _failingTest = '''
