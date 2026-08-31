@@ -613,8 +613,8 @@ Future<Set<String>> _filterCoveragePackages(
   }
 }
 
-// TODO(https://github.com/dart-lang/sdk/issues/64166) remove when the min SDK
-// does not leak sockets to subproceesses.
+// TODO(https://github.com/dart-lang/sdk/issues/64166) remove along with the
+// integration test when the min SDK does not leak sockets to subproceesses.
 extension<T> on Stream<T> {
   /// Like [first] but does not wait for the Future returned when cancelling the
   /// stream subscription.
