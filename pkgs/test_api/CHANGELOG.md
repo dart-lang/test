@@ -4,6 +4,7 @@
   the host runner and cache results across tests and suites.
 * Allow the `vmAsan`, `vmMsan`, and `vmTsan` runtimes to use the native CLI
   compiler.
+* Export `TestFailure` from `package:test_api/scaffolding.dart`.
 
 ## 0.7.13
 

@@ -232,6 +232,7 @@ class ExecutableSettings {
     linuxExecutable: other._linuxExecutable ?? _linuxExecutable,
     macOSExecutables: other._macOSExectuables ?? _macOSExectuables,
     windowsExecutable: other._windowsExecutable ?? _windowsExecutable,
+    environmentOverride: other._environmentOverride ?? _environmentOverride,
   );
 }
 

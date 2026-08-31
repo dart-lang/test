@@ -3,6 +3,10 @@
 * Support `globalSetup` and `addGlobalTearDown` in `package:test` /
   `package:test_api` to execute global setup scripts once on the host runner
   and cache results across all tests and test suites.
+* Precompiled browser tests: stop serving files from outside the precompiled
+  root directory. The static handler no longer sets `serveFilesOutsidePath`,
+  restoring path-containment parity with the dart2js and dart2wasm compilers.
+* Export `TestFailure` from `package:test/scaffolding.dart`.
 * Support `--compiler cli` with the `vm-asan`, `vm-msan`, and `vm-tsan`
   runtimes.
 * Add support for `DART_TEST_REPORTER` environment variable in test runner and
@@ -21,6 +25,13 @@
 * Pass Node.js test process connection configuration and secret token via a
   restricted temporary authentication file to prevent secret leakage in command
   line process arguments.
+* Enable asserts in the `exe` compiler.
+* Keep the `CHROME_EXECUTABLE`, `MS_EDGE_EXECUTABLE`, `FIREFOX_EXECUTABLE`, and
+  `SAFARI_EXECUTABLE` overrides working when the browser is also configured
+  through `override_platforms` or `define_platforms`. Any setting on those
+  platforms used to drop the variable.
+* Fix race conditions in Chrome coverage collection where tests could finish
+  before DevTools connection and coverage profiling were initialized.
 
 ## 1.31.2
 
