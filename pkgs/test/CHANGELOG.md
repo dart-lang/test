@@ -29,6 +29,7 @@
   platforms used to drop the variable.
 * Fix race conditions in Chrome coverage collection where tests could finish
   before DevTools connection and coverage profiling were initialized.
+* Fix deadlock that may occur running tests with the `exe` compiler.
 
 ## 1.31.2
 
