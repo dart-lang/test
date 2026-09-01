@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
+import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
     show PlatformSelector, Runtime, SuitePlatform;
@@ -269,25 +270,11 @@ class Runner {
   /// Only tests that match [_config.patterns] will be included in the
   /// suites once they're loaded.
   Stream<LoadSuite> _loadSuites() {
-    return StreamGroup.merge(
-      _config.testSelections.entries.map((pathEntry) {
-        final testPath = pathEntry.key;
-        final testSelections = pathEntry.value;
-        final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
-        if (Directory(testPath).existsSync()) {
-          return _loader.loadDir(testPath, suiteConfig);
-        } else if (File(testPath).existsSync()) {
-          return _loader.loadFile(testPath, suiteConfig);
-        } else {
-          return Stream.fromIterable([
-            LoadSuite.forLoadException(
-              LoadException(testPath, 'Does not exist.'),
-              suiteConfig,
-            ),
-          ]);
-        }
-      }),
-    ).map((loadSuite) {
+    final source = _config.totalShards != null && _config.shardBySuite
+        ? _shardBySuiteSuites()
+        : _allSuites();
+
+    return source.map((loadSuite) {
       return loadSuite.changeSuite((suite) {
         _warnForUnknownTags(suite);
 
@@ -406,6 +393,87 @@ class Runner {
     });
   }
 
+  /// Returns a stream of all [LoadSuite]s.
+  Stream<LoadSuite> _allSuites() {
+    return StreamGroup.merge(
+      _config.testSelections.entries.map((pathEntry) {
+        final testPath = pathEntry.key;
+        final testSelections = pathEntry.value;
+        final suiteConfig = _config.suiteDefaults.selectTests(testSelections);
+        if (Directory(testPath).existsSync()) {
+          return _loader.loadDir(testPath, suiteConfig);
+        } else if (File(testPath).existsSync()) {
+          return _loader.loadFile(testPath, suiteConfig);
+        } else {
+          return Stream.fromIterable([
+            LoadSuite.forLoadException(
+              LoadException(testPath, 'Does not exist.'),
+              suiteConfig,
+            ),
+          ]);
+        }
+      }),
+    );
+  }
+
+  /// Returns a stream of [LoadSuite]s sharded by suite.
+  Stream<LoadSuite> _shardBySuiteSuites() {
+    final allFiles = <String>[];
+    for (var testPath in _config.testSelections.keys) {
+      if (Directory(testPath).existsSync()) {
+        allFiles.addAll(
+          Directory(testPath)
+              .listSync(recursive: true)
+              .whereType<File>()
+              .map((f) => f.path)
+              .where((path) => _config.filename.matches(p.basename(path))),
+        );
+      } else {
+        // If it's a file or doesn't exist, we add it to the list to be
+        // sharded and potentially reported as an error later.
+        allFiles.add(testPath);
+      }
+    }
+
+    allFiles.sort();
+
+    final matchingFiles = allFiles.where((path) {
+      final entry = _config.testSelections.entries.firstWhere(
+        (e) => path == e.key || p.isWithin(e.key, path),
+        orElse: () => _config.testSelections.entries.first,
+      );
+      final suiteConfig = _config.suiteDefaults.selectTests(entry.value);
+      return _loader.matchesSuite(path, suiteConfig);
+    }).toList();
+
+    final shardFiles = <String>[];
+    for (var i = 0; i < matchingFiles.length; i++) {
+      if (i % _config.totalShards! == _config.shardIndex!) {
+        shardFiles.add(matchingFiles[i]);
+      }
+    }
+
+    return StreamGroup.merge(
+      shardFiles.map((path) {
+        final entry = _config.testSelections.entries.firstWhere(
+          (e) => path == e.key || p.isWithin(e.key, path),
+          orElse: () => _config.testSelections.entries.first,
+        );
+        final suiteConfig = _config.suiteDefaults.selectTests(entry.value);
+
+        if (!File(path).existsSync() && !Directory(path).existsSync()) {
+          return Stream.fromIterable([
+            LoadSuite.forLoadException(
+              LoadException(path, 'Does not exist.'),
+              suiteConfig,
+            ),
+          ]);
+        }
+        return _loader.loadFile(path, suiteConfig);
+      }),
+    );
+  }
+
   /// Prints a warning for any unknown tags referenced in [suite] or its
   /// children.
   void _warnForUnknownTags(Suite suite) {
@@ -482,15 +550,15 @@ class Runner {
     return 'the suite itself';
   }
 
-  /// If sharding is enabled, filters [suite] to only include the tests that
-  /// should be run in this shard.
+  /// If sharding by "test" is enabled, filters [suite] to only include the
+  /// tests that should be run in this shard.
   ///
   /// We just take a slice of the tests in each suite corresponding to the shard
-  /// index. This makes the tests pretty tests across shards, and since the
+  /// index. This makes the tests pretty even across shards, and since the
   /// tests are continuous, makes us more likely to be able to re-use
   /// `setUpAll()` logic.
   RunnerSuite _shardSuite(RunnerSuite suite) {
-    if (_config.totalShards == null) return suite;
+    if (_config.totalShards == null || _config.shardBySuite) return suite;
 
     var shardSize = suite.group.testCount / _config.totalShards!;
     var shardIndex = _config.shardIndex!;
