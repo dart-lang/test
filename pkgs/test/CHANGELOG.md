@@ -1,4 +1,4 @@
-## 1.32.0-wip
+## 1.32.0
 
 * Precompiled browser tests: stop serving files from outside the precompiled
   root directory. The static handler no longer sets `serveFilesOutsidePath`,
