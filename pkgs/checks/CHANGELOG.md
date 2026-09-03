@@ -1,5 +1,7 @@
 ## 0.3.2-wip
 
+- Add `prints()` and `printsAsync()` check extensions on `Subject<T Function()>`
+  to check expectations against captured printed output.
 - Bump `test` dev dependency constraint.
 - Add `isNotA<R>()` check extension as a convenience in place of
   `not((it) => it.isA<R>())`.

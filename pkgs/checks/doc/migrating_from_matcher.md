@@ -125,6 +125,9 @@ check(because: 'some explanation', actual).expectation();
 -   `pairwiseCompare` -> `pairwiseMatches`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
+-   `prints` -> `Subject<void Function()>.prints()` (or `printsAsync`) to check
+    expectations on captured output, e.g. `check(fn).prints().equals(expected)`
+    or `await check(asyncFn).printsAsync((p) => p.equals(expected))`
 -   `containsAllInOrder(iterable)` ->
     `Subject<Iterable>.containsMatchingInOrder(iterable)` to compare with
     conditions other than equals,
@@ -153,7 +156,6 @@ check(because: 'some explanation', actual).expectation();
     *not* be deep equality (this is unusual, nested collections are unlikely to
     have a meaningful equality), force using `operator ==` at the first level
     with `.deepEquals(expected.map((e) => (Subject<Object?> s) => s.equals(e)))`;
--   `prints`: TODO add missing expectation? Is this one worth replacing?
 -   `predicate`: TODO add missing expectation
 
 ## Improvements you can expect
