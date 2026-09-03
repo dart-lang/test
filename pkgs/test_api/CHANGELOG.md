@@ -1,3 +1,7 @@
+## 0.7.15-wip
+
+* export `LocalTest`, `MessageType`, `Status`, `Suite` from `backend.dart`.
+
 ## 0.7.14
 
 * Allow the `vmAsan`, `vmMsan`, and `vmTsan` runtimes to use the native CLI
