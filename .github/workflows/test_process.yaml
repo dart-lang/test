@@ -23,6 +23,9 @@ defaults:
   run:
     working-directory: pkgs/test_process/
 
+permissions:
+  contents: read
+
 jobs:
   # Check code formatting and static analysis on a single OS (linux)
   # against Dart dev.
@@ -33,8 +36,10 @@ jobs:
       matrix:
         sdk: [dev]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: ${{ matrix.sdk }}
       - id: install
@@ -60,8 +65,10 @@ jobs:
         os: [ubuntu-latest]
         sdk: [3.1, dev]
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - uses: dart-lang/setup-dart@65eb853c7ba17dde3be364c3d2858773e7144260
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
         with:
           sdk: ${{ matrix.sdk }}
       - id: install

@@ -1,5 +1,6 @@
 ## 0.3.2-wip
 
+- Bump `test` dev dependency constraint.
 - Add `isNotA<R>()` check extension as a convenience in place of
   `not((it) => it.isA<R>())`.
 - Require Dart 3.11
@@ -12,6 +13,9 @@
   forward exceptions from that call.
 - Fix a bug when printing a failure message involving a value that returns an
   empty output from `toString()`.
+- Annotated async expectations with `@awaitNotRequired` since tests are safely
+  held open until expectations complete so it's not always necessary to
+  explicitly await them.
 
 ## 0.3.1
 

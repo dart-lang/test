@@ -20,21 +20,21 @@ final class Runtime {
     'VM with Address Sanitizer',
     'vm-asan',
     Compiler.exe,
-    [Compiler.exe],
+    [Compiler.exe, Compiler.cli],
     isDartVM: true,
   );
   static const Runtime vmMsan = Runtime(
     'VM with Memory Sanitizer',
     'vm-msan',
     Compiler.exe,
-    [Compiler.exe],
+    [Compiler.exe, Compiler.cli],
     isDartVM: true,
   );
   static const Runtime vmTsan = Runtime(
     'VM with Thread Sanitizer',
     'vm-tsan',
     Compiler.exe,
-    [Compiler.exe],
+    [Compiler.exe, Compiler.cli],
     isDartVM: true,
   );
 

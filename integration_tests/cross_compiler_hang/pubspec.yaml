@@ -1,10 +1,9 @@
-name: regression_tests
+name: cross_compiler_hang
 publish_to: none
 environment:
   sdk: ^3.11.0
 resolution: workspace
 dependencies:
   analyzer: any
-  package_config: any
-  path: any
+dev_dependencies:
   test: any

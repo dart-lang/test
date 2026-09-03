@@ -5,6 +5,9 @@
 @Tags(['firefox'])
 library;
 
+import 'dart:io';
+
+import 'package:path/path.dart' as p;
 import 'package:test/src/runner/browser/firefox.dart';
 import 'package:test/src/runner/executable_settings.dart';
 import 'package:test/test.dart';
@@ -123,4 +126,29 @@ void main() {
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
   });
+
+  test('does not pass target URL directly in command line arguments', () async {
+    var targetUrl = Uri.parse('http://localhost:12345/secret_token_12345');
+    var argsFile = p.join(d.sandbox, 'args.txt');
+    var scriptFile = p.join(d.sandbox, 'fake_firefox.sh');
+    await d.file('fake_firefox.sh', '''
+#!/bin/sh
+echo "\$@" > "$argsFile"
+''').create();
+    await Process.run('chmod', ['+x', scriptFile]);
+
+    var firefox = Firefox(
+      targetUrl,
+      settings: ExecutableSettings(
+        linuxExecutable: scriptFile,
+        macOSExecutable: scriptFile,
+        windowsExecutable: scriptFile,
+      ),
+    );
+    await firefox.onExit.catchError((_) {});
+
+    var argsText = await File(argsFile).readAsString();
+    expect(argsText, isNot(contains('secret_token_12345')));
+    expect(argsText, contains('redirect.html'));
+  }, testOn: '!windows');
 }

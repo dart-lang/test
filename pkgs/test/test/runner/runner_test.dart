@@ -138,9 +138,9 @@ final _runtimes =
 
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe, cli',
-  '[vm-asan]: exe (default)',
-  '[vm-msan]: exe (default)',
-  '[vm-tsan]: exe (default)',
+  '[vm-asan]: exe (default), cli',
+  '[vm-msan]: exe (default), cli',
+  '[vm-tsan]: exe (default), cli',
   '[chrome]: dart2js (default), dart2wasm',
   '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
@@ -373,6 +373,51 @@ $_usage''');
     test('directly', () async {
       await d.file('test.dart', _success).create();
       var test = await runDart(['test.dart']);
+
+      expect(
+        test.stdout,
+        allOf(
+          neverEmits(contains('success')),
+          emitsThrough(contains('All tests passed!')),
+        ),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('directly with DART_TEST_REPORTER', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runDart(
+        ['test.dart'],
+        environment: {'DART_TEST_REPORTER': 'expanded'},
+      );
+
+      expect(
+        test.stdout,
+        containsInOrder(['+0: success', '+1: All tests passed!']),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('with DART_TEST_REPORTER from runner', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runTest(
+        ['test.dart'],
+        environment: {'DART_TEST_REPORTER': 'expanded'},
+      );
+
+      expect(
+        test.stdout,
+        containsInOrder(['+0: success', '+1: All tests passed!']),
+      );
+      await test.shouldExit(0);
+    });
+
+    test('CLI flag overrides DART_TEST_REPORTER', () async {
+      await d.file('test.dart', _success).create();
+      var test = await runTest(
+        ['test.dart', '--reporter', 'failures-only'],
+        environment: {'DART_TEST_REPORTER': 'expanded'},
+      );
 
       expect(
         test.stdout,
