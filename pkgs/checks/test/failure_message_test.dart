@@ -58,14 +58,39 @@ Actual: a Map<String, List<int>> that:
 
     test('retain type label following isNotNull', () {
       check(() {
-        check<int?>(1).isNotNull().isGreaterThan(2);
-      }).throwsFailure().startsWith('Expected: a int? that:\n');
+        check<int?>(1).isNotNull()
+          ..isGreaterThan(0)
+          ..isLessThan(0);
+      }).throwsFailure().equals('''
+Expected: a int? that:
+  is not null
+  is greater than <0>
+  is less than <0>
+Actual: <1>
+Which: is not less than <0>''');
     });
 
     test('retain reason following isNotNull', () {
       check(() {
         check<int?>(because: 'Some reason', 1).isNotNull().isGreaterThan(2);
       }).throwsFailure().endsWith('Reason: Some reason');
+    });
+
+    test('nested uncollapsed failure retains isNotNull in expected', () {
+      check(() {
+        check(<int?>[1]).first.isNotNull()
+          ..isGreaterThan(0)
+          ..isLessThan(0);
+      }).throwsFailure().equals('''
+Expected: a List<int?> that:
+  has first element that:
+    is not null
+    is greater than <0>
+    is less than <0>
+Actual: a List<int?> that:
+  has first element that:
+  Actual: <1>
+  Which: is not less than <0>''');
     });
 
     test('handles objects with empty toString', () {

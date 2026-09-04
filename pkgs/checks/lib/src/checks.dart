@@ -881,7 +881,9 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     if (atSameLevel) {
       context = _TestContext._alias(this, value);
       _aliases.add(context);
-      _clauses.add(_ExpectationClause(label));
+      if (label().isNotEmpty) {
+        _clauses.add(_GuardClause(label));
+      }
     } else {
       context = _TestContext._child(value, label, addPredicate, this);
       _clauses.add(context);
@@ -994,7 +996,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     Rejection? rejection, {
     required bool thisContextFailed,
   }) {
-    final clause = _clauses.singleOrNull;
+    final clause = _clauses.where((c) => c is! _GuardClause).singleOrNull;
     if (clause == null) return null;
     final isFailingClause =
         thisContextFailed || failingContext._nestsUnder(clause);
@@ -1041,7 +1043,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   @override
   String? get collapsedExpected {
-    final child = _clauses.singleOrNull?.collapsedExpected;
+    final child =
+        _clauses.where((c) => c is! _GuardClause).singleOrNull?.collapsedExpected;
     if (child == null) return null;
     return _addPredicate?.call(child);
   }
@@ -1210,6 +1213,18 @@ class _ExpectationClause implements _ClauseDescription {
 
   @override
   bool get isLeaf => true;
+}
+
+/// An expectation clause created for a non-empty label when nesting
+/// `atSameLevel` (such as `isNotNull()` or `isA<T>()`).
+///
+/// When value extraction succeeds, the clause represents a satisfied
+/// precondition. Succeeded guard clauses are included in uncollapsed
+/// multi-line failure descriptions, but do not disqualify a context from
+/// collapsing when only a single expectation is otherwise checked on the
+/// subject.
+final class _GuardClause extends _ExpectationClause {
+  _GuardClause(super.expected);
 }
 
 /// The result of an expectation that failed for a subject.

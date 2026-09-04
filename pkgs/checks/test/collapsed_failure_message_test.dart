@@ -130,8 +130,32 @@ Which: is not less than or equal to <1>''');
 Expected: <2>
 Actual: <1>
 Which: is not identical''');
+        });
+
+      test('isNotNull collapses', () {
+        check(() {
+          check<int?>(1).isNotNull().equals(2);
+        }).throwsFailure().equals('''
+Expected: <2>
+Actual: <1>
+Which: is not equal''');
+        });
+
+      test('isA collapses', () {
+        check(() {
+          check<Object>(1).isA<int>().equals(2);
+        }).throwsFailure().equals('''
+Expected: <2>
+Actual: <1>
+Which: is not equal''');
+        check(() {
+          check<Object>(1).isA<num>().isGreaterThan(2);
+        }).throwsFailure().equals('''
+Expected: a value > <2>
+Actual: <1>
+Which: is not greater than <2>''');
+        });
       });
-    });
 
     group('math checks', () {
       test('isNaN', () {
