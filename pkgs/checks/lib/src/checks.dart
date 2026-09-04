@@ -941,11 +941,12 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     return current;
   }
 
-  /// Returns `true` if this context nests under [clause] (in other words,
-  /// whether [clause] is this context itself or one of its ancestors).
+  /// Whether this context nests under [clause] (in other words, whether
+  /// [clause] is this context itself or one of its ancestors).
   ///
-  /// This is used to identify which clauses are on the path to the failing
-  /// expectation, and should therefore be formatted with the rejection details.
+  /// The result is used to identify which clauses are on the path to the
+  /// failing expectation, and should therefore be formatted with the rejection
+  /// details.
   bool _nestsUnder(_ClauseDescription clause) {
     if (identical(clause, this)) return true;
     if (clause.isLeaf) return false;
@@ -976,8 +977,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
         );
   }
 
-  /// Returns a collapsed single-line [FailureDetail], or `null` if this context
-  /// cannot be collapsed.
+  /// A collapsed single-line [FailureDetail], or `null` if this context cannot
+  /// be collapsed.
   ///
   /// If this context has exactly one clause, and that child clause produces a
   /// collapsed representation (`childCollapsed`), this method attempts to
