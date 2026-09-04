@@ -513,11 +513,32 @@ Which: is not equal''');
         final checkStream = check(stream).withQueue.emits((it) => it.equals(2));
         await check(checkStream).throws<TestFailure>(
           (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
-Expected: a Stream<int> that:
-  emits <2>
-Actual: a Stream<int> that:
-  emits <1>
-  Which: is not equal'''),
+Expected: a Stream<int> that emits <2>
+Actual: a Stream<int> that emits <1>
+Which: is not equal'''),
+        );
+      });
+
+      test('emitsError collapses', () async {
+        final stream = Stream<int>.error(1);
+        final checkStream =
+            check(stream).withQueue.emitsError<int>((it) => it.equals(2));
+        await check(checkStream).throws<TestFailure>(
+          (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Stream<int> that emits error <2>
+Actual: a Stream<int> that emits error <1>
+Which: is not equal'''),
+        );
+      });
+
+      test('Future.throws collapses', () async {
+        final future = Future<void>.error(1);
+        final checkFuture = check(future).throws<int>((it) => it.equals(2));
+        await check(checkFuture).throws<TestFailure>(
+          (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Future<void> that throws <2>
+Actual: a Future<void> that throws <1>
+Which: is not equal'''),
         );
       });
     });

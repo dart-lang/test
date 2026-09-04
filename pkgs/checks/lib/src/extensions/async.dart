@@ -90,6 +90,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   Future<void> throws<E extends Object>([AsyncCondition<E>? errorCondition]) {
     return context.nestAsync<E>(
       () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
+      addPredicate: (predicateNoun) => 'throws $predicateNoun',
       (actual) async {
         try {
           return Extracted.rejection(
@@ -201,6 +202,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ]) {
     return context.nestAsync<E>(
       () => ['emits an error${E == Object ? '' : ' of type $E'}'],
+      addPredicate: (predicateNoun) => 'emits error $predicateNoun',
       (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
