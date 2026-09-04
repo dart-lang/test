@@ -18,7 +18,13 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
   Subject<E> throws<E>() => context.nest<E>(
-    () => ['throws an error of type $E'],
+    () {
+      var label = 'throws an error';
+      if (const Object() is! E) {
+        label = '$label of type $E';
+      }
+      return [label];
+    },
     addPredicate: (predicateNoun) => 'throws $predicateNoun',
     (actual) {
       try {
