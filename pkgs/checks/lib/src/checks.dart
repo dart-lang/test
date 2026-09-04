@@ -394,17 +394,31 @@ extension ContextExtension<T> on Subject<T> {
 ///      Which: is not equal
 ///    ```
 ///
-///    If an expectation does not support collapsing, the "Actual" section will
-///    include the expectations that succeeded up to the nesting point of the
-///    failure, followed by an indented `Actual:` line with the rejection:
+///    - When a single nested property is checked on the root subject but its
+///      inner expectations are multiline, "Expected" is formatted
+///      hierarchically while "Actual" collapses all the way to the root subject:
 ///
 ///    ```
 ///    Expected: a Future<String> that:
 ///      completes to a value that:
 ///        starts with 'a'
 ///        ends with 'z'
-///    Actual: a Future<String> that:
-///      completes to a value that:
+///    Actual: a Future<String> that completes to 'abcd'
+///    Which: does not end with 'z'
+///    ```
+///
+///    If an expectation does not support collapsing (such as a custom `nest`
+///    without an `addPredicate` callback), the "Actual" section will include
+///    the expectations that succeeded up to the nesting point of the failure,
+///    followed by an indented `Actual:` line with the rejection:
+///
+///    ```
+///    Expected: a Foo that:
+///      has someDerivedValue that:
+///        starts with 'a'
+///        ends with 'z'
+///    Actual: a Foo that:
+///      has someDerivedValue that:
 ///      Actual: 'abcd'
 ///      Which: does not end with 'z'
 ///    ```
@@ -1034,19 +1048,9 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       if (clause.isLeaf) {
         expandedCollapsed = childCollapsed;
       } else {
-        final rootLabel = _labelCallback().singleOrNull;
-        if (rootLabel != null) {
-          final exp = rootLabel.isEmpty
-              ? childExpected
-              : '$rootLabel that $childExpected';
-          final act = rootLabel.isEmpty
-              ? childActual
-              : '$rootLabel that $childActual';
-
-          if (exp.length <= 80 && act.length <= 80) {
-            expandedCollapsed = (exp, act);
-          }
-        }
+        final exp = _collapseWithRootLabel(childExpected);
+        final act = _collapseWithRootLabel(childActual);
+        if (exp != null && act != null) expandedCollapsed = (exp, act);
       }
     }
     if (expandedCollapsed == null) return null;
@@ -1059,6 +1063,14 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     );
   }
 
+  String? _collapseWithRootLabel(String child) {
+    if (_parent != null) return null;
+    final rootLabel = _labelCallback().singleOrNull;
+    if (rootLabel == null) return null;
+    final combined = rootLabel.isEmpty ? child : '$rootLabel that $child';
+    return combined.length <= 80 ? combined : null;
+  }
+
   @override
   String? get collapsedExpected {
     final child = _singleClause?.collapsedExpected;
@@ -1066,26 +1078,33 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     return _addPredicate?.call(child);
   }
 
-  /// The uncollapsed, multi-line [FailureDetail] for this context and its
-  /// clauses.
+  /// The [FailureDetail] for this context when the overall expectation cannot
+  /// collapse to a single line.
   ///
-  /// Iterates through all clauses under this context to construct the complete
-  /// multi-line `expected` and `actual` descriptions, including indentation,
-  /// clause nesting, and overlap accounting for failing and passing clauses.
+  /// Iterates through clauses under this context to construct `expected`,
+  /// tracking the depth to the failing clause and the overlap of succeeded
+  /// clauses. Passing non-leaf clauses collapse to a single line using their
+  /// [collapsedExpected] where available.
+  ///
+  /// Incorporates partial collapsing into `actual`:
+  /// - If this context is the failing context, uses [_addPredicate] to collapse
+  ///   the rejected actual value when possible.
+  /// - At the root context, if the failing clause is the only clause in
+  ///   `actual` and produces a single-line actual description within length
+  ///   limits, combines the root label and child description on a single line
+  ///   and adjusts depth to 0.
+  /// - Otherwise, formats `actual` hierarchically with indentation, retaining
+  ///   any collapsed child property descriptions.
   FailureDetail _fullDetails(
     _TestContext failingContext,
     Rejection? rejection, {
     required bool thisContextFailed,
   }) {
-    if (_clauses.isEmpty) {
-      return FailureDetail(
-        _labelCallback(),
-        thisContextFailed ? 0 : -1,
-        thisContextFailed ? 0 : -1,
-      );
-    }
-    var foundDepth = thisContextFailed ? 0 : -1;
     var foundOverlap = thisContextFailed ? 0 : -1;
+    var foundDepth = thisContextFailed ? 0 : -1;
+    if (_clauses.isEmpty) {
+      return FailureDetail(_labelCallback(), foundOverlap, foundDepth);
+    }
 
     final expected = [...postfixLast(' that:', _labelCallback())];
     final actual = [...expected];
@@ -1102,11 +1121,24 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       final details = clause.detail(failingContext, clauseRejection);
 
       final Iterable<String> clauseExpected;
+      var didCollapseRootActual = false;
       if (isFailingClause) {
         clauseExpected = details.expected;
-        final childCollapsed = details.collapsedDetails;
-        if (!clause.isLeaf && childCollapsed != null) {
-          actual.addAll(indent([childCollapsed.$2]));
+        final childActual = !clause.isLeaf && details.collapsedDetails != null
+            ? details.collapsedDetails!.$2
+            : (details.hasCustomActual ? details.actual.singleOrNull : null);
+        final collapsedRootActual =
+            childActual != null && actual.length == labelLines
+            ? _collapseWithRootLabel(childActual)
+            : null;
+        if (collapsedRootActual != null) {
+          actual
+            ..clear()
+            ..add(collapsedRootActual);
+          didCollapse = true;
+          didCollapseRootActual = true;
+        } else if (childActual != null) {
+          actual.addAll(indent([childActual]));
           didCollapse = true;
         } else if (details.hasCustomActual) {
           actual.addAll(indent(details.actual));
@@ -1127,7 +1159,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       if (details.depth >= 0) {
         assert(foundDepth == -1);
         assert(foundOverlap == -1);
-        foundDepth = details.depth + 1;
+        foundDepth = didCollapseRootActual ? details.depth : details.depth + 1;
 
         final overlapIncrement = details.collapsedDetails != null ? 1 : 0;
         foundOverlap =
@@ -1140,11 +1172,21 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       }
     }
     assert(rejection == null || foundDepth >= 0);
+    List<String>? actualResult;
+    if (canCollapse && didCollapse) {
+      actualResult = actual;
+    } else if (thisContextFailed && _addPredicate != null) {
+      if (rejection?.actual.singleOrNull case final actualValue?) {
+        if (_addPredicate(actualValue) case final collapsed?) {
+          actualResult = [collapsed];
+        }
+      }
+    }
     return FailureDetail(
       expected,
       foundOverlap,
       foundDepth,
-      actual: (canCollapse && didCollapse) ? actual : null,
+      actual: actualResult,
     );
   }
 }
@@ -1289,16 +1331,19 @@ final class FailureDetail {
 
   /// A description of the conditions the checked value satisfied.
   ///
-  /// Matches the format of [expected], except it will be cut off after the
-  /// label for the subject that had a failing expectation. For example, if the
-  /// identity check for the length of a list fails:
+  /// When a custom or collapsed actual description is available, returns it.
+  /// Otherwise, matches the format of [expected], cut off after the label for
+  /// the subject that had a failing expectation. For example, if a custom
+  /// nested subject without an `addPredicate` callback fails:
   ///
-  ///   a List that:
-  ///     has length that:
+  /// ```
+  ///   a CustomType that:
+  ///     has someDerivedValue that:
+  /// ```
   ///
-  /// If the subject with a failing expectation is the root, returns an empty
-  /// list. Instead the "Actual: " value from the rejection can be used without
-  /// indentation.
+  /// If the subject with a failing expectation is the root without custom
+  /// actual, returns an empty list. Instead the "Actual: " value from the
+  /// rejection can be used without indentation.
   Iterable<String> get actual =>
       _actual ??
       (_actualOverlap > 0 ? expected.take(_actualOverlap + 1) : const []);
@@ -1318,16 +1363,17 @@ final class FailureDetail {
   /// should be indented so that they are at the same level of indentation as
   /// the label for the subject where the expectation failed.
   ///
-  /// For example, if a `List` is expected to and have a certain length
-  /// [expected] may be:
+  /// For example, when multiple properties are checked on a `List`:
   ///
-  ///   a List that:
-  ///     has length that:
-  ///       equals &lt;3&gt;
+  /// ```
+  ///   a List<int> that:
+  ///     has length: <1>
+  ///     has first element: <2>
+  /// ```
   ///
-  /// If the actual value had an incorrect length, the [depth] will be `1` to
-  /// indicate that the failure occurred checking one of the expectations
-  /// against the `has length` label.
+  /// If the check on `has first element` fails, the [depth] will be `1` to
+  /// indicate that the failure occurred checking an expectation at that
+  /// indentation level.
   final int depth;
 
   /// The single-line representation of the expectation failure as a pair of

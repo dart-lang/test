@@ -22,10 +22,8 @@ Expected: a List<dynamic> that:
   has length that:
     is less than <10>
     is greater than <1>
-Actual: a List<dynamic> that:
-  has length that:
-  Actual: <0>
-  Which: is not greater than <1>''');
+Actual: a List<dynamic> that has length: <0>
+Which: is not greater than <1>''');
     });
 
     test('includes matching portions of actual when label is multiline', () {
@@ -45,8 +43,7 @@ Expected: a Map<String, List<int>> that:
 Actual: a Map<String, List<int>> that:
   contains a value for 'foo
   bar' that:
-    has first element that:
-    Actual: <10>
+    has first element: <10>
     Which: is not less than <10>''');
     });
 
@@ -87,10 +84,8 @@ Expected: a List<int?> that:
     is not null
     is greater than <0>
     is less than <0>
-Actual: a List<int?> that:
-  has first element that:
-  Actual: <1>
-  Which: is not less than <0>''');
+Actual: a List<int?> that has first element: <1>
+Which: is not less than <0>''');
     });
 
     test('handles objects with empty toString', () {
