@@ -876,9 +876,9 @@ void main() {
 }
 ```
 
-The setup script only executes once regardless of how many test suites or tests
-call `globalSetup()`. Global teardown callbacks registered with
-[`addGlobalTearDown()`] are executed when the test runner closes.
+The setup script for a given URI only executes once regardless of how many test
+suites or tests call `globalSetup()` with that URI. Global teardown callbacks
+registered with [`addGlobalTearDown()`] are executed when the test runner closes.
 
 `globalSetup()` takes a [`Uri`][Uri] resolved with the following rules:
 * **Root-relative URIs** (beginning with `/`, like `Uri.parse('/test/setup.dart')`):
