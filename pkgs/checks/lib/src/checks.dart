@@ -312,6 +312,7 @@ extension ContextExtension<T> on Subject<T> {
 /// For example:
 /// - `has` uses `(predicateNoun) => 'has $name: $predicateNoun'`
 /// - `completes` uses `(predicateNoun) => 'completes to $predicateNoun'`
+/// - `throws` uses `(predicateNoun) => 'throws $predicateNoun'`
 /// - `operator []` uses `(predicateNoun) => 'has entry <$key: $predicateNoun>'`
 ///
 /// If this level cannot be collapsed (for example, if a property name, key, or
@@ -358,9 +359,10 @@ extension ContextExtension<T> on Subject<T> {
 ///    Which: is not equal
 ///    ```
 ///
-///    Collapsing occurs when:
-///    - Exactly one expectation is checked at each nesting level (or only the
-///      first condition in a cascade failed).
+///    Single-line collapsing occurs when:
+///    - Exactly one expectation is checked at each nesting level (satisfied
+///      preconditions checked `atSameLevel`, such as `isNotNull()` or `isA<T>()`,
+///      do not count against this limit).
 ///    - The leaf expectation provides a [predicateNoun] callback that returns a
 ///      non-null single-line string.
 ///    - All parent nesting contexts provide an [addPredicate] callback that
@@ -371,10 +373,30 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// 2. **Structured Multi-Line Format**: When multiple expectations are checked
 ///    on the same subject, when an expectation description spans multiple lines,
-///    or when collapsing is not supported, the message falls back to a
-///    hierarchical multi-line format. The "Actual" section will include the
-///    expectations that succeeded, up to the nesting point of the failure, then
-///    use the "actual" and "which" arguments from the rejection at that level:
+///    or when root-level collapsing is not supported, the message uses a
+///    hierarchical multi-line format.
+///
+///    Within this format, individual child properties still collapse whenever
+///    possible:
+///    - Succeeded child properties collapse to single lines describing the
+///      expected condition (e.g. `has length: <2>`).
+///    - If the failing expectation was on a nested property that supports
+///      collapsing, both the expected condition and the rejected actual value
+///      are collapsed to single lines at that indentation level.
+///
+///    ```
+///    Expected: a List<int> that:
+///      has length: <2>
+///      has first element: <1>
+///    Actual: a List<int> that:
+///      has length: <2>
+///      has first element: <0>
+///      Which: is not equal
+///    ```
+///
+///    If an expectation does not support collapsing, the "Actual" section will
+///    include the expectations that succeeded up to the nesting point of the
+///    failure, followed by an indented `Actual:` line with the rejection:
 ///
 ///    ```
 ///    Expected: a Future<String> that:
