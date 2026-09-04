@@ -35,6 +35,14 @@ void main() {
           ],
         );
       });
+      test('can be described', () {
+        check(
+          (Subject<void Function()> it) => it.throws<Object>(),
+        ).description.deepEquals(['  throws an error']);
+        check(
+          (Subject<void Function()> it) => it.throws<StateError>(),
+        ).description.deepEquals(['  throws an error of type StateError']);
+      });
     });
 
     group('returnsNormally', () {

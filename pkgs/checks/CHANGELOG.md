@@ -16,6 +16,7 @@
 - Annotated async expectations with `@awaitNotRequired` since tests are safely
   held open until expectations complete so it's not always necessary to
   explicitly await them.
+- Output more compact failure messages for simple expectations.
 
 ## 0.3.1
 
