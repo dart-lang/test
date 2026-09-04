@@ -152,6 +152,8 @@ abstract final class Condition<T> {
   /// Matches the "Expected: " lines in the output of a failure message if a
   /// value did not meet the last expectation in this condition, without the
   /// first labeled line.
+  ///
+  /// This method should not throw exxceptions.
   FutureOr<Iterable<String>> describe();
 
   /// Creates a description of the expectations invoked in this condition.
@@ -164,6 +166,8 @@ abstract final class Condition<T> {
   /// first labeled line.
   ///
   /// Asynchronous expectations are not allowed.
+  ///
+  /// This method should not throw exceptions.
   Iterable<String> describeSync();
 }
 
