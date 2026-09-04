@@ -1039,8 +1039,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     );
   }
 
-  /// Computes the uncollapsed, multi-line [FailureDetail] for this context and
-  /// its clauses.
+  /// The uncollapsed, multi-line [FailureDetail] for this context and its
+  /// clauses.
   ///
   /// Iterates through all clauses under this context to construct the complete
   /// multi-line `expected` and `actual` descriptions, including indentation,
@@ -1175,11 +1175,11 @@ class _ExpectationClause implements _ClauseDescription {
   @override
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     final collapsedExpected = _predicateNoun?.call();
-    final collapsedActualString = collapsedExpected != null
+    final collapsedActual = collapsedExpected != null
         ? rejection?.actual.singleOrNull
         : null;
-    final collapsedDetails = collapsedActualString != null
-        ? (collapsedExpected!, collapsedActualString)
+    final collapsedDetails = collapsedActual != null
+        ? (collapsedExpected!, collapsedActual)
         : null;
     return FailureDetail(
       _expected(),
