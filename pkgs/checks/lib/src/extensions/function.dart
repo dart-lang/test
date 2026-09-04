@@ -17,7 +17,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Subject<E> throws<E>() => context.nest<E>(
+  Subject<E> throws<E>([Condition<E>? that]) => context.nest<E>(
     () {
       var label = 'throws an error';
       if (const Object() is! E) {
@@ -44,6 +44,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
         );
       }
     },
+    nestedCondition: that,
   );
 
   /// Expects that the function returns without throwing.
@@ -52,7 +53,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Subject<T> returnsNormally() => context.nest<T>(
+  Subject<T> returnsNormally([Condition<T>? that]) => context.nest<T>(
     () => ['returns a value'],
     addPredicate: (predicateNoun) => 'returns $predicateNoun',
     (actual) {
@@ -68,5 +69,6 @@ extension FunctionChecks<T> on Subject<T Function()> {
         );
       }
     },
+    nestedCondition: that,
   );
 }

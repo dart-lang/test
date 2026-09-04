@@ -20,7 +20,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// The returned future will complete when the subject future has completed,
   /// and [completionCondition] has optionally been checked.
   @awaitNotRequired
-  Future<void> completes([AsyncCondition<T>? completionCondition]) {
+  Future<Subject<T>> completes([AsyncCondition<T>? completionCondition]) {
     return context.nestAsync<T>(
       () => ['completes to a value'],
       addPredicate: (predicateNoun) => 'completes to $predicateNoun',
@@ -87,7 +87,9 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// The returned future will complete when the subject future has completed,
   /// and [errorCondition] has optionally been checked.
   @awaitNotRequired
-  Future<void> throws<E extends Object>([AsyncCondition<E>? errorCondition]) {
+  Future<Subject<E>> throws<E extends Object>([
+    AsyncCondition<E>? errorCondition,
+  ]) {
     return context.nestAsync<E>(
       () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
       addPredicate: (predicateNoun) => 'throws $predicateNoun',
@@ -153,7 +155,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [emittedCondition] has optionally been checked.
   @awaitNotRequired
-  Future<void> emits([AsyncCondition<T>? emittedCondition]) {
+  Future<Subject<T>> emits([AsyncCondition<T>? emittedCondition]) {
     return context.nestAsync<T>(
       () => ['emits a value'],
       addPredicate: (predicateNoun) => 'emits $predicateNoun',
@@ -197,7 +199,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [errorCondition] has optionally been checked.
   @awaitNotRequired
-  Future<void> emitsError<E extends Object>([
+  Future<Subject<E>> emitsError<E extends Object>([
     AsyncCondition<E>? errorCondition,
   ]) {
     return context.nestAsync<E>(
@@ -356,9 +358,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   @awaitNotRequired
   Future<void> anyOf(Iterable<AsyncCondition<StreamQueue<T>>> conditions) {
     conditions = conditions.toList();
-    if (conditions.isEmpty) {
-      throw ArgumentError('conditions may not be empty');
-    }
+    if (conditions.isEmpty) throw ArgumentError('conditions may not be empty');
     final descriptions = <Iterable<String>>[];
     return context.expectAsync(
       () => descriptions.isEmpty
@@ -582,4 +582,22 @@ extension WithQueueExtension<T> on Subject<Stream<T>> {
     (actual) => Extracted.value(StreamQueue(actual)),
     atSameLevel: true,
   );
+}
+
+extension FutureSubjectExtension<T> on Future<Subject<T>> {
+  /// Applies the expectations invoked in [condition] to this subject.
+  ///
+  /// Use this method when it would otherwise not be possible to check multiple
+  /// expectations for this subject due to cascade notation already being used
+  /// in a way that would conflict.
+  ///
+  /// ```dart
+  /// await check(someFuture).completes().which((b) => b
+  ///   ..isLessThan(10)
+  ///   ..isGreaterThan(0));
+  /// ```
+  @awaitNotRequired
+  Future<void> which(Condition<T> condition) async {
+    condition(await this);
+  }
 }
