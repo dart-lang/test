@@ -238,7 +238,7 @@ Which: does not contain 'bar'""");
           check('').isNotEmpty();
         }).throwsFailure().equals('''
 Expected: a non-empty string
-Actual: \'\'''');
+Actual: '\'''');
       });
 
       test('startsWith', () {
