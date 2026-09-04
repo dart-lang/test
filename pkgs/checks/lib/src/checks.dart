@@ -117,7 +117,7 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(
 abstract final class Condition<T> {
   static ConditionSubject<T> it<T>() => ._();
 
-  /// Run these exepctations against [subject].
+  /// Run these expectations against [subject].
   FutureOr<void> apply(Subject<T> subject);
 
   /// Run these expectations against [subject].
@@ -127,7 +127,7 @@ abstract final class Condition<T> {
   void applySync(Subject<T> subject);
 
   /// Checks whether [value] satisfies all expectations invoked in this
-  /// condition, without throwing an exception.
+  /// condition, without throwing an exception for failed expectations.
   ///
   /// The future will complete to `null` if all expectations are satisfied,
   /// otherwise it will complete to the [CheckFailure] for the first expectation
@@ -135,13 +135,14 @@ abstract final class Condition<T> {
   FutureOr<CheckFailure?> softCheck(T value);
 
   /// Checks whether [value] satisfies all expectations invoked in this
-  /// condition, without throwing an exception.
+  /// condition, without throwing an exception for failed expectations.
   ///
   /// The future will complete to `null` if all expectations are satisfied,
   /// otherwise it will complete to the [CheckFailure] for the first expectation
   /// that fails.
   ///
-  /// Asynchronous expectations are not allowed.
+  /// Asynchronous expectations are not allowed and will cause a runtime error
+  /// if they were used.
   CheckFailure? softCheckSync(T value);
 
   /// Creates a description of the expectations invoked in this condition.
@@ -165,7 +166,8 @@ abstract final class Condition<T> {
   /// value did not meet the last expectation in this condition, without the
   /// first labeled line.
   ///
-  /// Asynchronous expectations are not allowed.
+  /// Asynchronous expectations are not allowed and will cause a runtime error
+  /// if they were used.
   ///
   /// This method should not throw exceptions.
   Iterable<String> describeSync();

@@ -392,8 +392,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         }).wait;
 
         descriptions.addAll(await descriptionFuture);
-        if (longestAccepted != null) {
-          transaction.commit(longestAccepted!);
+        if (longestAccepted case final accepted?) {
+          transaction.commit(accepted);
           return null;
         }
         transaction.reject();
