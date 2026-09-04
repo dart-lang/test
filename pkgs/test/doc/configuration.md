@@ -712,7 +712,7 @@ This tells the test runner to use the `chromium` executable for Chrome tests. It
 calls that executable with the same logic and flags it normally uses for Chrome.
 
 Each platform can define exactly which settings it supports. All browsers and
-Node.js support [the same settings](#browser-and-node-js-settings), but the VM
+Node.js support [the same settings](#browser-and-nodejs-settings), but the VM
 doesn't support any settings and so can't be overridden.
 
 ### `define_platforms`
@@ -745,7 +745,7 @@ User-defined platforms also count as their parents, so Chromium will run tests
 that say `testOn: "chrome"` as well.
 
 Each platform can define exactly which settings it supports. All browsers and
-Node.js support [the same settings](#browser-and-node-js-settings), but the VM
+Node.js support [the same settings](#browser-and-nodejs-settings), but the VM
 doesn't support any settings and so can't be extended.
 
 This field is not supported in the
@@ -814,6 +814,21 @@ define_platforms:
     settings:
       executable: chromium
 ```
+
+Each built-in browser also reads an environment variable, which takes precedence
+over both the defaults above and anything `executable` sets:
+
+| Browser | Variable |
+| --- | --- |
+| Chrome | `CHROME_EXECUTABLE` |
+| Edge | `MS_EDGE_EXECUTABLE` |
+| Firefox | `FIREFOX_EXECUTABLE` |
+| Safari | `SAFARI_EXECUTABLE` |
+
+The value is used as the path, with no lookup of its own. This is meant for
+machines where the browser lives somewhere the defaults do not cover, such as a
+CI image that installs Chrome under its own prefix, without editing the config
+file that the rest of the project shares.
 
 #### `headless`
 

@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:async/async.dart';
+import 'package:meta/meta.dart' show awaitNotRequired;
 
 import '../../context.dart';
 
@@ -18,8 +19,12 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [completionCondition] has optionally been checked.
-  Future<Subject<T>> completes([Condition<T>? completionCondition]) =>
-      context.nestAsync<T>(() => ['completes to a value'], (actual) async {
+  @awaitNotRequired
+  Future<Subject<T>> completes([Condition<T>? completionCondition]) {
+    return context.nestAsync<T>(
+      () => ['completes to a value'],
+      addPredicate: (predicateNoun) => 'completes to $predicateNoun',
+      (actual) async {
         try {
           return Extracted.value(await actual);
         } catch (e, st) {
@@ -31,7 +36,10 @@ extension FutureChecks<T> on Subject<Future<T>> {
             ],
           );
         }
-      }, completionCondition);
+      },
+      completionCondition,
+    );
+  }
 
   /// Expects that the `Future` never completes as a value or an error.
   ///
@@ -79,29 +87,32 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [errorCondition] has optionally been checked.
-  Future<Subject<E>> throws<E extends Object>([Condition<E>? errorCondition]) =>
-      context.nestAsync<E>(
-        () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
-        (actual) async {
-          try {
-            return Extracted.rejection(
-              actual: prefixFirst('completed to ', literal(await actual)),
-              which: ['did not throw'],
-            );
-          } on E catch (e) {
-            return Extracted.value(e);
-          } catch (e, st) {
-            return Extracted.rejection(
-              actual: prefixFirst('completed to error ', literal(e)),
-              which: [
-                'threw an exception that is not a $E at:',
-                ...indent(LineSplitter.split(st.toString())),
-              ],
-            );
-          }
-        },
-        errorCondition,
-      );
+  @awaitNotRequired
+  Future<Subject<E>> throws<E extends Object>([Condition<E>? errorCondition]) {
+    return context.nestAsync<E>(
+      () => ['completes to an error${E == Object ? '' : ' of type $E'}'],
+      addPredicate: (predicateNoun) => 'throws $predicateNoun',
+      (actual) async {
+        try {
+          return Extracted.rejection(
+            actual: prefixFirst('completed to ', literal(await actual)),
+            which: ['did not throw'],
+          );
+        } on E catch (e) {
+          return Extracted.value(e);
+        } catch (e, st) {
+          return Extracted.rejection(
+            actual: prefixFirst('completed to error ', literal(e)),
+            which: [
+              'threw an exception that is not a $E at:',
+              ...indent(LineSplitter.split(st.toString())),
+            ],
+          );
+        }
+      },
+      errorCondition,
+    );
+  }
 }
 
 /// Expectations on a [StreamQueue].
@@ -112,6 +123,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// Calls [Context.expectAsync] and wraps [predicate] with a transaction.
   ///
   /// The transaction is committed if the check passes, or rejected if it fails.
+  @awaitNotRequired
   Future<void> _expectAsync(
     Iterable<String> Function() clause,
     FutureOr<Rejection?> Function(StreamQueue<T>) predicate,
@@ -141,8 +153,12 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [emittedCondition] has optionally been checked.
-  Future<Subject<T>> emits([Condition<T>? emittedCondition]) =>
-      context.nestAsync<T>(() => ['emits a value'], (actual) async {
+  @awaitNotRequired
+  Future<Subject<T>> emits([Condition<T>? emittedCondition]) {
+    return context.nestAsync<T>(
+      () => ['emits a value'],
+      addPredicate: (predicateNoun) => 'emits $predicateNoun',
+      (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
             actual: ['a stream'],
@@ -161,7 +177,10 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
             ],
           );
         }
-      }, emittedCondition);
+      },
+      emittedCondition,
+    );
+  }
 
   /// Expects that the stream emits an error of type [E].
   ///
@@ -178,38 +197,42 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [errorCondition] has optionally been checked.
+  @awaitNotRequired
   Future<Subject<E>> emitsError<E extends Object>([
     Condition<E>? errorCondition,
-  ]) => context.nestAsync<E>(
-    () => ['emits an error${E == Object ? '' : ' of type $E'}'],
-    (actual) async {
-      if (!await actual.hasNext) {
-        return Extracted.rejection(
-          actual: ['a stream'],
-          which: ['closed without emitting an expected error'],
-        );
-      }
-      try {
-        final value = await actual.peek;
-        return Extracted.rejection(
-          actual: prefixFirst('a stream emitting value ', literal(value)),
-          which: ['closed without emitting an error'],
-        );
-      } on E catch (e) {
-        await actual.next.then<void>((_) {}, onError: (_) {});
-        return Extracted.value(e);
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: prefixFirst('a stream with error ', literal(e)),
-          which: [
-            'emitted an error which is not $E at:',
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    },
-    errorCondition,
-  );
+  ]) {
+    return context.nestAsync<E>(
+      () => ['emits an error${E == Object ? '' : ' of type $E'}'],
+      addPredicate: (predicateNoun) => 'emits error $predicateNoun',
+      (actual) async {
+        if (!await actual.hasNext) {
+          return Extracted.rejection(
+            actual: ['a stream'],
+            which: ['closed without emitting an expected error'],
+          );
+        }
+        try {
+          final value = await actual.peek;
+          return Extracted.rejection(
+            actual: prefixFirst('a stream emitting value ', literal(value)),
+            which: ['closed without emitting an error'],
+          );
+        } on E catch (e) {
+          await actual.next.then<void>((_) {}, onError: (_) {});
+          return Extracted.value(e);
+        } catch (e, st) {
+          return Extracted.rejection(
+            actual: prefixFirst('a stream with error ', literal(e)),
+            which: [
+              'emitted an error which is not $E at:',
+              ...indent(LineSplitter.split(st.toString())),
+            ],
+          );
+        }
+      },
+      errorCondition,
+    );
+  }
 
   /// Expects that the `Stream` emits any number of events before emitting an
   /// event that satisfies [condition].
@@ -224,6 +247,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes the matching event and all prior
   /// events.
+  @awaitNotRequired
   Future<void> emitsThrough(Condition<T> condition) async {
     await _expectAsync(
       () {
@@ -268,6 +292,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes as many events from the source
   /// stream as are consumed by all the conditions.
+  @awaitNotRequired
   Future<void> inOrder(Iterable<Condition<StreamQueue<T>>> conditions) async {
     conditions = conditions.toList();
     final descriptions = <String>[];
@@ -288,7 +313,15 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
                 if (satisfiedCount > 0)
                   'satisfied $satisfiedCount conditions then',
                 'failed to satisfy the condition at index $satisfiedCount',
-                if (failure.detail.depth > 0) ...[
+                if (failure.detail.collapsedDetails case (
+                  final expected,
+                  final actual,
+                )) ...[
+                  'because it:',
+                  '  Expected: $expected',
+                  '  Actual: $actual',
+                  if (which != null) ...indent(prefixFirst('Which: ', which)),
+                ] else if (failure.detail.depth > 0) ...[
                   'because it:',
                   ...indent(
                     failure.detail.actual.skip(1),
@@ -324,11 +357,10 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation succeeds, consumes the same events from the source
   /// queue as the satisfied condition. If multiple conditions are satisfied,
   /// chooses the condition which consumed the most events.
+  @awaitNotRequired
   Future<void> anyOf(Iterable<Condition<StreamQueue<T>>> conditions) {
     conditions = conditions.toList();
-    if (conditions.isEmpty) {
-      throw ArgumentError('conditions may not be empty');
-    }
+    if (conditions.isEmpty) throw ArgumentError('conditions may not be empty');
     final descriptions = <Iterable<String>>[];
     return context.expectAsync(
       () => descriptions.isEmpty
@@ -368,7 +400,14 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           final which = failure.rejection.which;
           final detail = failure.detail;
           final failed = 'failed the condition at index $index';
-          if (detail.depth > 0) {
+          if (detail.collapsedDetails case (final expected, final actual)) {
+            return [
+              '$failed because it:',
+              '  Expected: $expected',
+              '  Actual: $actual',
+              if (which != null) ...indent(prefixFirst('Which: ', which)),
+            ];
+          } else if (detail.depth > 0) {
             return [
               '$failed because it:',
               ...indent(detail.actual.skip(1), detail.depth - 1),
@@ -411,6 +450,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes all the events that did not satisfy
   /// [condition] until the end of the stream.
+  @awaitNotRequired
   Future<void> neverEmits(Condition<T> condition) async {
     await _expectAsync(
       () {
@@ -445,6 +485,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If a non-matching event is emitted, no events are consumed.
   /// If a matching event is emitted, that event is consumed.
+  @awaitNotRequired
   Future<void> mayEmit(Condition<T> condition) {
     return context.expectAsync(
       () {
@@ -477,6 +518,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// - A non-matching event is emitted.
   /// - An error is emitted.
   /// - The stream closes.
+  @awaitNotRequired
   Future<void> mayEmitMultiple(Condition<T> condition) {
     return context.expectAsync(
       () {
@@ -508,6 +550,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If this expectation fails, the source queue will be left in its original
   /// state, the event or error that caused it to fail will not be consumed.
+  @awaitNotRequired
   Future<void> isDone() async {
     await _expectAsync(() => ['is done'], (actual) async {
       if (!await actual.hasNext) return null;
@@ -547,4 +590,22 @@ extension WithQueueExtension<T> on Subject<Stream<T>> {
     (actual) => Extracted.value(StreamQueue(actual)),
     atSameLevel: true,
   );
+}
+
+extension FutureSubjectExtension<T> on Future<Subject<T>> {
+  /// Applies the expectations invoked in [condition] to this subject.
+  ///
+  /// Use this method when it would otherwise not be possible to check multiple
+  /// expectations for this subject due to cascade notation already being used
+  /// in a way that would conflict.
+  ///
+  /// ```dart
+  /// await check(someFuture).completes().which(.it()
+  ///   ..isLessThan(10)
+  ///   ..isGreaterThan(0));
+  /// ```
+  @awaitNotRequired
+  Future<void> which(Condition<T> condition) async {
+    await condition.apply(await this);
+  }
 }

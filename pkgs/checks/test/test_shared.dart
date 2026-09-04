@@ -73,6 +73,7 @@ extension RejectionChecks<T> on Subject<T> {
         }
         return Extracted.value(failure.rejection);
       },
+      null,
     );
     if (didRunCallback) {
       rejection
@@ -101,11 +102,9 @@ extension ConditionChecks<T> on Subject<Condition<T>> {
 extension AsyncConditionChecks<T> on Subject<Condition<T>> {
   Future<void> hasAsyncDescriptionWhich(
     Condition<Iterable<String>> descriptionCondition,
-  ) async {
-    final nested = await context.nestAsync(
-      () => ['has description'],
-      (condition) async => Extracted.value(await condition.describe()),
-    );
-    nested.which(descriptionCondition);
-  }
+  ) => context.nestAsync(
+    () => ['has description'],
+    (condition) async => Extracted.value(await condition.describe()),
+    descriptionCondition,
+  );
 }

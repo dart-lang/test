@@ -3,8 +3,10 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:path/path.dart' as p;
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
@@ -29,9 +31,14 @@ enum ChromiumBasedBrowser {
     settings ??= defaultSettings[runtime];
 
     var dir = createTempDir();
+    var redirect = p.join(dir, 'redirect.html');
+    File(redirect).writeAsStringSync(
+      '<script>location = ${jsonEncode(url.toString())}</script>',
+    );
+
     var args = [
       '--user-data-dir=$dir',
-      url.toString(),
+      redirect,
       '--enable-logging=stderr',
       '--v=0',
       '--disable-extensions',
@@ -43,16 +50,14 @@ enum ChromiumBasedBrowser {
       '--disable-translate',
       '--disable-dev-shm-usage',
       '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
       '--disable-blink-features=TimerThrottlingForBackgroundTabs',
       '--disable-features=IntensiveWakeUpThrottling',
       if (settings!.headless && !configuration.pauseAfterLoad) ...[
         '--headless',
         '--disable-gpu',
       ],
-      if (!configuration.debug)
-        // We don't actually connect to the remote debugger, but Chrome will
-        // close as soon as the page is loaded if we don't turn it on.
-        '--remote-debugging-port=0',
       ...settings.arguments,
       ...additionalArgs,
     ];

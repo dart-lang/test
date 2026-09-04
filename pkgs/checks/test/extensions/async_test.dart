@@ -7,7 +7,6 @@ import 'dart:async';
 import 'package:async/async.dart';
 import 'package:checks/checks.dart';
 import 'package:test/scaffolding.dart';
-import 'package:test_api/hooks.dart';
 
 import '../test_shared.dart';
 
@@ -351,9 +350,9 @@ Which: threw 'error' at:
             'satisfied 1 conditions then',
             'failed to satisfy the condition at index 1',
             'because it:',
-            '  emits a value that:',
-            '  Actual: <1>',
-            '  Which: are not equal',
+            '  Expected: emits <2>',
+            '  Actual: emits <1>',
+            '  Which: is not equal',
           ],
         );
       });
@@ -607,9 +606,9 @@ Which: threw 'error' at:
           which: [
             'failed to satisfy any condition',
             'failed the condition at index 0 because it:',
-            '  emits a value that:',
-            '  Actual: <0>',
-            '  Which: are not equal',
+            '  Expected: emits <42>',
+            '  Actual: emits <0>',
+            '  Which: is not equal',
             'failed the condition at index 1 because it:',
             '  ended after emitting 1 elements with none matching',
           ],
@@ -640,6 +639,12 @@ Which: threw 'error' at:
         ]);
         await check(queue).emits(.it()..equals(2));
       });
+    });
+  });
+
+  group('FutureSubjectExtension', () {
+    test('which', () async {
+      await check(_futureSuccess()).completes().which(.it()..equals(42));
     });
   });
 

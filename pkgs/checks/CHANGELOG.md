@@ -10,17 +10,25 @@
     `Condition.it<SomeType>()..someCheck()`.
   - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
     top level methods in favor of the instance members on `Condition`.
-- Add `isNotA<R>()` check extension as a convenience in place of
-  `not((it) => it.isA<R>())`.
-- Require Dart 3.11
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and
-  `Subject.returnsNormally` to accept an optional `Condition` argument to apply
-  to the extracted value.
+  `Subject.returnsNormally` to accept an optional `Condition` to apply
+  to the extracted value. For example
+  `check(foo).isA<int>(.it()..isGreaterThan(0));`
 - Updated `Subject.completes`, `Subject.throws` (async), `StreamChecks.emits`,
   and `StreamChecks.emitsError` to return `Future<Subject>` in addition to
-  accepting an optional `Condition` argument.
+  accepting an optional `Condition`. For example
+  `(await check(foo).completes()).equals(42);`
+- Added `FutureSubjectExtension.which` to allow chaining expectations on a
+  `Future<Subject>`.
+
+## 0.3.2
+
+- Bump `test` dev dependency constraint.
+- Add `isNotA<R>()` check extension as a convenience in place of
+  `not((it) => it.isA<R>())`.
+- Require Dart 3.11
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.
 - Improve formatting for failed String equality checks - indent string diff
@@ -30,6 +38,10 @@
   forward exceptions from that call.
 - Fix a bug when printing a failure message involving a value that returns an
   empty output from `toString()`.
+- Annotated async expectations with `@awaitNotRequired` since tests are safely
+  held open until expectations complete so it's not always necessary to
+  explicitly await them.
+- Output more compact failure messages for simple expectations.
 
 ## 0.3.1
 
