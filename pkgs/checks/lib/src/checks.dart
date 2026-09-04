@@ -967,17 +967,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
-    return _collapsedDetails(
-          failingContext,
-          rejection,
-          thisContextFailed: thisContextFailed,
-        ) ??
+    return _collapsedDetails(failingContext, rejection) ??
         _fullDetails(
           failingContext,
           rejection,
           thisContextFailed: thisContextFailed,
         );
   }
+
+  _ClauseDescription? get _singleClause =>
+      _clauses.where((c) => c is! _GuardClause).singleOrNull;
 
   /// A collapsed single-line [FailureDetail], or `null` if this context cannot
   /// be collapsed.
@@ -993,17 +992,15 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// exceeds length limits).
   FailureDetail? _collapsedDetails(
     _TestContext failingContext,
-    Rejection? rejection, {
-    required bool thisContextFailed,
-  }) {
-    final clause = _clauses.where((c) => c is! _GuardClause).singleOrNull;
+    Rejection? rejection,
+  ) {
+    if (rejection == null) return null;
+    final clause = _singleClause;
     if (clause == null) return null;
-    final isFailingClause =
-        thisContextFailed || failingContext._nestsUnder(clause);
-    final clauseRejection = isFailingClause ? rejection : null;
-    final details = clause.detail(failingContext, clauseRejection);
+    final details = clause.detail(failingContext, rejection);
     final childCollapsed = details.collapsedDetails;
     if (childCollapsed == null) return null;
+    assert(clause.isLeaf ? details.depth == -1 : details.depth == 0);
 
     final (childExpected, childActual) = childCollapsed;
     (String, String)? expandedCollapsed;
@@ -1013,40 +1010,36 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       if (exp != null && act != null) expandedCollapsed = (exp, act);
     } else if (_parent == null) {
       if (clause.isLeaf) {
-        expandedCollapsed = (childExpected, childActual);
+        expandedCollapsed = childCollapsed;
       } else {
-        final rootLabel = _labelCallback().single;
-        final (exp, act) = rootLabel.isEmpty
-            ? (childExpected, childActual)
-            : (
-                '$rootLabel that $childExpected',
-                '$rootLabel that $childActual',
-              );
+        final rootLabel = _labelCallback().singleOrNull;
+        if (rootLabel != null) {
+          final exp = rootLabel.isEmpty
+              ? childExpected
+              : '$rootLabel that $childExpected';
+          final act = rootLabel.isEmpty
+              ? childActual
+              : '$rootLabel that $childActual';
 
-        if (exp.length <= 80 && act.length <= 80) {
-          expandedCollapsed = (exp, act);
+          if (exp.length <= 80 && act.length <= 80) {
+            expandedCollapsed = (exp, act);
+          }
         }
       }
     }
     if (expandedCollapsed == null) return null;
 
-    final depth = details.depth >= 0
-        ? details.depth
-        : (thisContextFailed ? 0 : -1);
     return FailureDetail(
       [expandedCollapsed.$1],
       -1,
-      depth,
+      0,
       collapsedDetails: expandedCollapsed,
     );
   }
 
   @override
   String? get collapsedExpected {
-    final child = _clauses
-        .where((c) => c is! _GuardClause)
-        .singleOrNull
-        ?.collapsedExpected;
+    final child = _singleClause?.collapsedExpected;
     if (child == null) return null;
     return _addPredicate?.call(child);
   }
@@ -1074,13 +1067,15 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
     final expected = [...postfixLast(' that:', _labelCallback())];
     final actual = [...expected];
+    final labelLines = expected.length;
     var canCollapse = true;
     var didCollapse = false;
 
     var successfulOverlap = 0;
     for (var clause in _clauses) {
-      final isFailingClause =
-          thisContextFailed || failingContext._nestsUnder(clause);
+      final isFailingClause = thisContextFailed
+          ? identical(clause, _clauses.last)
+          : failingContext._nestsUnder(clause);
       final clauseRejection = isFailingClause ? rejection : null;
       final details = clause.detail(failingContext, clauseRejection);
 
@@ -1098,15 +1093,12 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           canCollapse = false;
         }
       } else {
-        final collapsed = rejection != null ? clause.collapsedExpected : null;
-        if (collapsed != null) {
-          clauseExpected = [collapsed];
-          actual.addAll(indent([collapsed]));
-          didCollapse = true;
-        } else {
-          clauseExpected = details.expected;
-          actual.addAll(indent(details.expected));
-        }
+        final collapsed = rejection != null && !clause.isLeaf
+            ? clause.collapsedExpected
+            : null;
+        clauseExpected = collapsed != null ? [collapsed] : details.expected;
+        actual.addAll(indent(clauseExpected));
+        if (collapsed != null) didCollapse = true;
       }
       expected.addAll(indent(clauseExpected));
 
@@ -1115,7 +1107,6 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
         assert(foundOverlap == -1);
         foundDepth = details.depth + 1;
 
-        final labelLines = postfixLast(' that:', _labelCallback()).length;
         final overlapIncrement = details.collapsedDetails != null ? 1 : 0;
         foundOverlap =
             labelLines +
@@ -1126,6 +1117,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
         successfulOverlap += clauseExpected.length;
       }
     }
+    assert(rejection == null || foundDepth >= 0);
     return FailureDetail(
       expected,
       foundOverlap,

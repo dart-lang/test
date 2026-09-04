@@ -101,6 +101,18 @@ Expected: <empty toString()>
 Actual: <empty toString()>
 Which: is not equal''');
     });
+    test('succeeded child context followed by failing check on parent', () {
+      check(() {
+        check([1])
+          ..has((l) => l.first, 'first').equals(1)
+          ..equals([2]);
+      }).throwsFailure().equals('''
+Expected: a List<int> that:
+  has first: <1>
+  equals [2]
+Actual: [1]
+Which: is not equal''');
+    });
   });
 }
 
