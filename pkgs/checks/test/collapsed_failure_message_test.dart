@@ -305,7 +305,7 @@ Which: is empty''');
         check(() {
           check([2]).contains(1);
         }).throwsFailure().equals('''
-Expected: a list containing <1>
+Expected: an iterable containing <1>
 Actual: [2]
 Which: does not contain <1>''');
       });
@@ -314,7 +314,7 @@ Which: does not contain <1>''');
         check(() {
           check(<int>[]).contains(1);
         }).throwsFailure().equals('''
-Expected: a list containing <1>
+Expected: an iterable containing <1>
 Actual: an empty iterable''');
       });
 
