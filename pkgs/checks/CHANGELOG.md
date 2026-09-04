@@ -8,10 +8,12 @@
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and
   `Subject.returnsNormally` to accept an optional `Condition` callback to apply
-  to the extracted value.
+  to the extracted value. For example
+  `check(foo).isA<int>((it) => it..isGreaterThan(0));`
 - Updated `Subject.completes`, `Subject.throws` (async), `StreamChecks.emits`,
   and `StreamChecks.emitsError` to return `Future<Subject>` in addition to
-  accepting an optional `AsyncCondition` callback.
+  accepting an optional `AsyncCondition` callback. For example
+  `(await check(foo).completes()).equals(42);`
 - Added `FutureSubjectExtension.which` to allow chaining expectations on a
   `Future<Subject>`.
 - Improve speed of pretty printing for large collections.
