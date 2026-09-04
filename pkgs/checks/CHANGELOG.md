@@ -12,6 +12,8 @@
 - Updated `Subject.completes`, `Subject.throws` (async), `StreamChecks.emits`,
   and `StreamChecks.emitsError` to return `Future<Subject>` in addition to
   accepting an optional `AsyncCondition` callback.
+- Added `FutureSubjectExtension.which` to allow chaining expectations on a
+  `Future<Subject>`.
 - Improve speed of pretty printing for large collections.
 - Improve formatting for failures involving unexpected exceptions.
 - Improve formatting for failed String equality checks - indent string diff

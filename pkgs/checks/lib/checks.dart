@@ -5,7 +5,7 @@
 export 'src/checks.dart'
     show AsyncCondition, Condition, SkipExtension, Subject, check;
 export 'src/extensions/async.dart'
-    show FutureChecks, StreamChecks, WithQueueExtension;
+    show FutureChecks, FutureSubjectExtension, StreamChecks, WithQueueExtension;
 export 'src/extensions/core.dart'
     show BoolChecks, ComparableChecks, CoreChecks, NullableChecks;
 export 'src/extensions/function.dart' show FunctionChecks;

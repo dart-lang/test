@@ -579,3 +579,21 @@ extension WithQueueExtension<T> on Subject<Stream<T>> {
     atSameLevel: true,
   );
 }
+
+extension FutureSubjectExtension<T> on Future<Subject<T>> {
+  /// Applies the expectations invoked in [condition] to this subject.
+  ///
+  /// Use this method when it would otherwise not be possible to check multiple
+  /// expectations for this subject due to cascade notation already being used
+  /// in a way that would conflict.
+  ///
+  /// ```dart
+  /// await check(someFuture).completes().which((b) => b
+  ///   ..isLessThan(10)
+  ///   ..isGreaterThan(0));
+  /// ```
+  @awaitNotRequired
+  Future<void> which(Condition<T> condition) async {
+    condition(await this);
+  }
+}

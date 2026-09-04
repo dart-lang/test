@@ -634,6 +634,12 @@ Which: threw 'error' at:
     });
   });
 
+  group('FutureSubjectExtension', () {
+    test('which', () async {
+      await check(_futureSuccess()).completes().which((it) => it.equals(42));
+    });
+  });
+
   group('StreamQueueWrap', () {
     test('can wrap streams in a queue', () async {
       await check(Stream.value(1)).withQueue.emits();
