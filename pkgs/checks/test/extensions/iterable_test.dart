@@ -62,9 +62,7 @@ void main() {
 
   test('isNotEmpty', () {
     check(_testIterable).isNotEmpty();
-    check(
-      const Iterable<int>.empty(),
-    ).isRejectedBy((it) => it.isNotEmpty());
+    check(const Iterable<int>.empty()).isRejectedBy((it) => it.isNotEmpty());
   });
 
   test('contains', () {
