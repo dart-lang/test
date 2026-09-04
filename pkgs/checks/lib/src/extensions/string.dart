@@ -45,7 +45,7 @@ extension StringChecks on Subject<String> {
       predicateNoun: () => 'a non-empty string',
       (actual) {
         if (actual.isNotEmpty) return null;
-        return Rejection();
+        return Rejection(which: ['is empty']);
       },
     );
   }

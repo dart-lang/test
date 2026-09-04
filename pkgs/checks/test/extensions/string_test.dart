@@ -25,7 +25,7 @@ void main() {
     });
     test('isNotEmpty', () {
       check('bob').isNotEmpty();
-      check('').isRejectedBy((it) => it.isNotEmpty());
+      check('').isRejectedBy((it) => it.isNotEmpty(), which: ['is empty']);
     });
     test('startsWith', () {
       check('bob').startsWith('bo');

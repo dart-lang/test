@@ -238,7 +238,8 @@ Which: does not contain 'bar'""");
           check('').isNotEmpty();
         }).throwsFailure().equals('''
 Expected: a non-empty string
-Actual: '\'''');
+Actual: ''
+Which: is empty''');
       });
 
       test('startsWith', () {
@@ -296,7 +297,8 @@ Which: is not empty''');
           check(<int>[]).isNotEmpty();
         }).throwsFailure().equals('''
 Expected: a non-empty iterable
-Actual: []''');
+Actual: []
+Which: is empty''');
       });
 
       test('contains', () {

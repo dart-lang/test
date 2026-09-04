@@ -71,7 +71,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
       predicateNoun: () => 'a non-empty iterable',
       (actual) {
         if (actual.isNotEmpty) return null;
-        return Rejection();
+        return Rejection(which: ['is empty']);
       },
     );
   }
