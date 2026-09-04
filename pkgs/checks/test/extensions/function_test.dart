@@ -35,6 +35,14 @@ void main() {
           ],
         );
       });
+      test('can be described', () {
+        check(
+          (Subject<void Function()> it) => it.throws<Object>(),
+        ).description.deepEquals(['  throws an error']);
+        check(
+          (Subject<void Function()> it) => it.throws<StateError>(),
+        ).description.deepEquals(['  throws an error of type StateError']);
+      });
       test('evaluates condition', () {
         check(() => throw StateError('oops!')).isRejectedBy(
           (it) => it.throws<StateError>(
@@ -71,7 +79,7 @@ void main() {
         check(() => 1).isRejectedBy(
           (it) => it.returnsNormally((it) => it.equals(2)),
           actual: ['<1>'],
-          which: ['are not equal'],
+          which: ['is not equal'],
         );
       });
       test('returns valid subject', () {

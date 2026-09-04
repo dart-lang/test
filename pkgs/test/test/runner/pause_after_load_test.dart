@@ -228,7 +228,7 @@ void main() {
       );
       await test.shouldExit(0);
     },
-    tags: ['firefox', 'chrome', 'vm'],
+    tags: ['firefox', 'chrome'],
   );
 
   test(

@@ -33,7 +33,7 @@ class Chrome extends Browser {
   @override
   final Future<Uri?> remoteDebuggerUrl;
 
-  final Future<WipConnection> _tabConnection;
+  final Future<WipConnection?> _tabConnection;
   final Map<String, String> _idToUrl;
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
@@ -45,7 +45,7 @@ class Chrome extends Browser {
   }) {
     settings ??= defaultSettings[Runtime.chrome]!;
     var remoteDebuggerCompleter = Completer<Uri?>.sync();
-    var connectionCompleter = Completer<WipConnection>();
+    var connectionCompleter = Completer<WipConnection?>();
     var idToUrl = <String, String>{};
     return Chrome._(
       () async {
@@ -66,13 +66,14 @@ class Chrome extends Browser {
           );
 
           if (port != null) {
+            var connectionFuture = _connect(process, port, idToUrl, url);
             remoteDebuggerCompleter.complete(
-              getRemoteDebuggerUrl(Uri.parse('http://localhost:$port')),
+              connectionFuture.then((c) => c.$2),
             );
-
-            connectionCompleter.complete(_connect(process, port, idToUrl, url));
+            connectionCompleter.complete(connectionFuture.then((c) => c.$1));
           } else {
             remoteDebuggerCompleter.complete(null);
+            connectionCompleter.complete(null);
           }
 
           return process;
@@ -91,6 +92,7 @@ class Chrome extends Browser {
   /// with `package:coverage`.
   Future<Map<String, dynamic>> gatherCoverage() async {
     var tabConnection = await _tabConnection;
+    if (tabConnection == null) return {};
     var response = await tabConnection.debugger.connection.sendCommand(
       'Profiler.takePreciseCoverage',
       {},
@@ -150,7 +152,7 @@ class Chrome extends Browser {
   }
 }
 
-Future<WipConnection> _connect(
+Future<(WipConnection, Uri)> _connect(
   Process process,
   int port,
   Map<String, String> idToUrl,
@@ -170,22 +172,24 @@ Future<WipConnection> _connect(
     var tabs = await chromeConnection.getTabs();
     tab = tabs.firstWhereOrNull((tab) => tab.url == url.toString());
     if (tab == null) {
-      await Future<void>.delayed(const Duration(milliseconds: 100));
-      if (attempt > 5) {
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+      if (attempt > 20) {
         throw StateError('Could not connect to test tab with url: $url');
       }
     }
   }
   var tabConnection = await tab.connect();
 
-  // Enable debugging.
-  await tabConnection.debugger.enable();
-
   // Coverage reports are in terms of scriptIds so keep note of URLs.
+  // Register the listener before enabling the debugger so that initial
+  // script events sent during initialization are not missed.
   tabConnection.debugger.onScriptParsed.listen((data) {
     var script = data.script;
     if (script.url.isNotEmpty) idToUrl[script.scriptId] = script.url;
   });
+
+  // Enable debugging.
+  await tabConnection.debugger.enable();
 
   // Enable coverage collection.
   await tabConnection.debugger.connection.sendCommand('Profiler.enable', {});
@@ -194,7 +198,12 @@ Future<WipConnection> _connect(
     {'detailed': true, 'callCount': false},
   );
 
-  return tabConnection;
+  var base = Uri.http('localhost:$port');
+  var devtoolsUrl = tab.devtoolsFrontendUrl;
+  var remoteDebuggerUrl = devtoolsUrl != null
+      ? base.resolve(devtoolsUrl)
+      : base;
+  return (tabConnection, remoteDebuggerUrl);
 }
 
 extension on HttpClient {

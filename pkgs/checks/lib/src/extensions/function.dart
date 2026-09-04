@@ -17,25 +17,35 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Subject<E> throws<E>([Condition<E>? that]) =>
-      context.nest<E>(() => ['throws an error of type $E'], (actual) {
-        try {
-          final result = actual();
-          return Extracted.rejection(
-            actual: prefixFirst('a function that returned ', literal(result)),
-            which: ['did not throw'],
-          );
-        } catch (e, st) {
-          if (e is E) return Extracted.value(e as E);
-          return Extracted.rejection(
-            actual: prefixFirst('a function that threw error ', literal(e)),
-            which: [
-              'threw an exception that is not a $E at:',
-              ...indent(LineSplitter.split(st.toString())),
-            ],
-          );
-        }
-      }, nestedCondition: that);
+  Subject<E> throws<E>([Condition<E>? that]) => context.nest<E>(
+    () {
+      var label = 'throws an error';
+      if (const Object() is! E) {
+        label = '$label of type $E';
+      }
+      return [label];
+    },
+    (actual) {
+      try {
+        final result = actual();
+        return Extracted.rejection(
+          actual: prefixFirst('a function that returned ', literal(result)),
+          which: ['did not throw'],
+        );
+      } catch (e, st) {
+        if (e is E) return Extracted.value(e as E);
+        return Extracted.rejection(
+          actual: prefixFirst('a function that threw error ', literal(e)),
+          which: [
+            'threw an exception that is not a $E at:',
+            ...indent(LineSplitter.split(st.toString())),
+          ],
+        );
+      }
+    },
+    nestedCondition: that,
+    addPredicate: (predicateNoun) => 'throws $predicateNoun',
+  );
 
   /// Expects that the function returns without throwing.
   ///
@@ -43,18 +53,22 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Subject<T> returnsNormally([Condition<T>? that]) =>
-      context.nest<T>(() => ['returns a value'], (actual) {
-        try {
-          return Extracted.value(actual());
-        } catch (e, st) {
-          return Extracted.rejection(
-            actual: ['a function that throws'],
-            which: [
-              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-              ...indent(LineSplitter.split(st.toString())),
-            ],
-          );
-        }
-      }, nestedCondition: that);
+  Subject<T> returnsNormally([Condition<T>? that]) => context.nest<T>(
+    () => ['returns a value'],
+    (actual) {
+      try {
+        return Extracted.value(actual());
+      } catch (e, st) {
+        return Extracted.rejection(
+          actual: ['a function that throws'],
+          which: [
+            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+            ...indent(LineSplitter.split(st.toString())),
+          ],
+        );
+      }
+    },
+    nestedCondition: that,
+    addPredicate: (predicateNoun) => 'returns $predicateNoun',
+  );
 }

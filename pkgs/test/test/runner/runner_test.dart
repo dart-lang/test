@@ -138,9 +138,9 @@ final _runtimes =
 
 final _runtimeCompilers = [
   '[vm]: kernel (default), source, exe, cli',
-  '[vm-asan]: exe (default)',
-  '[vm-msan]: exe (default)',
-  '[vm-tsan]: exe (default)',
+  '[vm-asan]: exe (default), cli',
+  '[vm-msan]: exe (default), cli',
+  '[vm-tsan]: exe (default), cli',
   '[chrome]: dart2js (default), dart2wasm',
   '[firefox]: dart2js (default), dart2wasm',
   if (Platform.isMacOS) '[safari]: dart2js (default)',
