@@ -1174,13 +1174,12 @@ class _ExpectationClause implements _ClauseDescription {
   _ExpectationClause(this._expected, [this._predicateNoun]);
   @override
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
-    final collapsedExpected = _predicateNoun?.call();
-    final collapsedActual = collapsedExpected != null
-        ? rejection?.actual.singleOrNull
-        : null;
-    final collapsedDetails = collapsedActual != null
-        ? (collapsedExpected!, collapsedActual)
-        : null;
+    (String, String)? collapsedDetails;
+    if (_predicateNoun?.call() case final collapsedExpected?) {
+      if (rejection?.actual.singleOrNull case final collapsedActual?) {
+        collapsedDetails = (collapsedExpected, collapsedActual);
+      }
+    }
     return FailureDetail(
       _expected(),
       -1,
