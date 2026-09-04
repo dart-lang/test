@@ -746,7 +746,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   ///
   /// In cases where a nested context does not have any expectations checked on
   /// it, the "that:" will be will be omitted.
-  final Iterable<String> Function() _label;
+  final Iterable<String> Function() _labelCallback;
 
   /// A callback that takes a collapsed single-line predicate noun phrase from a
   /// nested subject and expands it with the property or condition contributed
@@ -771,7 +771,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     required bool allowUnawaited,
     String? label,
   }) : _value = value,
-       _label = (() => [label ?? '']),
+       _labelCallback = (() => [label ?? '']),
        _addPredicate = null,
        _fail = fail,
        _allowAsync = allowAsync,
@@ -790,14 +790,14 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       _addPredicate = null,
       // Never read from an aliased context because they are never present in
       // `_clauses`.
-      _label = _emptyLabel;
+      _labelCallback = _emptyLabel;
 
   /// Create a context nested under [parent].
   ///
-  /// The [_label] callback should not return an empty iterable.
+  /// The [_labelCallback] callback should not return an empty iterable.
   _TestContext._child(
     this._value,
-    this._label,
+    this._labelCallback,
     this._addPredicate,
     _TestContext<dynamic> parent,
   ) : _parent = parent,
@@ -1013,7 +1013,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       if (clause.isLeaf) {
         expandedCollapsed = (childExpected, childActual);
       } else {
-        final rootLabel = _label().single;
+        final rootLabel = _labelCallback().single;
         final (exp, act) = rootLabel.isEmpty
             ? (childExpected, childActual)
             : (
@@ -1052,7 +1052,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }) {
     if (_clauses.isEmpty) {
       return FailureDetail(
-        _label(),
+        _labelCallback(),
         thisContextFailed ? 0 : -1,
         thisContextFailed ? 0 : -1,
       );
@@ -1060,7 +1060,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     var foundDepth = thisContextFailed ? 0 : -1;
     var foundOverlap = thisContextFailed ? 0 : -1;
 
-    final expected = [...postfixLast(' that:', _label())];
+    final expected = [...postfixLast(' that:', _labelCallback())];
     final actual = [...expected];
     var canCollapse = true;
     var didCollapse = false;
@@ -1093,7 +1093,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
         assert(foundOverlap == -1);
         foundDepth = details.depth + 1;
 
-        final labelLines = postfixLast(' that:', _label()).length;
+        final labelLines = postfixLast(' that:', _labelCallback()).length;
         final overlapIncrement = details.collapsedDetails != null ? 1 : 0;
         foundOverlap =
             labelLines +
