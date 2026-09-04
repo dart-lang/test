@@ -342,6 +342,21 @@ Expected: a List<int> that has single element: <2>
 Actual: a List<int> that has single element: <1>
 Which: is not equal''');
       });
+
+      test('collapses passing clause alongside failing clause', () {
+        check(() {
+          check([1])
+            ..first.equals(1)
+            ..length.equals(2);
+        }).throwsFailure().equals('''
+Expected: a List<int> that:
+  has first element: <1>
+  has length: <2>
+Actual: a List<int> that:
+  has first element: <1>
+  has length: <1>
+  Which: is not equal''');
+      });
     });
 
     group('map checks', () {

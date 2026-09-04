@@ -1039,6 +1039,13 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     );
   }
 
+  @override
+  String? get collapsedExpected {
+    final child = _clauses.singleOrNull?.collapsedExpected;
+    if (child == null) return null;
+    return _addPredicate?.call(child);
+  }
+
   /// The uncollapsed, multi-line [FailureDetail] for this context and its
   /// clauses.
   ///
@@ -1071,9 +1078,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           thisContextFailed || failingContext._nestsUnder(clause);
       final clauseRejection = isFailingClause ? rejection : null;
       final details = clause.detail(failingContext, clauseRejection);
-      expected.addAll(indent(details.expected));
 
+      final Iterable<String> clauseExpected;
       if (isFailingClause) {
+        clauseExpected = details.expected;
         final childCollapsed = details.collapsedDetails;
         if (!clause.isLeaf && childCollapsed != null) {
           actual.addAll(indent([childCollapsed.$2]));
@@ -1085,8 +1093,17 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           canCollapse = false;
         }
       } else {
-        actual.addAll(indent(details.expected));
+        final collapsed = rejection != null ? clause.collapsedExpected : null;
+        if (collapsed != null) {
+          clauseExpected = [collapsed];
+          actual.addAll(indent([collapsed]));
+          didCollapse = true;
+        } else {
+          clauseExpected = details.expected;
+          actual.addAll(indent(details.expected));
+        }
       }
+      expected.addAll(indent(clauseExpected));
 
       if (details.depth >= 0) {
         assert(foundDepth == -1);
@@ -1101,7 +1118,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
             details._actualOverlap +
             overlapIncrement;
       } else if (foundDepth == -1) {
-        successfulOverlap += details.expected.length;
+        successfulOverlap += clauseExpected.length;
       }
     }
     return FailureDetail(
@@ -1165,6 +1182,7 @@ final class _SkippedContext<T> implements Context<T> {
 
 abstract interface class _ClauseDescription {
   FailureDetail detail(_TestContext failingContext, Rejection? rejection);
+  String? get collapsedExpected;
   bool get isLeaf;
 }
 
@@ -1172,6 +1190,8 @@ class _ExpectationClause implements _ClauseDescription {
   final Iterable<String> Function() _expected;
   final String? Function()? _predicateNoun;
   _ExpectationClause(this._expected, [this._predicateNoun]);
+  @override
+  String? get collapsedExpected => _predicateNoun?.call();
   @override
   FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
     (String, String)? collapsedDetails;
