@@ -183,8 +183,8 @@ extension NullableChecks<T> on Subject<T?> {
     context.expect(() => const ['is null'], predicateNoun: () => 'null', (
       actual,
     ) {
-      if (actual != null) return Rejection();
-      return null;
+      if (actual == null) return null;
+      return Rejection();
     });
   }
 }
