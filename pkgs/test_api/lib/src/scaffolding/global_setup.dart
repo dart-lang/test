@@ -62,13 +62,18 @@ Future<Object?> globalSetup(Uri uri) async {
   final completer = Completer<Object?>();
   virtualChannel.stream.listen(
     (message) {
-      if (message is Map) {
-        if (message['type'] == 'data') {
-          completer.complete(message['data']);
-        } else if (message['type'] == 'error') {
-          final error = RemoteException.deserialize(message['error'] as Map);
+      switch (message) {
+        case {'type': 'data', 'data': final data}:
+          completer.complete(data);
+        case {'type': 'error', 'error': final Map errorEncoding}:
+          final error = RemoteException.deserialize(errorEncoding);
           completer.completeError(error.error, error.stackTrace);
-        }
+        case _:
+          completer.completeError(
+            StateError(
+              'Unexpected message from global setup channel: $message',
+            ),
+          );
       }
     },
     onError: completer.completeError,
