@@ -25,6 +25,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
       }
       return [label];
     },
+    addPredicate: (predicateNoun) => 'throws $predicateNoun',
     (actual) {
       try {
         final result = actual();
@@ -44,7 +45,6 @@ extension FunctionChecks<T> on Subject<T Function()> {
       }
     },
     nestedCondition: that,
-    addPredicate: (predicateNoun) => 'throws $predicateNoun',
   );
 
   /// Expects that the function returns without throwing.
@@ -55,6 +55,7 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If the function throws synchronously, this expectation will fail.
   Subject<T> returnsNormally([Condition<T>? that]) => context.nest<T>(
     () => ['returns a value'],
+    addPredicate: (predicateNoun) => 'returns $predicateNoun',
     (actual) {
       try {
         return Extracted.value(actual());
@@ -69,6 +70,5 @@ extension FunctionChecks<T> on Subject<T Function()> {
       }
     },
     nestedCondition: that,
-    addPredicate: (predicateNoun) => 'returns $predicateNoun',
   );
 }
