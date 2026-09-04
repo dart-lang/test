@@ -55,3 +55,82 @@ void internalBootstrapNativeTest(
     }),
   );
 }
+
+/// Bootstraps a global setup hook to execute, capture teardowns, and report
+/// results back over an isolate port.
+void internalBootstrapVmHook(
+  Function Function() getMain,
+  List<String> args,
+  SendPort sendPort,
+) async {
+  final tearDowns = <FutureOr<void> Function()>[];
+  final commandPort = ReceivePort();
+
+  try {
+    final mainFn = getMain();
+    final result = await runZoned(() async {
+      if (mainFn is FutureOr<Object?> Function(List<String>, SendPort)) {
+        return await mainFn(args, sendPort);
+      } else if (mainFn is FutureOr<Object?> Function(List<String>)) {
+        return await mainFn(args);
+      } else if (mainFn is FutureOr<Object?> Function()) {
+        return await mainFn();
+      } else {
+        throw ArgumentError(
+          'The global setup script must define a top-level `setUp` function '
+          'with zero arguments, one List<String> argument, or (List<String>, SendPort).',
+        );
+      }
+    }, zoneValues: {#test.global_teardowns: tearDowns});
+
+    sendPort.send({
+      'success': true,
+      'result': result,
+      'hasTearDown': tearDowns.isNotEmpty,
+      'commandPort': tearDowns.isNotEmpty ? commandPort.sendPort : null,
+    });
+
+    if (tearDowns.isEmpty) {
+      commandPort.close();
+      return;
+    }
+
+    await for (var msg in commandPort) {
+      final tuple = msg is List ? msg : [null, msg];
+      final replyPort = tuple[0] as SendPort?;
+      final command = tuple[1];
+      if (command == 'teardown' && replyPort != null) {
+        var errors = <(Object, StackTrace)>[];
+        for (var tearDown in tearDowns.reversed) {
+          try {
+            await tearDown();
+          } catch (error, stack) {
+            errors.add((error, stack));
+          }
+        }
+
+        try {
+          if (errors.isEmpty) {
+            replyPort.send({'success': true});
+          } else {
+            replyPort.send({
+              'success': false,
+              'error': errors.map((e) => e.$1.toString()).join('\n'),
+              'stackTrace': errors.first.$2.toString(),
+            });
+          }
+        } finally {
+          commandPort.close();
+        }
+        break;
+      }
+    }
+  } catch (error, stack) {
+    commandPort.close();
+    sendPort.send({
+      'success': false,
+      'error': error.toString(),
+      'stackTrace': stack.toString(),
+    });
+  }
+}

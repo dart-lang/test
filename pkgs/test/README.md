@@ -833,7 +833,69 @@ void main() {
 **Note**: If you write hybrid tests, be sure to add a dependency on the
 `stream_channel` package, since you're using its API!
 
+## Global Setup and Teardown
+
+If tests across multiple files or test suites require shared setup (such as
+precompiling binaries, provisioning test resources, or starting backend services),
+you can use [`globalSetup()`]. Setup scripts should typically live inside your `test/`
+directory (for example, `test/setup_server.dart` or `test/helpers/setup.dart`).
+
+The `globalSetup()` function executes a Dart script on the host test runner in an
+isolate compiled with the incremental Frontend Server. The script's `setUp()`
+function returns a JSON-encodable result that is memoized across all tests and
+test suites in the run:
+
+[`globalSetup()`]: https://pub.dev/documentation/test/latest/test/globalSetup.html
+[`addGlobalTearDown()`]: https://pub.dev/documentation/test/latest/test/addGlobalTearDown.html
+
+```dart
+// ## test/setup_server.dart
+import 'dart:io';
+import 'package:test/scaffolding.dart' show addGlobalTearDown;
+
+Future<Map<String, dynamic>> setUp() async {
+  var server = await HttpServer.bind('localhost', 0);
+  // Register teardown when the test runner closes.
+  addGlobalTearDown(() async {
+    await server.close(force: true);
+  });
+
+  return {'port': server.port};
+}
+
+// ## test/my_test.dart
+import 'package:test/scaffolding.dart' show globalSetup;
+import 'package:test/test.dart';
+
+void main() {
+  test('uses shared server', () async {
+    final config = await globalSetup(Uri.parse('/test/setup_server.dart')) as Map;
+    final port = config['port'] as int;
+    // ...
+  });
+}
+```
+
+The setup script only executes once regardless of how many test suites or tests
+call `globalSetup()`. Global teardown callbacks registered with
+[`addGlobalTearDown()`] are executed when the test runner closes.
+
+`globalSetup()` takes a [`Uri`][Uri] resolved with the following rules:
+* **Root-relative URIs** (beginning with `/`, like `Uri.parse('/test/setup.dart')`):
+  resolved relative to the root of the package (where `pubspec.yaml` lives).
+* **`package:` URIs** (like `Uri.parse('package:my_pkg/test_helpers.dart')`):
+  resolved using the package configuration.
+* **Relative URIs** (without a scheme or leading `/`, like `Uri.parse('setup.dart')` or `Uri.parse('../setup.dart')`):
+  resolved relative to the test suite file currently being executed.
+* **`file:` URIs** (like `Uri.file('/abs/path/setup.dart')`):
+  resolved as absolute file paths on the filesystem.
+
+Fragments are automatically removed for consistent compilation caching. Relative and file URIs strictly prohibit query parameters.
+
+[Uri]: https://api.dart.dev/stable/dart-core/Uri-class.html
+
 ## Support for Other Packages
+
 
 ### `build_runner`
 

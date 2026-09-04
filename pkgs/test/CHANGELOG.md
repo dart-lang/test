@@ -1,5 +1,8 @@
 ## 1.32.0
 
+* Support `globalSetup` and `addGlobalTearDown` in `package:test` /
+  `package:test_api` to execute global setup scripts once on the host runner
+  and cache results across all tests and test suites.
 * Precompiled browser tests: stop serving files from outside the precompiled
   root directory. The static handler no longer sets `serveFilesOutsidePath`,
   restoring path-containment parity with the dart2js and dart2wasm compilers.
