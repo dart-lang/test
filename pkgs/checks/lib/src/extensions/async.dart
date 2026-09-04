@@ -378,6 +378,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         final descriptionFuture = conditions
             .map((c) async => await c.describe())
             .wait;
+        // soft checks are unexpected to throw, if they do the unhandled async
+        // error should surface in the test runner.
         final failures = await conditions.map((condition) async {
           final copy = transaction.newQueue();
           final failure = await condition.softCheck(copy);
