@@ -86,8 +86,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         return l != null ? 'an iterable containing $l' : null;
       },
       (actual) {
-        if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         if (actual.contains(element)) return null;
+        if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         return Rejection(
           which: prefixFirst('does not contain ', literal(element)),
         );
