@@ -1043,8 +1043,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   @override
   String? get collapsedExpected {
-    final child =
-        _clauses.where((c) => c is! _GuardClause).singleOrNull?.collapsedExpected;
+    final child = _clauses
+        .where((c) => c is! _GuardClause)
+        .singleOrNull
+        ?.collapsedExpected;
     if (child == null) return null;
     return _addPredicate?.call(child);
   }

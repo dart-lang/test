@@ -130,7 +130,7 @@ Which: is not less than or equal to <1>''');
 Expected: <2>
 Actual: <1>
 Which: is not identical''');
-        });
+      });
 
       test('isNotNull collapses', () {
         check(() {
@@ -139,7 +139,7 @@ Which: is not identical''');
 Expected: <2>
 Actual: <1>
 Which: is not equal''');
-        });
+      });
 
       test('isA collapses', () {
         check(() {
@@ -154,8 +154,8 @@ Which: is not equal''');
 Expected: a value > <2>
 Actual: <1>
 Which: is not greater than <2>''');
-        });
       });
+    });
 
     group('math checks', () {
       test('isNaN', () {
@@ -521,8 +521,9 @@ Which: is not equal'''),
 
       test('emitsError collapses', () async {
         final stream = Stream<int>.error(1);
-        final checkStream =
-            check(stream).withQueue.emitsError<int>((it) => it.equals(2));
+        final checkStream = check(
+          stream,
+        ).withQueue.emitsError<int>((it) => it.equals(2));
         await check(checkStream).throws<TestFailure>(
           (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
 Expected: a Stream<int> that emits error <2>
