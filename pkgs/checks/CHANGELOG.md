@@ -1,4 +1,4 @@
-## 0.3.2-wip
+## 0.3.2
 
 - Bump `test` dev dependency constraint.
 - Add `isNotA<R>()` check extension as a convenience in place of
