@@ -1,3 +1,7 @@
+## 1.33.0-wip
+
+* Replace the Safari launch mechanism to use `safaridriver`.
+
 ## 1.32.0
 
 * Precompiled browser tests: stop serving files from outside the precompiled
