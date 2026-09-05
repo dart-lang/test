@@ -11,11 +11,10 @@ tests.
 
 ### Do I have to migrate all at once?
 
-No! `package:checks` is designed to be a
-good neighbor with `package:matcher`. Old tests can continue to use matchers.
-Test cases within the same file can use a mix of `expect` and `check`. Consider
-writing new tests with `package:checks` while leaving existing tests as-is until
-they have some other reason to change.
+No! `package:checks` is designed to be a good neighbor with `package:matcher`.
+Old tests can continue to use matchers. Test cases within the same file can use
+a mix of `expect` and `check`. Consider writing new tests with `package:checks`
+while leaving existing tests as-is until they have some other reason to change.
 
 ### _Should_ I migrate all at once?
 
