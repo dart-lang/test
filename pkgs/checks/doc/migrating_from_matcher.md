@@ -7,32 +7,45 @@ tests.
 [`package:matcher`][matcher] is the legacy package with an API exported from
 `package:test/test.dart` and `package:test/expect.dart`. 
 
-**Do I have to migrate all at once?** No. `package:matcher` will be compatible
-with `package:checks`, and old tests can continue to use matchers. Test cases
-within the same file can use a mix of `expect` and `check`.
+## FAQ
 
-**_Should_ I migrate all at once?** Probably not, it depends on your tolerance
+### Do I have to migrate all at once?
+
+No! `package:checks` is designed to be a
+good neighbor with `package:matcher`. Old tests can continue to use matchers.
+Test cases within the same file can use a mix of `expect` and `check`. Consider
+writing new tests with `package:checks` while leaving existing tests as-is until
+they have some other reason to change.
+
+### _Should_ I migrate all at once?
+
+Probably not, it depends on your tolerance
 for having tests use a mix of APIs. As you add new tests, or need to make
 updates to existing tests, using `checks` will make testing easier. Tests which
 are stable and passing will not get significant benefits from a migration.
 
-**Do I need to migrate at all?** No. When `package:test`stops exporting
-these members it will be possible to add a dependency on `package:matcher` and
-continue to use them. `package:matcher` will continue to be available.
+### Do I need to migrate at all?
 
-**Why is the Dart team adding a second framework?** The `matcher` package has a
-design which is fundamentally incompatible with using static types to validate
-correct use. With an entirely new design, the static types in `checks` give
-confidence that the expectation is appropriate for the value, and can narrow
-autocomplete choices in the IDE for a better editing experience. The clean break
-from the legacy implementation and API also gives an opportunity to make small
-behavior and signature changes to align with modern Dart idioms.
+No. When `package:test`stops exporting these members it will be possible to add
+a dependency on `package:matcher` and continue to use them. `package:matcher`
+will continue to be available.
 
-**Should I start using checks right away?** There is still a
-high potential for minor or major breaking changes during the preview window.
-Once this package is stable, yes! The experience of using `checks` improves on
-`matcher`. See some of the [improvements to look forward to in checks
-below](#improvements-you-can-expect).
+### Why is the Dart team adding a second framework?
+
+The `matcher` package has a design which is fundamentally incompatible with
+using static types to validate correct use. With an entirely new design, the
+static types in `checks` give confidence that the expectation is appropriate for
+the value, and can narrow autocomplete choices in the IDE for a better editing
+experience. The clean break from the legacy implementation and API also gives an
+opportunity to make small behavior and signature changes to align with modern
+Dart idioms.
+
+### Should I start using checks right away?
+
+There is still a high potential for minor or major breaking changes during the
+preview window. Once this package is stable, yes! The experience of using
+`checks` improves on `matcher`. See some of the [improvements to look forward to
+in checks below](#improvements-you-can-expect).
 
 [matcher]: https://pub.dev/packages/matcher
 
