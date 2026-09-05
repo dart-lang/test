@@ -1,0 +1,12 @@
+# See https://pub.dev/packages/mono_repo
+
+sdk:
+- dev
+
+stages:
+- unit_test:
+  - command: dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s
+    os:
+    - windows
+    sdk:
+    - dev

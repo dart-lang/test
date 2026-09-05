@@ -1,4 +1,4 @@
-## 0.7.14-wip
+## 0.7.14
 
 * Allow the `vmAsan`, `vmMsan`, and `vmTsan` runtimes to use the native CLI
   compiler.

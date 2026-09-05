@@ -148,20 +148,14 @@ void main() {
           });
 
           if (runtime.isDartVM) {
-            test(
-              'forwards stdout/stderr',
-              () async {
-                await d.file('test.dart', _testWithStdOutAndErr).create();
-                var test = await runTest(testArgs, reporter: 'silent');
+            test('forwards stdout/stderr', () async {
+              await d.file('test.dart', _testWithStdOutAndErr).create();
+              var test = await runTest(testArgs, reporter: 'silent');
 
-                expect(test.stdout, emitsThrough('hello'));
-                expect(test.stderr, emits('world'));
-                await test.shouldExit(0);
-              },
-              skip: Platform.isWindows && compiler == Compiler.exe
-                  ? 'https://github.com/dart-lang/test/issues/2150'
-                  : null,
-            );
+              expect(test.stdout, emitsThrough('hello'));
+              expect(test.stderr, emits('world'));
+              await test.shouldExit(0);
+            });
           }
 
           if (sanitizerEnvironment != null && compiler == Compiler.cli) {

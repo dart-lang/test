@@ -1,4 +1,4 @@
-## 1.32.0-wip
+## 1.32.0
 
 * Replace the Safari launch mechanism to use `safaridriver`.
 * Precompiled browser tests: stop serving files from outside the precompiled
@@ -30,6 +30,7 @@
   platforms used to drop the variable.
 * Fix race conditions in Chrome coverage collection where tests could finish
   before DevTools connection and coverage profiling were initialized.
+* Fix deadlock that may occur running tests with the `exe` compiler.
 
 ## 1.31.2
 
