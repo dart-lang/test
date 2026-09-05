@@ -48,7 +48,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// If the future completes at any time, raises a test failure. This may
   /// happen after the test has already appeared to succeed.
   ///
-  /// Not compatible with [Condition.softCheck] or [Condition.softCheck]
+  /// Not compatible with [Condition.softCheck] or [Condition.softCheckSync]
   /// since there is no concrete end point where this condition has definitely
   /// succeeded.
   void doesNotComplete() {

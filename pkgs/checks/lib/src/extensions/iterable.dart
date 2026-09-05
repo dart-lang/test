@@ -157,9 +157,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   ///
   /// ```dart
   /// check([1, 10, 2, 10, 3]).containsMatchingInOrder([
-  ///   (it) => it.isLessThan(2),
-  ///   (it) => it.isLessThan(3),
-  ///   (it) => it.isLessThan(4),
+  ///   .it()..isLessThan(2),
+  ///   .it()..isLessThan(3),
+  ///   .it()..isLessThan(4),
   /// ]);
   /// ```
   void containsMatchingInOrder(Iterable<Condition<T>> conditions) {

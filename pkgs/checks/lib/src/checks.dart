@@ -451,7 +451,7 @@ extension ContextExtension<T> on Subject<T> {
 /// The description of an expectation may never be shown to the user, so the
 /// callback may never be invoked.
 /// If all the conditions on a subject succeed, or if the failure detail for a
-/// failed [Condition.softCheck] or [Condition.softCheck] is never read,
+/// failed [Condition.softCheck] or [Condition.softCheckSync] is never read,
 /// the descriptions will be unused. String formatting for the descriptions
 /// should be performed in the callback, not ahead of time.
 ///
