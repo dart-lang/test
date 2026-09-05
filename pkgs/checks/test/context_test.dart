@@ -153,7 +153,7 @@ extension _MonitorChecks on Subject<TestCaseMonitor> {
   /// Sets up an unawaited expectation that the test does not emit errors in the
   /// future in addition to checking there have been no errors yet.
   void didPass() {
-    errors.isEmpty();
+    errors.isEmpty;
     state.equals(State.passed);
     onError.context.expectUnawaited(() => ['emits no further errors'], (
       actual,

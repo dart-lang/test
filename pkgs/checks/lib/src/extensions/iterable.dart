@@ -54,7 +54,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     },
   );
 
-  void isEmpty() {
+  void get isEmpty {
     context.expect(
       () => const ['is empty'],
       predicateNoun: () => 'an empty iterable',
@@ -65,7 +65,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     );
   }
 
-  void isNotEmpty() {
+  void get isNotEmpty {
     context.expect(
       () => const ['is not empty'],
       predicateNoun: () => 'a non-empty iterable',

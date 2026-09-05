@@ -54,17 +54,15 @@ void main() {
   });
 
   test('isEmpty', () {
-    check(<Object>[]).isEmpty();
-    check(
-      _testIterable,
-    ).isRejectedBy(.it()..isEmpty(), which: ['is not empty']);
+    check(<Object>[]).isEmpty;
+    check(_testIterable).isRejectedBy(.it()..isEmpty, which: ['is not empty']);
   });
 
   test('isNotEmpty', () {
-    check(_testIterable).isNotEmpty();
+    check(_testIterable).isNotEmpty;
     check(
       const Iterable<int>.empty(),
-    ).isRejectedBy(.it()..isNotEmpty(), which: ['is empty']);
+    ).isRejectedBy(.it()..isNotEmpty, which: ['is empty']);
   });
 
   test('contains', () {

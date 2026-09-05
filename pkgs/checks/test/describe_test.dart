@@ -10,7 +10,7 @@ import 'test_shared.dart';
 void main() {
   group('describe', () {
     test('succeeds for empty conditions', () {
-      check(Condition.it<void>()).hasSyncDescription().isEmpty();
+      check(Condition.it<void>()).hasSyncDescription().isEmpty;
     });
     test('includes condition clauses', () {
       check(

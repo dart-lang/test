@@ -28,7 +28,7 @@ void main() {
             ],
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows collections inside sets', () {
@@ -41,7 +41,7 @@ void main() {
             {'a': 1},
           },
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows collections as Map keys', () {
@@ -58,7 +58,7 @@ void main() {
             },
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of elements in lists', () {
@@ -75,7 +75,7 @@ void main() {
             Condition.it<dynamic>()..isA<String>().startsWith('b'),
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of values in maps', () {
@@ -88,7 +88,7 @@ void main() {
             {'a': Condition.it<dynamic>()..isA<String>().startsWith('b')},
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of elements in sets', () {
@@ -97,7 +97,7 @@ void main() {
           {'b', 'a'},
           {'a', Condition.it<dynamic>()..isA<String>().startsWith('b')},
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of keys in maps', () {
@@ -106,7 +106,7 @@ void main() {
           {'a': 'b'},
           {Condition.it<dynamic>()..isA<String>().startsWith('a'): 'b'},
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('reports non-Set elements', () {

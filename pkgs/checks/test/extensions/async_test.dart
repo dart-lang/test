@@ -42,7 +42,7 @@ void main() {
           final condition = Condition.it<List<Future<int>>>()
             ..has((l) => l.first, 'first').completes(.it()..equals(42));
           final failure1 = await condition.softCheck([Future.value(42)]);
-          check(failure1).isNull();
+          check(failure1).isNull;
           final failure2 = await condition.softCheck([Future.value(0)]);
           check(failure2).isNotNull();
         },
@@ -57,7 +57,7 @@ void main() {
         'succeeds for a future that compeletes to an error of the expected type',
         () async {
           await check(_futureFail()).throws<UnimplementedError>(
-            .it()..has((p0) => p0.message, 'message').isNull(),
+            .it()..has((p0) => p0.message, 'message').isNull,
           );
         },
       );
@@ -96,20 +96,20 @@ void main() {
       test('returns Future<Subject> and can be awaited', () async {
         (await check(_futureFail()).throws<UnimplementedError>())
             .has((p0) => p0.message, 'message')
-            .isNull();
+            .isNull;
       });
     });
 
     group('doesNotComplete', () {
       test('succeeds for a Future that never completes', () async {
-        check(Completer<void>().future).doesNotComplete();
+        check(Completer<void>().future).doesNotComplete;
       });
       test('fails for a Future that completes as a value', () async {
         Object? testFailure;
         runZonedGuarded(
           () {
             final completer = Completer<String>();
-            check(completer.future).doesNotComplete();
+            check(completer.future).doesNotComplete;
             completer.complete('value');
           },
           (e, st) {
@@ -131,7 +131,7 @@ Actual: a future that completed to 'value\'''');
         runZonedGuarded(
           () {
             final completer = Completer<String>();
-            check(completer.future).doesNotComplete();
+            check(completer.future).doesNotComplete;
             completer.completeError(
               'error',
               StackTrace.fromString('fake trace'),
@@ -155,7 +155,7 @@ Which: threw 'error' at:
       });
       test('can be described', () async {
         await check(
-          Condition.it<Future<void>>()..doesNotComplete(),
+          Condition.it<Future<void>>()..doesNotComplete,
         ).hasAsyncDescriptionWhich(.it()..deepEquals(['  does not complete']));
       });
     });
@@ -328,7 +328,7 @@ Which: threw 'error' at:
         await check(_countingStream(2)).inOrder([
           .it()..emits(.it()..equals(0)),
           .it()..emits(.it()..equals(1)),
-          .it()..isDone(),
+          .it()..isDone,
         ]);
       });
       test('reports which condition failed', () async {
@@ -375,7 +375,7 @@ Which: threw 'error' at:
           .it()..emits(.it()..equals(0)),
           .it()..emits(.it()..equals(1)),
           .it()..emits(.it()..equals(2)),
-          .it()..isDone(),
+          .it()..isDone,
         ]);
       });
       test('consumes events', () async {
@@ -423,7 +423,7 @@ Which: threw 'error' at:
         await check(queue).inOrder([
           .it()..emits(.it()..equals(0)),
           .it()..emits(.it()..equals(1)),
-          .it()..isDone(),
+          .it()..isDone,
         ]);
       });
     });
@@ -449,7 +449,7 @@ Which: threw 'error' at:
         await (Condition.it<StreamQueue<Future<int>>>()
               ..mayEmit(.it()..completes(.it()..equals(1))))
             .softCheck(queue);
-        await check(queue).isDone();
+        await check(queue).isDone;
       });
       test('does not consume a non-matching event', () async {
         final queue = _countingStream(2);
@@ -523,7 +523,7 @@ Which: threw 'error' at:
         await (Condition.it<StreamQueue<Future<int>>>()
               ..mayEmitMultiple(.it()..completes(.it()..equals(1))))
             .softCheck(queue);
-        await check(queue).isDone();
+        await check(queue).isDone;
       });
       test('can be described', () async {
         await check(
@@ -546,11 +546,11 @@ Which: threw 'error' at:
 
     group('isDone', () {
       test('succeeds for an empty stream', () async {
-        await check(_countingStream(0)).isDone();
+        await check(_countingStream(0)).isDone;
       });
       test('fails for a stream that emits a value', () async {
         await check(_countingStream(1)).isRejectedByAsync(
-          .it()..isDone(),
+          .it()..isDone,
           actual: ['a stream'],
           which: ['emitted an unexpected value: <0>'],
         );
@@ -559,19 +559,19 @@ Which: threw 'error' at:
         final controller = StreamController<void>();
         controller.addError('sad', StackTrace.fromString('fake trace'));
         await check(StreamQueue(controller.stream)).isRejectedByAsync(
-          .it()..isDone(),
+          .it()..isDone,
           actual: ['a stream'],
           which: ['emitted an unexpected error: \'sad\' at:', '  fake trace'],
         );
       });
       test('uses a transaction', () async {
         final queue = _countingStream(1);
-        await (Condition.it<StreamQueue<int>>()..isDone()).softCheck(queue);
+        await (Condition.it<StreamQueue<int>>()..isDone).softCheck(queue);
         await check(queue).emits(.it()..equals(0));
       });
       test('can be described', () async {
         await check(
-          Condition.it<StreamQueue<int>>()..isDone(),
+          Condition.it<StreamQueue<int>>()..isDone,
         ).hasAsyncDescriptionWhich(.it()..deepEquals(['  is done']));
       });
     });

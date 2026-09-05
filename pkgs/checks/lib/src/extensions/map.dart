@@ -31,7 +31,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     );
   }
 
-  void isEmpty() {
+  void get isEmpty {
     context.expect(
       () => const ['is empty'],
       predicateNoun: () => 'an empty map',
@@ -42,7 +42,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     );
   }
 
-  void isNotEmpty() {
+  void get isNotEmpty {
     context.expect(
       () => const ['is not empty'],
       predicateNoun: () => 'a non-empty map',
