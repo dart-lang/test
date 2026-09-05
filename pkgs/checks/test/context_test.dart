@@ -68,23 +68,16 @@ void main() {
     });
 
     test('nestAsync holds test open past async condition', () async {
-      late void Function() callback;
+      final completer = Completer<void>();
       final monitor = TestCaseMonitor.start(() {
-        check(null).context.nestAsync(
-          () => [''],
-          (actual) async {
-            return Extracted.value(null);
-          },
-          (it) async {
-            final completer = Completer<void>();
-            callback = completer.complete;
-            await completer.future;
-          },
-        );
+        check(completer.future).context.nestAsync(() => [''], (actual) async {
+          await pumpEventQueue();
+          return Extracted.value(actual);
+        }, .it<Future>()..completes());
       });
       await pumpEventQueue();
       check(monitor).state.equals(State.running);
-      callback();
+      completer.complete();
       await monitor.onDone;
       check(monitor).didPass();
     });
@@ -125,16 +118,16 @@ void main() {
       check(monitor)
         ..state.equals(State.failed)
         ..errors.unorderedMatches([
-          (it) => it
-              .has((e) => e.error, 'error')
-              .isA<TestFailure>()
-              .has((f) => f.message, 'message')
-              .isNotNull()
-              .endsWith('Which: foo'),
-          (it) => it
-              .has((e) => e.error, 'error')
-              .isA<String>()
-              .startsWith('This test failed after it had already completed.'),
+          .it()
+            ..has((e) => e.error, 'error')
+                .isA<TestFailure>()
+                .has((f) => f.message, 'message')
+                .isNotNull()
+                .endsWith('Which: foo'),
+          .it()
+            ..has((e) => e.error, 'error').isA<String>().startsWith(
+              'This test failed after it had already completed.',
+            ),
         ]);
     });
   });

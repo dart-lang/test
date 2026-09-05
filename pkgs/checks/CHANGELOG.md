@@ -1,14 +1,24 @@
-## 0.3.3-wip
+## 0.4.0-wip
 
+- **Breaking Changes**
+  - Replace the `typedef Condition` and `AsyncCondition` function type callback
+    arguments with a `Condition` class which has `check`, `softCheck`, and
+    `describe` methods. Use the static `it` method in place of function
+    literals: `(it) => it.someCheck()` becomes `.it()..someCheck()`. Most
+    uses should have the required context type to allow the use of dot
+    shorthands. Within collection literals where there is no context type use
+    `Condition.it<SomeType>()..someCheck()`.
+  - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
+    top level methods in favor of the instance members on `Condition`.
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and
-  `Subject.returnsNormally` to accept an optional `Condition` callback to apply
+  `Subject.returnsNormally` to accept an optional `Condition` to apply
   to the extracted value. For example
-  `check(foo).isA<int>((it) => it..isGreaterThan(0));`
+  `check(foo).isA<int>(.it()..isGreaterThan(0));`
 - Updated `Subject.completes`, `Subject.throws` (async), `StreamChecks.emits`,
   and `StreamChecks.emitsError` to return `Future<Subject>` in addition to
-  accepting an optional `AsyncCondition` callback. For example
+  accepting an optional `Condition`. For example
   `(await check(foo).completes()).equals(42);`
 - Added `FutureSubjectExtension.which` to allow chaining expectations on a
   `Future<Subject>`.

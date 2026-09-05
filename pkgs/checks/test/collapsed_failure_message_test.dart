@@ -53,9 +53,10 @@ Expected: a List<int> that:
 
     test('async completes to equal', () async {
       final future = Future.value(1);
-      final checkFuture = check(future).completes((it) => it.equals(2));
+      final checkFuture = check(future).completes(.it()..equals(2));
       await check(checkFuture).throws<TestFailure>(
-        (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
+        .it()
+          ..has((f) => f.message, 'message').isNotNull().equals('''
 Expected: a Future<int> that completes to <2>
 Actual: a Future<int> that completes to <1>
 Which: is not equal'''),
@@ -510,9 +511,10 @@ Which: is not equal''');
     group('async checks', () {
       test('emits collapses', () async {
         final stream = Stream.value(1);
-        final checkStream = check(stream).withQueue.emits((it) => it.equals(2));
+        final checkStream = check(stream).withQueue.emits(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
-          (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
 Expected: a Stream<int> that emits <2>
 Actual: a Stream<int> that emits <1>
 Which: is not equal'''),
@@ -523,9 +525,10 @@ Which: is not equal'''),
         final stream = Stream<int>.error(1);
         final checkStream = check(
           stream,
-        ).withQueue.emitsError<int>((it) => it.equals(2));
+        ).withQueue.emitsError<int>(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
-          (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
 Expected: a Stream<int> that emits error <2>
 Actual: a Stream<int> that emits error <1>
 Which: is not equal'''),
@@ -534,9 +537,10 @@ Which: is not equal'''),
 
       test('Future.throws collapses', () async {
         final future = Future<void>.error(1);
-        final checkFuture = check(future).throws<int>((it) => it.equals(2));
+        final checkFuture = check(future).throws<int>(.it()..equals(2));
         await check(checkFuture).throws<TestFailure>(
-          (it) => it.has((f) => f.message, 'message').isNotNull().equals('''
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
 Expected: a Future<void> that throws <2>
 Actual: a Future<void> that throws <1>
 Which: is not equal'''),
