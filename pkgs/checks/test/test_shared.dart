@@ -44,7 +44,7 @@ extension RejectionChecks<T> on Subject<T> {
           .expect(() => ['is left default'], (_) => null);
     }
     if (which == null) {
-      rejection.has((r) => r.which, 'which').isNull();
+      rejection.has((r) => r.which, 'which').isNull;
     } else {
       rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
     }
@@ -86,7 +86,7 @@ extension RejectionChecks<T> on Subject<T> {
           .expect(() => ['is left default'], (_) => null);
     }
     if (which == null) {
-      rejection.has((r) => r.which, 'which').isNull();
+      rejection.has((r) => r.which, 'which').isNull;
     } else {
       rejection.has((r) => r.which, 'which').isNotNull().deepEquals(which);
     }

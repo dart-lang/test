@@ -36,7 +36,7 @@ void main() {
   group('HasField', () {
     group('has', () {
       test('happy case', () {
-        check(1).has((v) => v.isOdd, 'isOdd').isTrue();
+        check(1).has((v) => v.isOdd, 'isOdd').isTrue;
       });
       test('failure case', () {
         check(null).isRejectedBy(
@@ -54,18 +54,18 @@ void main() {
         );
       });
       test('returns valid subject', () {
-        check(1).has((v) => v.isOdd, 'isOdd').isTrue();
+        check(1).has((v) => v.isOdd, 'isOdd').isTrue;
       });
     });
 
     test('which', () {
-      check(true).which(.it()..isTrue());
+      check(true).which(.it()..isTrue);
     });
 
     test('not', () {
-      check(false).not(.it()..isTrue());
+      check(false).not(.it()..isTrue);
       check(true).isRejectedBy(
-        .it()..not(.it()..isTrue()),
+        .it()..not(.it()..isTrue),
         which: ['is a value that: ', '    is true'],
       );
     });
@@ -85,15 +85,15 @@ void main() {
 
   group('BoolChecks', () {
     test('isTrue', () {
-      check(true).isTrue();
+      check(true).isTrue;
 
-      check(false).isRejectedBy(.it()..isTrue());
+      check(false).isRejectedBy(.it()..isTrue);
     });
 
     test('isFalse', () {
-      check(false).isFalse();
+      check(false).isFalse;
 
-      check(true).isRejectedBy(.it()..isFalse());
+      check(true).isRejectedBy(.it()..isFalse);
     });
   });
 
@@ -128,9 +128,9 @@ void main() {
       });
     });
     test('isNull', () {
-      check(null).isNull();
+      check(null).isNull;
 
-      check(1).isRejectedBy(.it()..isNull());
+      check(1).isRejectedBy(.it()..isNull);
     });
   });
 
