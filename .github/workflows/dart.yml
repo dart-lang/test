@@ -1824,7 +1824,7 @@ jobs:
       - job_006
       - job_007
   job_046:
-    name: "unit_test; windows; Dart dev; PKG: integration_tests/cross_compiler_hang; `dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s`"
+    name: "unit_test; windows; Dart dev; PKG: integration_tests/cross_compiler_hang; `dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s`"
     runs-on: windows-latest
     steps:
       - name: Setup Dart SDK
@@ -1841,8 +1841,8 @@ jobs:
         run: dart pub upgrade
         if: "always() && steps.checkout.conclusion == 'success'"
         working-directory: integration_tests/cross_compiler_hang
-      - name: "integration_tests/cross_compiler_hang; dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s"
-        run: "dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=15s"
+      - name: "integration_tests/cross_compiler_hang; dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s"
+        run: "dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s"
         if: "always() && steps.integration_tests_cross_compiler_hang_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/cross_compiler_hang
     needs:

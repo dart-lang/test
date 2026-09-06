@@ -10,62 +10,84 @@ import 'core.dart';
 extension IterableChecks<T> on Subject<Iterable<T>> {
   Subject<int> get length => has((l) => l.length, 'length');
 
-  Subject<T> get first => context.nest(() => ['has first element'], (actual) {
-    final iterator = actual.iterator;
-    if (!iterator.moveNext()) {
-      return Extracted.rejection(which: ['has no elements']);
-    }
-    return Extracted.value(iterator.current);
-  });
+  Subject<T> get first => context.nest(
+    () => ['has first element'],
+    addPredicate: (predicateNoun) => 'has first element: $predicateNoun',
+    (actual) {
+      final iterator = actual.iterator;
+      if (!iterator.moveNext()) {
+        return Extracted.rejection(which: ['has no elements']);
+      }
+      return Extracted.value(iterator.current);
+    },
+  );
 
-  Subject<T> get last => context.nest(() => ['has last element'], (actual) {
-    final iterator = actual.iterator;
-    if (!iterator.moveNext()) {
-      return Extracted.rejection(which: ['has no elements']);
-    }
-    var current = iterator.current;
-    while (iterator.moveNext()) {
-      current = iterator.current;
-    }
-    return Extracted.value(current);
-  });
+  Subject<T> get last => context.nest(
+    () => ['has last element'],
+    addPredicate: (predicateNoun) => 'has last element: $predicateNoun',
+    (actual) {
+      final iterator = actual.iterator;
+      if (!iterator.moveNext()) {
+        return Extracted.rejection(which: ['has no elements']);
+      }
+      var current = iterator.current;
+      while (iterator.moveNext()) {
+        current = iterator.current;
+      }
+      return Extracted.value(current);
+    },
+  );
 
-  Subject<T> get single => context.nest(() => ['has single element'], (actual) {
-    final iterator = actual.iterator;
-    if (!iterator.moveNext()) {
-      return Extracted.rejection(which: ['has no elements']);
-    }
-    final value = iterator.current;
-    if (iterator.moveNext()) {
-      return Extracted.rejection(which: ['has more than one element']);
-    }
-    return Extracted.value(value);
-  });
+  Subject<T> get single => context.nest(
+    () => ['has single element'],
+    addPredicate: (predicateNoun) => 'has single element: $predicateNoun',
+    (actual) {
+      final iterator = actual.iterator;
+      if (!iterator.moveNext()) {
+        return Extracted.rejection(which: ['has no elements']);
+      }
+      final value = iterator.current;
+      if (iterator.moveNext()) {
+        return Extracted.rejection(which: ['has more than one element']);
+      }
+      return Extracted.value(value);
+    },
+  );
 
   void isEmpty() {
-    context.expect(() => const ['is empty'], (actual) {
-      if (actual.isEmpty) return null;
-      return Rejection(which: ['is not empty']);
-    });
+    context.expect(
+      () => const ['is empty'],
+      predicateNoun: () => 'an empty iterable',
+      (actual) {
+        if (actual.isEmpty) return null;
+        return Rejection(which: ['is not empty']);
+      },
+    );
   }
 
   void isNotEmpty() {
-    context.expect(() => const ['is not empty'], (actual) {
-      if (actual.isNotEmpty) return null;
-      return Rejection(which: ['is empty']);
-    });
+    context.expect(
+      () => const ['is not empty'],
+      predicateNoun: () => 'a non-empty iterable',
+      (actual) {
+        if (actual.isNotEmpty) return null;
+        return Rejection(which: ['is empty']);
+      },
+    );
   }
 
   /// Expects that the iterable contains [element] according to
   /// [Iterable.contains].
   void contains(T element) {
     context.expect(
-      () {
-        return prefixFirst('contains ', literal(element));
+      () => prefixFirst('contains ', literal(element)),
+      predicateNoun: () {
+        final l = literal(element).singleOrNull;
+        return l != null ? 'an iterable containing $l' : null;
       },
       (actual) {
-        if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         if (actual.contains(element)) return null;
+        if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         return Rejection(
           which: prefixFirst('does not contain ', literal(element)),
         );
@@ -84,14 +106,14 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// ```
   ///
   /// Values in [elements] may be a `T`, a `Condition<T>`, or a
-  /// `Condition<Object?>`. If an expectation is a condition callback it will be
+  /// `Condition<Object?>`. If an expectation is a [Condition] it will be
   /// checked against the actual values, and any other expectations, including
-  /// those that are not a `T` or a condition callback, will be compared with
+  /// those that are not a `T` or a [Condition], will be compared with
   /// the equality operator.
   ///
   /// ```dart
   /// check([1, 0, 2, 0, 3])
-  ///   .containsInOrder([1, (Subject<int> v) => v.isGreaterThan(1), 3]);
+  ///   .containsInOrder([1, Condition.it<int>()..isGreaterThan(1), 3]);
   /// ```
   @Deprecated(
     'Use `containsEqualInOrder` for expectations with values compared'
@@ -109,9 +131,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         for (final element in actual) {
           final currentExpected = expected[expectedIndex];
           final matches = currentExpected is Condition<T>
-              ? softCheck(element, currentExpected) == null
+              ? currentExpected.softCheckSync(element) == null
               : currentExpected is Condition<dynamic>
-              ? softCheck(element, currentExpected) == null
+              ? currentExpected.softCheckSync(element) == null
               : currentExpected == element;
           if (matches && ++expectedIndex >= expected.length) return null;
         }
@@ -135,9 +157,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   ///
   /// ```dart
   /// check([1, 10, 2, 10, 3]).containsMatchingInOrder([
-  ///   (it) => it.isLessThan(2),
-  ///   (it) => it.isLessThan(3),
-  ///   (it) => it.isLessThan(4),
+  ///   .it()..isLessThan(2),
+  ///   .it()..isLessThan(3),
+  ///   .it()..isLessThan(4),
   /// ]);
   /// ```
   void containsMatchingInOrder(Iterable<Condition<T>> conditions) {
@@ -151,7 +173,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         var expectedIndex = 0;
         for (final element in actual) {
           final currentExpected = expected[expectedIndex];
-          final matches = softCheck(element, currentExpected) == null;
+          final matches = currentExpected.softCheckSync(element) == null;
           if (matches && ++expectedIndex >= expected.length) return null;
         }
         return Rejection(
@@ -210,14 +232,14 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void any(Condition<T> elementCondition) {
     context.expect(
       () {
-        final conditionDescription = describe(elementCondition);
+        final conditionDescription = elementCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['contains a value that:', ...conditionDescription];
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         for (var e in actual) {
-          if (softCheck(e, elementCondition) == null) return null;
+          if (elementCondition.softCheckSync(e) == null) return null;
         }
         return Rejection(which: ['Contains no matching element']);
       },
@@ -231,7 +253,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   void every(Condition<T> elementCondition) {
     context.expect(
       () {
-        final conditionDescription = describe(elementCondition);
+        final conditionDescription = elementCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['only has values that:', ...conditionDescription];
       },
@@ -239,7 +261,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         final iterator = actual.iterator;
         for (var i = 0; iterator.moveNext(); i++) {
           final element = iterator.current;
-          final failure = softCheck(element, elementCondition);
+          final failure = elementCondition.softCheckSync(element);
           if (failure == null) continue;
           final which = failure.rejection.which;
           return Rejection(
@@ -269,6 +291,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@macro deep_collection_equals}
   void deepEquals(Iterable<Object?> expected) => context.expect(
     () => prefixFirst('is deeply equal to ', literal(expected)),
+    predicateNoun: () => literal(expected).singleOrNull,
     (actual) {
       final which = deepCollectionEquals(actual, expected);
       if (which == null) return null;
@@ -324,10 +347,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
       final which = unorderedCompare(
         actual,
         expected,
-        (actual, expected) => softCheck(actual, expected) == null,
+        (actual, expected) => expected.softCheckSync(actual) == null,
         (expected, index, count) => [
           'has no element matching the condition at index $index:',
-          ...describe(expected),
+          ...expected.describeSync(),
           if (count > 1) 'or ${count - 1} other conditions',
         ],
         (actual, index, count) => [
@@ -395,12 +418,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
             );
           }
           final actualValue = iterator.current;
-          final failure = softCheck(
-            actualValue,
-            elementCondition(expectedValue),
-          );
+          final condition = elementCondition(expectedValue);
+          final failure = condition.softCheckSync(actualValue);
           if (failure == null) continue;
-          final innerDescription = describe<T>(elementCondition(expectedValue));
+          final innerDescription = condition.describeSync();
           final which = failure.rejection.which;
           return Rejection(
             which: [

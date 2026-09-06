@@ -15,7 +15,7 @@ dependencies:
   analyzer: '>=13.0.0 <15.0.0'
   build: ^4.0.0
   build_test: ^3.5.0
-  checks: ^0.3.1
+  checks: ^0.4.0-wip
   code_builder: ^4.11.0
   collection: ^1.19.0
   matcher: ^0.12.19

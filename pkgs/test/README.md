@@ -337,7 +337,10 @@ The following identifiers are defined:
 
 * `firefox`: Whether the test is running on Mozilla Firefox.
 
-* `safari`: Whether the test is running on Apple Safari.
+* `safari`: Whether the test is running on Apple Safari. Running tests on
+  Safari requires Remote Automation to be enabled on macOS: run
+  `safaridriver --enable` (or `sudo safaridriver --enable` in CI), or enable
+  **Allow Remote Automation** under Safari Settings -> Developer.
 
 * `edge`: Whether the test is running on Microsoft Edge browser.
 
