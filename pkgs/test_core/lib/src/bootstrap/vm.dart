@@ -96,9 +96,10 @@ void internalBootstrapVmHook(
     }
 
     await for (var msg in commandPort) {
-      final tuple = msg is List ? msg : [null, msg];
-      final replyPort = tuple[0] as SendPort?;
-      final command = tuple[1];
+      final (replyPort, command) = switch (msg) {
+        [final SendPort replyPort, final command] => (replyPort, command),
+        _ => (null, msg),
+      };
       if (command == 'teardown' && replyPort != null) {
         var errors = <(Object, StackTrace)>[];
         for (var tearDown in tearDowns.reversed) {

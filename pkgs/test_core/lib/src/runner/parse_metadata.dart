@@ -334,8 +334,7 @@ class _Parser {
   Map<String, Expression> _parseNamedArguments(
     Iterable<CompatibleArgument> arguments,
   ) => {
-    for (var argument in arguments)
-      if (argument.name case String name) name: argument.argumentExpression,
+    for (var argument in arguments) ?argument.name: argument.argumentExpression,
   };
 
   /// Asserts that [existing] is null.

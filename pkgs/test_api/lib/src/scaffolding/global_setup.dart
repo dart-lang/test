@@ -60,8 +60,10 @@ Future<Object?> globalSetup(Uri uri) async {
   });
 
   final completer = Completer<Object?>();
-  virtualChannel.stream.listen(
+  late final StreamSubscription subscription;
+  subscription = virtualChannel.stream.listen(
     (message) {
+      unawaited(subscription.cancel());
       switch (message) {
         case {'type': 'data', 'data': final data}:
           completer.complete(data);
@@ -84,6 +86,7 @@ Future<Object?> globalSetup(Uri uri) async {
         );
       }
     },
+    cancelOnError: true,
   );
 
   return completer.future;

@@ -64,20 +64,32 @@ final class GlobalSetupManager {
   }
 
   Future<Object?> _runSetup(String url) async {
-    final responsePort = ReceivePort();
-    final errorPort = ReceivePort();
+    final completer = Completer<Object?>();
+    final responsePort = RawReceivePort();
+    final errorPort = RawReceivePort((Object? errorAndStack) {
+      final list = errorAndStack as List<Object?>;
+      if (!completer.isCompleted) {
+        completer.completeError(
+          ApplicationException(
+            'Global setup "$url" failed:\n${list[0]}\n${list[1]}',
+          ),
+        );
+      }
+    });
+
     try {
       final code =
           '''
-        ${await _languageVersionCommentFor(url)}
+${await _languageVersionCommentFor(url)}
 
-        import "dart:isolate";
-        import "package:test_core/src/bootstrap/vm.dart";
+import "dart:isolate";
+import "package:test_core/src/bootstrap/vm.dart";
 
-        import "${url.replaceAll(r'$', '%24')}" as lib;
+import "${url.replaceAll(r'$', '%24')}" as lib;
 
-        void main(_, SendPort sendPort) => internalBootstrapVmHook(() => lib.setUp, [], sendPort);
-      ''';
+void main(_, SendPort sendPort) =>
+    internalBootstrapVmHook(() => lib.setUp, [], sendPort);
+''';
 
       Isolate isolate;
       try {
@@ -92,20 +104,7 @@ final class GlobalSetupManager {
         );
       }
 
-      final completer = Completer<Object?>();
-
-      final errorSub = errorPort.listen((errorAndStack) {
-        final list = errorAndStack as List<Object?>;
-        if (!completer.isCompleted) {
-          completer.completeError(
-            ApplicationException(
-              'Global setup "$url" failed:\n${list[0]}\n${list[1]}',
-            ),
-          );
-        }
-      });
-
-      final responseSub = responsePort.listen((response) {
+      responsePort.handler = (Object? response) {
         if (response case {
           'success': true,
           'result': var result,
@@ -139,12 +138,9 @@ final class GlobalSetupManager {
             );
           }
         }
-      });
+      };
 
-      final result = await completer.future;
-      await errorSub.cancel();
-      await responseSub.cancel();
-      return result;
+      return await completer.future;
     } finally {
       responsePort.close();
       errorPort.close();
@@ -153,18 +149,19 @@ final class GlobalSetupManager {
 
   Future<void> close() => _closeMemo.runOnce(() async {
     for (var active in _activeSetups.reversed) {
-      final replyPort = ReceivePort();
+      final replyPort = RawReceivePort();
+      final completer = Completer<Map<Object?, Object?>>();
+      replyPort.handler = (Object? response) {
+        if (!completer.isCompleted) {
+          completer.complete(response as Map<Object?, Object?>);
+        }
+      };
       try {
         active.commandPort.send([replyPort.sendPort, 'teardown']);
-        final response =
-            await replyPort.first.timeout(
-                  const Duration(seconds: 30),
-                  onTimeout: () => {
-                    'success': false,
-                    'error': 'Teardown timed out',
-                  },
-                )
-                as Map<Object?, Object?>;
+        final response = await completer.future.timeout(
+          const Duration(seconds: 30),
+          onTimeout: () => {'success': false, 'error': 'Teardown timed out'},
+        );
         if (response['success'] != true) {
           stderr.writeln(
             'Global teardown for "${active.url}" failed: ${response["error"]}',
@@ -185,45 +182,51 @@ final class GlobalSetupManager {
   String _normalizeUrl(String url, Suite suite) {
     final parsedUri = Uri.parse(url);
 
-    String normalized;
-    switch (parsedUri.scheme) {
-      case '':
-        if (parsedUri.hasAbsolutePath) {
-          if (parsedUri.hasQuery) {
-            throw ArgumentError.value(
-              url,
-              'uri',
-              'root-relative URIs cannot have query parameters',
-            );
-          }
-          normalized = p.url.join(
-            p.toUri(p.current).toString(),
-            parsedUri.path.substring(1),
-          );
-        } else {
-          if (parsedUri.hasQuery) {
-            throw ArgumentError.value(
-              url,
-              'uri',
-              'relative URIs cannot have query parameters',
-            );
-          }
-          var suitePath = suite.path!;
-          normalized = p.url.join(
-            p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
-            parsedUri.path,
-          );
-        }
-      case 'file':
-        if (parsedUri.hasQuery) {
+    final normalized = switch (parsedUri) {
+      Uri(hasScheme: false) when parsedUri.authority.isNotEmpty =>
+        throw ArgumentError.value(
+          url,
+          'uri',
+          'relative URIs cannot have an authority',
+        ),
+      Uri(hasScheme: false, hasAbsolutePath: true, hasQuery: true) =>
+        throw ArgumentError.value(
+          url,
+          'uri',
+          'root-relative URIs cannot have query parameters',
+        ),
+      Uri(hasScheme: false, hasAbsolutePath: true) => () {
+        if (url.startsWith('/..')) {
           throw ArgumentError.value(
             url,
             'uri',
-            'file: URIs cannot have query parameters',
+            'root-relative URIs cannot reach outside the package directory',
           );
         }
-        normalized = parsedUri.toString();
-      case 'package':
+        return p.url.join(
+          p.toUri(p.current).toString(),
+          parsedUri.pathSegments.join('/'),
+        );
+      }(),
+      Uri(hasScheme: false, hasQuery: true) => throw ArgumentError.value(
+        url,
+        'uri',
+        'relative URIs cannot have query parameters',
+      ),
+      Uri(hasScheme: false) => () {
+        var suitePath = suite.path!;
+        return p.url.join(
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUri.path,
+        );
+      }(),
+      Uri(scheme: 'file', hasQuery: true) => throw ArgumentError.value(
+        url,
+        'uri',
+        'file: URIs cannot have query parameters',
+      ),
+      Uri(scheme: 'file') => parsedUri.toString(),
+      Uri(scheme: 'package') => () {
         final resolvedUri = Isolate.resolvePackageUriSync(parsedUri);
         if (resolvedUri == null) {
           throw ArgumentError.value(
@@ -232,18 +235,19 @@ final class GlobalSetupManager {
             'Could not resolve the package URI',
           );
         }
-        normalized = resolvedUri.toString();
-      default:
-        normalized = url;
-    }
+        return resolvedUri.toString();
+      }(),
+      _ => url,
+    };
 
     return Uri.parse(normalized).removeFragment().toString();
   }
 }
 
-Future<String> _readUri(Uri uri) async => switch (uri.scheme) {
-  '' || 'file' => await File.fromUri(uri).readAsString(),
-  'data' => uri.data!.contentAsString(),
+Future<String> _readUri(Uri uri) async => switch (uri) {
+  Uri(hasScheme: false) ||
+  Uri(scheme: 'file') => await File.fromUri(uri).readAsString(),
+  Uri(:final data?) => data.contentAsString(),
   _ => throw ArgumentError.value(
     uri,
     'uri',
@@ -256,20 +260,22 @@ Future<String> _languageVersionCommentFor(String url) async {
 
   var result = parseString(
     content: await _readUri(parsedUri),
-    path: parsedUri.scheme == 'data' ? null : p.fromUri(parsedUri),
+    path: parsedUri.isScheme('data') ? null : p.fromUri(parsedUri),
     throwIfDiagnostics: false,
   );
-  var languageVersionComment = result.unit.languageVersionToken?.value();
-  if (languageVersionComment != null) return languageVersionComment.toString();
-
-  if (parsedUri.scheme == 'file' || parsedUri.scheme == '') {
-    var packageConfig = await currentPackageConfig;
-    var package = packageConfig.packageOf(parsedUri);
-    var version = package?.languageVersion;
-    if (version != null) return '// @dart=$version';
+  if (result.unit.languageVersionToken?.value() case final versionComment?) {
+    return versionComment.toString();
   }
 
-  if (parsedUri.scheme == 'data') {
+  if (!parsedUri.hasScheme || parsedUri.isScheme('file')) {
+    var packageConfig = await currentPackageConfig;
+    var package = packageConfig.packageOf(parsedUri);
+    if (package?.languageVersion case var version?) {
+      return '// @dart=$version';
+    }
+  }
+
+  if (parsedUri.isScheme('data')) {
     return await rootPackageLanguageVersionComment;
   }
 
