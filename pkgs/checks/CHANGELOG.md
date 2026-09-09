@@ -10,6 +10,23 @@
     `Condition.it<SomeType>()..someCheck()`.
   - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
     top level methods in favor of the instance members on `Condition`.
+  - Expectation extension methods which take no arguments have been changed to
+    getters:
+    - `doesNotComplete`
+    - `isDone`
+    - `isEmpty`
+    - `isFalse`
+    - `isFinite`
+    - `isInfinite`
+    - `isNaN`
+    - `isNegative`
+    - `isNotEmpty`
+    - `isNotFinite`
+    - `isNotInfinite`
+    - `isNotNaN`
+    - `isNotNegative`
+    - `isNull`
+    - `isTrue`
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and

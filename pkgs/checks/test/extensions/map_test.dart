@@ -51,14 +51,14 @@ void main() {
     });
   });
   test('isEmpty', () {
-    check(<String, int>{}).isEmpty();
-    check(_testMap).isRejectedBy(.it()..isEmpty(), which: ['is not empty']);
+    check(<String, int>{}).isEmpty;
+    check(_testMap).isRejectedBy(.it()..isEmpty, which: ['is not empty']);
   });
   test('isNotEmpty', () {
-    check(_testMap).isNotEmpty();
+    check(_testMap).isNotEmpty;
     check(
       <Object, Object>{},
-    ).isRejectedBy(.it()..isNotEmpty(), which: ['is not empty']);
+    ).isRejectedBy(.it()..isNotEmpty, which: ['is not empty']);
   });
   group('containsKey', () {
     test('succeeds for a key that exists', () {

@@ -6,7 +6,7 @@ import '../../context.dart';
 
 extension NumChecks on Subject<num> {
   /// Expects that [num.isNaN] is true.
-  void isNaN() {
+  void get isNaN {
     context.expect(
       () => ['is not a number (NaN)'],
       predicateNoun: () => 'NaN',
@@ -15,7 +15,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNaN] is false.
-  void isNotNaN() {
+  void get isNotNaN {
     context.expect(
       () => ['is a number (not NaN)'],
       predicateNoun: () => 'a number (not NaN)',
@@ -24,7 +24,7 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNegative] is true.
-  void isNegative() {
+  void get isNegative {
     context.expect(
       () => ['is negative'],
       predicateNoun: () => 'a negative number',
@@ -34,26 +34,20 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNegative] is false.
-  void isNotNegative() {
+  void get isNotNegative {
     context.expect(
       () => ['is not negative'],
       predicateNoun: () => 'a non-negative number',
-      (actual) {
-        if (!actual.isNegative) return null;
-        return Rejection(which: ['is negative']);
-      },
+      (actual) => actual.isNegative ? Rejection(which: ['is negative']) : null,
     );
   }
 
   /// Expects that [num.isFinite] is true.
-  void isFinite() {
+  void get isFinite {
     context.expect(
       () => ['is finite'],
       predicateNoun: () => 'a finite number',
-      (actual) {
-        if (actual.isFinite) return null;
-        return Rejection(which: ['is not finite']);
-      },
+      (actual) => actual.isFinite ? null : Rejection(which: ['is not finite']),
     );
   }
 
@@ -61,42 +55,34 @@ extension NumChecks on Subject<num> {
   ///
   /// Satisfied by [double.nan], [double.infinity] and
   /// [double.negativeInfinity].
-  void isNotFinite() {
+  void get isNotFinite {
     context.expect(
       () => ['is not finite'],
       predicateNoun: () => 'a non-finite number',
-      (actual) {
-        if (!actual.isFinite) return null;
-        return Rejection(which: ['is finite']);
-      },
+      (actual) => actual.isFinite ? Rejection(which: ['is finite']) : null,
     );
   }
 
   /// Expects that [num.isInfinite] is true.
   ///
   /// Satisfied by [double.infinity] and [double.negativeInfinity].
-  void isInfinite() {
+  void get isInfinite {
     context.expect(
       () => ['is infinite'],
       predicateNoun: () => 'an infinite number',
-      (actual) {
-        if (actual.isInfinite) return null;
-        return Rejection(which: ['is not infinite']);
-      },
+      (actual) =>
+          actual.isInfinite ? null : Rejection(which: ['is not infinite']),
     );
   }
 
   /// Expects that [num.isInfinite] is false.
   ///
   /// Satisfied by [double.nan] and finite numbers.
-  void isNotInfinite() {
+  void get isNotInfinite {
     context.expect(
       () => ['is not infinite'],
       predicateNoun: () => 'a non-infinite number',
-      (actual) {
-        if (!actual.isInfinite) return null;
-        return Rejection(which: ['is infinite']);
-      },
+      (actual) => actual.isInfinite ? Rejection(which: ['is infinite']) : null,
     );
   }
 

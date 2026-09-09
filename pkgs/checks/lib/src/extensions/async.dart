@@ -51,7 +51,7 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// Not compatible with [Condition.softCheck] or [Condition.softCheckSync]
   /// since there is no concrete end point where this condition has definitely
   /// succeeded.
-  void doesNotComplete() {
+  void get doesNotComplete {
     context.expectUnawaited(() => ['does not complete'], (actual, reject) {
       unawaited(
         actual.then(
@@ -553,7 +553,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation fails, the source queue will be left in its original
   /// state, the event or error that caused it to fail will not be consumed.
   @awaitNotRequired
-  Future<void> isDone() async {
+  Future<void> get isDone async {
     await _expectAsync(() => ['is done'], (actual) async {
       if (!await actual.hasNext) return null;
       try {

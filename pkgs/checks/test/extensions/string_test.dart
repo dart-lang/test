@@ -20,12 +20,12 @@ void main() {
       check('bob').length.equals(3);
     });
     test('isEmpty', () {
-      check('').isEmpty();
-      check('bob').isRejectedBy(.it()..isEmpty(), which: ['is not empty']);
+      check('').isEmpty;
+      check('bob').isRejectedBy(.it()..isEmpty, which: ['is not empty']);
     });
     test('isNotEmpty', () {
-      check('bob').isNotEmpty();
-      check('').isRejectedBy(.it()..isNotEmpty(), which: ['is empty']);
+      check('bob').isNotEmpty;
+      check('').isRejectedBy(.it()..isNotEmpty, which: ['is empty']);
     });
     test('startsWith', () {
       check('bob').startsWith('bo');

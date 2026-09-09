@@ -28,7 +28,7 @@ extension StringChecks on Subject<String> {
 
   Subject<int> get length => has((m) => m.length, 'length');
 
-  void isEmpty() {
+  void get isEmpty {
     context.expect(
       () => const ['is empty'],
       predicateNoun: () => 'an empty string',
@@ -39,7 +39,7 @@ extension StringChecks on Subject<String> {
     );
   }
 
-  void isNotEmpty() {
+  void get isNotEmpty {
     context.expect(
       () => const ['is not empty'],
       predicateNoun: () => 'a non-empty string',

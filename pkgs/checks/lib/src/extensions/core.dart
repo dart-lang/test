@@ -31,7 +31,7 @@ extension CoreChecks<T> on Subject<T> {
   /// void main() {
   ///   check(RegExp('^abc'))
   ///     ..pattern.contains('abc')
-  ///     ..isUnicode.isTrue();
+  ///     ..isUnicode.isTrue;
   /// }
   /// ```
   @meta.useResult
@@ -150,7 +150,7 @@ extension CoreChecks<T> on Subject<T> {
 }
 
 extension BoolChecks on Subject<bool> {
-  void isTrue() {
+  void get isTrue {
     context.expect(
       () => ['is true'],
       predicateNoun: () => 'true',
@@ -160,7 +160,7 @@ extension BoolChecks on Subject<bool> {
     );
   }
 
-  void isFalse() {
+  void get isFalse {
     context.expect(
       () => ['is false'],
       predicateNoun: () => 'false',
@@ -179,7 +179,7 @@ extension NullableChecks<T> on Subject<T?> {
     }, nestedCondition: and);
   }
 
-  void isNull() {
+  void get isNull {
     context.expect(() => const ['is null'], predicateNoun: () => 'null', (
       actual,
     ) {

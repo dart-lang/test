@@ -66,7 +66,7 @@ Which: is not equal'''),
     group('core checks', () {
       test('isTrue', () {
         check(() {
-          check(false).isTrue();
+          check(false).isTrue;
         }).throwsFailure().equals('''
 Expected: true
 Actual: <false>''');
@@ -74,7 +74,7 @@ Actual: <false>''');
 
       test('isFalse', () {
         check(() {
-          check(true).isFalse();
+          check(true).isFalse;
         }).throwsFailure().equals('''
 Expected: false
 Actual: <true>''');
@@ -82,7 +82,7 @@ Actual: <true>''');
 
       test('isNull', () {
         check(() {
-          check(1).isNull();
+          check(1).isNull;
         }).throwsFailure().equals('''
 Expected: null
 Actual: <1>''');
@@ -161,7 +161,7 @@ Which: is not greater than <2>''');
     group('math checks', () {
       test('isNaN', () {
         check(() {
-          check(1).isNaN();
+          check(1).isNaN;
         }).throwsFailure().equals('''
 Expected: NaN
 Actual: <1>''');
@@ -169,7 +169,7 @@ Actual: <1>''');
 
       test('isNotNaN', () {
         check(() {
-          check(double.nan).isNotNaN();
+          check(double.nan).isNotNaN;
         }).throwsFailure().equals('''
 Expected: a number (not NaN)
 Actual: <NaN>''');
@@ -177,7 +177,7 @@ Actual: <NaN>''');
 
       test('isNegative', () {
         check(() {
-          check(1).isNegative();
+          check(1).isNegative;
         }).throwsFailure().equals('''
 Expected: a negative number
 Actual: <1>
@@ -186,7 +186,7 @@ Which: is not negative''');
 
       test('isNotNegative', () {
         check(() {
-          check(-1).isNotNegative();
+          check(-1).isNotNegative;
         }).throwsFailure().equals('''
 Expected: a non-negative number
 Actual: <-1>
@@ -195,7 +195,7 @@ Which: is negative''');
 
       test('isFinite', () {
         check(() {
-          check(double.infinity).isFinite();
+          check(double.infinity).isFinite;
         }).throwsFailure().equals('''
 Expected: a finite number
 Actual: <Infinity>
@@ -204,7 +204,7 @@ Which: is not finite''');
 
       test('isNotFinite', () {
         check(() {
-          check(1).isNotFinite();
+          check(1).isNotFinite;
         }).throwsFailure().equals('''
 Expected: a non-finite number
 Actual: <1>
@@ -213,7 +213,7 @@ Which: is finite''');
 
       test('isInfinite', () {
         check(() {
-          check(1).isInfinite();
+          check(1).isInfinite;
         }).throwsFailure().equals('''
 Expected: an infinite number
 Actual: <1>
@@ -222,7 +222,7 @@ Which: is not infinite''');
 
       test('isNotInfinite', () {
         check(() {
-          check(double.infinity).isNotInfinite();
+          check(double.infinity).isNotInfinite;
         }).throwsFailure().equals('''
 Expected: a non-infinite number
 Actual: <Infinity>
@@ -242,7 +242,7 @@ Which: differs by <1>''');
     group('string checks', () {
       test('isEmpty', () {
         check(() {
-          check('foo').isEmpty();
+          check('foo').isEmpty;
         }).throwsFailure().equals('''
 Expected: an empty string
 Actual: 'foo'
@@ -260,7 +260,7 @@ Which: does not contain 'bar'""");
 
       test('isNotEmpty', () {
         check(() {
-          check('').isNotEmpty();
+          check('').isNotEmpty;
         }).throwsFailure().equals('''
 Expected: a non-empty string
 Actual: ''
@@ -310,7 +310,7 @@ Which: differs at offset 0:
     group('iterable checks', () {
       test('isEmpty', () {
         check(() {
-          check([1]).isEmpty();
+          check([1]).isEmpty;
         }).throwsFailure().equals('''
 Expected: an empty iterable
 Actual: [1]
@@ -319,7 +319,7 @@ Which: is not empty''');
 
       test('isNotEmpty', () {
         check(() {
-          check(<int>[]).isNotEmpty();
+          check(<int>[]).isNotEmpty;
         }).throwsFailure().equals('''
 Expected: a non-empty iterable
 Actual: []
@@ -428,7 +428,7 @@ Actual: a Map<String, Foo> that:
 
       test('isEmpty', () {
         check(() {
-          check({'a': 1}).isEmpty();
+          check({'a': 1}).isEmpty;
         }).throwsFailure().equals('''
 Expected: an empty map
 Actual: {'a': 1}
@@ -437,7 +437,7 @@ Which: is not empty''');
 
       test('isNotEmpty', () {
         check(() {
-          check(<String, int>{}).isNotEmpty();
+          check(<String, int>{}).isNotEmpty;
         }).throwsFailure().equals('''
 Expected: a non-empty map
 Actual: {}

@@ -11,122 +11,120 @@ void main() {
   group('num checks', () {
     group('isNaN', () {
       test('succeeds for happy case', () {
-        check(double.nan).isNaN();
+        check(double.nan).isNaN;
       });
       test('fails for ints', () {
-        check(42).isRejectedBy(.it()..isNaN());
+        check(42).isRejectedBy(.it()..isNaN);
       });
       test('fails for numeric doubles', () {
-        check(42.1).isRejectedBy(.it()..isNaN());
+        check(42.1).isRejectedBy(.it()..isNaN);
       });
     });
 
     group('isNotNan', () {
       test('succeeds for ints', () {
-        check(42).isNotNaN();
+        check(42).isNotNaN;
       });
       test('succeeds numeric doubles', () {
-        check(42.1).isNotNaN();
+        check(42.1).isNotNaN;
       });
       test('fails for NaN', () {
-        check(double.nan).isRejectedBy(.it()..isNotNaN());
+        check(double.nan).isRejectedBy(.it()..isNotNaN);
       });
     });
     group('isNegative', () {
       test('succeeds for negative ints', () {
-        check(-1).isNegative();
+        check(-1).isNegative;
       });
       test('succeeds for -0.0', () {
-        check(-0.0).isNegative();
+        check(-0.0).isNegative;
       });
       test('fails for zero', () {
-        check(0).isRejectedBy(.it()..isNegative(), which: ['is not negative']);
+        check(0).isRejectedBy(.it()..isNegative, which: ['is not negative']);
       });
     });
     group('isNotNegative', () {
       test('succeeds for positive ints', () {
-        check(1).isNotNegative();
+        check(1).isNotNegative;
       });
       test('succeeds for 0', () {
-        check(0).isNotNegative();
+        check(0).isNotNegative;
       });
       test('fails for -0.0', () {
-        check(
-          -0.0,
-        ).isRejectedBy(.it()..isNotNegative(), which: ['is negative']);
+        check(-0.0).isRejectedBy(.it()..isNotNegative, which: ['is negative']);
       });
       test('fails for negative numbers', () {
-        check(-1).isRejectedBy(.it()..isNotNegative(), which: ['is negative']);
+        check(-1).isRejectedBy(.it()..isNotNegative, which: ['is negative']);
       });
     });
 
     group('isFinite', () {
       test('succeeds for finite numbers', () {
-        check(1).isFinite();
+        check(1).isFinite;
       });
       test('fails for NaN', () {
         check(
           double.nan,
-        ).isRejectedBy(.it()..isFinite(), which: ['is not finite']);
+        ).isRejectedBy(.it()..isFinite, which: ['is not finite']);
       });
       test('fails for infinity', () {
         check(
           double.infinity,
-        ).isRejectedBy(.it()..isFinite(), which: ['is not finite']);
+        ).isRejectedBy(.it()..isFinite, which: ['is not finite']);
       });
       test('fails for negative infinity', () {
         check(
           double.negativeInfinity,
-        ).isRejectedBy(.it()..isFinite(), which: ['is not finite']);
+        ).isRejectedBy(.it()..isFinite, which: ['is not finite']);
       });
     });
     group('isNotFinite', () {
       test('succeeds for infinity', () {
-        check(double.infinity).isNotFinite();
+        check(double.infinity).isNotFinite;
       });
       test('succeeds for negative infinity', () {
-        check(double.negativeInfinity).isNotFinite();
+        check(double.negativeInfinity).isNotFinite;
       });
       test('succeeds for NaN', () {
-        check(double.nan).isNotFinite();
+        check(double.nan).isNotFinite;
       });
       test('fails for finite numbers', () {
-        check(1).isRejectedBy(.it()..isNotFinite(), which: ['is finite']);
+        check(1).isRejectedBy(.it()..isNotFinite, which: ['is finite']);
       });
     });
     group('isInfinite', () {
       test('succeeds for infinity', () {
-        check(double.infinity).isInfinite();
+        check(double.infinity).isInfinite;
       });
       test('succeeds for negative infinity', () {
-        check(double.negativeInfinity).isInfinite();
+        check(double.negativeInfinity).isInfinite;
       });
       test('fails for NaN', () {
         check(
           double.nan,
-        ).isRejectedBy(.it()..isInfinite(), which: ['is not infinite']);
+        ).isRejectedBy(.it()..isInfinite, which: ['is not infinite']);
       });
       test('fails for finite numbers', () {
-        check(1).isRejectedBy(.it()..isInfinite(), which: ['is not infinite']);
+        check(1).isRejectedBy(.it()..isInfinite, which: ['is not infinite']);
       });
     });
 
     group('isNotInfinite', () {
       test('succeeds for finite numbers', () {
-        check(1).isNotInfinite();
+        check(1).isNotInfinite;
       });
       test('succeeds for NaN', () {
-        check(double.nan).isNotInfinite();
+        check(double.nan).isNotInfinite;
       });
       test('fails for infinity', () {
         check(
           double.infinity,
-        ).isRejectedBy(.it()..isNotInfinite(), which: ['is infinite']);
+        ).isRejectedBy(.it()..isNotInfinite, which: ['is infinite']);
       });
       test('fails for negative infinity', () {
         check(
           double.negativeInfinity,
-        ).isRejectedBy(.it()..isNotInfinite(), which: ['is infinite']);
+        ).isRejectedBy(.it()..isNotInfinite, which: ['is infinite']);
       });
     });
     group('closeTo', () {

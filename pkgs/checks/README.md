@@ -38,7 +38,7 @@ void main() {
     ...
 
     check(actual).equals(expected);
-    check(someList).isNotEmpty();
+    check(someList).isNotEmpty;
     check(someObject).isA<Map>();
     check(someString)..startsWith('a')..endsWith('z')..contains('lmno');
   });
@@ -163,7 +163,7 @@ await check(someStream).withQueue.inOrder([
   .it()..emits(.it()..equals(1)),
   .it()..emits(.it()..equals(2)),
   .it()..emits(.it()..equals(3)),
-  .it()..isDone(),
+  .it()..isDone,
 ]);
 
 var someQueue = StreamQueue(someOtherStream);
