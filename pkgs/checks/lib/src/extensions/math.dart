@@ -38,7 +38,7 @@ extension NumChecks on Subject<num> {
     context.expect(
       () => ['is not negative'],
       predicateNoun: () => 'a non-negative number',
-      (actual) => !actual.isNegative ? null : Rejection(which: ['is negative']),
+      (actual) => actual.isNegative ? Rejection(which: ['is negative']) : null,
     );
   }
 
@@ -47,10 +47,7 @@ extension NumChecks on Subject<num> {
     context.expect(
       () => ['is finite'],
       predicateNoun: () => 'a finite number',
-      (actual) {
-        if (actual.isFinite) return null;
-        return Rejection(which: ['is not finite']);
-      },
+      (actual) => actual.isFinite ? null : Rejection(which: ['is not finite']),
     );
   }
 
@@ -62,10 +59,7 @@ extension NumChecks on Subject<num> {
     context.expect(
       () => ['is not finite'],
       predicateNoun: () => 'a non-finite number',
-      (actual) {
-        if (!actual.isFinite) return null;
-        return Rejection(which: ['is finite']);
-      },
+      (actual) => actual.isFinite ? Rejection(which: ['is finite']) : null,
     );
   }
 
@@ -76,10 +70,8 @@ extension NumChecks on Subject<num> {
     context.expect(
       () => ['is infinite'],
       predicateNoun: () => 'an infinite number',
-      (actual) {
-        if (actual.isInfinite) return null;
-        return Rejection(which: ['is not infinite']);
-      },
+      (actual) =>
+          actual.isInfinite ? null : Rejection(which: ['is not infinite']),
     );
   }
 
@@ -90,10 +82,7 @@ extension NumChecks on Subject<num> {
     context.expect(
       () => ['is not infinite'],
       predicateNoun: () => 'a non-infinite number',
-      (actual) {
-        if (!actual.isInfinite) return null;
-        return Rejection(which: ['is infinite']);
-      },
+      (actual) => actual.isInfinite ? Rejection(which: ['is infinite']) : null,
     );
   }
 
