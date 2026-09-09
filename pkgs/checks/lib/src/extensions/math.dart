@@ -38,10 +38,7 @@ extension NumChecks on Subject<num> {
     context.expect(
       () => ['is not negative'],
       predicateNoun: () => 'a non-negative number',
-      (actual) {
-        if (!actual.isNegative) return null;
-        return Rejection(which: ['is negative']);
-      },
+      (actual) => !actual.isNegative ? null : Rejection(which: ['is negative']),
     );
   }
 
