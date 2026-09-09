@@ -33,24 +33,28 @@ import 'vm/platform.dart';
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
   /// Cache of metadata parsed from test files.
-  final _metadataCache = <String, Object>{};
+  final _metadataCache = <String, Result<Metadata>>{};
 
   /// Parses and returns the suite metadata for [path], caching the result.
   Metadata parseSuiteMetadata(String path) {
     final cached = _metadataCache.putIfAbsent(path, () {
-      if (!File(path).existsSync()) return Metadata.empty;
-      try {
-        return parseMetadata(
+      if (!File(path).existsSync()) return Result.value(Metadata.empty);
+      return Result(
+        () => parseMetadata(
           path,
           File(path).readAsStringSync(),
           _runtimeVariables.toSet(),
-        );
-      } catch (e) {
-        return e;
-      }
+        ),
+      );
     });
-    if (cached is Metadata) return cached;
-    throw cached;
+    return switch (cached) {
+      ValueResult(:var value) => value,
+      ErrorResult(:var error, :var stackTrace) => Error.throwWithStackTrace(
+        error,
+        stackTrace,
+      ),
+      _ => throw StateError('Unexpected result type: $cached'),
+    };
   }
 
   /// Returns whether the test suite at [path] matches target platform and tag filters
