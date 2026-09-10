@@ -39,11 +39,11 @@
   `(await check(foo).completes()).equals(42);`
 - Added `FutureSubjectExtension.which` to allow chaining expectations on a
   `Future<Subject>`.
+- Add `prints()` and `printsAsync()` check extensions on `Subject<T Function()>`
+  to check expectations against captured printed output.
 
 ## 0.3.2
 
-- Add `prints()` and `printsAsync()` check extensions on `Subject<T Function()>`
-  to check expectations against captured printed output.
 - Bump `test` dev dependency constraint.
 - Add `isNotA<R>()` check extension as a convenience in place of
   `not((it) => it.isA<R>())`.
