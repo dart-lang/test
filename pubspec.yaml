@@ -3,6 +3,7 @@ publish_to: none
 environment:
   sdk: ^3.5.0
 workspace:
+  - integration_tests/cross_compiler_hang
   - integration_tests/regression
   - integration_tests/spawn_hybrid
   - integration_tests/wasm

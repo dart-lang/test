@@ -20,8 +20,16 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
-  Subject<E> throws<E>() {
-    return context.nest<E>(() => ['throws an error of type $E'], (actual) {
+  Subject<E> throws<E>([Condition<E>? that]) => context.nest<E>(
+    () {
+      var label = 'throws an error';
+      if (const Object() is! E) {
+        label = '$label of type $E';
+      }
+      return [label];
+    },
+    addPredicate: (predicateNoun) => 'throws $predicateNoun',
+    (actual) {
       try {
         final result = actual();
         return Extracted.rejection(
@@ -38,8 +46,9 @@ extension FunctionChecks<T> on Subject<T Function()> {
           ],
         );
       }
-    });
-  }
+    },
+    nestedCondition: that,
+  );
 
   /// Expects that the function returns without throwing.
   ///
@@ -47,8 +56,10 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
-  Subject<T> returnsNormally() {
-    return context.nest<T>(() => ['returns a value'], (actual) {
+  Subject<T> returnsNormally([Condition<T>? that]) => context.nest<T>(
+    () => ['returns a value'],
+    addPredicate: (predicateNoun) => 'returns $predicateNoun',
+    (actual) {
       try {
         return Extracted.value(actual());
       } catch (e, st) {
@@ -60,8 +71,9 @@ extension FunctionChecks<T> on Subject<T Function()> {
           ],
         );
       }
-    });
-  }
+    },
+    nestedCondition: that,
+  );
 
   /// Expects that the function prints text when called.
   ///
@@ -72,37 +84,41 @@ extension FunctionChecks<T> on Subject<T Function()> {
   ///
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Use [printsAsync] instead.
-  Subject<String> prints() {
-    return context.nest<String>(() => ['prints'], (actual) {
-      final buffer = StringBuffer();
-      try {
-        final result = runZoned(
-          actual,
-          zoneSpecification: ZoneSpecification(
-            print: (_, _, _, line) {
-              buffer.writeln(line);
-            },
-          ),
-        );
-        if (result is Future) {
+  Subject<String> prints([Condition<String>? that]) {
+    return context.nest<String>(
+      () => ['prints'],
+      (actual) {
+        final buffer = StringBuffer();
+        try {
+          final result = runZoned(
+            actual,
+            zoneSpecification: ZoneSpecification(
+              print: (_, _, _, line) {
+                buffer.writeln(line);
+              },
+            ),
+          );
+          if (result is Future) {
+            return Extracted.rejection(
+              actual: ['a function that returned a Future'],
+              which: [
+                'returned a Future; use printsAsync to test asynchronous functions',
+              ],
+            );
+          }
+          return Extracted.value(buffer.toString());
+        } catch (e, st) {
           return Extracted.rejection(
-            actual: ['a function that returned a Future'],
+            actual: ['a function that throws'],
             which: [
-              'returned a Future; use printsAsync to test asynchronous functions',
+              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+              ...indent(LineSplitter.split(st.toString())),
             ],
           );
         }
-        return Extracted.value(buffer.toString());
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: ['a function that throws'],
-          which: [
-            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    });
+      },
+      nestedCondition: that,
+    );
   }
 
   /// Expects that the function prints text when called and completed.
@@ -114,31 +130,35 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If the function throws synchronously or returns a [Future] that completes
   /// with an error, this expectation will fail.
   @meta.awaitNotRequired
-  Future<void> printsAsync([AsyncCondition<String>? printCondition]) {
-    return context.nestAsync<String>(() => ['prints'], (actual) async {
-      final buffer = StringBuffer();
-      try {
-        final result = runZoned(
-          actual,
-          zoneSpecification: ZoneSpecification(
-            print: (_, _, _, line) {
-              buffer.writeln(line);
-            },
-          ),
-        );
-        if (result is Future) {
-          await result;
+  Future<Subject<String>> printsAsync([Condition<String>? printCondition]) {
+    return context.nestAsync<String>(
+      () => ['prints'],
+      (actual) async {
+        final buffer = StringBuffer();
+        try {
+          final result = runZoned(
+            actual,
+            zoneSpecification: ZoneSpecification(
+              print: (_, _, _, line) {
+                buffer.writeln(line);
+              },
+            ),
+          );
+          if (result is Future) {
+            await result;
+          }
+          return Extracted.value(buffer.toString());
+        } catch (e, st) {
+          return Extracted.rejection(
+            actual: ['a function that throws'],
+            which: [
+              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+              ...indent(LineSplitter.split(st.toString())),
+            ],
+          );
         }
-        return Extracted.value(buffer.toString());
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: ['a function that throws'],
-          which: [
-            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    }, printCondition);
+      },
+      printCondition,
+    );
   }
 }

@@ -15,14 +15,12 @@ import '../context.dart';
 /// [actual]. Elements which are collection types are not compared with the
 /// native identity based equality or custom equality operator overrides.
 ///
-/// Elements, keys, or values within [expected] which are [Condition] callbacks
-/// are run against the value in the same position within [actual].
-/// Condition callbacks must take a `Subject<Object?>` or `Subject<dynamic>` and
-/// may not use a more specific generic.
-/// Use `(Subject<Object?> s) => s.isA<Type>()` to check expectations for
+/// Elements, keys, or values within [expected] which are [Condition]
+/// instances are run against the value in the same position within [actual].
+/// Condition instances must be a `Condition<Object?>` or
+/// `Condition<dynamic>` and may not use a more specific generic.
+/// Use `Condition.it<Object?>()..isA<Type>()` to check expectations for
 /// specific element types.
-/// Note also that the argument type `Subject<Object?>` cannot be inferred and
-/// must be explicit in the function definition.
 ///
 /// Elements and values within [expected] which are any other type are compared
 /// using `operator ==` equality.
@@ -32,8 +30,8 @@ import '../context.dart';
 /// If all keys of the expectation are non-collection and non-condition values
 /// the keys are compared through the map instances with [Map.containsKey].
 ///
-/// If any key in the expectation is a `Condition` or a collection type the map
-/// will be compared as a [Set] of entries where both the key and value must
+/// If any key in the expectation is a `Condition` or a collection type the
+/// map will be compared as a [Set] of entries where both the key and value must
 /// match.
 ///
 /// Comparing sets or maps with complex keys has a runtime which is polynomial
@@ -160,7 +158,7 @@ List<String>? _compareValue(
       _Search(path.append(pathAppend), actualValue, expectedValue, depth + 1),
     );
   } else if (expectedValue is Condition) {
-    final failure = softCheck(actualValue, expectedValue);
+    final failure = expectedValue.softCheckSync(actualValue);
     if (failure != null) {
       final which = failure.rejection.which;
       return [
@@ -193,7 +191,7 @@ bool _elementMatches(Object? actual, Object? expected, int depth) {
         _deepCollectionEquals(actual, expected, depth) == null;
   }
   if (expected is Condition) {
-    return softCheck(actual, expected) == null;
+    return expected.softCheckSync(actual) == null;
   }
   return expected == actual;
 }

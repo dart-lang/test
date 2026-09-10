@@ -7,23 +7,23 @@ void main() {
       check(() {
         check(1).isGreaterThan(2);
       }).throwsFailure().equals('''
-Expected: a int that:
-  is greater than <2>
+Expected: a value > <2>
 Actual: <1>
 Which: is not greater than <2>''');
     });
 
     test('includes matching portions of actual', () {
       check(() {
-        check(<dynamic>[]).length.equals(1);
+        check(<dynamic>[]).length
+          ..isLessThan(10)
+          ..isGreaterThan(1);
       }).throwsFailure().equals('''
 Expected: a List<dynamic> that:
   has length that:
-    equals <1>
-Actual: a List<dynamic> that:
-  has length that:
-  Actual: <0>
-  Which: are not equal''');
+    is less than <10>
+    is greater than <1>
+Actual: a List<dynamic> that has length: <0>
+Which: is not greater than <1>''');
     });
 
     test('includes matching portions of actual when label is multiline', () {
@@ -43,8 +43,7 @@ Expected: a Map<String, List<int>> that:
 Actual: a Map<String, List<int>> that:
   contains a value for 'foo
   bar' that:
-    has first element that:
-    Actual: <10>
+    has first element: <10>
     Which: is not less than <10>''');
     });
 
@@ -56,8 +55,16 @@ Actual: a Map<String, List<int>> that:
 
     test('retain type label following isNotNull', () {
       check(() {
-        check<int?>(1).isNotNull().isGreaterThan(2);
-      }).throwsFailure().startsWith('Expected: a int? that:\n');
+        check<int?>(1).isNotNull()
+          ..isGreaterThan(0)
+          ..isLessThan(0);
+      }).throwsFailure().equals('''
+Expected: a int? that:
+  is not null
+  is greater than <0>
+  is less than <0>
+Actual: <1>
+Which: is not less than <0>''');
     });
 
     test('retain reason following isNotNull', () {
@@ -66,14 +73,40 @@ Actual: a Map<String, List<int>> that:
       }).throwsFailure().endsWith('Reason: Some reason');
     });
 
+    test('nested uncollapsed failure retains isNotNull in expected', () {
+      check(() {
+        check(<int?>[1]).first.isNotNull()
+          ..isGreaterThan(0)
+          ..isLessThan(0);
+      }).throwsFailure().equals('''
+Expected: a List<int?> that:
+  has first element that:
+    is not null
+    is greater than <0>
+    is less than <0>
+Actual: a List<int?> that has first element: <1>
+Which: is not less than <0>''');
+    });
+
     test('handles objects with empty toString', () {
       check(() {
         check(EmptyToString()).equals(EmptyToString());
       }).throwsFailure().equals('''
-Expected: a EmptyToString that:
-  equals <empty toString()>
+Expected: <empty toString()>
 Actual: <empty toString()>
-Which: are not equal''');
+Which: is not equal''');
+    });
+    test('succeeded child context followed by failing check on parent', () {
+      check(() {
+        check([1])
+          ..has((l) => l.first, 'first').equals(1)
+          ..equals([2]);
+      }).throwsFailure().equals('''
+Expected: a List<int> that:
+  has first: <1>
+  equals [2]
+Actual: [1]
+Which: is not equal''');
     });
   });
 }
