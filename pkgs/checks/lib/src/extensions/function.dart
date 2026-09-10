@@ -85,40 +85,36 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Use [printsAsync] instead.
   Subject<String> prints([Condition<String>? that]) {
-    return context.nest<String>(
-      () => ['prints'],
-      (actual) {
-        final buffer = StringBuffer();
-        try {
-          final result = runZoned(
-            actual,
-            zoneSpecification: ZoneSpecification(
-              print: (_, _, _, line) {
-                buffer.writeln(line);
-              },
-            ),
-          );
-          if (result is Future) {
-            return Extracted.rejection(
-              actual: ['a function that returned a Future'],
-              which: [
-                'returned a Future; use printsAsync to test asynchronous functions',
-              ],
-            );
-          }
-          return Extracted.value(buffer.toString());
-        } catch (e, st) {
+    return context.nest<String>(() => ['prints'], (actual) {
+      final buffer = StringBuffer();
+      try {
+        final result = runZoned(
+          actual,
+          zoneSpecification: ZoneSpecification(
+            print: (_, _, _, line) {
+              buffer.writeln(line);
+            },
+          ),
+        );
+        if (result is Future) {
           return Extracted.rejection(
-            actual: ['a function that throws'],
+            actual: ['a function that returned a Future'],
             which: [
-              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-              ...indent(LineSplitter.split(st.toString())),
+              'returned a Future; use printsAsync to test asynchronous functions',
             ],
           );
         }
-      },
-      nestedCondition: that,
-    );
+        return Extracted.value(buffer.toString());
+      } catch (e, st) {
+        return Extracted.rejection(
+          actual: ['a function that throws'],
+          which: [
+            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+            ...indent(LineSplitter.split(st.toString())),
+          ],
+        );
+      }
+    }, nestedCondition: that);
   }
 
   /// Expects that the function prints text when called and completed.
@@ -131,34 +127,30 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// with an error, this expectation will fail.
   @meta.awaitNotRequired
   Future<Subject<String>> printsAsync([Condition<String>? printCondition]) {
-    return context.nestAsync<String>(
-      () => ['prints'],
-      (actual) async {
-        final buffer = StringBuffer();
-        try {
-          final result = runZoned(
-            actual,
-            zoneSpecification: ZoneSpecification(
-              print: (_, _, _, line) {
-                buffer.writeln(line);
-              },
-            ),
-          );
-          if (result is Future) {
-            await result;
-          }
-          return Extracted.value(buffer.toString());
-        } catch (e, st) {
-          return Extracted.rejection(
-            actual: ['a function that throws'],
-            which: [
-              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-              ...indent(LineSplitter.split(st.toString())),
-            ],
-          );
+    return context.nestAsync<String>(() => ['prints'], (actual) async {
+      final buffer = StringBuffer();
+      try {
+        final result = runZoned(
+          actual,
+          zoneSpecification: ZoneSpecification(
+            print: (_, _, _, line) {
+              buffer.writeln(line);
+            },
+          ),
+        );
+        if (result is Future) {
+          await result;
         }
-      },
-      printCondition,
-    );
+        return Extracted.value(buffer.toString());
+      } catch (e, st) {
+        return Extracted.rejection(
+          actual: ['a function that throws'],
+          which: [
+            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+            ...indent(LineSplitter.split(st.toString())),
+          ],
+        );
+      }
+    }, printCondition);
   }
 }
