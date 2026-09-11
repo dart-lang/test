@@ -1,5 +1,7 @@
 ## 0.7.14
 
+* Add `globalSetup` and `addGlobalTearDown` APIs to run setup scripts once on
+  the host runner and cache results across tests and suites.
 * Allow the `vmAsan`, `vmMsan`, and `vmTsan` runtimes to use the native CLI
   compiler.
 * Export `TestFailure` from `package:test_api/scaffolding.dart`.

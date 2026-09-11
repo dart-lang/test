@@ -16,6 +16,7 @@ import 'package:test_api/src/backend/state.dart'; // ignore: implementation_impo
 import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
+import 'global_setup.dart';
 import 'spawn_hybrid.dart';
 
 /// A test running remotely, controlled by a stream channel.
@@ -98,6 +99,22 @@ class RunnerTest extends Test {
                 ).pipe(
                   testChannel.virtualChannel((msg['channel'] as num).toInt()),
                 );
+                break;
+
+              case 'global-setup':
+                final manager = GlobalSetupManager.current;
+                if (manager == null) {
+                  throw StateError(
+                    'GlobalSetupManager has not been initialized.',
+                  );
+                }
+                manager
+                    .get(msg['url'] as String, suite)
+                    .pipe(
+                      testChannel.virtualChannel(
+                        (msg['channel'] as num).toInt(),
+                      ),
+                    );
                 break;
             }
           },
