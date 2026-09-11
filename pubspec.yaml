@@ -10,6 +10,7 @@ workspace:
   - pkgs/checks
   - pkgs/checks_codegen
   - pkgs/checks_codegen/example
+  - pkgs/spectate
   - pkgs/test
   - pkgs/test_api
   - pkgs/test_core
