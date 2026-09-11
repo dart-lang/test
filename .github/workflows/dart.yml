@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.7.2
+# Created with package:mono_repo v6.7.3
 name: Dart CI
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
@@ -39,20 +39,20 @@ jobs:
         with:
           persist-credentials: false
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.7.2
+        run: dart pub global activate mono_repo 6.7.3
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
-    name: "analyze_and_format; linux; Dart 3.11.0; PKGS: integration_tests/regression, pkgs/checks, pkgs/checks_codegen, pkgs/matcher, pkgs/test_core; `dart analyze`"
+    name: "analyze_and_format; linux; Dart 3.11.0; PKGS: integration_tests/regression, pkgs/checks, pkgs/checks_codegen, pkgs/matcher, pkgs/spectate, pkgs/test_core; `dart analyze`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression-pkgs/checks-pkgs/checks_codegen-pkgs/matcher-pkgs/test_core;commands:analyze_1"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression-pkgs/checks-pkgs/checks_codegen-pkgs/matcher-pkgs/test_core
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression-pkgs/checks-pkgs/checks_codegen-pkgs/matcher-pkgs/spectate-pkgs/test_core;commands:analyze_1"
+          restore-keys: |-
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression-pkgs/checks-pkgs/checks_codegen-pkgs/matcher-pkgs/spectate-pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -101,6 +101,15 @@ jobs:
         run: dart analyze
         if: "always() && steps.pkgs_matcher_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/matcher
+      - id: pkgs_spectate_pub_upgrade
+        name: pkgs/spectate; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/spectate
+      - name: pkgs/spectate; dart analyze
+        run: dart analyze
+        if: "always() && steps.pkgs_spectate_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/spectate
       - id: pkgs_test_core_pub_upgrade
         name: pkgs/test_core; dart pub upgrade
         run: dart pub upgrade
@@ -119,7 +128,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm;commands:format-analyze_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -147,16 +156,16 @@ jobs:
         if: "always() && steps.integration_tests_wasm_pub_upgrade.conclusion == 'success'"
         working-directory: integration_tests/wasm
   job_004:
-    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/regression, integration_tests/spawn_hybrid, integration_tests/wasm, pkgs/checks, pkgs/matcher, pkgs/test, pkgs/test_api, pkgs/test_core; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
+    name: "analyze_and_format; linux; Dart dev; PKGS: integration_tests/regression, integration_tests/spawn_hybrid, integration_tests/wasm, pkgs/checks, pkgs/matcher, pkgs/spectate, pkgs/test, pkgs/test_api, pkgs/test_core; `dart format --output=none --set-exit-if-changed .`, `dart analyze --fatal-infos`"
     runs-on: ubuntu-latest
     steps:
       - name: Cache Pub hosted dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: "~/.pub-cache/hosted"
-          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
-          restore-keys: |
-            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/test-pkgs/test_api-pkgs/test_core
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/spectate-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
+          restore-keys: |-
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/spectate-pkgs/test-pkgs/test_api-pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
@@ -234,6 +243,19 @@ jobs:
         run: dart analyze --fatal-infos
         if: "always() && steps.pkgs_matcher_pub_upgrade.conclusion == 'success'"
         working-directory: pkgs/matcher
+      - id: pkgs_spectate_pub_upgrade
+        name: pkgs/spectate; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/spectate
+      - name: "pkgs/spectate; dart format --output=none --set-exit-if-changed ."
+        run: "dart format --output=none --set-exit-if-changed ."
+        if: "always() && steps.pkgs_spectate_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/spectate
+      - name: "pkgs/spectate; dart analyze --fatal-infos"
+        run: dart analyze --fatal-infos
+        if: "always() && steps.pkgs_spectate_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/spectate
       - id: pkgs_test_pub_upgrade
         name: pkgs/test; dart pub upgrade
         run: dart pub upgrade
@@ -282,7 +304,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen;commands:format-command_04-analyze_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -374,7 +396,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -414,7 +436,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -454,7 +476,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/matcher;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/matcher
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -486,6 +508,46 @@ jobs:
       - job_006
       - job_007
   job_011:
+    name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/spectate; `dart test`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/spectate;commands:test_0"
+          restore-keys: |-
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/spectate
+            os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
+        with:
+          sdk: "3.11.0"
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - id: pkgs_spectate_pub_upgrade
+        name: pkgs/spectate; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/spectate
+      - name: pkgs/spectate; dart test
+        run: dart test
+        if: "always() && steps.pkgs_spectate_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/spectate
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+      - job_007
+  job_012:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test_core; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -494,7 +556,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_core;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -525,7 +587,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_012:
+  job_013:
     name: "unit_test; linux; Dart 3.11.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -534,7 +596,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/spawn_hybrid;commands:test_1"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -565,7 +627,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_013:
+  job_014:
     name: "unit_test; linux; Dart 3.11.0; PKG: integration_tests/wasm; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --timeout=60s`"
     runs-on: ubuntu-latest
     steps:
@@ -574,7 +636,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm;commands:command_01"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -605,7 +667,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_014:
+  job_015:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/checks_codegen; `dart run build_runner build`, `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -614,7 +676,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks_codegen;commands:command_04-test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks_codegen
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -649,7 +711,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_015:
+  job_016:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
@@ -658,7 +720,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_05"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -689,7 +751,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_016:
+  job_017:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
@@ -698,7 +760,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_06"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -729,7 +791,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_017:
+  job_018:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
@@ -738,7 +800,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_07"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -769,7 +831,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_018:
+  job_019:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
@@ -778,7 +840,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_08"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -809,7 +871,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_019:
+  job_020:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
@@ -818,7 +880,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_09"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -849,7 +911,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_020:
+  job_021:
     name: "unit_test; linux; Dart 3.11.0; PKG: pkgs/test_api; `dart test --preset travis -x browser -c kernel,exe`"
     runs-on: ubuntu-latest
     steps:
@@ -858,7 +920,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_api;commands:command_15"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_api
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -889,7 +951,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_021:
+  job_022:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/regression; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -898,7 +960,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -929,7 +991,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_022:
+  job_023:
     name: "unit_test; linux; Dart dev; PKG: pkgs/checks; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -938,7 +1000,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -969,7 +1031,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_023:
+  job_024:
     name: "unit_test; linux; Dart dev; PKG: pkgs/matcher; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -978,7 +1040,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/matcher;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/matcher
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1009,7 +1071,47 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_024:
+  job_025:
+    name: "unit_test; linux; Dart dev; PKG: pkgs/spectate; `dart test`"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Pub hosted dependencies
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: "~/.pub-cache/hosted"
+          key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/spectate;commands:test_0"
+          restore-keys: |-
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/spectate
+            os:ubuntu-latest;pub-cache-hosted;sdk:dev
+            os:ubuntu-latest;pub-cache-hosted
+            os:ubuntu-latest
+      - name: Setup Dart SDK
+        uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d
+        with:
+          sdk: dev
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - id: pkgs_spectate_pub_upgrade
+        name: pkgs/spectate; dart pub upgrade
+        run: dart pub upgrade
+        if: "always() && steps.checkout.conclusion == 'success'"
+        working-directory: pkgs/spectate
+      - name: pkgs/spectate; dart test
+        run: dart test
+        if: "always() && steps.pkgs_spectate_pub_upgrade.conclusion == 'success'"
+        working-directory: pkgs/spectate
+    needs:
+      - job_001
+      - job_002
+      - job_003
+      - job_004
+      - job_005
+      - job_006
+      - job_007
+  job_026:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test_core; `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -1018,7 +1120,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_core;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1049,7 +1151,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_025:
+  job_027:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: ubuntu-latest
     steps:
@@ -1058,7 +1160,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test_1"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1089,7 +1191,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_026:
+  job_028:
     name: "unit_test; linux; Dart dev; PKG: integration_tests/wasm; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --timeout=60s`"
     runs-on: ubuntu-latest
     steps:
@@ -1098,7 +1200,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm;commands:command_01"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1129,7 +1231,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_027:
+  job_029:
     name: "unit_test; linux; Dart dev; PKG: pkgs/checks_codegen; `dart run build_runner build`, `dart test`"
     runs-on: ubuntu-latest
     steps:
@@ -1138,7 +1240,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen;commands:command_04-test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1173,7 +1275,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_028:
+  job_030:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: ubuntu-latest
     steps:
@@ -1182,7 +1284,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_05"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1213,7 +1315,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_029:
+  job_031:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: ubuntu-latest
     steps:
@@ -1222,7 +1324,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_06"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1253,7 +1355,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_030:
+  job_032:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: ubuntu-latest
     steps:
@@ -1262,7 +1364,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_07"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1293,7 +1395,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_031:
+  job_033:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: ubuntu-latest
     steps:
@@ -1302,7 +1404,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_08"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1333,7 +1435,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_032:
+  job_034:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test; `xvfb-run -s \"-screen 0 1024x768x24\" dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: ubuntu-latest
     steps:
@@ -1342,7 +1444,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_09"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1373,7 +1475,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_033:
+  job_035:
     name: "unit_test; linux; Dart dev; PKG: pkgs/test_api; `dart test --preset travis -x browser -c kernel,exe`"
     runs-on: ubuntu-latest
     steps:
@@ -1382,7 +1484,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api;commands:command_15"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1413,7 +1515,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_034:
+  job_036:
     name: "unit_test; osx; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: macos-latest
     steps:
@@ -1422,7 +1524,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_10"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1453,7 +1555,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_035:
+  job_037:
     name: "unit_test; osx; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: macos-latest
     steps:
@@ -1462,7 +1564,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_11"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1493,7 +1595,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_036:
+  job_038:
     name: "unit_test; osx; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: macos-latest
     steps:
@@ -1502,7 +1604,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_12"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1533,7 +1635,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_037:
+  job_039:
     name: "unit_test; osx; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: macos-latest
     steps:
@@ -1542,7 +1644,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_13"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1573,7 +1675,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_038:
+  job_040:
     name: "unit_test; osx; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: macos-latest
     steps:
@@ -1582,7 +1684,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_14"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1613,7 +1715,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_039:
+  job_041:
     name: "unit_test; windows; Dart 3.11.0; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1643,7 +1745,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_040:
+  job_042:
     name: "unit_test; windows; Dart 3.11.0; PKG: integration_tests/wasm; `dart test --timeout=60s`"
     runs-on: windows-latest
     steps:
@@ -1673,7 +1775,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_041:
+  job_043:
     name: "unit_test; windows; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 0`"
     runs-on: windows-latest
     steps:
@@ -1703,7 +1805,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_042:
+  job_044:
     name: "unit_test; windows; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 1`"
     runs-on: windows-latest
     steps:
@@ -1733,7 +1835,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_043:
+  job_045:
     name: "unit_test; windows; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 2`"
     runs-on: windows-latest
     steps:
@@ -1763,7 +1865,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_044:
+  job_046:
     name: "unit_test; windows; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 3`"
     runs-on: windows-latest
     steps:
@@ -1793,7 +1895,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_045:
+  job_047:
     name: "unit_test; windows; Dart 3.11.0; PKG: pkgs/test; `dart test --preset travis --total-shards 5 --shard-index 4`"
     runs-on: windows-latest
     steps:
@@ -1823,7 +1925,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_046:
+  job_048:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/cross_compiler_hang; `dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s`"
     runs-on: windows-latest
     steps:
@@ -1853,7 +1955,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_047:
+  job_049:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/spawn_hybrid; `dart test -p chrome,vm,node`"
     runs-on: windows-latest
     steps:
@@ -1883,7 +1985,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_048:
+  job_050:
     name: "unit_test; windows; Dart dev; PKG: integration_tests/wasm; `dart test --timeout=60s`"
     runs-on: windows-latest
     steps:
@@ -1913,7 +2015,7 @@ jobs:
       - job_005
       - job_006
       - job_007
-  job_049:
+  job_051:
     name: Notify failure
     runs-on: ubuntu-latest
     if: "(github.event_name == 'push' || github.event_name == 'schedule') && failure()"
@@ -1973,3 +2075,5 @@ jobs:
       - job_046
       - job_047
       - job_048
+      - job_049
+      - job_050
