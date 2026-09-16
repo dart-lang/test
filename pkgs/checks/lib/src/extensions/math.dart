@@ -6,6 +6,8 @@ import '../../context.dart';
 
 extension NumChecks on Subject<num> {
   /// Expects that [num.isNaN] is true.
+  ///
+  /// {@example /example/math/num/is_nan.dart}
   void get isNaN {
     context.expect(
       () => ['is not a number (NaN)'],
@@ -15,6 +17,8 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNaN] is false.
+  ///
+  /// {@example /example/math/num/is_not_nan.dart}
   void get isNotNaN {
     context.expect(
       () => ['is a number (not NaN)'],
@@ -24,6 +28,8 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNegative] is true.
+  ///
+  /// {@example /example/math/num/is_negative.dart}
   void get isNegative {
     context.expect(
       () => ['is negative'],
@@ -34,6 +40,8 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isNegative] is false.
+  ///
+  /// {@example /example/math/num/is_not_negative.dart}
   void get isNotNegative {
     context.expect(
       () => ['is not negative'],
@@ -43,6 +51,8 @@ extension NumChecks on Subject<num> {
   }
 
   /// Expects that [num.isFinite] is true.
+  ///
+  /// {@example /example/math/num/is_finite.dart}
   void get isFinite {
     context.expect(
       () => ['is finite'],
@@ -55,6 +65,8 @@ extension NumChecks on Subject<num> {
   ///
   /// Satisfied by [double.nan], [double.infinity] and
   /// [double.negativeInfinity].
+  ///
+  /// {@example /example/math/num/is_not_finite.dart}
   void get isNotFinite {
     context.expect(
       () => ['is not finite'],
@@ -66,6 +78,8 @@ extension NumChecks on Subject<num> {
   /// Expects that [num.isInfinite] is true.
   ///
   /// Satisfied by [double.infinity] and [double.negativeInfinity].
+  ///
+  /// {@example /example/math/num/is_infinite.dart}
   void get isInfinite {
     context.expect(
       () => ['is infinite'],
@@ -78,6 +92,8 @@ extension NumChecks on Subject<num> {
   /// Expects that [num.isInfinite] is false.
   ///
   /// Satisfied by [double.nan] and finite numbers.
+  ///
+  /// {@example /example/math/num/is_not_infinite.dart}
   void get isNotInfinite {
     context.expect(
       () => ['is not infinite'],
@@ -88,6 +104,8 @@ extension NumChecks on Subject<num> {
 
   /// Expects that the difference between this number and [other] is less than
   /// or equal to [delta].
+  ///
+  /// {@example /example/math/num/is_close_to.dart}
   void isCloseTo(num other, num delta) {
     context.expect(
       () => ['is within <$delta> of <$other>'],

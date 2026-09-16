@@ -8,11 +8,30 @@ import '../collection_equality.dart';
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
+  /// A [Subject] for the [Map.entries] of the map.
+  ///
+  /// {@example /example/map/map/entries.dart}
   Subject<Iterable<MapEntry<K, V>>> get entries =>
       has((m) => m.entries, 'entries');
+
+  /// A [Subject] for the [Map.keys] of the map.
+  ///
+  /// {@example /example/map/map/keys.dart}
   Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
+
+  /// A [Subject] for the [Map.values] of the map.
+  ///
+  /// {@example /example/map/map/values.dart}
   Subject<Iterable<V>> get values => has((m) => m.values, 'values');
+
+  /// A [Subject] for the [Map.length] of the map.
+  ///
+  /// {@example /example/map/map/length.dart}
   Subject<int> get length => has((m) => m.length, 'length');
+
+  /// A [Subject] for the value at [key], which must be present in the map.
+  ///
+  /// {@example /example/map/map/operator_index.dart}
   Subject<V> operator [](K key) {
     return context.nest(
       () => prefixFirst('contains a value for ', literal(key)),
@@ -31,6 +50,9 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     );
   }
 
+  /// Expects that the map is empty.
+  ///
+  /// {@example /example/map/map/is_empty.dart}
   void get isEmpty {
     context.expect(
       () => const ['is empty'],
@@ -42,18 +64,23 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
     );
   }
 
+  /// Expects that the map is not empty.
+  ///
+  /// {@example /example/map/map/is_not_empty.dart}
   void get isNotEmpty {
     context.expect(
       () => const ['is not empty'],
       predicateNoun: () => 'a non-empty map',
       (actual) {
         if (actual.isNotEmpty) return null;
-        return Rejection(which: ['is not empty']);
+        return Rejection(which: ['is empty']);
       },
     );
   }
 
   /// Expects that the map contains [key] according to [Map.containsKey].
+  ///
+  /// {@example /example/map/map/contains_key.dart}
   void containsKey(K key) {
     context.expect(
       () => prefixFirst('contains key ', literal(key)),
@@ -72,6 +99,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains some key such that [keyCondition] is
   /// satisfied.
+  ///
+  /// {@example /example/map/map/contains_key_that.dart}
   void containsKeyThat(Condition<K> keyCondition) {
     context.expect(
       () {
@@ -84,12 +113,14 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         for (var k in actual.keys) {
           if (keyCondition.softCheckSync(k) == null) return null;
         }
-        return Rejection(which: ['Contains no matching key']);
+        return Rejection(which: ['contains no matching key']);
       },
     );
   }
 
   /// Expects that the map contains [value] according to [Map.containsValue].
+  ///
+  /// {@example /example/map/map/contains_value.dart}
   void containsValue(V value) {
     context.expect(
       () => prefixFirst('contains value ', literal(value)),
@@ -108,6 +139,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
 
   /// Expects that the map contains some value such that [valueCondition] is
   /// satisfied.
+  ///
+  /// {@example /example/map/map/contains_value_that.dart}
   void containsValueThat(Condition<V> valueCondition) {
     context.expect(
       () {
@@ -120,7 +153,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         for (var v in actual.values) {
           if (valueCondition.softCheckSync(v) == null) return null;
         }
-        return Rejection(which: ['Contains no matching value']);
+        return Rejection(which: ['contains no matching value']);
       },
     );
   }
@@ -129,6 +162,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// of [expected].
   ///
   /// {@macro deep_collection_equals}
+  ///
+  /// {@example /example/map/map/deep_equals.dart}
   void deepEquals(Map<Object?, Object?> expected) => context.expect(
     () => prefixFirst('is deeply equal to ', literal(expected)),
     predicateNoun: () => literal(expected).singleOrNull,
