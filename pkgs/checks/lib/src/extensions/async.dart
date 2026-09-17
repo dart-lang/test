@@ -293,13 +293,6 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// next. Subsequent conditions will not see any events consumed by earlier
   /// conditions.
   ///
-  /// ```dart
-  /// await check(someStream).withQueue.inOrder([
-  ///   (s) => s.emits((e) => e.equals(0)),
-  ///   (s) => s.emits((e) => e.equals(1)),
-  /// ]);
-  /// ```
-  ///
   /// If this expectation fails, the source queue will be left in its original
   /// state.
   /// If this expectation succeeds, consumes as many events from the source

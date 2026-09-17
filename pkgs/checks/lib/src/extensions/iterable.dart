@@ -221,13 +221,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// from [elements] in the given order, with any extra elements between
   /// them.
   ///
-  /// For example, the following will succeed:
-  ///
-  /// ```dart
-  /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
-  /// ```
-  ///
-  /// Values, will be compared with the equality operator.
+  /// Values are compared with the equality operator.
   ///
   /// {@example /example/iterable/iterable/contains_equal_in_order.dart}
   void containsEqualInOrder(Iterable<T> elements) {
