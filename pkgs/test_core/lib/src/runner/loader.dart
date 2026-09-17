@@ -6,11 +6,14 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
 import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
@@ -29,6 +32,97 @@ import 'vm/platform.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
+  /// Cache of metadata parsed from test files.
+  final _metadataCache = <String, Result<Metadata>>{};
+
+  /// Parses and returns the suite metadata for [path], caching the result.
+  Metadata parseSuiteMetadata(String path) {
+    final cached = _metadataCache.putIfAbsent(path, () {
+      if (!File(path).existsSync()) return Result.value(Metadata.empty);
+      return Result(
+        () => parseMetadata(
+          path,
+          File(path).readAsStringSync(),
+          _runtimeVariables.toSet(),
+        ),
+      );
+    });
+    return switch (cached) {
+      ValueResult(:var value) => value,
+      ErrorResult(:var error, :var stackTrace) => Error.throwWithStackTrace(
+        error,
+        stackTrace,
+      ),
+      _ => throw StateError('Unexpected result type: $cached'),
+    };
+  }
+
+  /// Returns whether the test suite at [path] matches target platform and tag filters
+  /// specified in [suiteConfig].
+  ///
+  /// Returns `true` if the file does not exist or its metadata cannot be
+  /// parsed, so that it is not filtered out before sharding and subsequent
+  /// loading stages can report the error (e.g. as a [LoadException]).
+  bool matchesSuite(String path, SuiteConfiguration suiteConfig) {
+    if (!File(path).existsSync()) return true;
+    Metadata metadata;
+    try {
+      metadata = parseSuiteMetadata(path);
+    } catch (_) {
+      return true;
+    }
+
+    final mergedConfig = suiteConfig.merge(
+      SuiteConfiguration.fromMetadata(metadata),
+    );
+
+    if (_config.excludeTags.evaluate(mergedConfig.metadata.tags.contains)) {
+      return false;
+    }
+
+    if (_config.includeTags != BooleanSelector.all &&
+        mergedConfig.metadata.tags.isNotEmpty) {
+      if (!_config.includeTags.evaluate(mergedConfig.metadata.tags.contains)) {
+        return false;
+      }
+    }
+
+    return _matchingPlatforms(mergedConfig).isNotEmpty;
+  }
+
+  /// Returns all [SuitePlatform]s for [suiteConfig] that match its
+  /// platform selector.
+  ///
+  /// It is an error if any runtime in [suiteConfig.runtimes] is unknown.
+  List<SuitePlatform> _matchingPlatforms(SuiteConfiguration suiteConfig) {
+    final platforms = <SuitePlatform>[];
+    for (var runtimeName in suiteConfig.runtimes) {
+      var runtime = findRuntime(runtimeName);
+      if (runtime == null) {
+        throw ArgumentError.value(runtimeName, 'platform', 'Unknown platform');
+      }
+      final compilers = {
+        for (var selection
+            in suiteConfig.compilerSelections ?? <CompilerSelection>[])
+          if (runtime.supportedCompilers.contains(selection.compiler) &&
+              (selection.platformSelector == null ||
+                  selection.platformSelector!.evaluate(
+                    currentPlatform(runtime, selection.compiler),
+                  )))
+            selection.compiler,
+      };
+      if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
+
+      for (var compiler in compilers) {
+        var platform = currentPlatform(runtime, compiler);
+        if (suiteConfig.metadata.testOn.evaluate(platform)) {
+          platforms.add(platform);
+        }
+      }
+    }
+    return platforms;
+  }
+
   /// The test runner configuration.
   final _config = Configuration.current;
 
@@ -173,13 +267,7 @@ class Loader {
   ) async* {
     try {
       suiteConfig = suiteConfig.merge(
-        SuiteConfiguration.fromMetadata(
-          parseMetadata(
-            path,
-            File(path).readAsStringSync(),
-            _runtimeVariables.toSet(),
-          ),
-        ),
+        SuiteConfiguration.fromMetadata(parseSuiteMetadata(path)),
       );
     } on ArgumentError catch (_) {
       // Ignore the analyzer's error, since its formatting is much worse than
@@ -197,76 +285,55 @@ class Loader {
       return;
     }
 
-    for (var runtimeName in suiteConfig.runtimes) {
-      var runtime = findRuntime(runtimeName);
-      if (runtime == null) {
-        throw ArgumentError.value(runtimeName, 'platform', 'Unknown platform');
+    for (var platform in _matchingPlatforms(suiteConfig)) {
+      var platformConfig = suiteConfig.forPlatform(platform);
+
+      // Don't load a skipped suite.
+      if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
+        yield LoadSuite.forSuite(
+          RunnerSuite(
+            const PluginEnvironment(),
+            platformConfig,
+            Group.root([
+              LocalTest('(suite)', platformConfig.metadata, () {}),
+            ], metadata: platformConfig.metadata),
+            platform,
+            path: path,
+          ),
+        );
+        continue;
       }
-      final compilers = {
-        for (var selection
-            in suiteConfig.compilerSelections ?? <CompilerSelection>[])
-          if (runtime.supportedCompilers.contains(selection.compiler) &&
-              (selection.platformSelector == null ||
-                  selection.platformSelector!.evaluate(
-                    currentPlatform(runtime, selection.compiler),
-                  )))
-            selection.compiler,
-      };
-      if (compilers.isEmpty) compilers.add(runtime.defaultCompiler);
 
-      for (var compiler in compilers) {
-        var platform = currentPlatform(runtime, compiler);
-        if (!suiteConfig.metadata.testOn.evaluate(platform)) continue;
+      yield LoadSuite('loading $path', platformConfig, platform, () async {
+        var memo = _platformPlugins[platform.runtime]!;
 
-        var platformConfig = suiteConfig.forPlatform(platform);
-
-        // Don't load a skipped suite.
-        if (platformConfig.metadata.skip && !platformConfig.runSkipped) {
-          yield LoadSuite.forSuite(
-            RunnerSuite(
-              const PluginEnvironment(),
-              platformConfig,
-              Group.root([
-                LocalTest('(suite)', platformConfig.metadata, () {}),
-              ], metadata: platformConfig.metadata),
-              platform,
-              path: path,
-            ),
-          );
-          continue;
-        }
-
-        yield LoadSuite('loading $path', platformConfig, platform, () async {
-          var memo = _platformPlugins[platform.runtime]!;
-
-          var retriesLeft = suiteConfig.metadata.retry;
-          while (true) {
-            try {
-              var plugin = await memo.runOnce(
-                _platformCallbacks[platform.runtime]!,
-              );
-              _customizePlatform(plugin, platform.runtime);
-              var suite = await plugin.load(path, platform, platformConfig, {
-                'platformVariables': _runtimeVariables.toList(),
-              });
-              if (suite != null) _suites.add(suite);
-              return suite;
-            } on Object catch (error, stackTrace) {
-              if (retriesLeft > 0) {
-                retriesLeft--;
-                print('Retrying load of $path in 1s ($retriesLeft remaining)');
-                await Future<void>.delayed(const Duration(seconds: 1));
-                continue;
-              }
-              if (error is LoadException) {
-                rethrow;
-              }
-              await Future<void>.error(LoadException(path, error), stackTrace);
-              return null;
+        var retriesLeft = suiteConfig.metadata.retry;
+        while (true) {
+          try {
+            var plugin = await memo.runOnce(
+              _platformCallbacks[platform.runtime]!,
+            );
+            _customizePlatform(plugin, platform.runtime);
+            var suite = await plugin.load(path, platform, platformConfig, {
+              'platformVariables': _runtimeVariables.toList(),
+            });
+            if (suite != null) _suites.add(suite);
+            return suite;
+          } on Object catch (error, stackTrace) {
+            if (retriesLeft > 0) {
+              retriesLeft--;
+              print('Retrying load of $path in 1s ($retriesLeft remaining)');
+              await Future<void>.delayed(const Duration(seconds: 1));
+              continue;
             }
+            if (error is LoadException) {
+              rethrow;
+            }
+            await Future<void>.error(LoadException(path, error), stackTrace);
+            return null;
           }
-        }, path: path);
-      }
+        }
+      }, path: path);
     }
   }
 
