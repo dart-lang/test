@@ -6,11 +6,13 @@ import 'interfaces.dart';
 
 /// Returns a matcher which matches if the match argument is greater
 /// than the given [value].
+/// {@example /example/order/greater_than.dart}
 Matcher greaterThan(Object value) =>
     _OrderingMatcher(value, false, false, true, 'a value greater than');
 
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to the given [value].
+/// {@example /example/order/greater_than_or_equal_to.dart}
 Matcher greaterThanOrEqualTo(Object value) => _OrderingMatcher(
   value,
   true,
@@ -21,15 +23,18 @@ Matcher greaterThanOrEqualTo(Object value) => _OrderingMatcher(
 
 /// Returns a matcher which matches if the match argument is less
 /// than the given [value].
+/// {@example /example/order/less_than.dart}
 Matcher lessThan(Object value) =>
     _OrderingMatcher(value, false, true, false, 'a value less than');
 
 /// Returns a matcher which matches if the match argument is less
 /// than or equal to the given [value].
+/// {@example /example/order/less_than_or_equal_to.dart}
 Matcher lessThanOrEqualTo(Object value) =>
     _OrderingMatcher(value, true, true, false, 'a value less than or equal to');
 
 /// A matcher which matches if the match argument is zero.
+/// {@example /example/order/is_zero.dart}
 const Matcher isZero = _OrderingMatcher(
   0,
   true,
@@ -39,6 +44,7 @@ const Matcher isZero = _OrderingMatcher(
 );
 
 /// A matcher which matches if the match argument is non-zero.
+/// {@example /example/order/is_non_zero.dart}
 const Matcher isNonZero = _OrderingMatcher(
   0,
   false,
@@ -48,6 +54,7 @@ const Matcher isNonZero = _OrderingMatcher(
 );
 
 /// A matcher which matches if the match argument is positive.
+/// {@example /example/order/is_positive.dart}
 const Matcher isPositive = _OrderingMatcher(
   0,
   false,
@@ -58,6 +65,7 @@ const Matcher isPositive = _OrderingMatcher(
 );
 
 /// A matcher which matches if the match argument is zero or negative.
+/// {@example /example/order/is_non_positive.dart}
 const Matcher isNonPositive = _OrderingMatcher(
   0,
   true,
@@ -68,6 +76,7 @@ const Matcher isNonPositive = _OrderingMatcher(
 );
 
 /// A matcher which matches if the match argument is negative.
+/// {@example /example/order/is_negative.dart}
 const Matcher isNegative = _OrderingMatcher(
   0,
   false,
@@ -78,6 +87,7 @@ const Matcher isNegative = _OrderingMatcher(
 );
 
 /// A matcher which matches if the match argument is zero or positive.
+/// {@example /example/order/is_non_negative.dart}
 const Matcher isNonNegative = _OrderingMatcher(
   0,
   true,

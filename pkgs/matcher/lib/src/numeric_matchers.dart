@@ -10,6 +10,7 @@ import 'interfaces.dart';
 ///
 /// In other words, this matches if the match argument is greater than
 /// than or equal [value]-[delta] and less than or equal to [value]+[delta].
+/// {@example /example/numeric/close_to.dart}
 Matcher closeTo(num value, num delta) => _IsCloseTo(value, delta);
 
 class _IsCloseTo extends FeatureMatcher<num> {
@@ -46,20 +47,24 @@ class _IsCloseTo extends FeatureMatcher<num> {
 
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to [low] and less than or equal to [high].
+/// {@example /example/numeric/in_inclusive_range.dart}
 Matcher inInclusiveRange(num low, num high) => _InRange(low, high, true, true);
 
 /// Returns a matcher which matches if the match argument is greater
 /// than [low] and less than [high].
+/// {@example /example/numeric/in_exclusive_range.dart}
 Matcher inExclusiveRange(num low, num high) =>
     _InRange(low, high, false, false);
 
 /// Returns a matcher which matches if the match argument is greater
 /// than [low] and less than or equal to [high].
+/// {@example /example/numeric/in_open_closed_range.dart}
 Matcher inOpenClosedRange(num low, num high) =>
     _InRange(low, high, false, true);
 
 /// Returns a matcher which matches if the match argument is greater
 /// than or equal to a [low] and less than [high].
+/// {@example /example/numeric/in_closed_open_range.dart}
 Matcher inClosedOpenRange(num low, num high) =>
     _InRange(low, high, true, false);
 
