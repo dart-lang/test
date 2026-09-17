@@ -4,7 +4,8 @@ import 'package:test/scaffolding.dart';
 void main() {
   test('equalsIgnoringWhitespace', () {
     // This check succeeds.
-    check('  hello   world  ').equalsIgnoringWhitespace('hello world');
+    check('''  hello\t
+      world  ''').equalsIgnoringWhitespace('hello world');
 
     // This check fails.
     check('hello   wide world').equalsIgnoringWhitespace('hello world');
