@@ -8,8 +8,16 @@ import '../collection_equality.dart';
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
+  /// A [Subject] for the number of elements in the iterable.
+  ///
+  /// {@example /example/iterable/iterable/length.dart}
   Subject<int> get length => has((l) => l.length, 'length');
 
+  /// A [Subject] for the first element of the iterable.
+  ///
+  /// Fails if the iterable has no elements.
+  ///
+  /// {@example /example/iterable/iterable/first.dart}
   Subject<T> get first => context.nest(
     () => ['has first element'],
     addPredicate: (predicateNoun) => 'has first element: $predicateNoun',
@@ -22,6 +30,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     },
   );
 
+  /// A [Subject] for the last element of the iterable.
+  ///
+  /// Fails if the iterable has no elements.
+  ///
+  /// {@example /example/iterable/iterable/last.dart}
   Subject<T> get last => context.nest(
     () => ['has last element'],
     addPredicate: (predicateNoun) => 'has last element: $predicateNoun',
@@ -38,6 +51,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     },
   );
 
+  /// A [Subject] for the only element of the iterable.
+  ///
+  /// Fails if the iterable does not have exactly one element.
+  ///
+  /// {@example /example/iterable/iterable/single.dart}
   Subject<T> get single => context.nest(
     () => ['has single element'],
     addPredicate: (predicateNoun) => 'has single element: $predicateNoun',
@@ -54,6 +72,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     },
   );
 
+  /// Expects that the iterable has no elements.
+  ///
+  /// {@example /example/iterable/iterable/is_empty.dart}
   void get isEmpty {
     context.expect(
       () => const ['is empty'],
@@ -65,6 +86,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     );
   }
 
+  /// Expects that the iterable has at least one element.
+  ///
+  /// {@example /example/iterable/iterable/is_not_empty.dart}
   void get isNotEmpty {
     context.expect(
       () => const ['is not empty'],
@@ -78,6 +102,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
 
   /// Expects that the iterable contains [element] according to
   /// [Iterable.contains].
+  ///
+  /// {@example /example/iterable/iterable/contains.dart}
   void contains(T element) {
     context.expect(
       () => prefixFirst('contains ', literal(element)),
@@ -162,6 +188,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   ///   .it()..isLessThan(4),
   /// ]);
   /// ```
+  ///
+  /// {@example /example/iterable/iterable/contains_matching_in_order.dart}
   void containsMatchingInOrder(Iterable<Condition<T>> conditions) {
     context.expect(
       () => prefixFirst('contains, in order: ', literal(conditions)),
@@ -193,13 +221,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// from [elements] in the given order, with any extra elements between
   /// them.
   ///
-  /// For example, the following will succeed:
+  /// Values are compared with the equality operator.
   ///
-  /// ```dart
-  /// check([1, 0, 2, 0, 3]).containsInOrder([1, 2, 3]);
-  /// ```
-  ///
-  /// Values, will be compared with the equality operator.
+  /// {@example /example/iterable/iterable/contains_equal_in_order.dart}
   void containsEqualInOrder(Iterable<T> elements) {
     context.expect(
       () => prefixFirst('contains, in order: ', literal(elements)),
@@ -229,6 +253,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
 
   /// Expects that the iterable contains at least on element such that
   /// [elementCondition] is satisfied.
+  ///
+  /// {@example /example/iterable/iterable/any.dart}
   void any(Condition<T> elementCondition) {
     context.expect(
       () {
@@ -241,7 +267,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         for (var e in actual) {
           if (elementCondition.softCheckSync(e) == null) return null;
         }
-        return Rejection(which: ['Contains no matching element']);
+        return Rejection(which: ['contains no matching element']);
       },
     );
   }
@@ -250,6 +276,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [elementCondition].
   ///
   /// Empty iterables will pass always pass this expectation.
+  ///
+  /// {@example /example/iterable/iterable/every.dart}
   void every(Condition<T> elementCondition) {
     context.expect(
       () {
@@ -289,6 +317,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// elements of [expected].
   ///
   /// {@macro deep_collection_equals}
+  ///
+  /// {@example /example/iterable/iterable/deep_equals.dart}
   void deepEquals(Iterable<Object?> expected) => context.expect(
     () => prefixFirst('is deeply equal to ', literal(expected)),
     predicateNoun: () => literal(expected).singleOrNull,
@@ -305,6 +335,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// Should not be used for very large collections, runtime is O(n^2.5) in the
   /// worst case where the iterables contain many equal elements, and O(n^2) in
   /// more typical cases.
+  ///
+  /// {@example /example/iterable/iterable/unordered_equals.dart}
   void unorderedEquals(Iterable<T> expected) {
     context.expect(() => prefixFirst('unordered equals ', literal(expected)), (
       actual,
@@ -340,6 +372,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// Should not be used for very large collections, runtime is O(n^2.5) in the
   /// worst case where conditions match many elements, and O(n^2) in more
   /// typical cases.
+  ///
+  /// {@example /example/iterable/iterable/unordered_matches.dart}
   void unorderedMatches(Iterable<Condition<T>> expected) {
     context.expect(() => prefixFirst('unordered matches ', literal(expected)), (
       actual,
@@ -397,6 +431,8 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// [description] is used in the Expected clause. It should be a predicate
   /// without the object, for example with the description 'is less than' the
   /// full expectation will be: "pairwise is less than $expected"
+  ///
+  /// {@example /example/iterable/iterable/pairwise_matches.dart}
   void pairwiseMatches<S>(
     List<S> expected,
     Condition<T> Function(S) elementCondition,
@@ -427,11 +463,13 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
             which: [
               'does not have an element at index $i that:',
               ...innerDescription,
-              ...prefixFirst(
-                'Actual element at index $i: ',
-                failure.rejection.actual,
+              ...indent(
+                prefixFirst(
+                  'Actual element at index $i: ',
+                  failure.rejection.actual,
+                ),
               ),
-              if (which != null) ...prefixFirst('Which: ', which),
+              if (which != null) ...indent(prefixFirst('Which: ', which)),
             ],
           );
         }

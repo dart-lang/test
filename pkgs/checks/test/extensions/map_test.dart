@@ -58,7 +58,7 @@ void main() {
     check(_testMap).isNotEmpty;
     check(
       <Object, Object>{},
-    ).isRejectedBy(.it()..isNotEmpty, which: ['is not empty']);
+    ).isRejectedBy(.it()..isNotEmpty, which: ['is empty']);
   });
   group('containsKey', () {
     test('succeeds for a key that exists', () {
@@ -80,7 +80,7 @@ void main() {
     check(_testMap).containsKeyThat(.it()..equals('a'));
     check(_testMap).isRejectedBy(
       .it()..containsKeyThat(.it()..equals('c')),
-      which: ['Contains no matching key'],
+      which: ['contains no matching key'],
     );
   });
   group('containsValue', () {
@@ -107,7 +107,7 @@ void main() {
     check(_testMap).containsValueThat(.it()..equals(1));
     check(_testMap).isRejectedBy(
       .it()..containsValueThat(.it()..equals(3)),
-      which: ['Contains no matching value'],
+      which: ['contains no matching value'],
     );
   });
 }
