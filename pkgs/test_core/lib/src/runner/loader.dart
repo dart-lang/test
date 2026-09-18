@@ -19,6 +19,7 @@ import 'package:yaml/yaml.dart';
 import '../util/io.dart';
 import 'compiler_selection.dart';
 import 'configuration.dart';
+import 'global_setup.dart';
 import 'hack_register_platform.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
@@ -29,6 +30,7 @@ import 'plugin/environment.dart';
 import 'runner_suite.dart';
 import 'suite.dart';
 import 'vm/platform.dart';
+import 'vm/test_compiler.dart';
 
 /// A class for finding test files and loading them into a runnable form.
 class Loader {
@@ -126,6 +128,14 @@ class Loader {
   /// The test runner configuration.
   final _config = Configuration.current;
 
+  /// The compiler used for compiling VM tests and hooks incrementally.
+  final _compiler = TestCompiler(
+    p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
+  );
+
+  /// Manages global setup hooks.
+  late final GlobalSetupManager globalSetupManager = GlobalSetupManager();
+
   /// All suites that have been created by the loader.
   final _suites = <RunnerSuite>{};
 
@@ -156,6 +166,22 @@ class Loader {
   Iterable<String> get _runtimeVariables =>
       _platformCallbacks.keys.map((runtime) => runtime.identifier);
 
+  /// Parses and returns the suite metadata for [path].
+  Metadata parseSuiteMetadata(String path) {
+    if (!File(path).existsSync()) return Metadata.empty;
+    try {
+      return parseMetadata(
+        path,
+        File(path).readAsStringSync(),
+        _runtimeVariables.toSet(),
+      );
+    } on FormatException {
+      return Metadata.empty;
+    } on IOException {
+      return Metadata.empty;
+    }
+  }
+
   /// Creates a new loader that loads tests on platforms defined in
   /// [Configuration.current].
   Loader() {
@@ -164,7 +190,7 @@ class Loader {
       if (File('$sdkDir/bin/dartaotruntime_asan').existsSync()) Runtime.vmAsan,
       if (File('$sdkDir/bin/dartaotruntime_msan').existsSync()) Runtime.vmMsan,
       if (File('$sdkDir/bin/dartaotruntime_tsan').existsSync()) Runtime.vmTsan,
-    ], VMPlatform.new);
+    ], () => VMPlatform(compiler: _compiler));
 
     platformCallbacks.forEach((runtime, plugin) {
       _registerPlatformPlugin([runtime], plugin);
@@ -175,6 +201,8 @@ class Loader {
     _config.validateRuntimes(allRuntimes);
 
     _registerRuntimeOverrides();
+
+    GlobalSetupManager.current = globalSetupManager;
   }
 
   /// Registers a [PlatformPlugin] for [runtimes].
@@ -383,7 +411,9 @@ class Loader {
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
+    await globalSetupManager.close();
     await Future.wait([
+      _compiler.dispose(),
       Future.wait(
         _platformPlugins.values.map((memo) async {
           if (!memo.hasRun) return;
