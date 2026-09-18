@@ -20,6 +20,8 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// If this function is async and returns a [Future], this expectation will
   /// fail. Instead invoke the function and check the expectation on the
   /// returned [Future].
+  ///
+  /// {@example /example/function/function/throws.dart}
   Subject<E> throws<E>([Condition<E>? that]) => context.nest<E>(
     () {
       var label = 'throws an error';
@@ -56,6 +58,8 @@ extension FunctionChecks<T> on Subject<T Function()> {
   /// further expecations on the returned value.
   ///
   /// If the function throws synchronously, this expectation will fail.
+  ///
+  /// {@example /example/function/function/returns_normally.dart}
   Subject<T> returnsNormally([Condition<T>? that]) => context.nest<T>(
     () => ['returns a value'],
     addPredicate: (predicateNoun) => 'returns $predicateNoun',
@@ -74,7 +78,9 @@ extension FunctionChecks<T> on Subject<T Function()> {
     },
     nestedCondition: that,
   );
+}
 
+extension FunctionPrints on Subject<void Function()> {
   /// Expects that the function prints text when called.
   ///
   /// Intercepts calls to [print] while the function is executed and returns
@@ -82,42 +88,47 @@ extension FunctionChecks<T> on Subject<T Function()> {
   ///
   /// If the function throws synchronously, this expectation will fail.
   ///
-  /// If this function is async and returns a [Future], this expectation will
-  /// fail. Use [printsAsync] instead.
+  /// {@example /example/function/function/prints.dart}
   Subject<String> prints([Condition<String>? that]) {
-    return context.nest<String>(() => ['prints'], (actual) {
-      final buffer = StringBuffer();
-      try {
-        final result = runZoned(
-          actual,
-          zoneSpecification: ZoneSpecification(
-            print: (_, _, _, line) {
-              buffer.writeln(line);
-            },
-          ),
-        );
-        if (result is Future) {
+    return context.nest<String>(
+      () => ['prints'],
+      addPredicate: (predicateNoun) => 'prints $predicateNoun',
+      (actual) {
+        final buffer = StringBuffer();
+        final Object? result;
+        try {
+          result = runZoned(
+            actual,
+            zoneSpecification: ZoneSpecification(
+              print: (_, _, _, line) {
+                buffer.writeln(line);
+              },
+            ),
+          );
+        } catch (e, st) {
           return Extracted.rejection(
-            actual: ['a function that returned a Future'],
+            actual: ['a function that throws'],
             which: [
-              'returned a Future; use printsAsync to test asynchronous functions',
+              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+              ...indent(LineSplitter.split(st.toString())),
             ],
           );
         }
-        return Extracted.value(buffer.toString());
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: ['a function that throws'],
-          which: [
-            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(LineSplitter.split(st.toString())),
-          ],
+        assert(
+          result is! Future,
+          'Function returned a Future. Provide a `Future<void> Function()` to '
+          'check asynchronous prints.',
         );
-      }
-    }, nestedCondition: that);
+        return Extracted.value(buffer.toString());
+      },
+      nestedCondition: that,
+    );
   }
+}
 
-  /// Expects that the function prints text when called and completed.
+extension AsyncFunctionPrints on Subject<Future<void> Function()> {
+  /// Expects that the asynchronous function prints text when called and
+  /// completed.
   ///
   /// Intercepts calls to [print] while the function is executed and waits
   /// for the returned [Future] to complete before checking expectations
@@ -125,32 +136,36 @@ extension FunctionChecks<T> on Subject<T Function()> {
   ///
   /// If the function throws synchronously or returns a [Future] that completes
   /// with an error, this expectation will fail.
+  ///
+  /// {@example /example/function/async_function/prints.dart}
   @meta.awaitNotRequired
-  Future<Subject<String>> printsAsync([Condition<String>? printCondition]) {
-    return context.nestAsync<String>(() => ['prints'], (actual) async {
-      final buffer = StringBuffer();
-      try {
-        final result = runZoned(
-          actual,
-          zoneSpecification: ZoneSpecification(
-            print: (_, _, _, line) {
-              buffer.writeln(line);
-            },
-          ),
-        );
-        if (result is Future) {
-          await result;
+  Future<Subject<String>> prints([Condition<String>? printCondition]) {
+    return context.nestAsync<String>(
+      () => ['prints'],
+      addPredicate: (predicateNoun) => 'prints $predicateNoun',
+      (actual) async {
+        final buffer = StringBuffer();
+        try {
+          await runZoned(
+            actual,
+            zoneSpecification: ZoneSpecification(
+              print: (_, _, _, line) {
+                buffer.writeln(line);
+              },
+            ),
+          );
+          return Extracted.value(buffer.toString());
+        } catch (e, st) {
+          return Extracted.rejection(
+            actual: ['a function that throws'],
+            which: [
+              ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
+              ...indent(LineSplitter.split(st.toString())),
+            ],
+          );
         }
-        return Extracted.value(buffer.toString());
-      } catch (e, st) {
-        return Extracted.rejection(
-          actual: ['a function that throws'],
-          which: [
-            ...prefixFirst('threw ', postfixLast(' at:', literal(e))),
-            ...indent(LineSplitter.split(st.toString())),
-          ],
-        );
-      }
-    }, printCondition);
+      },
+      printCondition,
+    );
   }
 }

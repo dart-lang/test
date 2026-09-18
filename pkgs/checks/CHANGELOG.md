@@ -39,8 +39,24 @@
   `(await check(foo).completes()).equals(42);`
 - Added `FutureSubjectExtension.which` to allow chaining expectations on a
   `Future<Subject>`.
-- Add `prints()` and `printsAsync()` check extensions on `Subject<T Function()>`
-  to check expectations against captured printed output.
+- Added a runnable example for every expectation, linked from its
+  documentation.
+- Fix the failure message for `MapChecks.isNotEmpty` to say that the map
+  `is empty`, instead of incorrectly repeating `is not empty`.
+- Fix the failure message for `pairwiseMatches` to indent the nested detail
+  about the element that failed, so that it is visibly part of the clause it
+  describes.
+- Fix the failure message for `equalsIgnoringWhitespace` to report the value
+  with its whitespace collapsed. The reported offset and difference always
+  referred to the collapsed value, but the message showed the original, so the
+  two did not line up.
+- Use a consistent lower case first word for the `Which:` clause of
+  `isA`, `IterableChecks.any`, `MapChecks.containsKeyThat`, and
+  `MapChecks.containsValueThat`.
+- Remove a stray trailing space from the failure message for `not`.
+- Add `prints()` check extensions on `Subject<void Function()>` and
+  `Subject<Future<void> Function()>` to check expectations against captured
+  printed output.
 
 ## 0.3.2
 

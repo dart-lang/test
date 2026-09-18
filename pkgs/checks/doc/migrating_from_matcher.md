@@ -137,9 +137,10 @@ check(because: 'some explanation', actual).expectation();
 -   `pairwiseCompare` -> `pairwiseMatches`
 -   `same` -> `identicalTo`
 -   `stringContainsInOrder` -> `Subject<String>.containsInOrder`
--   `prints` -> `Subject<void Function()>.prints()` (or `printsAsync`) to check
-    expectations on captured output, e.g. `check(fn).prints().equals(expected)`
-    or `await check(asyncFn).printsAsync((p) => p.equals(expected))`
+-   `prints` -> `Subject<void Function()>.prints()` (or
+    `Subject<Future<void> Function()>.prints()`) to check expectations on
+    captured output, e.g. `check(fn).prints().equals(expected)` or
+    `await check(asyncFn).prints(.it()..equals(expected))`
 -   `containsAllInOrder(iterable)` ->
     `Subject<Iterable>.containsMatchingInOrder(iterable)` to compare with
     conditions other than equals,
