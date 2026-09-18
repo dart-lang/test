@@ -78,7 +78,11 @@ extension FunctionChecks<T> on Subject<T Function()> {
     },
     nestedCondition: that,
   );
+}
 
+/// Expectation extensions which need to have lower precedence than
+/// [AsyncFuntionChecks].
+extension VoidFunctionChecks on Subject<void Function()> {
   /// Expects that the function prints text when called.
   ///
   /// Intercepts calls to [print] while the function is executed and returns
