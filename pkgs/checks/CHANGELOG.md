@@ -54,6 +54,9 @@
   `isA`, `IterableChecks.any`, `MapChecks.containsKeyThat`, and
   `MapChecks.containsValueThat`.
 - Remove a stray trailing space from the failure message for `not`.
+- Add `prints()` check extensions on `Subject<void Function()>` and
+  `Subject<Future<void> Function()>` to check expectations against captured
+  printed output.
 
 ## 0.3.2
 
