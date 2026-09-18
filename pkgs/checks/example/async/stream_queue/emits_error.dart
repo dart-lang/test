@@ -6,7 +6,7 @@ void main() {
     await check(
       Stream<int>.error(StateError('nope')),
     ).withQueue.emitsError<StateError>(
-      .it()..has((e) => e.message, 'message').equals('nope'),
+      .it()..has('message', (e) => e.message).equals('nope'),
     );
   });
 
