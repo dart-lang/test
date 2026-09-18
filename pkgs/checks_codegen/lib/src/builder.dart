@@ -164,13 +164,13 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
         )
         ..lambda = true
         ..body = refer('has').call([
+          literalString(name),
           Method(
             (b) => b
               ..lambda = true
               ..requiredParameters.add(Parameter((b) => b..name = 'v'))
               ..body = refer('v').property(name).code,
           ).closure,
-          literalString(name),
         ]).code,
     );
   }
