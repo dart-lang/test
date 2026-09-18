@@ -1,6 +1,8 @@
 ## 1.33.0-wip
 
 * Replace the Safari launch mechanism to use `safaridriver`.
+* Fix a hang when the runner is interrupted while a test suite is in the queue
+  to be loaded but has not started loading yet.
 
 ## 1.32.0
 

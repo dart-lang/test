@@ -531,6 +531,11 @@ class Engine {
     // first [LiveTest.onStateChange] event.
     await Future.microtask(liveTest.run);
 
+    // The load test has finished, so no suite will be loaded if one hasn't
+    // been already. This is a no-op unless the test was closed before its body
+    // ran, in which case nothing else would ever complete the suite.
+    suite.completeWithoutSuite();
+
     var innerSuite = await suite.suite;
     if (innerSuite == null) return null;
 

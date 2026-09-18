@@ -1,3 +1,8 @@
+## 0.6.21-wip
+
+* Fix a hang when the runner is shut down while a test suite is in the queue to
+  be loaded but has not started loading yet.
+
 ## 0.6.20
 
 * Pass sanitizer environment defaults when running tests compiled as native CLI

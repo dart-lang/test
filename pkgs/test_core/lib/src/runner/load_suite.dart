@@ -59,6 +59,23 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// example if an error occurred while loading it).
   final Future<({RunnerSuite suite, Zone zone})?> _suiteAndZone;
 
+  /// The completer behind [_suiteAndZone], if this suite created it.
+  ///
+  /// This is completed by the load test's body, either when the suite has
+  /// loaded or when the load test completes. If the load test is closed before
+  /// its body ever runs neither of those happen, so [completeWithoutSuite]
+  /// completes it instead.
+  final Completer<({RunnerSuite suite, Zone zone})?> _completer;
+
+  /// Completes [suite] with `null` unless it has already been completed.
+  ///
+  /// This should be called once the load test has finished running; if the
+  /// test was closed before its body ran then nothing else will ever complete
+  /// [suite], and anything waiting on it would wait forever.
+  void completeWithoutSuite() {
+    if (!_completer.isCompleted) _completer.complete();
+  }
+
   /// Returns the test that loads the suite.
   ///
   /// Load suites are guaranteed to only contain one test. This is a utility
@@ -121,7 +138,7 @@ class LoadSuite extends Suite implements RunnerSuite {
         // have timeouts.
         invoker.onClose.then((_) => invoker.removeOutstandingCallback());
       },
-      completer.future,
+      completer,
       path: path,
       ignoreTimeouts: config.ignoreTimeouts,
     );
@@ -163,10 +180,12 @@ class LoadSuite extends Suite implements RunnerSuite {
     this.config,
     SuitePlatform platform,
     void Function() body,
-    this._suiteAndZone, {
+    Completer<({RunnerSuite suite, Zone zone})?> completer, {
     required super.ignoreTimeouts,
     super.path,
-  }) : super(
+  }) : _completer = completer,
+       _suiteAndZone = completer.future,
+       super(
          Group.root([
            LocalTest(name, Metadata(timeout: config.suiteLoadTimeout), body),
          ]),
@@ -176,6 +195,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
     : config = old.config,
+      _completer = old._completer,
       super(
         old.group,
         old.platform,
@@ -186,6 +206,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
     : config = old.config,
+      _completer = old._completer,
       _suiteAndZone = old._suiteAndZone,
       super(
         old.group,
@@ -224,6 +245,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     var liveTest = test.load(this);
     liveTest.onMessage.listen((message) => print(message.text));
     await liveTest.run();
+    completeWithoutSuite();
 
     if (liveTest.errors.isEmpty) return await suite;
 
