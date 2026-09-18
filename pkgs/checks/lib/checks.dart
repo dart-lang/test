@@ -8,7 +8,7 @@ export 'src/extensions/async.dart'
 export 'src/extensions/core.dart'
     show BoolChecks, ComparableChecks, CoreChecks, NullableChecks;
 export 'src/extensions/function.dart'
-    show AsyncFunctionPrints, FunctionChecks, FunctionPrints;
+    show AsyncFunctionChecks, FunctionChecks, VoidFunctionChecks;
 export 'src/extensions/iterable.dart' show IterableChecks;
 export 'src/extensions/map.dart' show MapChecks;
 export 'src/extensions/math.dart' show NumChecks;
