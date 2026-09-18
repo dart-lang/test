@@ -80,7 +80,9 @@ extension FunctionChecks<T> on Subject<T Function()> {
   );
 }
 
-extension FunctionPrints on Subject<void Function()> {
+/// Expectation extensions which need to have lower precedence than
+/// [AsyncFuntionChecks].
+extension VoidFunctionChecks on Subject<void Function()> {
   /// Expects that the function prints text when called.
   ///
   /// Intercepts calls to [print] while the function is executed and returns
@@ -126,7 +128,7 @@ extension FunctionPrints on Subject<void Function()> {
   }
 }
 
-extension AsyncFunctionPrints on Subject<Future<void> Function()> {
+extension AsyncFunctionChecks on Subject<Future<void> Function()> {
   /// Expects that the asynchronous function prints text when called and
   /// completed.
   ///
