@@ -23,6 +23,7 @@ import 'util/pretty_print.dart';
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
+/// {@example /example/future/completes.dart}
 final Matcher completes = const _Completes(null);
 
 /// Matches a [Future] that completes successfully with a value that matches
@@ -36,6 +37,7 @@ final Matcher completes = const _Completes(null);
 ///
 /// To test that a Future completes with an exception, you can use [throws] and
 /// [throwsA].
+/// {@example /example/future/completion.dart}
 Matcher completion(
   Object? matcher, [
   @Deprecated('this parameter is ignored') String? description,
@@ -89,6 +91,7 @@ class _Completes extends AsyncMatcher {
 /// Note that this creates an asynchronous expectation. The call to
 /// `expect()` that includes this will return immediately and execution will
 /// continue.
+/// {@example /example/future/does_not_complete.dart}
 final Matcher doesNotComplete = const _DoesNotComplete();
 
 class _DoesNotComplete extends Matcher {

@@ -13,6 +13,7 @@ import 'throws_matcher.dart';
 import 'util/pretty_print.dart';
 
 /// Returns a [StreamMatcher] that asserts that the stream emits a "done" event.
+/// {@example /example/stream/emits_done.dart}
 final emitsDone = StreamMatcher(
   (queue) async => (await queue.hasNext) ? '' : null,
   'be done',
@@ -27,6 +28,7 @@ final emitsDone = StreamMatcher(
 ///
 /// This functions like [wrapMatcher] for [StreamMatcher]s: it can convert any
 /// matcher-like value into a proper [StreamMatcher].
+/// {@example /example/stream/emits.dart}
 StreamMatcher emits(Object? matcher) {
   if (matcher is StreamMatcher) return matcher;
   var wrapped = wrapMatcher(matcher);
@@ -54,6 +56,7 @@ StreamMatcher emits(Object? matcher) {
 
 /// Returns a [StreamMatcher] that matches a single error event that matches
 /// [matcher].
+/// {@example /example/stream/emits_error.dart}
 StreamMatcher emitsError(Object? matcher) {
   var wrapped = wrapMatcher(matcher);
   var matcherDescription = wrapped.describe(StringDescription());
@@ -71,6 +74,7 @@ StreamMatcher emitsError(Object? matcher) {
 ///
 /// This matcher always succeeds; if [matcher] doesn't match, this just consumes
 /// no events.
+/// {@example /example/stream/may_emit.dart}
 StreamMatcher mayEmit(Object? matcher) {
   var streamMatcher = emits(matcher);
   return StreamMatcher((queue) async {
@@ -90,6 +94,7 @@ StreamMatcher mayEmit(Object? matcher) {
 /// If any matchers match the stream, no errors from other matchers are thrown.
 /// If no matchers match and multiple matchers threw errors, the first error is
 /// re-thrown.
+/// {@example /example/stream/emits_any_of.dart}
 StreamMatcher emitsAnyOf(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.isEmpty) {
@@ -171,6 +176,7 @@ StreamMatcher emitsAnyOf(Iterable matchers) {
 /// [matchers] matches, one after another.
 ///
 /// If any matcher fails to match, this fails and consumes no events.
+/// {@example /example/stream/emits_in_order.dart}
 StreamMatcher emitsInOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toList();
   if (streamMatchers.length == 1) return streamMatchers.first;
@@ -202,6 +208,7 @@ StreamMatcher emitsInOrder(Iterable matchers) {
 /// This consumes all events matched by [matcher], as well as all events before.
 /// If the stream emits a done event without matching [matcher], this fails and
 /// consumes no events.
+/// {@example /example/stream/emits_through.dart}
 StreamMatcher emitsThrough(Object? matcher) {
   var streamMatcher = emits(matcher);
   return StreamMatcher((queue) async {
@@ -243,6 +250,7 @@ StreamMatcher emitsThrough(Object? matcher) {
 /// This consumes events until [matcher] no longer matches. It always succeeds;
 /// if [matcher] doesn't match, this just consumes no events. It never rethrows
 /// errors.
+/// {@example /example/stream/may_emit_multiple.dart}
 StreamMatcher mayEmitMultiple(Object? matcher) {
   var streamMatcher = emits(matcher);
 
@@ -263,6 +271,7 @@ StreamMatcher mayEmitMultiple(Object? matcher) {
 ///
 /// This doesn't complete until the stream emits a done event. It never consumes
 /// any events. It never re-throws errors.
+/// {@example /example/stream/never_emits.dart}
 StreamMatcher neverEmits(Object? matcher) {
   var streamMatcher = emits(matcher);
   return StreamMatcher((queue) async {
@@ -318,6 +327,7 @@ Future<bool> _tryMatch(StreamQueue queue, StreamMatcher matcher) {
 ///
 /// Note that checking every ordering of [matchers] is O(n!) in the worst case,
 /// so this should only be called when there are very few [matchers].
+/// {@example /example/stream/emits_in_any_order.dart}
 StreamMatcher emitsInAnyOrder(Iterable matchers) {
   var streamMatchers = matchers.map(emits).toSet();
   if (streamMatchers.length == 1) return streamMatchers.first;

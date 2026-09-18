@@ -22,6 +22,7 @@ import 'util/pretty_print.dart';
 ///
 /// This returns an [AsyncMatcher], so [expect] won't complete until the matched
 /// function does.
+/// {@example /example/prints/prints.dart}
 Matcher prints(Object? matcher) => _Prints(wrapMatcher(matcher));
 
 class _Prints extends AsyncMatcher {
