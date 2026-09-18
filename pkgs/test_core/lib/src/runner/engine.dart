@@ -529,7 +529,14 @@ class Engine {
 
     // Schedule a microtask to ensure that [onTestStarted] fires before the
     // first [LiveTest.onStateChange] event.
-    await Future.microtask(liveTest.run);
+    await Future.microtask(() {
+      // The engine may have been closed while this microtask was pending, in
+      // which case the load test has been closed too (or is about to be) and
+      // running it would throw. There's nothing to load for a closed engine
+      // anyways.
+      if (_closed) return null;
+      return liveTest.run();
+    });
 
     // The load test has finished, so no suite will be loaded if one hasn't
     // been already. This is a no-op unless the test was closed before its body

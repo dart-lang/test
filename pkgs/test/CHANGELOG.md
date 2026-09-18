@@ -1,8 +1,10 @@
 ## 1.33.0-wip
 
 * Replace the Safari launch mechanism to use `safaridriver`.
-* Fix a hang when the runner is interrupted while a test suite is in the queue
-  to be loaded but has not started loading yet.
+* Fix a hang when the runner is interrupted at the moment a test suite starts
+  loading.
+* Fix a `LiveTest.run() may not be called for a closed test` error when the
+  runner is interrupted at the moment a test suite is about to start loading.
 
 ## 1.32.0
 

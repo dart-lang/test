@@ -413,6 +413,24 @@ void main() {
     await engine.close();
     expect(loadStarted, isFalse);
   });
+
+  test('closes when a suite is closed before its load test is run', () async {
+    var loadStarted = false;
+    var engine = Engine.withSuites([
+      loadSuite('never loads', () {
+        loadStarted = true;
+        // Never completes; the engine is closed before this should be called
+        // at all.
+        return Completer<RunnerSuite>().future;
+      }),
+    ]);
+
+    unawaited(engine.run());
+    // Close before the load test has even been run, as opposed to after it has
+    // started but before its body has run.
+    await engine.close();
+    expect(loadStarted, isFalse);
+  });
 }
 
 extension on Iterable<GroupEntry> {

@@ -1,7 +1,9 @@
 ## 0.6.21-wip
 
-* Fix a hang when the runner is shut down while a test suite is in the queue to
-  be loaded but has not started loading yet.
+* Fix a hang when the runner is shut down at the moment a test suite starts
+  loading.
+* Fix a `LiveTest.run() may not be called for a closed test` error when the
+  runner is shut down at the moment a test suite is about to start loading.
 
 ## 0.6.20
 
