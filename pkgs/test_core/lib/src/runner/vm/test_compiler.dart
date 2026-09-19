@@ -43,6 +43,10 @@ class TestCompiler {
   final _compilerForLanguageVersion =
       <String, _TestCompilerForLanguageVersion>{};
 
+  /// The compiler which produced each outstanding kernel file, keyed by the
+  /// `kernelOutputUri` that was handed out for it.
+  final _compilerForKernelOutput = <Uri, _TestCompilerForLanguageVersion>{};
+
   /// A prefix used for the dill files for each compiler that is created.
   final String _dillCachePrefix;
 
@@ -57,6 +61,10 @@ class TestCompiler {
 
   /// Compiles [mainDart], using a separate compiler per language version of
   /// the tests.
+  ///
+  /// Each successful compilation creates a new kernel file which is retained
+  /// until either [release] is called with the returned
+  /// [CompilationResponse.kernelOutputUri], or this compiler is disposed.
   Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) async {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var languageVersionComment =
@@ -70,15 +78,36 @@ class TestCompiler {
         _clientFactory,
       ),
     );
-    return compiler.compile(mainDart);
+    var response = await compiler.compile(mainDart);
+    if (response.kernelOutputUri case var kernelOutputUri?) {
+      _compilerForKernelOutput[kernelOutputUri] = compiler;
+    }
+    return response;
   }
 
-  Future<void> dispose() => _closeMemo.runOnce(
-    () => Future.wait([
+  /// Indicates that the kernel file at [kernelOutputUri] is no longer in use.
+  ///
+  /// The [kernelOutputUri] must be a [CompilationResponse.kernelOutputUri]
+  /// returned by a previous call to [compile], and it must not be used after
+  /// it has been released since the file may be deleted.
+  ///
+  /// Releasing kernel files as soon as their test suite has finished keeps the
+  /// temporary disk usage of a test run from growing with the number of test
+  /// suites.
+  Future<void> release(Uri kernelOutputUri) async {
+    if (_closeMemo.hasRun) return;
+    await _compilerForKernelOutput
+        .remove(kernelOutputUri)
+        ?.release(kernelOutputUri);
+  }
+
+  Future<void> dispose() => _closeMemo.runOnce(() async {
+    _compilerForKernelOutput.clear();
+    await Future.wait([
       for (var compiler in _compilerForLanguageVersion.values)
         compiler.dispose(),
-    ]),
-  );
+    ]);
+  });
 }
 
 class _TestCompilerForLanguageVersion {
@@ -98,7 +127,13 @@ class _TestCompilerForLanguageVersion {
   int _compileNumber = 0;
   // The largest incremental dill file we created, will be cached under
   // the `.dart_tool` dir at the end of compilation.
+  //
+  // This file is kept even after it has been released, until either a larger
+  // dill file replaces it or the compiler is disposed.
   File? _dillToCache;
+  // Whether [_dillToCache] has been released by the code that requested it, in
+  // which case it can be deleted as soon as it is replaced.
+  bool _dillToCacheIsReleased = false;
 
   _TestCompilerForLanguageVersion(
     String dillCachePrefix,
@@ -163,9 +198,14 @@ class _TestCompilerForLanguageVersion {
     // kernel file as an approximation for how many packages are included.
     // Larger files are preferred, since re-using more packages will reduce the
     // number of files the frontend server needs to load and parse.
-    if (_dillToCache == null ||
-        (_dillToCache!.lengthSync() < kernelReadyToRun.lengthSync())) {
+    final previousDillToCache = _dillToCache;
+    if (previousDillToCache == null ||
+        (previousDillToCache.lengthSync() < kernelReadyToRun.lengthSync())) {
       _dillToCache = kernelReadyToRun;
+      if (previousDillToCache != null && _dillToCacheIsReleased) {
+        await _tryDelete(previousDillToCache);
+      }
+      _dillToCacheIsReleased = false;
     }
 
     return CompilationResponse(
@@ -219,6 +259,32 @@ class _TestCompilerForLanguageVersion {
 
     _frontendServerClient = client;
     return client.compile();
+  }
+
+  /// Deletes the kernel file at [kernelOutputUri], unless it is being kept as
+  /// the candidate to cache under the `.dart_tool` dir.
+  Future<void> release(Uri kernelOutputUri) async {
+    if (_closeMemo.hasRun) return;
+    final file = File.fromUri(kernelOutputUri);
+    if (_dillToCache case final dillToCache?
+        when p.equals(dillToCache.path, file.path)) {
+      _dillToCacheIsReleased = true;
+      return;
+    }
+    await _tryDelete(file);
+  }
+
+  /// Deletes [file], ignoring any failure to do so.
+  ///
+  /// The file may still be held open, for instance by an isolate which has not
+  /// finished shutting down. Anything left behind is cleaned up along with the
+  /// temp directory in [dispose].
+  Future<void> _tryDelete(File file) async {
+    try {
+      await file.deleteWithRetry();
+    } on FileSystemException {
+      // Ignore, this file will be deleted with the temp directory.
+    }
   }
 
   Future<void> dispose() => _closeMemo.runOnce(() async {

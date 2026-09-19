@@ -5,6 +5,10 @@
   loading.
 * Fix a `LiveTest.run() may not be called for a closed test` error when the
   runner is interrupted at the moment a test suite is about to start loading.
+* Delete the kernel file compiled for a test suite once that suite has finished
+  running, and delete the snapshot or bundle compiled with the `exe` and `cli`
+  compilers once the test process has exited, so that temporary disk usage no
+  longer grows with the number of test files.
 
 ## 1.32.0
 
