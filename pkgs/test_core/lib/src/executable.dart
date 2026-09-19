@@ -46,11 +46,22 @@ Future<void> runTests(List<String> args) async {
 }
 
 void completeShutdown() {
-  if (isShutdown) return;
+  // Always stop listening for signals, even if the shutdown was already
+  // started by a signal, so that the process can exit.
   if (signalSubscription != null) {
     signalSubscription!.cancel();
     signalSubscription = null;
   }
+  _beginShutdown();
+}
+
+/// Records that the runner is shutting down and stops reading from stdin.
+///
+/// Unlike [completeShutdown] this keeps listening for signals, so that a
+/// second signal received while shutting down can terminate the run
+/// immediately.
+void _beginShutdown() {
+  if (isShutdown) return;
   isShutdown = true;
   cancelStdinLines();
 }
@@ -162,7 +173,14 @@ Future<void> _execute(List<String> args) async {
   Runner? runner;
 
   signalSubscription ??= signals.listen((signal) async {
-    completeShutdown();
+    if (isShutdown) {
+      // A second signal means the user wants to terminate immediately, so the
+      // graceful shutdown which deletes the temporary directory won't get a
+      // chance to finish. Delete it here instead, it can be very large.
+      deleteRunnerTempDirectorySync();
+      exit(_exitCodeForSignal(signal));
+    }
+    _beginShutdown();
     await runner?.close();
   });
 
@@ -196,6 +214,13 @@ Future<void> _execute(List<String> args) async {
 
   return;
 }
+
+/// The exit code to use when terminating in response to [signal].
+///
+/// This matches the code a shell reports for a process killed by the signal,
+/// which is what used to happen before the signal was handled here.
+int _exitCodeForSignal(ProcessSignal signal) =>
+    128 + (signal == ProcessSignal.sigint ? 2 : 15);
 
 /// Print usage information for this command.
 ///

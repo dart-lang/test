@@ -30,7 +30,7 @@ enum ChromiumBasedBrowser {
   }) async {
     settings ??= defaultSettings[runtime];
 
-    var dir = createTempDir();
+    var dir = createTempDirectory('chromium.').path;
     var redirect = p.join(dir, 'redirect.html');
     File(redirect).writeAsStringSync(
       '<script>location = ${jsonEncode(url.toString())}</script>',
