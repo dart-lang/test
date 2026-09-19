@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -74,7 +75,7 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await pumpEventQueue();
+      await fakeClient.compileCalled();
 
       final outputDill = p.join(d.sandbox, 'output.dill');
       File(outputDill).createSync();
@@ -106,7 +107,7 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await pumpEventQueue();
+      await fakeClient.compileCalled();
 
       expect(fakeClient.isCompileCalled, isTrue);
       expect(fakeClient.isKilled, isFalse);
@@ -145,7 +146,14 @@ class FakeCompileResult extends Fake implements CompileResult {
 }
 
 class FakeFrontendServerClient extends Fake implements FrontendServerClient {
-  var _compileCompleter = Completer<CompileResult>();
+  /// Compile calls which have not been given a result yet.
+  final _pendingCompiles = Queue<Completer<CompileResult>>();
+
+  /// Results which were provided before the matching compile call.
+  final _queuedResults = Queue<CompileResult>();
+
+  final _compileCalls = StreamController<void>.broadcast();
+
   bool isKilled = false;
   bool isCompileCalled = false;
   int compileCallCount = 0;
@@ -167,27 +175,40 @@ class FakeFrontendServerClient extends Fake implements FrontendServerClient {
     );
   }
 
+  /// Completes once [compile] has been called at least [count] times.
+  Future<void> compileCalled([int count = 1]) async {
+    while (compileCallCount < count) {
+      await _compileCalls.stream.first;
+    }
+  }
+
   @override
   Future<CompileResult> compile([List<Uri>? sources]) {
     isCompileCalled = true;
     compileCallCount++;
-    if (_compileCompleter.isCompleted) {
-      _compileCompleter = Completer<CompileResult>();
+    _compileCalls.add(null);
+    if (_queuedResults.isNotEmpty) {
+      return Future.value(_queuedResults.removeFirst());
     }
-    return _compileCompleter.future;
+    final completer = Completer<CompileResult>();
+    _pendingCompiles.add(completer);
+    return completer.future;
   }
 
+  /// Provides [result] for the next compile, whether or not it has started.
   void completeCompile(CompileResult result) {
-    if (!_compileCompleter.isCompleted) {
-      _compileCompleter.complete(result);
+    if (_pendingCompiles.isEmpty) {
+      _queuedResults.add(result);
+    } else {
+      _pendingCompiles.removeFirst().complete(result);
     }
   }
 
   @override
   bool kill({ProcessSignal processSignal = ProcessSignal.sigterm}) {
     isKilled = true;
-    if (!_compileCompleter.isCompleted) {
-      _compileCompleter.completeError(StateError('Killed'));
+    while (_pendingCompiles.isNotEmpty) {
+      _pendingCompiles.removeFirst().completeError(StateError('Killed'));
     }
     return true;
   }
