@@ -59,12 +59,18 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// example if an error occurred while loading it).
   final Future<({RunnerSuite suite, Zone zone})?> _suiteAndZone;
 
-  /// The completer behind [_suiteAndZone], if this suite created it.
+  /// The completer at the root of [_suiteAndZone].
   ///
   /// This is completed by the load test's body, either when the suite has
   /// loaded or when the load test completes. If the load test is closed before
   /// its body ever runs neither of those happen, so [ensureComplete]
   /// completes it instead.
+  ///
+  /// This is not always the immediate source of [_suiteAndZone]: [changeSuite]
+  /// derives a new future from the old one, and the instance it creates shares
+  /// the original completer. Completing this still resolves those derived
+  /// futures, which is why the completer is tracked separately rather than
+  /// using [_suiteAndZone] directly.
   final Completer<({RunnerSuite suite, Zone zone})?> _completer;
 
   /// Completes [suite] with `null` unless it has already been completed.
