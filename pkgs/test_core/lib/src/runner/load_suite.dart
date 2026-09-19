@@ -63,7 +63,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   ///
   /// This is completed by the load test's body, either when the suite has
   /// loaded or when the load test completes. If the load test is closed before
-  /// its body ever runs neither of those happen, so [completeWithoutSuite]
+  /// its body ever runs neither of those happen, so [ensureComplete]
   /// completes it instead.
   final Completer<({RunnerSuite suite, Zone zone})?> _completer;
 
@@ -72,7 +72,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// This should be called once the load test has finished running; if the
   /// test was closed before its body ran then nothing else will ever complete
   /// [suite], and anything waiting on it would wait forever.
-  void completeWithoutSuite() {
+  void ensureComplete() {
     if (!_completer.isCompleted) _completer.complete();
   }
 
@@ -245,7 +245,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     var liveTest = test.load(this);
     liveTest.onMessage.listen((message) => print(message.text));
     await liveTest.run();
-    completeWithoutSuite();
+    ensureComplete();
 
     if (liveTest.errors.isEmpty) return await suite;
 
