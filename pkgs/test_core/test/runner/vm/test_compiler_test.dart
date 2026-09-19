@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -74,7 +75,7 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await pumpEventQueue();
+      await fakeClient.compileCalled();
 
       final outputDill = p.join(d.sandbox, 'output.dill');
       File(outputDill).createSync();
@@ -106,7 +107,7 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await pumpEventQueue();
+      await fakeClient.compileCalled();
 
       expect(fakeClient.isCompileCalled, isTrue);
       expect(fakeClient.isKilled, isFalse);
@@ -120,7 +121,109 @@ void main() {
       expect(response.errorCount, 1);
       expect(response.compilerOutput, contains('Compiler no longer active'));
     });
+
+    test('release deletes kernel files which are not cached', () async {
+      final (fakeClient, clientStarter) = FakeFrontendServerClient.create;
+      final compiler = TestCompiler(
+        p.join(d.sandbox, 'dill_cache'),
+        clientFactory: clientStarter,
+      );
+      addTearDown(compiler.dispose);
+
+      // The largest dill is the one that gets cached, so the second compile
+      // here is the one that has to survive until the compiler is disposed.
+      final small = await _compile(
+        compiler,
+        fakeClient,
+        testPath,
+        name: 'small',
+        dillSize: 32,
+      );
+      final large = await _compile(
+        compiler,
+        fakeClient,
+        testPath,
+        name: 'large',
+        dillSize: 64,
+      );
+      final smallKernel = File.fromUri(small.kernelOutputUri!);
+      final largeKernel = File.fromUri(large.kernelOutputUri!);
+
+      await compiler.release(small.kernelOutputUri!);
+      expect(smallKernel.existsSync(), isFalse);
+      expect(largeKernel.existsSync(), isTrue);
+
+      await compiler.release(large.kernelOutputUri!);
+      expect(
+        largeKernel.existsSync(),
+        isTrue,
+        reason: 'the dill to cache should be kept until dispose',
+      );
+
+      await compiler.dispose();
+      expect(largeKernel.existsSync(), isFalse);
+      expect(
+        Directory(
+          d.sandbox,
+        ).listSync().map((entity) => p.basename(entity.path)),
+        contains(startsWith('dill_cache.')),
+        reason: 'the dill to cache should be copied on dispose',
+      );
+    });
+
+    test(
+      'a released kernel file is deleted once a larger one replaces it',
+      () async {
+        final (fakeClient, clientStarter) = FakeFrontendServerClient.create;
+        final compiler = TestCompiler(
+          p.join(d.sandbox, 'dill_cache'),
+          clientFactory: clientStarter,
+        );
+        addTearDown(compiler.dispose);
+
+        final small = await _compile(
+          compiler,
+          fakeClient,
+          testPath,
+          name: 'small',
+          dillSize: 32,
+        );
+        final smallKernel = File.fromUri(small.kernelOutputUri!);
+        await compiler.release(small.kernelOutputUri!);
+        expect(smallKernel.existsSync(), isTrue);
+
+        await _compile(
+          compiler,
+          fakeClient,
+          testPath,
+          name: 'large',
+          dillSize: 64,
+        );
+        expect(smallKernel.existsSync(), isFalse);
+      },
+    );
   });
+}
+
+/// Compiles [testPath] with [compiler], responding through [fakeClient] with a
+/// dill file of [dillSize] bytes.
+Future<CompilationResponse> _compile(
+  TestCompiler compiler,
+  FakeFrontendServerClient fakeClient,
+  String testPath, {
+  required String name,
+  required int dillSize,
+}) async {
+  final outputDill = p.join(d.sandbox, '$name.dill');
+  File(outputDill).writeAsBytesSync(List.filled(dillSize, 0));
+  final compileFuture = compiler.compile(
+    Uri.file(testPath),
+    Metadata(languageVersionComment: '// @dart=3.0'),
+  );
+  fakeClient.completeCompile(
+    FakeCompileResult(dillOutput: outputDill, errorCount: 0),
+  );
+  return await compileFuture;
 }
 
 class FakeCompileResult extends Fake implements CompileResult {
@@ -145,7 +248,14 @@ class FakeCompileResult extends Fake implements CompileResult {
 }
 
 class FakeFrontendServerClient extends Fake implements FrontendServerClient {
-  var _compileCompleter = Completer<CompileResult>();
+  /// Compile calls which have not been given a result yet.
+  final _pendingCompiles = Queue<Completer<CompileResult>>();
+
+  /// Results which were provided before the matching compile call.
+  final _queuedResults = Queue<CompileResult>();
+
+  final _compileCalls = StreamController<void>.broadcast();
+
   bool isKilled = false;
   bool isCompileCalled = false;
   int compileCallCount = 0;
@@ -167,27 +277,40 @@ class FakeFrontendServerClient extends Fake implements FrontendServerClient {
     );
   }
 
+  /// Completes once [compile] has been called at least [count] times.
+  Future<void> compileCalled([int count = 1]) async {
+    while (compileCallCount < count) {
+      await _compileCalls.stream.first;
+    }
+  }
+
   @override
   Future<CompileResult> compile([List<Uri>? sources]) {
     isCompileCalled = true;
     compileCallCount++;
-    if (_compileCompleter.isCompleted) {
-      _compileCompleter = Completer<CompileResult>();
+    _compileCalls.add(null);
+    if (_queuedResults.isNotEmpty) {
+      return Future.value(_queuedResults.removeFirst());
     }
-    return _compileCompleter.future;
+    final completer = Completer<CompileResult>();
+    _pendingCompiles.add(completer);
+    return completer.future;
   }
 
+  /// Provides [result] for the next compile, whether or not it has started.
   void completeCompile(CompileResult result) {
-    if (!_compileCompleter.isCompleted) {
-      _compileCompleter.complete(result);
+    if (_pendingCompiles.isEmpty) {
+      _queuedResults.add(result);
+    } else {
+      _pendingCompiles.removeFirst().complete(result);
     }
   }
 
   @override
   bool kill({ProcessSignal processSignal = ProcessSignal.sigterm}) {
     isKilled = true;
-    if (!_compileCompleter.isCompleted) {
-      _compileCompleter.completeError(StateError('Killed'));
+    while (_pendingCompiles.isNotEmpty) {
+      _pendingCompiles.removeFirst().completeError(StateError('Killed'));
     }
     return true;
   }
