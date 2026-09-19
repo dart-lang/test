@@ -1,3 +1,10 @@
+## 0.6.21-wip
+
+* Fix a hang when the runner is shut down at the moment a test suite starts
+  loading.
+* Fix a `LiveTest.run() may not be called for a closed test` error when the
+  runner is shut down at the moment a test suite is about to start loading.
+
 ## 0.6.20
 
 * Pass sanitizer environment defaults when running tests compiled as native CLI
