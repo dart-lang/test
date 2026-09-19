@@ -260,6 +260,10 @@ class Runner {
     timer?.cancel();
     await _loader.close();
 
+    // Every platform has been closed, so nothing should be using any temporary
+    // files any more.
+    await deleteRunnerTempDirectory();
+
     // Flush any IOSinks created for file reporters.
     await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
     _sinks.clear();

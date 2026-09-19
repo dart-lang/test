@@ -127,9 +127,58 @@ bool get canUseSpecialChars => switch (Platform.environment) {
 /// https://docs.github.com/en/actions/learn-github-actions/environment-variables.
 bool get inGithubContext => Platform.environment['GITHUB_ACTIONS'] == 'true';
 
-/// Creates a temporary directory and returns its path.
-String createTempDir() =>
-    Directory(_tempDir).createTempSync('dart_test_').resolveSymbolicLinksSync();
+/// The single directory which parents every temporary directory created by
+/// [createTempDirectory], created lazily on the first call.
+///
+/// The path has any symbolic links resolved, so every directory created under
+/// it also has a resolved path.
+Directory? _runnerTempDirectory;
+
+/// Creates a temporary directory with [prefix] and returns it.
+///
+/// The directory is created under a single root directory, which is created if
+/// it does not already exist, so that every temporary directory created by the
+/// test runner can be removed by a single [deleteRunnerTempDirectory] call.
+///
+/// The returned path has any symbolic links resolved.
+Directory createTempDirectory([String prefix = 'tmp.']) =>
+    (_runnerTempDirectory ??= Directory(
+      Directory(
+        _tempDir,
+      ).createTempSync('dart_test.').resolveSymbolicLinksSync(),
+    )).createTempSync(prefix);
+
+/// Deletes the root directory containing every directory created by
+/// [createTempDirectory].
+///
+/// Failures to delete are ignored; the directories are in the system temp
+/// directory and will eventually be cleaned up by the OS.
+Future<void> deleteRunnerTempDirectory() async {
+  var directory = _runnerTempDirectory;
+  _runnerTempDirectory = null;
+  if (directory == null) return;
+  try {
+    await directory.deleteWithRetry();
+  } on FileSystemException {
+    // Nothing more we can do about it.
+  }
+}
+
+/// Synchronously deletes the root directory containing every directory created
+/// by [createTempDirectory].
+///
+/// This is a best effort cleanup for when the test runner is terminated before
+/// it can shut down gracefully; failures to delete are ignored.
+void deleteRunnerTempDirectorySync() {
+  var directory = _runnerTempDirectory;
+  _runnerTempDirectory = null;
+  if (directory == null) return;
+  try {
+    directory.deleteSync(recursive: true);
+  } on FileSystemException {
+    // Nothing more we can do, the process is about to exit.
+  }
+}
 
 /// Creates a temporary directory and passes its path to [fn].
 ///
@@ -141,10 +190,10 @@ String createTempDir() =>
 /// [fn] completes to.
 Future withTempDir(Future Function(String) fn) {
   return Future.sync(() {
-    var tempDir = createTempDir();
+    var tempDir = createTempDirectory();
     return Future.sync(
-      () => fn(tempDir),
-    ).whenComplete(() => Directory(tempDir).deleteWithRetry());
+      () => fn(tempDir.path),
+    ).whenComplete(() => tempDir.deleteWithRetry());
   });
 }
 
@@ -269,6 +318,10 @@ Future<Uri> getRemoteDebuggerUrl(Uri base) async {
 }
 
 extension RetryDelete on FileSystemEntity {
+  /// Deletes this entity, retrying a few times if it fails.
+  ///
+  /// Does nothing if this entity no longer exists, which can happen if the
+  /// temporary directory containing it was already deleted.
   Future<void> deleteWithRetry() async {
     var attempt = 0;
     while (true) {
@@ -276,6 +329,7 @@ extension RetryDelete on FileSystemEntity {
         await delete(recursive: true);
         return;
       } on FileSystemException {
+        if (!await exists()) return;
         if (attempt == 2) rethrow;
         attempt++;
         await Future<void>.delayed(
