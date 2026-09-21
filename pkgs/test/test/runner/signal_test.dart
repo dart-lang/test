@@ -54,7 +54,7 @@ void main() {
       );
       await signalAndQuit(test);
 
-      expectTempDirEmpty(skip: 'Failing on Travis.');
+      expectTempDirEmpty();
     }, tags: 'chrome');
 
     test('exits immediately if ^C is sent twice', () async {
@@ -159,7 +159,7 @@ void main() {
       await expectLater(test.stdout, emitsThrough('running test'));
       await signalAndQuit(test);
 
-      expectTempDirEmpty(skip: 'Failing on Travis.');
+      expectTempDirEmpty();
     }, tags: 'chrome');
 
     test('kills a VM test immediately if ^C is sent twice', () async {
@@ -235,6 +235,6 @@ Future<void> signalAndQuit(TestProcess test) async {
   await expectLater(test.stderr, emitsDone);
 }
 
-void expectTempDirEmpty({Object? skip}) {
-  expect(Directory(_tempDir).listSync(), isEmpty, skip: skip);
+void expectTempDirEmpty() {
+  expect(Directory(_tempDir).listSync(), isEmpty);
 }
