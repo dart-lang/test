@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:isolate';
@@ -82,6 +83,14 @@ void internalBootstrapVmHook(
         );
       }
     }, zoneValues: {#test.global_teardowns: tearDowns});
+
+    try {
+      json.encode(result);
+    } on Object catch (error) {
+      throw ArgumentError(
+        'The global setup script returned a value that is not JSON-encodable: $error',
+      );
+    }
 
     sendPort.send({
       'success': true,

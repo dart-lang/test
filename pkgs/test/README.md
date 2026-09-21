@@ -863,17 +863,16 @@ you can use [`globalSetup()`]. Setup scripts should typically live inside your `
 directory (for example, `test/setup_server.dart` or `test/helpers/setup.dart`).
 
 The `globalSetup()` function executes a Dart script on the host test runner in an
-isolate compiled with the incremental Frontend Server. The script's `setUp()`
-function returns a JSON-encodable result that is memoized across all tests and
-test suites in the run:
+isolate. The script's `setUp()` function returns a JSON-encodable result that is
+memoized across all tests and test suites in the run:
 
 [`globalSetup()`]: https://pub.dev/documentation/test/latest/test/globalSetup.html
-[`addGlobalTearDown()`]: https://pub.dev/documentation/test/latest/test/addGlobalTearDown.html
+[`addGlobalTearDown()`]: https://pub.dev/documentation/test/latest/global/addGlobalTearDown.html
 
 ```dart
 // ## test/setup_server.dart
 import 'dart:io';
-import 'package:test/scaffolding.dart' show addGlobalTearDown;
+import 'package:test/global.dart';
 
 Future<Map<String, dynamic>> setUp() async {
   var server = await HttpServer.bind('localhost', 0);
@@ -891,7 +890,8 @@ import 'package:test/test.dart';
 
 void main() {
   test('uses shared server', () async {
-    final config = await globalSetup(Uri.parse('/test/setup_server.dart')) as Map;
+    final config =
+        await globalSetup(Uri(path: '/test/setup_server.dart')) as Map;
     final port = config['port'] as int;
     // ...
   });
@@ -899,15 +899,19 @@ void main() {
 ```
 
 The setup script for a given URI only executes once regardless of how many test
-suites or tests call `globalSetup()` with that URI. Global teardown callbacks
-registered with [`addGlobalTearDown()`] are executed when the test runner closes.
+suites or tests call `globalSetup()` with that URI. Each call receives an
+independent copy of the return value, so mutations to collections are not shared
+across calls. `globalSetup()` must be called from within a running test or a
+`setUp()` / `setUpAll()` callback; it cannot be called directly in top-level `main()`.
+Global teardown callbacks registered with [`addGlobalTearDown()`] are executed
+when the test runner closes.
 
 `globalSetup()` takes a [`Uri`][Uri] resolved with the following rules:
-* **Root-relative URIs** (beginning with `/`, like `Uri.parse('/test/setup.dart')`):
+* **Root-relative URIs** (beginning with `/`, like `Uri(path: '/test/setup.dart')`):
   resolved relative to the root of the package (where `pubspec.yaml` lives).
 * **`package:` URIs** (like `Uri.parse('package:my_pkg/test_helpers.dart')`):
   resolved using the package configuration.
-* **Relative URIs** (without a scheme or leading `/`, like `Uri.parse('setup.dart')` or `Uri.parse('../setup.dart')`):
+* **Relative URIs** (without a scheme or leading `/`, like `Uri(path: 'setup.dart')` or `Uri(path: '../setup.dart')`):
   resolved relative to the test suite file currently being executed.
 * **`file:` URIs** (like `Uri.file('/abs/path/setup.dart')`):
   resolved as absolute file paths on the filesystem.

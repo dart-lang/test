@@ -10,4 +10,4 @@ library;
 
 export 'package:test_api/hooks.dart' show TestFailure;
 
-export 'scaffolding.dart' hide addGlobalTearDown, globalSetup;
+export 'scaffolding.dart' hide globalSetup;

@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:stream_channel/stream_channel.dart';
 
+import '../backend/invoker.dart';
 import '../backend/remote_exception.dart';
 
 /// An optional fallback handler invoked when [globalSetup] is called outside
@@ -18,16 +19,24 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 ///
 /// If multiple test suites or tests invoke [globalSetup] with the same [uri],
 /// the script runs only once and all callers receive the same cached result.
+/// Each call to [globalSetup] receives an independent copy of the value;
+/// mutating returned collections (such as maps or lists) does not affect other
+/// callers or subsequent calls.
 ///
 /// The Dart file at [uri] must define a top-level `setUp()` function that
-/// returns a JSON-encodable value (or `Future` of one).
+/// returns a JSON-encodable value (or `Future` of one). A `void setUp()` function
+/// (or one that returns `null`) is permitted and results in a `null` value.
+///
+/// [globalSetup] must be called from within a running test or a `setUp()` /
+/// `setUpAll()` callback. It is an error to call [globalSetup] directly from
+/// top-level `main()`.
 ///
 /// [uri] is resolved according to the following rules:
+/// * **Root-relative URIs** (paths beginning with `/`, e.g. `Uri(path: '/test/setup.dart')`):
+///   Interpreted relative to the root of the package (the directory containing `pubspec.yaml`).
 /// * **`package:` URIs** (e.g. `Uri.parse('package:my_pkg/test_helpers.dart')`):
 ///   Resolved using the package configuration.
-/// * **Root-relative URIs** (paths beginning with `/`, e.g. `Uri.parse('/test/setup.dart')`):
-///   Interpreted relative to the root of the package (the directory containing `pubspec.yaml`).
-/// * **Relative URIs** (paths without a scheme and without a leading `/`, e.g. `Uri.parse('setup.dart')` or `Uri.parse('../setup.dart')`):
+/// * **Relative URIs** (paths without a scheme and without a leading `/`, e.g. `Uri(path: 'setup.dart')` or `Uri(path: '../setup.dart')`):
 ///   Interpreted relative to the directory containing the test suite file being executed.
 ///   Note: When calling [globalSetup] from a shared helper library imported by tests in different directories,
 ///   prefer root-relative (`/test/...`) or `package:` URIs so the path resolves consistently regardless of which
@@ -41,6 +50,12 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// If execution fails, throws an exception containing the string representation
 /// and stack trace of the error thrown by the setup script.
 Future<Object?> globalSetup(Uri uri) async {
+  if (Invoker.current == null && globalSetupStandaloneFallback == null) {
+    throw StateError(
+      'globalSetup() must be called from within a test or setUp/setUpAll callback.',
+    );
+  }
+
   final url = uri.toString();
 
   var channel = Zone.current[#test.runner.test_channel] as MultiChannel?;

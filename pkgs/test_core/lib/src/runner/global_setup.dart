@@ -30,13 +30,26 @@ final class _ActiveSetup {
 
 /// Manages the lifecycle, caching, and execution of global setup hooks.
 final class GlobalSetupManager {
-  static GlobalSetupManager? current;
+  static final _currentKey = #test.global_setup_manager;
+
+  static GlobalSetupManager? _lastCreated;
+
+  /// The global setup manager for the current zone, or the most recently
+  /// created manager as a fallback.
+  static GlobalSetupManager? get current =>
+      Zone.current[_currentKey] as GlobalSetupManager? ?? _lastCreated;
 
   final _setups = <String, Future<Object?>>{};
   final _activeSetups = <_ActiveSetup>[];
   final _closeMemo = AsyncMemoizer<void>();
 
-  GlobalSetupManager();
+  GlobalSetupManager() {
+    _lastCreated = this;
+  }
+
+  /// Runs [body] in a zone with this manager set as [GlobalSetupManager.current].
+  T asCurrent<T>(T Function() body) =>
+      runZoned(body, zoneValues: {_currentKey: this});
 
   StreamChannel<Object?> get(String rawUrl, Suite suite) {
     return StreamChannelCompleter.fromFuture(() async {

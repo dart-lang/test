@@ -102,8 +102,7 @@ void main() {
     await d.dir('test', [
       d.file('server.dart', '''
         import 'dart:io';
-        import 'package:test/scaffolding.dart';
-        import 'package:test/test.dart';
+        import 'package:test/global.dart';
 
         Future<String> setUp() async {
           File('server_started.txt').writeAsStringSync('yes');
@@ -305,8 +304,7 @@ void main() {
       await d.dir('test', [
         d.file('lifo.dart', '''
         import 'dart:io';
-        import 'package:test/scaffolding.dart';
-        import 'package:test/test.dart';
+        import 'package:test/global.dart';
 
         String setUp() {
           addGlobalTearDown(() async {
@@ -348,8 +346,7 @@ void main() {
       await d.dir('test', [
         d.file('setup_a.dart', '''
         import 'dart:io';
-        import 'package:test/scaffolding.dart';
-        import 'package:test/test.dart';
+        import 'package:test/global.dart';
 
         String setUp() {
           File('started_a.txt').writeAsStringSync('yes');
@@ -361,8 +358,7 @@ void main() {
       '''),
         d.file('setup_b.dart', '''
         import 'dart:io';
-        import 'package:test/scaffolding.dart';
-        import 'package:test/test.dart';
+        import 'package:test/global.dart';
 
         String setUp() {
           File('started_b.txt').writeAsStringSync('yes');
@@ -401,8 +397,7 @@ void main() {
   test('fails the test run if a global teardown callback throws', () async {
     await d.dir('test', [
       d.file('failing_teardown.dart', '''
-        import 'package:test/scaffolding.dart';
-        import 'package:test/test.dart';
+        import 'package:test/global.dart';
 
         String setUp() {
           addGlobalTearDown(() async {
@@ -485,7 +480,7 @@ void main() {
     () async {
       await d.dir('test', [
         d.file('test_test.dart', '''
-        import 'package:test/scaffolding.dart';
+        import 'package:test/global.dart';
         import 'package:test/test.dart';
 
         void main() {
@@ -511,8 +506,7 @@ void main() {
       await d.dir('test', [
         d.file('setup.dart', '''
         import 'dart:io';
-        import 'package:test/scaffolding.dart';
-        import 'package:test/test.dart';
+        import 'package:test/global.dart';
 
         String setUp() {
           addGlobalTearDown(() async {
@@ -539,6 +533,71 @@ void main() {
       await test.shouldExit(0);
 
       expect(File('${d.sandbox}/direct_stopped.txt').existsSync(), isTrue);
+    },
+  );
+
+  test(
+    'fails the test if global setup returns a non-JSON-encodable value',
+    () async {
+      await d.dir('test', [
+        d.file('not_json.dart', '''
+        class CustomValue {
+          final int value = 123;
+        }
+
+        CustomValue setUp() => CustomValue();
+      '''),
+        d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
+
+        void main() {
+          test("needs not_json setup", () async {
+            await globalSetup(Uri(path: '/test/not_json.dart'));
+          });
+        }
+      '''),
+      ]).create();
+
+      var test = await runTest(['test/test_test.dart']);
+      expect(test.stdout, emitsThrough(contains('not_json.dart')));
+      expect(
+        test.stdout,
+        emitsThrough(contains('returned a value that is not JSON-encodable')),
+      );
+      expect(test.stdout, emitsThrough(contains('-1: Some tests failed.')));
+      await test.shouldExit(1);
+    },
+  );
+
+  test(
+    'fails if globalSetup is called directly in main() outside of a test',
+    () async {
+      await d.dir('test', [
+        d.file('setup.dart', '''
+        Map<String, Object?> setUp() => {'status': 'ok'};
+      '''),
+        d.file('main_call_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
+
+        void main() async {
+          await globalSetup(Uri(path: '/test/setup.dart'));
+          test("should not run", () {});
+        }
+      '''),
+      ]).create();
+
+      var test = await runTest(['test/main_call_test.dart']);
+      expect(
+        test.stdout,
+        emitsThrough(
+          contains(
+            'globalSetup() must be called from within a test or setUp/setUpAll callback',
+          ),
+        ),
+      );
+      await test.shouldExit(1);
     },
   );
 }
