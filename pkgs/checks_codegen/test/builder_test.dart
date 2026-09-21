@@ -130,7 +130,7 @@ abstract class Foo {
 ''',
       }, readerWriter: readerWriter);
       check(result.errors).any(
-        (e) => e.contains(
+        .it()..contains(
           'must annotate an import or export of some_test.checks.dart',
         ),
       );
@@ -158,7 +158,7 @@ abstract class Foo {
 ''',
         }, readerWriter: readerWriter);
         check(result.errors).any(
-          (e) => e.contains(
+          .it()..contains(
             'must annotate an import or export of some_test.checks.dart',
           ),
         );
@@ -201,8 +201,8 @@ abstract class Foo {
               "v.intField, 'intField');",
           '}',
         ])
-        ..not((s) => s.contains('functionField'))
-        ..not((s) => s.contains('method'));
+        ..not(.it()..contains('functionField'))
+        ..not(.it()..contains('method'));
     });
   });
 }

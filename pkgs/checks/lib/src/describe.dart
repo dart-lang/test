@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 
-import 'checks.dart' show Condition, describe;
+import 'checks.dart' show Condition;
 
 /// Returns a pretty-printed representation of [object].
 ///
@@ -77,8 +77,12 @@ Iterable<String> _prettyPrint(
         .map((line) => line.replaceAll("'", r"\'"))
         .toList();
     return prefixFirst("'", postfixLast("'", escaped));
-  } else if (object is Condition<Never>) {
-    return ['<A value that:', ...postfixLast('>', describe(object))];
+  } else if (object is Condition) {
+    final description = object.describe();
+    if (description is Iterable<String>) {
+      return ['<A value that:', ...postfixLast('>', description)];
+    }
+    return ['<A value that satisfies an async condition'];
   } else {
     final value = switch (object.toString()) {
       '' => const ['empty toString()'],

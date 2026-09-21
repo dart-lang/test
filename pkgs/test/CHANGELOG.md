@@ -1,4 +1,8 @@
-## 1.32.0-wip
+## 1.33.0-wip
+
+* Replace the Safari launch mechanism to use `safaridriver`.
+
+## 1.32.0
 
 * Support `globalSetup` and `addGlobalTearDown` in `package:test` /
   `package:test_api` to execute global setup scripts once on the host runner
@@ -32,6 +36,7 @@
   platforms used to drop the variable.
 * Fix race conditions in Chrome coverage collection where tests could finish
   before DevTools connection and coverage profiling were initialized.
+* Fix deadlock that may occur running tests with the `exe` compiler.
 
 ## 1.31.2
 
@@ -48,6 +53,7 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
+* Add flag `--shard-by-suite` to control sharding strategy.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`

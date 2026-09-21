@@ -28,7 +28,7 @@ void main() {
             ],
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows collections inside sets', () {
@@ -41,7 +41,7 @@ void main() {
             {'a': 1},
           },
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows collections as Map keys', () {
@@ -58,7 +58,7 @@ void main() {
             },
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of elements in lists', () {
@@ -66,15 +66,16 @@ void main() {
         deepCollectionEquals(
           ['a', 'b'],
           [
-            (Subject<dynamic> it) => it.isA<String>().which(
-              (it) => it
-                ..startsWith('a')
-                ..length.isLessThan(2),
-            ),
-            (Subject<dynamic> it) => it.isA<String>().startsWith('b'),
+            Condition.it<dynamic>()
+              ..isA<String>().which(
+                Condition.it()
+                  ..startsWith('a')
+                  ..length.isLessThan(2),
+              ),
+            Condition.it<dynamic>()..isA<String>().startsWith('b'),
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of values in maps', () {
@@ -84,28 +85,28 @@ void main() {
             {'a': 'b'},
           ],
           [
-            {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('b')},
+            {'a': Condition.it<dynamic>()..isA<String>().startsWith('b')},
           ],
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of elements in sets', () {
       check(
         deepCollectionEquals(
           {'b', 'a'},
-          {'a', (Subject<dynamic> it) => it.isA<String>().startsWith('b')},
+          {'a', Condition.it<dynamic>()..isA<String>().startsWith('b')},
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('allows conditions in place of keys in maps', () {
       check(
         deepCollectionEquals(
           {'a': 'b'},
-          {(Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'b'},
+          {Condition.it<dynamic>()..isA<String>().startsWith('a'): 'b'},
         ),
-      ).isNull();
+      ).isNull;
     });
 
     test('reports non-Set elements', () {
@@ -145,7 +146,7 @@ void main() {
       check(
         deepCollectionEquals(
           [0],
-          [(Subject<dynamic> it) => it.isA<int>().isGreaterThan(0)],
+          [Condition.it<dynamic>()..isA<int>().isGreaterThan(0)],
         ),
       ).isNotNull().deepEquals([
         'has an element at [<0>] that:',
@@ -158,7 +159,7 @@ void main() {
       check(
         deepCollectionEquals(
           {'a': 'b'},
-          {'a': (Subject<dynamic> it) => it.isA<String>().startsWith('a')},
+          {'a': Condition.it<dynamic>()..isA<String>().startsWith('a')},
         ),
       ).isNotNull().deepEquals([
         "has an element at ['a'] that:",
@@ -171,7 +172,7 @@ void main() {
       check(
         deepCollectionEquals(
           {'b': 'a'},
-          {(Subject<dynamic> it) => it.isA<String>().startsWith('a'): 'a'},
+          {Condition.it<dynamic>()..isA<String>().startsWith('a'): 'a'},
         ),
       ).isNotNull().deepEquals([
         'has no entry to match <A value that:',
