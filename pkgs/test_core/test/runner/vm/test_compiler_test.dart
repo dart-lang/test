@@ -74,12 +74,12 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await pumpEventQueue();
+      final compileCompleter = await fakeClient.compileCalls.first;
 
       final outputDill = p.join(d.sandbox, 'output.dill');
       File(outputDill).createSync();
 
-      fakeClient.completeCompile(
+      compileCompleter.complete(
         FakeCompileResult(
           dillOutput: outputDill,
           errorCount: 0,
@@ -106,12 +106,12 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await pumpEventQueue();
+      final compileCompleter = await fakeClient.compileCalls.first;
 
-      expect(fakeClient.isCompileCalled, isTrue);
       expect(fakeClient.isKilled, isFalse);
 
       final disposeFuture = compiler.dispose();
+      compileCompleter.completeError(StateError('killed'));
 
       await expectLater(disposeFuture, completes);
       expect(fakeClient.isKilled, isTrue);
@@ -145,10 +145,9 @@ class FakeCompileResult extends Fake implements CompileResult {
 }
 
 class FakeFrontendServerClient extends Fake implements FrontendServerClient {
-  var _compileCompleter = Completer<CompileResult>();
+  final _compileCalls = StreamController<Completer<CompileResult>>.broadcast();
+
   bool isKilled = false;
-  bool isCompileCalled = false;
-  int compileCallCount = 0;
 
   static (FakeFrontendServerClient, FrontendClientFactory) get create {
     final fakeClient = FakeFrontendServerClient();
@@ -167,30 +166,19 @@ class FakeFrontendServerClient extends Fake implements FrontendServerClient {
     );
   }
 
+  /// Completers controlling the results of calls to [compile].
+  Stream<Completer<CompileResult>> get compileCalls => _compileCalls.stream;
+
   @override
   Future<CompileResult> compile([List<Uri>? sources]) {
-    isCompileCalled = true;
-    compileCallCount++;
-    if (_compileCompleter.isCompleted) {
-      _compileCompleter = Completer<CompileResult>();
-    }
-    return _compileCompleter.future;
-  }
-
-  void completeCompile(CompileResult result) {
-    if (!_compileCompleter.isCompleted) {
-      _compileCompleter.complete(result);
-    }
+    final completer = Completer<CompileResult>();
+    _compileCalls.add(completer);
+    return completer.future;
   }
 
   @override
-  bool kill({ProcessSignal processSignal = ProcessSignal.sigterm}) {
-    isKilled = true;
-    if (!_compileCompleter.isCompleted) {
-      _compileCompleter.completeError(StateError('Killed'));
-    }
-    return true;
-  }
+  bool kill({ProcessSignal processSignal = ProcessSignal.sigterm}) =>
+      isKilled = true;
 
   @override
   void accept() {}
