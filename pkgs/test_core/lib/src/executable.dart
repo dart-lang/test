@@ -139,7 +139,8 @@ Future<void> main(List<String> args) async {
   Runner? runner;
 
   var receivedSignal = false;
-  final signalSubscription = signals.listen((signal) async {
+  late final StreamSubscription<void> signalSubscription;
+  signalSubscription = signals.listen((signal) async {
     if (receivedSignal) {
       exit(_exitCodeForSignal(signal));
     } else {
@@ -147,6 +148,7 @@ Future<void> main(List<String> args) async {
       receivedSignal = true;
     }
     await runner?.close();
+    await signalSubscription.cancel();
   });
 
   try {
