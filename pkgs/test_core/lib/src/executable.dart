@@ -21,9 +21,6 @@ import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-StreamSubscription? signalSubscription;
-bool isShutdown = false;
-
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
@@ -36,37 +33,6 @@ final String _globalConfigPath = () {
 }();
 
 Future<void> main(List<String> args) async {
-  await _execute(args);
-  completeShutdown();
-}
-
-// ignore: unreachable_from_main
-Future<void> runTests(List<String> args) async {
-  await _execute(args);
-}
-
-void completeShutdown() {
-  // Always stop listening for signals, even if the shutdown was already
-  // started by a signal, so that the process can exit.
-  if (signalSubscription != null) {
-    signalSubscription!.cancel();
-    signalSubscription = null;
-  }
-  _beginShutdown();
-}
-
-/// Records that the runner is shutting down and stops reading from stdin.
-///
-/// Unlike [completeShutdown] this keeps listening for signals, so that a
-/// second signal received while shutting down can terminate the run
-/// immediately.
-void _beginShutdown() {
-  if (isShutdown) return;
-  isShutdown = true;
-  cancelStdinLines();
-}
-
-Future<void> _execute(List<String> args) async {
   /// A merged stream of all signals that tell the test runner to shut down
   /// gracefully.
   ///
@@ -172,15 +138,18 @@ Future<void> _execute(List<String> args) async {
 
   Runner? runner;
 
-  signalSubscription ??= signals.listen((signal) async {
-    if (isShutdown) {
+  var receivedSignal = false;
+  final signalSubscription = signals.listen((signal) async {
+    if (receivedSignal) {
       // A second signal means the user wants to terminate immediately, so the
       // graceful shutdown which deletes the temporary directory won't get a
       // chance to finish. Delete it here instead, it can be very large.
       deleteRunnerTempDirectorySync();
       exit(_exitCodeForSignal(signal));
+    } else {
+      cancelStdinLines();
+      receivedSignal = true;
     }
-    _beginShutdown();
     await runner?.close();
   });
 
@@ -210,6 +179,8 @@ Future<void> _execute(List<String> args) async {
     exitCode = exit_codes.software;
   } finally {
     await runner?.close();
+    signalSubscription.cancel();
+    cancelStdinLines();
   }
 
   return;
