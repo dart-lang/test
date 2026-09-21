@@ -32,20 +32,15 @@ final class _ActiveSetup {
 final class GlobalSetupManager {
   static final _currentKey = #test.global_setup_manager;
 
-  static GlobalSetupManager? _lastCreated;
-
-  /// The global setup manager for the current zone, or the most recently
-  /// created manager as a fallback.
+  /// The current global setup manager set using [asCurrent].
   static GlobalSetupManager? get current =>
-      Zone.current[_currentKey] as GlobalSetupManager? ?? _lastCreated;
+      Zone.current[_currentKey] as GlobalSetupManager?;
 
   final _setups = <String, Future<Object?>>{};
   final _activeSetups = <_ActiveSetup>[];
   final _closeMemo = AsyncMemoizer<void>();
 
-  GlobalSetupManager() {
-    _lastCreated = this;
-  }
+  GlobalSetupManager();
 
   /// Runs [body] in a zone with this manager set as [GlobalSetupManager.current].
   T asCurrent<T>(T Function() body) =>
