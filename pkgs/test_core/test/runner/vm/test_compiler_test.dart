@@ -110,10 +110,10 @@ void main() {
 
       expect(fakeClient.isKilled, isFalse);
 
-      final disposeResult = compiler.dispose();
+      final disposeFuture = compiler.dispose();
       compileCompleter.completeError(StateError('killed'));
 
-      await expectLater(disposeResult, completes);
+      await expectLater(disposeFuture, completes);
       expect(fakeClient.isKilled, isTrue);
 
       final response = await compileFuture;
