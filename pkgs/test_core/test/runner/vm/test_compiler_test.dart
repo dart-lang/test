@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -75,12 +74,12 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await fakeClient.compileCalled();
+      final compileCompleter = await fakeClient.compileCalls.first;
 
       final outputDill = p.join(d.sandbox, 'output.dill');
       File(outputDill).createSync();
 
-      fakeClient.completeCompile(
+      compileCompleter.complete(
         FakeCompileResult(
           dillOutput: outputDill,
           errorCount: 0,
@@ -107,14 +106,14 @@ void main() {
         Metadata(languageVersionComment: '// @dart=3.0'),
       );
 
-      await fakeClient.compileCalled();
+      final compileCompleter = await fakeClient.compileCalls.first;
 
-      expect(fakeClient.isCompileCalled, isTrue);
       expect(fakeClient.isKilled, isFalse);
 
-      final disposeFuture = compiler.dispose();
+      final disposeResult = compiler.dispose();
+      compileCompleter.completeError(StateError('killed'));
 
-      await expectLater(disposeFuture, completes);
+      await expectLater(disposeResult, completes);
       expect(fakeClient.isKilled, isTrue);
 
       final response = await compileFuture;
@@ -146,17 +145,9 @@ class FakeCompileResult extends Fake implements CompileResult {
 }
 
 class FakeFrontendServerClient extends Fake implements FrontendServerClient {
-  /// Compile calls which have not been given a result yet.
-  final _pendingCompiles = Queue<Completer<CompileResult>>();
-
-  /// Results which were provided before the matching compile call.
-  final _queuedResults = Queue<CompileResult>();
-
-  final _compileCalls = StreamController<void>.broadcast();
+  final _compileCalls = StreamController<Completer<CompileResult>>.broadcast();
 
   bool isKilled = false;
-  bool isCompileCalled = false;
-  int compileCallCount = 0;
 
   static (FakeFrontendServerClient, FrontendClientFactory) get create {
     final fakeClient = FakeFrontendServerClient();
@@ -175,43 +166,19 @@ class FakeFrontendServerClient extends Fake implements FrontendServerClient {
     );
   }
 
-  /// Completes once [compile] has been called at least [count] times.
-  Future<void> compileCalled([int count = 1]) async {
-    while (compileCallCount < count) {
-      await _compileCalls.stream.first;
-    }
-  }
+  /// Completers controlling the results of calls to [compile].
+  Stream<Completer<CompileResult>> get compileCalls => _compileCalls.stream;
 
   @override
   Future<CompileResult> compile([List<Uri>? sources]) {
-    isCompileCalled = true;
-    compileCallCount++;
-    _compileCalls.add(null);
-    if (_queuedResults.isNotEmpty) {
-      return Future.value(_queuedResults.removeFirst());
-    }
     final completer = Completer<CompileResult>();
-    _pendingCompiles.add(completer);
+    _compileCalls.add(completer);
     return completer.future;
   }
 
-  /// Provides [result] for the next compile, whether or not it has started.
-  void completeCompile(CompileResult result) {
-    if (_pendingCompiles.isEmpty) {
-      _queuedResults.add(result);
-    } else {
-      _pendingCompiles.removeFirst().complete(result);
-    }
-  }
-
   @override
-  bool kill({ProcessSignal processSignal = ProcessSignal.sigterm}) {
-    isKilled = true;
-    while (_pendingCompiles.isNotEmpty) {
-      _pendingCompiles.removeFirst().completeError(StateError('Killed'));
-    }
-    return true;
-  }
+  bool kill({ProcessSignal processSignal = ProcessSignal.sigterm}) =>
+      isKilled = true;
 
   @override
   void accept() {}
