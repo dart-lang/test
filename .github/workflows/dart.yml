@@ -1,4 +1,4 @@
-# Created with package:mono_repo v6.8.0
+# Created with package:mono_repo v6.8.1
 name: Dart CI
 on:
   push:
@@ -75,7 +75,7 @@ jobs:
         with:
           persist-credentials: false
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.8.0
+        run: dart pub global activate mono_repo 6.8.1
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
