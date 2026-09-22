@@ -9,7 +9,6 @@ on:
       - .github/workflows/dart.yml
       - mono_repo.yaml
       - analysis_options.yaml
-      - pubspec.lock
       - pubspec.yaml
       - "**/mono_pkg.yaml"
       - "integration_tests/cross_compiler_hang/**"
@@ -28,7 +27,6 @@ on:
       - .github/workflows/dart.yml
       - mono_repo.yaml
       - analysis_options.yaml
-      - pubspec.lock
       - pubspec.yaml
       - "**/mono_pkg.yaml"
       - "integration_tests/cross_compiler_hang/**"
