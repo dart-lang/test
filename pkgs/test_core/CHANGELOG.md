@@ -4,6 +4,8 @@
   loading.
 * Fix a `LiveTest.run() may not be called for a closed test` error when the
   runner is shut down at the moment a test suite is about to start loading.
+* Bundle skipped tests into a single group at the end of the GitHub reporter
+  output instead of interrupting passing test groups.
 
 ## 0.6.20
 
