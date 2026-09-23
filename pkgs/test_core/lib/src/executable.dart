@@ -186,8 +186,7 @@ Future<void> main(List<String> args) async {
 
 /// The exit code to use when terminating in response to [signal].
 ///
-/// This matches the code a shell reports for a process killed by the signal,
-/// which is what used to happen before the signal was handled here.
+/// This matches the code a shell reports for a process killed by the signal.
 int _exitCodeForSignal(ProcessSignal signal) => switch (signal) {
   .sigint => 130,
   _ => 143,
