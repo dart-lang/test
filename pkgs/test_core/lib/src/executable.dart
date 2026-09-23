@@ -139,7 +139,8 @@ Future<void> main(List<String> args) async {
   Runner? runner;
 
   var receivedSignal = false;
-  final signalSubscription = signals.listen((signal) async {
+  late final StreamSubscription<void> signalSubscription;
+  signalSubscription = signals.listen((signal) async {
     if (receivedSignal) {
       // A second signal means the user wants to terminate immediately, so the
       // graceful shutdown which deletes the temporary directory won't get a
@@ -151,6 +152,7 @@ Future<void> main(List<String> args) async {
       receivedSignal = true;
     }
     await runner?.close();
+    await signalSubscription.cancel();
   });
 
   try {
@@ -190,8 +192,10 @@ Future<void> main(List<String> args) async {
 ///
 /// This matches the code a shell reports for a process killed by the signal,
 /// which is what used to happen before the signal was handled here.
-int _exitCodeForSignal(ProcessSignal signal) =>
-    128 + (signal == ProcessSignal.sigint ? 2 : 15);
+int _exitCodeForSignal(ProcessSignal signal) => switch (signal) {
+  .sigint => 130,
+  _ => 143,
+};
 
 /// Print usage information for this command.
 ///

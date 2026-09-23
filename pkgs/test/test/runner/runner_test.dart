@@ -832,6 +832,56 @@ void main() {
     await test.shouldExit();
   });
 
+  group(
+    'runs tests successfully more than once',
+    () {
+      test('defined in a single file', () async {
+        await d.file('test.dart', _success).create();
+        await d.file('runner.dart', '''
+import 'package:test_core/src/executable.dart' as test;
+
+void main(List<String> args) async {
+  await test.main(args);
+  await test.main(args);
+}''').create();
+        var test = await runDart([
+          'runner.dart',
+          '--no-color',
+          '--reporter',
+          'compact',
+          '--',
+          'test.dart',
+        ], description: 'dart runner.dart -- test.dart');
+        expect(
+          test.stdout,
+          emitsThrough(
+            containsInOrder([
+              '+0: loading test.dart',
+              '+0: success',
+              '+1: success',
+              'All tests passed!',
+            ]),
+          ),
+        );
+        expect(
+          test.stdout,
+          emitsThrough(
+            containsInOrder([
+              '+0: loading test.dart',
+              '+0: success',
+              '+1: success',
+              '+1: All tests passed!',
+            ]),
+          ),
+        );
+        await test.shouldExit(0);
+      });
+    },
+    onPlatform: const {
+      'windows': Skip('https://github.com/dart-lang/test/issues/1615'),
+    },
+  );
+
   group('language experiments', () {
     group('are inherited from the executable arguments', () {
       setUp(() async {
