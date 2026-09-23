@@ -144,7 +144,7 @@ Directory? _runnerTempDirectory;
 /// test runner can be removed by a single [deleteRunnerTempDirectory] call.
 ///
 /// The returned path has any symbolic links resolved.
-Directory createTempDirectory([String prefix = 'tmp.']) =>
+Directory createTempDirectory(String prefix) =>
     (_runnerTempDirectory ??= Directory(
       Directory(
         _tempDir,
@@ -154,8 +154,9 @@ Directory createTempDirectory([String prefix = 'tmp.']) =>
 /// Deletes the root directory containing every directory created by
 /// [createTempDirectory].
 ///
-/// Failures to delete are ignored; the directories are in the system temp
-/// directory and will eventually be cleaned up by the OS.
+/// Deleting is retried a few times before giving up, and a failure to delete is
+/// ignored; the directories are in the system temp directory and will
+/// eventually be cleaned up by the OS.
 Future<void> deleteRunnerTempDirectory() async {
   var directory = _runnerTempDirectory;
   _runnerTempDirectory = null;
@@ -183,7 +184,7 @@ void deleteRunnerTempDirectorySync() {
   }
 }
 
-/// Creates a temporary directory and passes its path to [fn].
+/// Creates a temporary directory with [prefix] and passes its path to [fn].
 ///
 /// Once the [Future] returned by [fn] completes, the temporary directory and
 /// all its contents are deleted. [fn] can also return `null`, in which case
@@ -191,9 +192,9 @@ void deleteRunnerTempDirectorySync() {
 ///
 /// Returns a future that completes to the value that the future returned from
 /// [fn] completes to.
-Future withTempDir(Future Function(String) fn) {
+Future withTempDir(String prefix, Future Function(String) fn) {
   return Future.sync(() {
-    var tempDir = createTempDirectory();
+    var tempDir = createTempDirectory(prefix);
     return Future.sync(
       () => fn(tempDir.path),
     ).whenComplete(() => tempDir.deleteWithRetry());
