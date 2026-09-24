@@ -1,11 +1,45 @@
-# Created with package:mono_repo v6.7.2
+# Created with package:mono_repo v6.8.2
 name: Dart CI
 on:
   push:
     branches:
       - main
       - master
+    paths:
+      - .github/workflows/dart.yml
+      - mono_repo.yaml
+      - analysis_options.yaml
+      - pubspec.yaml
+      - "**/mono_pkg.yaml"
+      - "integration_tests/cross_compiler_hang/**"
+      - "integration_tests/regression/**"
+      - "integration_tests/spawn_hybrid/**"
+      - "integration_tests/wasm/**"
+      - "pkgs/checks/**"
+      - "pkgs/checks_codegen/**"
+      - "pkgs/matcher/**"
+      - "pkgs/test/**"
+      - "pkgs/test_api/**"
+      - "pkgs/test_core/**"
+      - "!**/*.md"
   pull_request:
+    paths:
+      - .github/workflows/dart.yml
+      - mono_repo.yaml
+      - analysis_options.yaml
+      - pubspec.yaml
+      - "**/mono_pkg.yaml"
+      - "integration_tests/cross_compiler_hang/**"
+      - "integration_tests/regression/**"
+      - "integration_tests/spawn_hybrid/**"
+      - "integration_tests/wasm/**"
+      - "pkgs/checks/**"
+      - "pkgs/checks_codegen/**"
+      - "pkgs/matcher/**"
+      - "pkgs/test/**"
+      - "pkgs/test_api/**"
+      - "pkgs/test_core/**"
+      - "!**/*.md"
   schedule:
     - cron: "0 0 * * 0"
 defaults:
@@ -26,7 +60,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:stable"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted
             os:ubuntu-latest
       - name: Setup Dart SDK
@@ -39,7 +73,7 @@ jobs:
         with:
           persist-credentials: false
       - name: mono_repo self validate
-        run: dart pub global activate mono_repo 6.7.2
+        run: dart pub global activate mono_repo 6.8.2
       - name: mono_repo self validate
         run: dart pub global run mono_repo generate --validate
   job_002:
@@ -51,7 +85,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression-pkgs/checks-pkgs/checks_codegen-pkgs/matcher-pkgs/test_core;commands:analyze_1"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression-pkgs/checks-pkgs/checks_codegen-pkgs/matcher-pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -119,7 +153,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm;commands:format-analyze_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -155,7 +189,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/test-pkgs/test_api-pkgs/test_core;commands:format-analyze_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression-integration_tests/spawn_hybrid-integration_tests/wasm-pkgs/checks-pkgs/matcher-pkgs/test-pkgs/test_api-pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -282,7 +316,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen;commands:format-command_04-analyze_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -374,7 +408,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/regression
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -414,7 +448,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -454,7 +488,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/matcher;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/matcher
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -494,7 +528,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_core;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -534,7 +568,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/spawn_hybrid;commands:test_1"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -574,7 +608,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm;commands:command_01"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -614,7 +648,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks_codegen;commands:command_04-test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/checks_codegen
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -658,7 +692,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_05"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -698,7 +732,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_06"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -738,7 +772,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_07"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -778,7 +812,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_08"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -818,7 +852,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_09"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -858,7 +892,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_api;commands:command_15"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test_api
             os:ubuntu-latest;pub-cache-hosted;sdk:3.11.0
             os:ubuntu-latest;pub-cache-hosted
@@ -898,7 +932,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/regression
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -938,7 +972,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -978,7 +1012,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/matcher;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/matcher
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1018,7 +1052,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_core;commands:test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_core
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1058,7 +1092,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid;commands:test_1"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/spawn_hybrid
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1098,7 +1132,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm;commands:command_01"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:integration_tests/wasm
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1138,7 +1172,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen;commands:command_04-test_0"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/checks_codegen
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1182,7 +1216,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_05"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1222,7 +1256,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_06"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1262,7 +1296,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_07"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1302,7 +1336,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_08"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1342,7 +1376,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test;commands:command_09"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1382,7 +1416,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api;commands:command_15"
-          restore-keys: |
+          restore-keys: |-
             os:ubuntu-latest;pub-cache-hosted;sdk:dev;packages:pkgs/test_api
             os:ubuntu-latest;pub-cache-hosted;sdk:dev
             os:ubuntu-latest;pub-cache-hosted
@@ -1422,7 +1456,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_10"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1462,7 +1496,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_11"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1502,7 +1536,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_12"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1542,7 +1576,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_13"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
@@ -1582,7 +1616,7 @@ jobs:
         with:
           path: "~/.pub-cache/hosted"
           key: "os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test;commands:command_14"
-          restore-keys: |
+          restore-keys: |-
             os:macos-latest;pub-cache-hosted;sdk:3.11.0;packages:pkgs/test
             os:macos-latest;pub-cache-hosted;sdk:3.11.0
             os:macos-latest;pub-cache-hosted
