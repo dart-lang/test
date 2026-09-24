@@ -37,7 +37,7 @@ class WasmCompilerPool extends CompilerPool {
     String path,
     SuiteConfiguration suiteConfig,
   ) {
-    return withTempDir((dir) async {
+    return withTempDir('dart2wasm.', (dir) async {
       final wrapperPath = p.join(dir, 'main.dart');
       File(wrapperPath).writeAsStringSync(code);
       final outWasmPath = '$path.wasm';

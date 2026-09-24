@@ -4,6 +4,11 @@
   loading.
 * Fix a `LiveTest.run() may not be called for a closed test` error when the
   runner is shut down at the moment a test suite is about to start loading.
+* Create all temporary directories used by the test runner under a single
+  `dart_test.` directory in the system temp directory, and delete that directory
+  when the run finishes.
+* Delete the test runner's temporary directory synchronously when the run is
+  interrupted by a second signal (e.g. pressing Ctrl-C twice).
 
 ## 0.6.20
 

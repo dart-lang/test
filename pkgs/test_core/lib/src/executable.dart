@@ -142,6 +142,10 @@ Future<void> main(List<String> args) async {
   late final StreamSubscription<void> signalSubscription;
   signalSubscription = signals.listen((signal) async {
     if (receivedSignal) {
+      // A second signal means the user wants to terminate immediately, so the
+      // graceful shutdown which deletes the temporary directory won't get a
+      // chance to finish. Delete it here instead, it can be very large.
+      deleteRunnerTempDirectorySync();
       exit(_exitCodeForSignal(signal));
     } else {
       cancelStdinLines();
