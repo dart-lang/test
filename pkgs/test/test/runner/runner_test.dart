@@ -833,7 +833,7 @@ void main() {
   });
 
   group(
-    'runs tests successfully more than once when calling runTests',
+    'runs tests successfully more than once',
     () {
       test('defined in a single file', () async {
         await d.file('test.dart', _success).create();
@@ -841,9 +841,8 @@ void main() {
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
-  await test.runTests(args);
-  await test.runTests(args);
-  test.completeShutdown();
+  await test.main(args);
+  await test.main(args);
 }''').create();
         var test = await runDart([
           'runner.dart',

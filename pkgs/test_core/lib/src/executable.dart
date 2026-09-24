@@ -21,9 +21,6 @@ import 'util/errors.dart';
 import 'util/exit_codes.dart' as exit_codes;
 import 'util/io.dart';
 
-StreamSubscription? signalSubscription;
-bool isShutdown = false;
-
 /// Returns the path to the global test configuration file.
 final String _globalConfigPath = () {
   if (Platform.environment.containsKey('DART_TEST_CONFIG')) {
@@ -36,26 +33,6 @@ final String _globalConfigPath = () {
 }();
 
 Future<void> main(List<String> args) async {
-  await _execute(args);
-  completeShutdown();
-}
-
-// ignore: unreachable_from_main
-Future<void> runTests(List<String> args) async {
-  await _execute(args);
-}
-
-void completeShutdown() {
-  if (isShutdown) return;
-  if (signalSubscription != null) {
-    signalSubscription!.cancel();
-    signalSubscription = null;
-  }
-  isShutdown = true;
-  cancelStdinLines();
-}
-
-Future<void> _execute(List<String> args) async {
   /// A merged stream of all signals that tell the test runner to shut down
   /// gracefully.
   ///
@@ -161,9 +138,17 @@ Future<void> _execute(List<String> args) async {
 
   Runner? runner;
 
-  signalSubscription ??= signals.listen((signal) async {
-    completeShutdown();
+  var receivedSignal = false;
+  late final StreamSubscription<void> signalSubscription;
+  signalSubscription = signals.listen((signal) async {
+    if (receivedSignal) {
+      exit(_exitCodeForSignal(signal));
+    } else {
+      cancelStdinLines();
+      receivedSignal = true;
+    }
     await runner?.close();
+    await signalSubscription.cancel();
   });
 
   try {
@@ -192,10 +177,20 @@ Future<void> _execute(List<String> args) async {
     exitCode = exit_codes.software;
   } finally {
     await runner?.close();
+    signalSubscription.cancel();
+    cancelStdinLines();
   }
 
   return;
 }
+
+/// The exit code to use when terminating in response to [signal].
+///
+/// This matches the code a shell reports for a process killed by the signal.
+int _exitCodeForSignal(ProcessSignal signal) => switch (signal) {
+  .sigint => 130,
+  _ => 143,
+};
 
 /// Print usage information for this command.
 ///
