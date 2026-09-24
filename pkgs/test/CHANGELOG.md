@@ -5,6 +5,11 @@
   loading.
 * Fix a `LiveTest.run() may not be called for a closed test` error when the
   runner is interrupted at the moment a test suite is about to start loading.
+* Create all temporary directories used by the test runner, including browser
+  profiles and compiler output, under a single `dart_test.` directory which is
+  deleted when the run finishes.
+* Delete the temporary directory when the test runner is interrupted with
+  Control-C twice.
 * Delete the kernel file compiled for a test suite once that suite has finished
   running, and delete the snapshot or bundle compiled with the `exe` and `cli`
   compilers once the test process has exited, so that temporary disk usage no

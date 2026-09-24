@@ -42,7 +42,7 @@ class VMPlatform extends PlatformPlugin {
     p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
   );
   final _closeMemo = AsyncMemoizer<void>();
-  final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
+  final _tempDir = createTempDirectory('vm.');
 
   @override
   Future<RunnerSuite?> load(
@@ -62,7 +62,11 @@ class VMPlatform extends PlatformPlugin {
         platform.compiler == Compiler.cli) {
       // Everything compiled for this suite goes in a directory of its own so
       // that it can all be deleted as soon as the test process has exited.
-      var dir = Directory(_tempDir.path).createTempSync('exec_');
+      //
+      // The names are kept short because they are part of the path of a unix
+      // socket, which is limited to 104 bytes on some platforms, and the
+      // temporary directory they are under is already nested.
+      var dir = Directory(_tempDir.path).createTempSync('e');
       String executable;
       List<String> arguments;
       try {
@@ -76,7 +80,7 @@ class VMPlatform extends PlatformPlugin {
         unawaited(_tryDelete(dir));
         rethrow;
       }
-      var socketPath = p.join(dir.path, 'socket.sock');
+      var socketPath = p.join(dir.path, 's.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
