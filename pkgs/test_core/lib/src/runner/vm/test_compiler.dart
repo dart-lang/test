@@ -197,13 +197,14 @@ class _TestCompilerForLanguageVersion {
     // Larger files are preferred, since re-using more packages will reduce the
     // number of files the frontend server needs to load and parse.
     final previousDillToCache = _dillToCache;
+    final previousDillToCacheIsReleased = _dillToCacheIsReleased;
     if (previousDillToCache == null ||
         (previousDillToCache.lengthSync() < kernelReadyToRun.lengthSync())) {
       _dillToCache = kernelReadyToRun;
-      if (previousDillToCache != null && _dillToCacheIsReleased) {
+      _dillToCacheIsReleased = false;
+      if (previousDillToCache != null && previousDillToCacheIsReleased) {
         await _tryDelete(previousDillToCache);
       }
-      _dillToCacheIsReleased = false;
     }
 
     return CompilationResponse(

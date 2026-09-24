@@ -125,9 +125,11 @@ class VMPlatform extends PlatformPlugin {
         rethrow;
       }
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
-      // Kill the isolate before running any callback registered while
-      // compiling; compilation artifacts can't be cleaned up while the isolate
-      // is still using them.
+      // Request that the isolate is killed before running any callback
+      // registered while compiling, so it is less likely to still be using the
+      // compilation artifacts when they are deleted. Killing is asynchronous,
+      // so this is best effort; anything that can't be deleted yet is left for
+      // the temp directory cleanup.
       cleanupCallbacks.insert(0, isolate.kill);
     }
     cleanupCallbacks.add(outerChannel.sink.close);
