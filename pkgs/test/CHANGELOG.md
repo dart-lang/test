@@ -10,6 +10,10 @@
   deleted when the run finishes.
 * Delete the temporary directory when the test runner is interrupted with
   Control-C twice.
+* Delete the kernel file compiled for a test suite once that suite has finished
+  running, and delete the snapshot or bundle compiled with the `exe` and `cli`
+  compilers once the test process has exited, instead of retaining every
+  compiled artifact until the end of the run.
 
 ## 1.32.0
 
