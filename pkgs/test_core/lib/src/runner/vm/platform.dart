@@ -62,11 +62,7 @@ class VMPlatform extends PlatformPlugin {
         platform.compiler == Compiler.cli) {
       // Everything compiled for this suite goes in a directory of its own so
       // that it can all be deleted as soon as the test process has exited.
-      //
-      // The names are kept short because they are part of the path of a unix
-      // socket, which is limited to 104 bytes on some platforms, and the
-      // temporary directory they are under is already nested.
-      var dir = Directory(_tempDir.path).createTempSync('e');
+      var dir = createTempDirectory('exec.');
       String executable;
       List<String> arguments;
       try {
@@ -80,7 +76,7 @@ class VMPlatform extends PlatformPlugin {
         unawaited(_tryDelete(dir));
         rethrow;
       }
-      var socketPath = p.join(dir.path, 's.sock');
+      var socketPath = p.join(dir.path, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
@@ -617,13 +613,13 @@ Future<void> _deleteOnExit(Process process, FileSystemEntity entity) async {
 
 /// Deletes [entity], ignoring any failure to do so.
 ///
-/// Anything left behind is deleted along with the temp directory when the
-/// platform is closed.
+/// Anything left behind is deleted along with the runner's temp directory when
+/// the runner is closed.
 Future<void> _tryDelete(FileSystemEntity entity) async {
   try {
     await entity.deleteWithRetry();
   } on FileSystemException {
-    // Ignore, this will be deleted with the temp directory.
+    // Ignore, this will be deleted with the runner's temp directory.
   }
 }
 
