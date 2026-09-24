@@ -65,11 +65,8 @@ class VMPlatform extends PlatformPlugin {
         path,
         suiteConfig.metadata,
       );
-      // These names are kept short because they are part of the path of a unix
-      // socket, which is limited to 104 bytes on some platforms, and the
-      // temporary directory they are under is already nested.
-      var dir = Directory(_tempDir.path).createTempSync('e').path;
-      var socketPath = p.join(dir, 's.sock');
+      var dir = createTempDirectory('exec.').path;
+      var socketPath = p.join(dir, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
