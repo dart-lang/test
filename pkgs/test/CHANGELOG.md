@@ -10,6 +10,8 @@
   deleted when the run finishes.
 * Delete the temporary directory when the test runner is interrupted with
   Control-C twice.
+* Bundle skipped tests into a single group at the end of the GitHub reporter
+  output instead of interrupting passing test groups.
 
 ## 1.32.0
 

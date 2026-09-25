@@ -316,17 +316,13 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''',
         '''
-          ::group::⏭️ Skipped tests
-          ⏭️ skip 1 (skipped)
-          ::endgroup::
           ::group::✅ Passing tests
           ✅ success 1
+          ✅ success 2
           ::endgroup::
           ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           ⏭️ skip 2 (skipped)
-          ::endgroup::
-          ::group::✅ Passing tests
-          ✅ success 2
           ::endgroup::
           🎉 2 tests passed, 2 skipped.''',
       );
@@ -346,9 +342,6 @@ void main() {
           oh no
           test.dart 6:35  main.<fn>
           ::endgroup::
-          ::group::⏭️ Skipped tests
-          ⏭️ skip 1 (skipped)
-          ::endgroup::
           ::group::✅ Passing tests
           ✅ success 1
           ::endgroup::
@@ -356,11 +349,12 @@ void main() {
           oh no
           test.dart 9:35  main.<fn>
           ::endgroup::
-          ::group::⏭️ Skipped tests
-          ⏭️ skip 2 (skipped)
-          ::endgroup::
           ::group::✅ Passing tests
           ✅ success 2
+          ::endgroup::
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ⏭️ skip 2 (skipped)
           ::endgroup::
           ::error::2 tests passed, 2 failed, 2 skipped.''',
       );
