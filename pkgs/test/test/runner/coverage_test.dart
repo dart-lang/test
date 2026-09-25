@@ -160,7 +160,7 @@ $dependencyOverrides
       expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
       expect(hitmap.funcHits, isNull);
       expect(hitmap.branchHits, isNull);
-    });
+    }, tags: 'pub');
 
     test('gathers branch coverage for VM tests', () async {
       await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
@@ -180,7 +180,7 @@ $dependencyOverrides
       expect(hitmap.lineHits, {1: 1, 2: 2, 3: 1, 5: 0});
       expect(hitmap.funcHits, isNull);
       expect(hitmap.branchHits, {1: 1, 2: 1, 4: 0});
-    });
+    }, tags: 'pub');
 
     test('gathers lcov coverage for VM tests', () async {
       await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
@@ -201,7 +201,7 @@ LF:4
 LH:3
 end_of_record
 ''');
-    });
+    }, tags: 'pub');
 
     test('gathers coverage for tests in multiple packages', () async {
       final clientPkgDir = p.join(d.sandbox, 'fake_client');
@@ -236,7 +236,7 @@ LF:4
 LH:3
 end_of_record
 ''');
-    });
+    }, tags: 'pub');
 
     test('gathers coverage for package in a workspace', () async {
       await d.dir(d.sandbox, [
@@ -306,7 +306,7 @@ LF:4
 LH:3
 end_of_record
 ''');
-    });
+    }, tags: 'pub');
 
     test('gathers coverage for code outside of lib in json mode', () async {
       await d.dir(d.sandbox, [
@@ -396,7 +396,7 @@ LH:2
 end_of_record
 '''),
       );
-    });
+    }, tags: 'pub');
 
     test('gathers coverage for Chrome tests', () async {
       await (await runPub(['get'], workingDirectory: pkgDir)).shouldExit(0);
@@ -412,7 +412,7 @@ end_of_record
         workingDirectory: pkgDir,
       );
       await validateCoverage(test, 'test/test.dart.chrome.json');
-    });
+    }, tags: ['chrome', 'pub']);
 
     test(
       'gathers coverage for Chrome tests when JS files contain unicode characters',
@@ -490,6 +490,7 @@ end_of_record
         ]);
         await validateCoverage(test, 'js_with_unicode_test.dart.chrome.json');
       },
+      tags: 'chrome',
     );
   });
 }
