@@ -52,7 +52,7 @@ void main() {
       ],
       args: ['-p', 'vm,chrome'],
     );
-  });
+  }, tags: 'chrome');
 
   test('runs several failing tests and reports when each fails', () {
     return _expectReport(

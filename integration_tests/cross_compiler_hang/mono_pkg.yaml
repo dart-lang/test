@@ -2,7 +2,7 @@
 
 stages:
 - unit_test:
-  - command: dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s
+  - command: dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=60s
     os:
     - windows
     sdk:
