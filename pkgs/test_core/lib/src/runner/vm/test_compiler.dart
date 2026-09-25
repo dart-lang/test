@@ -57,11 +57,7 @@ class TestCompiler {
 
   /// Compiles [mainDart], using a separate compiler per language version of
   /// the tests.
-  Future<CompilationResponse> compile(
-    Uri mainDart,
-    Metadata metadata, {
-    VmTestType testType = VmTestType.isolate,
-  }) async {
+  Future<CompilationResponse> compile(Uri mainDart, Metadata metadata) async {
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     var languageVersionComment =
         metadata.languageVersionComment ??
@@ -74,7 +70,7 @@ class TestCompiler {
         _clientFactory,
       ),
     );
-    return compiler.compile(mainDart, testType: testType);
+    return compiler.compile(mainDart);
   }
 
   Future<void> dispose() => _closeMemo.runOnce(
@@ -112,15 +108,10 @@ class _TestCompilerForLanguageVersion {
           '$dillCachePrefix.'
           '${_dillCacheSuffix(_languageVersionComment, enabledExperiments)}';
 
-  Future<CompilationResponse> compile(
-    Uri mainUri, {
-    VmTestType testType = VmTestType.isolate,
-  }) => _compilePool.withResource(() => _compile(mainUri, testType: testType));
+  Future<CompilationResponse> compile(Uri mainUri) =>
+      _compilePool.withResource(() => _compile(mainUri));
 
-  Future<CompilationResponse> _compile(
-    Uri mainUri, {
-    VmTestType testType = VmTestType.isolate,
-  }) async {
+  Future<CompilationResponse> _compile(Uri mainUri) async {
     _compileNumber++;
     if (_closeMemo.hasRun) return CompilationResponse._wasShutdown;
     CompileResult? compilerOutput;
@@ -130,7 +121,7 @@ class _TestCompilerForLanguageVersion {
           testUri: mainUri,
           packageConfigUri: await packageConfigUri,
           languageVersionComment: _languageVersionComment,
-          testType: testType,
+          testType: VmTestType.isolate,
         ),
       );
     final testCache = File(_dillCachePath);
@@ -284,15 +275,9 @@ String testBootstrapContents({
   required Uri packageConfigUri,
   required VmTestType testType,
 }) {
-  final (mainArgs, bootstrapCall) = switch (testType) {
-    VmTestType.isolate => (
-      '_, SendPort sendPort',
-      'internalBootstrapVmTest(() => test.main, sendPort);',
-    ),
-    VmTestType.process => (
-      'List<String> args',
-      'internalBootstrapNativeTest(() => test.main, args);',
-    ),
+  final (mainArgs, forwardedArgName, bootstrapType) = switch (testType) {
+    VmTestType.isolate => ('_, SendPort sendPort', 'sendPort', 'Vm'),
+    VmTestType.process => ('List<String> args', 'args', 'Native'),
   };
   return '''
     $languageVersionComment
@@ -308,7 +293,7 @@ String testBootstrapContents({
     const packageConfigLocation = '$packageConfigUri';
 
     void main($mainArgs) {
-      $bootstrapCall
+      internalBootstrap${bootstrapType}Test(() => test.main, $forwardedArgName);
     }
   ''';
 }

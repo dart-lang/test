@@ -50,7 +50,7 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// If execution fails, throws an exception containing the string representation
 /// and stack trace of the error thrown by the setup script.
 Future<Object?> globalSetup(Uri uri) async {
-  if (Invoker.current == null && globalSetupStandaloneFallback == null) {
+  if (Invoker.current == null) {
     throw StateError(
       'globalSetup() must be called from within a test or setUp/setUpAll callback.',
     );

@@ -5,4 +5,4 @@
 /// Utilities for shared global setup and teardown across test suites.
 library;
 
-export 'src/scaffolding/global_setup.dart' show addGlobalTearDown, globalSetup;
+export 'src/scaffolding/global_setup.dart' show addGlobalTearDown;

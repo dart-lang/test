@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:analyzer/dart/analysis/utilities.dart';
@@ -36,11 +37,9 @@ final class GlobalSetupManager {
   static GlobalSetupManager? get current =>
       Zone.current[_currentKey] as GlobalSetupManager?;
 
-  final _setups = <String, Future<Object?>>{};
+  final _setups = <String, Future<String>>{};
   final _activeSetups = <_ActiveSetup>[];
   final _closeMemo = AsyncMemoizer<void>();
-
-  GlobalSetupManager();
 
   /// Runs [body] in a zone with this manager set as [GlobalSetupManager.current].
   T asCurrent<T>(T Function() body) =>
@@ -54,9 +53,9 @@ final class GlobalSetupManager {
           normalizedUrl,
           () => _runSetup(normalizedUrl),
         );
-        final result = await resultFuture;
+        final resultJson = await resultFuture;
         return StreamChannel<Object?>.withGuarantees(
-          Stream.value({'type': 'data', 'data': result}),
+          Stream.value({'type': 'data', 'data': json.decode(resultJson)}),
           NullStreamSink<Object?>(),
         );
       } catch (error, stackTrace) {
@@ -71,8 +70,8 @@ final class GlobalSetupManager {
     }());
   }
 
-  Future<Object?> _runSetup(String url) async {
-    final completer = Completer<Object?>();
+  Future<String> _runSetup(String url) async {
+    final completer = Completer<String>();
     final responsePort = RawReceivePort();
     final errorPort = RawReceivePort((Object? errorAndStack) {
       final list = errorAndStack as List<Object?>;
@@ -130,7 +129,7 @@ void main(_, SendPort sendPort) =>
           } else {
             isolate.kill();
           }
-          if (!completer.isCompleted) completer.complete(result);
+          if (!completer.isCompleted) completer.complete(json.encode(result));
         } else if (response case {
           'success': false,
           'error': var error,
@@ -204,12 +203,21 @@ void main(_, SendPort sendPort) =>
           'root-relative URIs cannot have query parameters',
         ),
       Uri(hasScheme: false, hasAbsolutePath: true) => () {
-        if (url.startsWith('/..')) {
-          throw ArgumentError.value(
-            url,
-            'uri',
-            'root-relative URIs cannot reach outside the package directory',
-          );
+        var depth = 0;
+        for (var segment in url.split('/')) {
+          if (segment.isEmpty || segment == '.') continue;
+          if (segment == '..') {
+            depth--;
+            if (depth < 0) {
+              throw ArgumentError.value(
+                url,
+                'uri',
+                'root-relative URIs cannot reach outside the package directory',
+              );
+            }
+          } else {
+            depth++;
+          }
         }
         return p.url.join(
           p.toUri(p.current).toString(),

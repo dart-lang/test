@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 
@@ -20,7 +21,7 @@ final class _ActiveStandaloneSetup {
   });
 }
 
-final _standaloneSetups = <String, Future<Object?>>{};
+final _standaloneSetups = <String, Future<String>>{};
 final _standaloneActiveSetups = <_ActiveStandaloneSetup>[];
 Directory? _standaloneTempDir;
 
@@ -31,15 +32,16 @@ Directory? _standaloneTempDir;
 /// without `dart test`.
 Future<Object?> standaloneGlobalSetup(Uri uri) async {
   final normalizedUrl = _normalizeStandaloneUrl(uri);
-  return _standaloneSetups.putIfAbsent(
+  final jsonString = await _standaloneSetups.putIfAbsent(
     normalizedUrl,
     () => _runStandaloneSetup(normalizedUrl),
   );
+  return json.decode(jsonString);
 }
 
-Future<Object?> _runStandaloneSetup(String url) async {
+Future<String> _runStandaloneSetup(String url) async {
   final scriptUri = Uri.parse(url);
-  _standaloneTempDir ??= await Directory.systemTemp.createTemp(
+  _standaloneTempDir ??= Directory.systemTemp.createTempSync(
     'global_setup_standalone_',
   );
   final bootstrapFile = File(
@@ -49,11 +51,12 @@ Future<Object?> _runStandaloneSetup(String url) async {
     ),
   );
 
+  final safeScriptUri = scriptUri.toString().replaceAll(r'$', '%24');
   final bootstrapContent =
       '''
 import 'dart:isolate';
 import 'package:test_core/src/bootstrap/vm.dart';
-import '$scriptUri' as test;
+import '$safeScriptUri' as test;
 
 void main(List<String> args, SendPort sendPort) {
   internalBootstrapVmHook(() => test.setUp, args, sendPort);
@@ -73,7 +76,7 @@ void main(List<String> args, SendPort sendPort) {
       onError: errorPort.sendPort,
     );
 
-    final completer = Completer<Object?>();
+    final completer = Completer<String>();
 
     final errorSub = errorPort.listen((errorAndStack) {
       final list = errorAndStack as List<Object?>;
@@ -102,7 +105,7 @@ void main(List<String> args, SendPort sendPort) {
         } else {
           isolate.kill();
         }
-        if (!completer.isCompleted) completer.complete(result);
+        if (!completer.isCompleted) completer.complete(json.encode(result));
       } else if (response case {
         'success': false,
         'error': var error,
@@ -183,9 +186,25 @@ String _normalizeStandaloneUrl(Uri uri) {
             'root-relative URIs cannot have query parameters',
           );
         }
+        var depth = 0;
+        for (var segment in uri.path.split('/')) {
+          if (segment.isEmpty || segment == '.') continue;
+          if (segment == '..') {
+            depth--;
+            if (depth < 0) {
+              throw ArgumentError.value(
+                uri,
+                'uri',
+                'root-relative URIs cannot reach outside the package directory',
+              );
+            }
+          } else {
+            depth++;
+          }
+        }
         normalized = p.url.join(
           p.toUri(p.current).toString(),
-          uri.path.substring(1),
+          uri.pathSegments.join('/'),
         );
       } else {
         if (uri.hasQuery) {
@@ -195,8 +214,8 @@ String _normalizeStandaloneUrl(Uri uri) {
             'relative URIs cannot have query parameters',
           );
         }
-        // Relative to current directory/entrypoint
-        normalized = p.url.join(p.toUri(p.current).toString(), uri.path);
+        final baseDir = p.url.dirname(Platform.script.toString());
+        normalized = p.url.join(baseDir, uri.path);
       }
     case 'file':
       if (uri.hasQuery) {
