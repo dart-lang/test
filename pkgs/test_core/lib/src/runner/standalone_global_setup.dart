@@ -186,21 +186,15 @@ String _normalizeStandaloneUrl(Uri uri) {
             'root-relative URIs cannot have query parameters',
           );
         }
-        var depth = 0;
-        for (var segment in uri.path.split('/')) {
-          if (segment.isEmpty || segment == '.') continue;
-          if (segment == '..') {
-            depth--;
-            if (depth < 0) {
-              throw ArgumentError.value(
-                uri,
-                'uri',
-                'root-relative URIs cannot reach outside the package directory',
-              );
-            }
-          } else {
-            depth++;
-          }
+        if (Uri(
+              path: uri.path.replaceFirst(RegExp('^/+'), ''),
+            ).pathSegments.firstOrNull ==
+            '..') {
+          throw ArgumentError.value(
+            uri,
+            'uri',
+            'root-relative URIs cannot reach outside the package directory',
+          );
         }
         normalized = p.url.join(
           p.toUri(p.current).toString(),

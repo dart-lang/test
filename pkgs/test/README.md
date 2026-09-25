@@ -885,7 +885,6 @@ Future<Map<String, dynamic>> setUp() async {
 }
 
 // ## test/my_test.dart
-import 'package:test/scaffolding.dart' show globalSetup;
 import 'package:test/test.dart';
 
 void main() {

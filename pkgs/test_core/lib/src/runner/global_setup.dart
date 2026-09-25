@@ -203,21 +203,15 @@ void main(_, SendPort sendPort) =>
           'root-relative URIs cannot have query parameters',
         ),
       Uri(hasScheme: false, hasAbsolutePath: true) => () {
-        var depth = 0;
-        for (var segment in url.split('/')) {
-          if (segment.isEmpty || segment == '.') continue;
-          if (segment == '..') {
-            depth--;
-            if (depth < 0) {
-              throw ArgumentError.value(
-                url,
-                'uri',
-                'root-relative URIs cannot reach outside the package directory',
-              );
-            }
-          } else {
-            depth++;
-          }
+        if (Uri(
+              path: url.replaceFirst(RegExp('^/+'), ''),
+            ).pathSegments.firstOrNull ==
+            '..') {
+          throw ArgumentError.value(
+            url,
+            'uri',
+            'root-relative URIs cannot reach outside the package directory',
+          );
         }
         return p.url.join(
           p.toUri(p.current).toString(),

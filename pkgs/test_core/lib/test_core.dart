@@ -10,26 +10,4 @@ library;
 
 export 'package:test_api/hooks.dart' show TestFailure;
 
-export 'scaffolding.dart'
-    show
-        OnPlatform,
-        Retry,
-        Skip,
-        Tags,
-        TestFailure,
-        TestLocation,
-        TestOn,
-        Timeout,
-        addTearDown,
-        group,
-        markTestSkipped,
-        printOnFailure,
-        pumpEventQueue,
-        registerException,
-        setUp,
-        setUpAll,
-        spawnHybridCode,
-        spawnHybridUri,
-        tearDown,
-        tearDownAll,
-        test;
+export 'scaffolding.dart';
