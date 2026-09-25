@@ -203,16 +203,8 @@ void main(_, SendPort sendPort) =>
           'root-relative URIs cannot have query parameters',
         ),
       Uri(hasScheme: false, hasAbsolutePath: true) => () {
-        if (Uri(
-              path: url.replaceFirst(RegExp('^/+'), ''),
-            ).pathSegments.firstOrNull ==
-            '..') {
-          throw ArgumentError.value(
-            url,
-            'uri',
-            'root-relative URIs cannot reach outside the package directory',
-          );
-        }
+        // Uri.parse normalizes absolute paths (RFC 3986), clamping '..' at '/'.
+        assert(!parsedUri.pathSegments.contains('..'));
         return p.url.join(
           p.toUri(p.current).toString(),
           parsedUri.pathSegments.join('/'),

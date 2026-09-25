@@ -186,16 +186,8 @@ String _normalizeStandaloneUrl(Uri uri) {
             'root-relative URIs cannot have query parameters',
           );
         }
-        if (Uri(
-              path: uri.path.replaceFirst(RegExp('^/+'), ''),
-            ).pathSegments.firstOrNull ==
-            '..') {
-          throw ArgumentError.value(
-            uri,
-            'uri',
-            'root-relative URIs cannot reach outside the package directory',
-          );
-        }
+        // Uri normalizes absolute paths (RFC 3986), clamping '..' at '/'.
+        assert(!uri.pathSegments.contains('..'));
         normalized = p.url.join(
           p.toUri(p.current).toString(),
           uri.pathSegments.join('/'),
