@@ -44,6 +44,19 @@ class VMPlatform extends PlatformPlugin {
   final _closeMemo = AsyncMemoizer<void>();
   final _tempDir = createTempDirectory('vm.');
 
+  /// Cleanup work which was started without waiting for it, so that it does
+  /// not delay the suite it belongs to.
+  ///
+  /// Each future is removed once it completes successfully. Any that are still
+  /// pending, or which failed, are awaited in [close].
+  final _pendingCleanups = <Future<void>>{};
+
+  /// Test processes which have been asked to exit and have not yet done so.
+  ///
+  /// Any left when the platform is closed are killed forcefully, so that one
+  /// which ignores the request can't keep [close] from completing.
+  final _exitingProcesses = <Process>{};
+
   @override
   Future<RunnerSuite?> load(
     String path,
@@ -56,7 +69,7 @@ class VMPlatform extends PlatformPlugin {
     _setupPauseAfterTests();
 
     MultiChannel outerChannel;
-    var cleanupCallbacks = <void Function()>[];
+    var cleanupCallbacks = <FutureOr<void> Function()>[];
     Isolate? isolate;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
@@ -73,7 +86,7 @@ class VMPlatform extends PlatformPlugin {
           dir,
         );
       } catch (error) {
-        unawaited(_tryDelete(dir));
+        _trackCleanup(_tryDelete(dir));
         rethrow;
       }
       var socketPath = p.join(dir.path, 'socket.sock');
@@ -90,8 +103,8 @@ class VMPlatform extends PlatformPlugin {
           mode: ProcessStartMode.inheritStdio,
         );
       } catch (error) {
-        unawaited(serverSocket.close());
-        unawaited(_tryDelete(dir));
+        _trackCleanup(serverSocket.close());
+        _trackCleanup(_tryDelete(dir));
         rethrow;
       }
 
@@ -103,7 +116,7 @@ class VMPlatform extends PlatformPlugin {
         ..add(process.kill)
         // The executable can't be deleted while it is still running, so wait
         // for the process to exit first.
-        ..add(() => unawaited(_deleteOnExit(process, dir)));
+        ..add(() => _deleteOnExit(process, dir));
     } else {
       var receivePort = ReceivePort();
       try {
@@ -146,14 +159,19 @@ class VMPlatform extends PlatformPlugin {
         .transformStream(
           StreamTransformer.fromHandlers(
             handleDone: (sink) async {
-              if (_shouldPauseAfterTests) {
-                outerChannel.sink.add('debug');
-                await outerQueue.next;
+              try {
+                if (_shouldPauseAfterTests) {
+                  outerChannel.sink.add('debug');
+                  await outerQueue.next;
+                }
+              } finally {
+                // Always close the sink, even if waiting for the debugger
+                // failed, otherwise the suite never completes.
+                _runCleanupCallbacks(cleanupCallbacks);
+                unawaited(eventSub?.cancel());
+                unawaited(client?.dispose());
+                sink.close();
               }
-              _runCleanupCallbacks(cleanupCallbacks);
-              unawaited(eventSub?.cancel());
-              unawaited(client?.dispose());
-              sink.close();
             },
           ),
         );
@@ -224,9 +242,61 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(
-    () => Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]),
-  );
+  Future close() => _closeMemo.runOnce(() async {
+    try {
+      // Suites which are still finishing can start more cleanup while this
+      // waits, so keep going until there is none left.
+      while (_pendingCleanups.isNotEmpty) {
+        for (var process in _exitingProcesses) {
+          process.kill(ProcessSignal.sigkill);
+        }
+        var pending = _pendingCleanups.toList();
+        _pendingCleanups.clear();
+        await Future.wait(pending);
+      }
+    } finally {
+      await Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]);
+    }
+  });
+
+  /// Invokes and removes each callback in [cleanupCallbacks].
+  ///
+  /// Callbacks are invoked in the order they were added, and cleared so that
+  /// they are never invoked more than once. Callbacks are not awaited, so that
+  /// a slow cleanup can't delay the suite; instead they are tracked so that
+  /// [close] waits for them.
+  void _runCleanupCallbacks(List<FutureOr<void> Function()> cleanupCallbacks) {
+    for (var callback in cleanupCallbacks) {
+      // `Future.sync` so that one callback throwing doesn't skip the rest.
+      _trackCleanup(Future.sync(callback));
+    }
+    cleanupCallbacks.clear();
+  }
+
+  /// Adds [cleanup] to the cleanup that [close] waits for.
+  ///
+  /// It is removed again once it completes successfully. If it fails, the
+  /// error is kept and surfaces from [close].
+  void _trackCleanup(Future<void> cleanup) {
+    _pendingCleanups.add(cleanup);
+    cleanup.then((_) {
+      _pendingCleanups.remove(cleanup);
+    }).ignore();
+  }
+
+  /// Deletes [entity] once [process] has exited.
+  ///
+  /// The [process] should already have been asked to exit. If it has not done
+  /// so by the time the platform is closed, it is killed forcefully.
+  Future<void> _deleteOnExit(Process process, FileSystemEntity entity) async {
+    _exitingProcesses.add(process);
+    try {
+      await process.exitCode;
+    } finally {
+      _exitingProcesses.remove(process);
+    }
+    await _tryDelete(entity);
+  }
 
   String _aotRuntimeFor(SuitePlatform platform) {
     final sanSuffix = switch (platform.runtime) {
@@ -415,7 +485,7 @@ stderr: ${processResult.stderr}''');
     SendPort message,
     Metadata suiteMetadata,
     Compiler compiler,
-    List<void Function()> cleanupCallbacks,
+    List<FutureOr<void> Function()> cleanupCallbacks,
   ) async {
     try {
       var precompiledPath = _config.suiteDefaults.precompiledPath;
@@ -458,7 +528,7 @@ stderr: ${processResult.stderr}''');
   Future<Uri> _compileToKernel(
     String path,
     Metadata suiteMetadata,
-    List<void Function()> cleanupCallbacks,
+    List<FutureOr<void> Function()> cleanupCallbacks,
   ) async {
     final response = await _compiler.compile(
       await absoluteUri(path),
@@ -467,11 +537,11 @@ stderr: ${processResult.stderr}''');
     var kernelOutputUri = response.kernelOutputUri;
     if (kernelOutputUri == null || response.errorCount > 0) {
       if (kernelOutputUri != null) {
-        unawaited(_compiler.release(kernelOutputUri));
+        _trackCleanup(_compiler.release(kernelOutputUri));
       }
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
     }
-    cleanupCallbacks.add(() => unawaited(_compiler.release(kernelOutputUri)));
+    cleanupCallbacks.add(() => _compiler.release(kernelOutputUri));
     return absoluteUri(kernelOutputUri.toFilePath());
   }
 
@@ -594,23 +664,6 @@ stderr: ${processResult.stderr}''');
     }
     return file.path;
   }
-}
-
-/// Invokes and removes each callback in [cleanupCallbacks].
-///
-/// Callbacks are invoked in the order they were added, and cleared so that
-/// they are never invoked more than once.
-void _runCleanupCallbacks(List<void Function()> cleanupCallbacks) {
-  for (var callback in cleanupCallbacks) {
-    callback();
-  }
-  cleanupCallbacks.clear();
-}
-
-/// Deletes [entity] once [process] has exited.
-Future<void> _deleteOnExit(Process process, FileSystemEntity entity) async {
-  await process.exitCode;
-  await _tryDelete(entity);
 }
 
 /// Deletes [entity], ignoring any failure to do so.
