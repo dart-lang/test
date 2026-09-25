@@ -10,6 +10,8 @@
   deleted when the run finishes.
 * Delete the temporary directory when the test runner is interrupted with
   Control-C twice.
+* Wait longer for Chrome to open the test page when running with `--debug` or
+  `--coverage`, and list the open tabs if the page is never found.
 
 ## 1.32.0
 
