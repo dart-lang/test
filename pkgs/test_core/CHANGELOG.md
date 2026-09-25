@@ -12,6 +12,8 @@
 
 ## 0.6.20
 
+* Support `globalSetup` and `addGlobalTearDown` host runner execution and
+  caching across test suites.
 * Pass sanitizer environment defaults when running tests compiled as native CLI
   bundles.
 * Add support for `DART_TEST_REPORTER` environment variable.

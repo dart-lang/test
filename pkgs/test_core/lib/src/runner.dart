@@ -109,62 +109,64 @@ class Runner {
   ///
   /// This starts running tests and printing their progress. It returns whether
   /// or not they ran successfully.
-  Future<bool> run() => _config.asCurrent(() async {
-    if (_closed) {
-      throw StateError('run() may not be called on a closed Runner.');
-    }
-
-    _warnForUnsupportedPlatforms();
-
-    var suites = _loadSuites();
-
-    if (_config.coverage != null) {
-      await Directory(_config.coverage!).create(recursive: true);
-    }
-
-    bool? success;
-    if (_config.pauseAfterLoad) {
-      success = await _loadThenPause(suites);
-    } else {
-      var subscription = _suiteSubscription = suites.listen(
-        _engine.suiteSink.add,
-      );
-      var results = await Future.wait(<Future>[
-        subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
-        _engine.run(),
-      ], eagerError: true);
-      success = results.last as bool?;
-    }
-
-    if (_closed) return false;
-
-    if (_engine.passed.isEmpty &&
-        _engine.failed.isEmpty &&
-        _engine.skipped.isEmpty) {
-      if (_config.globalPatterns.isNotEmpty) {
-        var patterns = toSentence(
-          _config.globalPatterns.map(
-            (pattern) => pattern is RegExp
-                ? 'regular expression "${pattern.pattern}"'
-                : '"$pattern"',
-          ),
-        );
-        throw NoTestsFoundException('No tests match $patterns.');
-      } else if (_config.includeTags != BooleanSelector.all ||
-          _config.excludeTags != BooleanSelector.none) {
-        throw NoTestsFoundException(
-          'No tests match the requested tag selectors:\n'
-          '  include: "${_config.includeTags}"\n'
-          '  exclude: "${_config.excludeTags}"',
-        );
-      } else {
-        throw NoTestsFoundException('No tests were found.');
+  Future<bool> run() => _config.asCurrent(
+    () => _loader.globalSetupManager.asCurrent(() async {
+      if (_closed) {
+        throw StateError('run() may not be called on a closed Runner.');
       }
-    }
 
-    return (success ?? false) &&
-        (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
-  });
+      _warnForUnsupportedPlatforms();
+
+      var suites = _loadSuites();
+
+      if (_config.coverage != null) {
+        await Directory(_config.coverage!).create(recursive: true);
+      }
+
+      bool? success;
+      if (_config.pauseAfterLoad) {
+        success = await _loadThenPause(suites);
+      } else {
+        var subscription = _suiteSubscription = suites.listen(
+          _engine.suiteSink.add,
+        );
+        var results = await Future.wait(<Future>[
+          subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
+          _engine.run(),
+        ], eagerError: true);
+        success = results.last as bool?;
+      }
+
+      if (_closed) return false;
+
+      if (_engine.passed.isEmpty &&
+          _engine.failed.isEmpty &&
+          _engine.skipped.isEmpty) {
+        if (_config.globalPatterns.isNotEmpty) {
+          var patterns = toSentence(
+            _config.globalPatterns.map(
+              (pattern) => pattern is RegExp
+                  ? 'regular expression "${pattern.pattern}"'
+                  : '"$pattern"',
+            ),
+          );
+          throw NoTestsFoundException('No tests match $patterns.');
+        } else if (_config.includeTags != BooleanSelector.all ||
+            _config.excludeTags != BooleanSelector.none) {
+          throw NoTestsFoundException(
+            'No tests match the requested tag selectors:\n'
+            '  include: "${_config.includeTags}"\n'
+            '  exclude: "${_config.excludeTags}"',
+          );
+        } else {
+          throw NoTestsFoundException('No tests were found.');
+        }
+      }
+
+      return (success ?? false) &&
+          (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
+    }),
+  );
 
   /// Emits a warning if the user is trying to run on a platform that's
   /// unsupported for the entire package.
