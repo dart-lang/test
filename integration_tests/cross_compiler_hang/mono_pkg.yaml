@@ -2,10 +2,6 @@
 
 stages:
 - unit_test:
-  # Chrome suites routinely take 10-20s to load on the Windows runners while
-  # the exe suites compile concurrently. A regression of the deadlock this
-  # package reproduces hangs indefinitely, so a generous timeout still catches
-  # it.
   - command: dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=60s
     os:
     - windows
