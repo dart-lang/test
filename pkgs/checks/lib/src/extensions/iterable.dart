@@ -11,7 +11,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// A [Subject] for the number of elements in the iterable.
   ///
   /// {@example /example/iterable/iterable/length.dart}
-  Subject<int> get length => has((l) => l.length, 'length');
+  Subject<int> get length => has('length', (l) => l.length);
 
   /// A [Subject] for the first element of the iterable.
   ///

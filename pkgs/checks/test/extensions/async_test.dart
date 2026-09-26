@@ -40,7 +40,7 @@ void main() {
         'allows async expectation on subject extracted synchronously',
         () async {
           final condition = Condition.it<List<Future<int>>>()
-            ..has((l) => l.first, 'first').completes(.it()..equals(42));
+            ..has('first', (l) => l.first).completes(.it()..equals(42));
           final failure1 = await condition.softCheck([Future.value(42)]);
           check(failure1).isNull;
           final failure2 = await condition.softCheck([Future.value(0)]);
@@ -57,7 +57,7 @@ void main() {
         'succeeds for a future that compeletes to an error of the expected type',
         () async {
           await check(_futureFail()).throws<UnimplementedError>(
-            .it()..has((p0) => p0.message, 'message').isNull,
+            .it()..has('message', (p0) => p0.message).isNull,
           );
         },
       );
@@ -95,7 +95,7 @@ void main() {
       });
       test('returns Future<Subject> and can be awaited', () async {
         (await check(_futureFail()).throws<UnimplementedError>())
-            .has((p0) => p0.message, 'message')
+            .has('message', (p0) => p0.message)
             .isNull;
       });
     });
@@ -119,7 +119,7 @@ void main() {
         await pumpEventQueue();
         check(testFailure)
             .isA<TestFailure>()
-            .has((f) => f.message, 'message')
+            .has('message', (f) => f.message)
             .isNotNull()
             .equals('''
 Expected: a Future<String> that:
@@ -144,7 +144,7 @@ Actual: a future that completed to 'value\'''');
         await pumpEventQueue();
         check(testFailure)
             .isA<TestFailure>()
-            .has((f) => f.message, 'message')
+            .has('message', (f) => f.message)
             .isNotNull()
             .equals('''
 Expected: a Future<String> that:
@@ -247,7 +247,7 @@ Which: threw 'error' at:
         );
         await check(
           Condition.it<StreamQueue<void>>()..emitsError<StateError>(
-            .it()..has((e) => e.message, 'message').equals('foo'),
+            .it()..has('message', (e) => e.message).equals('foo'),
           ),
         ).hasAsyncDescriptionWhich(
           .it()..deepEquals([
@@ -266,7 +266,7 @@ Which: threw 'error' at:
         (await check(
               _countingStream(1, errorAt: 0),
             ).emitsError<UnimplementedError>())
-            .has((e) => e.message, 'message')
+            .has('message', (e) => e.message)
             .equals('Error at 1');
       });
     });
@@ -462,7 +462,7 @@ Which: threw 'error' at:
         await (Condition.it<StreamQueue<int>>()..mayEmit(.it()..equals(0)))
             .softCheck(queue);
         await check(queue).emitsError<UnimplementedError>(
-          .it()..has((e) => e.message, 'message').equals('Error at 1'),
+          .it()..has('message', (e) => e.message).equals('Error at 1'),
         );
       });
       test('can be described', () async {
@@ -515,7 +515,7 @@ Which: threw 'error' at:
               ..mayEmitMultiple(.it()..equals(0)))
             .softCheck(queue);
         await check(queue).emitsError<UnimplementedError>(
-          .it()..has((e) => e.message, 'message').equals('Error at 1'),
+          .it()..has('message', (e) => e.message).equals('Error at 1'),
         );
       });
       test('consumes a matching async event', () async {
