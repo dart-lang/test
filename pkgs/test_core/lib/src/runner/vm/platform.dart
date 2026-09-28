@@ -51,11 +51,12 @@ class VMPlatform extends PlatformPlugin {
   /// pending, or which failed, are awaited in [close].
   final _pendingCleanups = <Future<void>>{};
 
-  /// Test processes which have been asked to exit and have not yet done so.
+  /// Test processes which have been started and have not yet exited.
   ///
   /// Any left when the platform is closed are killed forcefully, so that one
-  /// which ignores the request can't keep [close] from completing.
-  final _exitingProcesses = <Process>{};
+  /// which ignores a request to exit, or which was never asked to because its
+  /// suite failed to load, can't keep [close] from completing.
+  final _runningProcesses = <Process>{};
 
   @override
   Future<RunnerSuite?> load(
@@ -107,16 +108,18 @@ class VMPlatform extends PlatformPlugin {
         _trackCleanup(_tryDelete(dir));
         rethrow;
       }
+      // The executable can't be deleted while it is still running, so wait for
+      // the process to exit first. This starts now rather than when the suite
+      // is done so that the directory is also deleted if the process exits
+      // before the suite finishes loading.
+      _trackCleanup(_deleteOnExit(process, dir));
 
       var socket = await serverSocket.fastFirst;
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(socket.destroy)
         ..add(serverSocket.close)
-        ..add(process.kill)
-        // The executable can't be deleted while it is still running, so wait
-        // for the process to exit first.
-        ..add(() => _deleteOnExit(process, dir));
+        ..add(process.kill);
     } else {
       var receivePort = ReceivePort();
       try {
@@ -247,7 +250,7 @@ class VMPlatform extends PlatformPlugin {
       // Suites which are still finishing can start more cleanup while this
       // waits, so keep going until there is none left.
       while (_pendingCleanups.isNotEmpty) {
-        for (var process in _exitingProcesses) {
+        for (var process in _runningProcesses) {
           process.kill(.sigkill);
         }
         var pending = [..._pendingCleanups];
@@ -284,14 +287,14 @@ class VMPlatform extends PlatformPlugin {
 
   /// Deletes [entity] once [process] has exited.
   ///
-  /// The [process] should already have been asked to exit. If it has not done
-  /// so by the time the platform is closed, it is killed forcefully.
+  /// The [process] is tracked in [_runningProcesses] until it exits, so that
+  /// [close] can kill it if it is still running.
   Future<void> _deleteOnExit(Process process, FileSystemEntity entity) async {
-    _exitingProcesses.add(process);
+    _runningProcesses.add(process);
     try {
       await process.exitCode;
     } finally {
-      _exitingProcesses.remove(process);
+      _runningProcesses.remove(process);
     }
     await _tryDelete(entity);
   }
