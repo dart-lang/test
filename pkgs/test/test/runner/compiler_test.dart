@@ -41,6 +41,7 @@ void main() {
         expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
         await test.shouldExit(0);
       },
+      tags: 'chrome',
     );
 
     test('runs all supported compiler and platform combinations', () async {
@@ -57,7 +58,7 @@ void main() {
       expect(test.stdout, emitsThrough(contains('[VM, Source]')));
       expect(test.stdout, emitsThrough(contains('+3: All tests passed!')));
       await test.shouldExit(0);
-    });
+    }, tags: 'chrome');
 
     test('supports platform selectors', () async {
       var test = await runTest([

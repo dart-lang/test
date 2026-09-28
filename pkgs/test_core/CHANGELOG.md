@@ -9,6 +9,8 @@
   when the run finishes.
 * Delete the test runner's temporary directory synchronously when the run is
   interrupted by a second signal (e.g. pressing Ctrl-C twice).
+* Bundle skipped tests into a single group at the end of the GitHub reporter
+  output instead of interrupting passing test groups.
 * Delete the kernel file for a test suite once it has finished running, instead
   of keeping every kernel file until the end of the run.
 * Compile each test suite for the `exe` and `cli` compilers into a directory of

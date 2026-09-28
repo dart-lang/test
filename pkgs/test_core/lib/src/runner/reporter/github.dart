@@ -44,8 +44,10 @@ class GithubReporter implements Reporter {
 
   final Set<LiveTest> _completedTests = {};
 
-  /// The github markdown `::group::` that is currently open.
-  var _activeGroup = _ReportGroup.ungrouped;
+  final List<LiveTest> _skippedTests = [];
+
+  /// Whether a `::group::` for passing tests is currently open.
+  var _inPassingGroup = false;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
@@ -112,12 +114,13 @@ class GithubReporter implements Reporter {
     // Collect messages from tests as they are emitted.
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
-        if (_completedTests.contains(liveTest)) {
-          // The test has already completed and it's previous messages were
+        if (_completedTests.contains(liveTest) &&
+            liveTest.state.result != Result.skipped) {
+          // The test has already completed and its previous messages were
           // written out; ensure this post-completion output is not lost.
-          if (!_activeGroup.isUngrouped) {
+          if (_inPassingGroup) {
             _sink.writeln(_GithubMarkup.endGroup);
-            _activeGroup = _ReportGroup.ungrouped;
+            _inPassingGroup = false;
           }
           _sink.writeln(message.text);
         } else {
@@ -127,12 +130,26 @@ class GithubReporter implements Reporter {
     );
   }
 
+  String _testName(LiveTest test) {
+    var name = test.test.name;
+    if (test.suite is! LoadSuite) {
+      if (_printPath && test.suite.path != null) {
+        name = '${test.suite.path}: $name';
+      }
+    }
+    if (_printPlatform) {
+      name =
+          '[${test.suite.platform.runtime.name}, '
+          '${test.suite.platform.compiler.name}] $name';
+    }
+    return name;
+  }
+
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest test) {
     final errors = test.errors;
     final messages = _testMessages[test] ?? [];
     final skipped = test.state.result == Result.skipped;
-    final failed = errors.isNotEmpty;
     final loadSuite = test.suite is LoadSuite;
     final synthetic =
         loadSuite ||
@@ -148,61 +165,33 @@ class GithubReporter implements Reporter {
       return;
     }
 
+    if (skipped && errors.isEmpty) {
+      _skippedTests.add(test);
+      return;
+    }
+
     // For now, we use the same icon for both tests and test-like structures
     // (loadSuite, setUpAll, tearDownAll).
-    var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
-    final prefix = failed
-        ? _GithubMarkup.failed
-        : skipped
-        ? _GithubMarkup.skipped
-        : defaultIcon;
-    final statusSuffix = failed
-        ? ' (failed)'
-        : skipped
-        ? ' (skipped)'
-        : '';
+    final defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
+    final name = _testName(test);
 
-    var name = test.test.name;
-    if (!loadSuite) {
-      if (_printPath && test.suite.path != null) {
-        name = '${test.suite.path}: $name';
-      }
-    }
-    if (_printPlatform) {
-      name =
-          '[${test.suite.platform.runtime.name}, '
-          '${test.suite.platform.compiler.name}] $name';
-    }
-    if (skipped) {
-      if (_activeGroup.isPassing) {
-        _sink.writeln(_GithubMarkup.endGroup);
-      }
-      if (!_activeGroup.isSkipped) {
-        _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
-        _activeGroup = _ReportGroup.skipped;
-      }
-      _sink.writeln('$prefix $name$statusSuffix');
-      for (var message in messages) {
-        _sink.writeln(message.text);
-      }
-    } else if (errors.isEmpty) {
-      if (_activeGroup.isSkipped) {
-        _sink.writeln(_GithubMarkup.endGroup);
-      }
-      if (!_activeGroup.isPassing) {
+    if (errors.isEmpty) {
+      if (!_inPassingGroup) {
         _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
-        _activeGroup = _ReportGroup.passing;
+        _inPassingGroup = true;
       }
-      _sink.writeln('$prefix $name$statusSuffix');
+      _sink.writeln('$defaultIcon $name');
       for (var message in messages) {
         _sink.writeln(message.text);
       }
     } else {
-      if (!_activeGroup.isUngrouped) {
+      if (_inPassingGroup) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _activeGroup = _ReportGroup.ungrouped;
+        _inPassingGroup = false;
       }
-      _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
+      _sink.writeln(
+        _GithubMarkup.startGroup('${_GithubMarkup.failed} $name (failed)'),
+      );
       for (var message in messages) {
         _sink.writeln(message.text);
       }
@@ -217,26 +206,13 @@ class GithubReporter implements Reporter {
   /// A callback called when [test] throws [error].
   void _onError(LiveTest test, Object error, StackTrace stackTrace) {
     if (_completedTests.contains(test)) {
-      final loadSuite = test.suite is LoadSuite;
-
       final prefix = _GithubMarkup.failed;
       final statusSuffix = ' (failed after test completion)';
+      final name = _testName(test);
 
-      var name = test.test.name;
-      if (!loadSuite) {
-        if (_printPath && test.suite.path != null) {
-          name = '${test.suite.path}: $name';
-        }
-      }
-      if (_printPlatform) {
-        name =
-            '[${test.suite.platform.runtime.name}, '
-            '${test.suite.platform.compiler.name}] $name';
-      }
-
-      if (!_activeGroup.isUngrouped) {
+      if (_inPassingGroup) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _activeGroup = _ReportGroup.ungrouped;
+        _inPassingGroup = false;
       }
       _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
       _sink.writeln('$error');
@@ -248,9 +224,21 @@ class GithubReporter implements Reporter {
   void _onDone(bool? success) {
     _cancel();
 
-    if (!_activeGroup.isUngrouped) {
+    if (_inPassingGroup) {
       _sink.writeln(_GithubMarkup.endGroup);
-      _activeGroup = _ReportGroup.ungrouped;
+      _inPassingGroup = false;
+    }
+
+    if (_skippedTests.isNotEmpty) {
+      _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
+      for (var test in _skippedTests) {
+        final name = _testName(test);
+        _sink.writeln('${_GithubMarkup.skipped} $name (skipped)');
+        for (var message in _testMessages[test] ?? const <Message>[]) {
+          _sink.writeln(message.text);
+        }
+      }
+      _sink.writeln(_GithubMarkup.endGroup);
     }
 
     _sink.writeln();
@@ -292,14 +280,4 @@ abstract class _GithubMarkup {
   static final String endGroup = '::endgroup::';
 
   static String error(String message) => '::error::$message';
-}
-
-enum _ReportGroup {
-  passing,
-  skipped,
-  ungrouped;
-
-  bool get isPassing => this == _ReportGroup.passing;
-  bool get isSkipped => this == _ReportGroup.skipped;
-  bool get isUngrouped => this == _ReportGroup.ungrouped;
 }
