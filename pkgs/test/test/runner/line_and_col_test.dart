@@ -378,10 +378,12 @@ void main() {
       expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
       await test.shouldExit(0);
-    });
+    }, tags: 'chrome');
 
-    test('supports node tests', () async {
-      await d.file('test.dart', '''
+    test(
+      'supports node tests',
+      () async {
+        await d.file('test.dart', '''
         import 'package:test/test.dart';
 
         void main() {
@@ -390,12 +392,15 @@ void main() {
         }
       ''').create();
 
-      var test = await runTest(['test.dart?line=4&col=11', '-p', 'node']);
+        var test = await runTest(['test.dart?line=4&col=11', '-p', 'node']);
 
-      expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+        expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
 
-      await test.shouldExit(0);
-    }, retry: 3);
+        await test.shouldExit(0);
+      },
+      retry: 3,
+      tags: 'node',
+    );
   });
 
   test(
