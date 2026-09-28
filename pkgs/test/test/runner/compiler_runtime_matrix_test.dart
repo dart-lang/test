@@ -68,6 +68,9 @@ void main() {
       group(
         '--runtime ${runtime.identifier} --compiler ${compiler.identifier}',
         skip: skipReason,
+        // Browser and node runtime identifiers match the tag names configured
+        // in dart_test.yaml.
+        tags: runtime.isDartVM ? null : runtime.identifier,
         () {
           final testArgs = [
             'test.dart',
