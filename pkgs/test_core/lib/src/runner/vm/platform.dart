@@ -114,7 +114,27 @@ class VMPlatform extends PlatformPlugin {
       // before the suite finishes loading.
       _trackCleanup(_deleteOnExit(process, dir));
 
-      var socket = await serverSocket.fastFirst;
+      Socket socket;
+      try {
+        // Waiting for a connection alone would never finish if the process
+        // exits without connecting, for instance if it crashes on startup or
+        // is killed because the platform is closing.
+        socket = await Future.any([
+          serverSocket.fastFirst,
+          process.exitCode.then(
+            (exitCode) => throw LoadException(
+              path,
+              'The test process exited with code $exitCode before connecting '
+              'to the test runner.',
+            ),
+          ),
+        ]);
+      } catch (error) {
+        process.kill();
+        _trackCleanup(serverSocket.close());
+        if (_closeMemo.hasRun) return null;
+        rethrow;
+      }
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
         ..add(socket.destroy)
