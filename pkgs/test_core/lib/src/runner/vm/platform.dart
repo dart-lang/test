@@ -278,7 +278,7 @@ class VMPlatform extends PlatformPlugin {
         await pending.wait;
       }
     } finally {
-      await Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]);
+      await [_compiler.dispose(), _tempDir.deleteWithRetry()].wait;
     }
   });
 
