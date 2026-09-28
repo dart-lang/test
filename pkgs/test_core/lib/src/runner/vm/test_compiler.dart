@@ -103,10 +103,10 @@ class TestCompiler {
 
   Future<void> dispose() => _closeMemo.runOnce(() async {
     _compilerForKernelOutput.clear();
-    await Future.wait([
+    await [
       for (var compiler in _compilerForLanguageVersion.values)
         compiler.dispose(),
-    ]);
+    ].wait;
   });
 }
 

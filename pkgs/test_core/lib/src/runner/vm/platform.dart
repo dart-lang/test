@@ -248,11 +248,11 @@ class VMPlatform extends PlatformPlugin {
       // waits, so keep going until there is none left.
       while (_pendingCleanups.isNotEmpty) {
         for (var process in _exitingProcesses) {
-          process.kill(ProcessSignal.sigkill);
+          process.kill(.sigkill);
         }
-        var pending = _pendingCleanups.toList();
+        var pending = [..._pendingCleanups];
         _pendingCleanups.clear();
-        await Future.wait(pending);
+        await pending.wait;
       }
     } finally {
       await Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]);
@@ -266,10 +266,8 @@ class VMPlatform extends PlatformPlugin {
   /// a slow cleanup can't delay the suite; instead they are tracked so that
   /// [close] waits for them.
   void _runCleanupCallbacks(List<FutureOr<void> Function()> cleanupCallbacks) {
-    for (var callback in cleanupCallbacks) {
-      // `Future.sync` so that one callback throwing doesn't skip the rest.
-      _trackCleanup(Future.sync(callback));
-    }
+    // `Future.sync` so that one callback throwing doesn't skip the rest.
+    cleanupCallbacks.map(Future.sync).forEach(_trackCleanup);
     cleanupCallbacks.clear();
   }
 
