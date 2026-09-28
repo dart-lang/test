@@ -289,9 +289,10 @@ class VMPlatform extends PlatformPlugin {
   /// a slow cleanup can't delay the suite; instead they are tracked so that
   /// [close] waits for them.
   void _runCleanupCallbacks(List<FutureOr<void> Function()> cleanupCallbacks) {
-    // `Future.sync` so that one callback throwing doesn't skip the rest.
-    cleanupCallbacks.map(Future.sync).forEach(_trackCleanup);
-    cleanupCallbacks.clear();
+    cleanupCallbacks
+      // `Future.sync` so that one callback throwing doesn't skip the rest.
+      ..map(Future.sync).forEach(_trackCleanup)
+      ..clear();
   }
 
   /// Adds [cleanup] to the cleanup that [close] waits for.
