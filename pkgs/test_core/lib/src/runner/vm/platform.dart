@@ -47,9 +47,12 @@ class VMPlatform extends PlatformPlugin {
   /// Cleanup work which was started without waiting for it, so that it does
   /// not delay the suite it belongs to.
   ///
-  /// Each future is removed once it completes successfully. Any that are still
-  /// pending, or which failed, are awaited in [close].
+  /// Each future removes itself once it completes. Any still pending are
+  /// awaited in [close].
   final _pendingCleanups = <Future<void>>{};
+
+  /// Errors from the cleanup in [_pendingCleanups], all reported by [close].
+  final _cleanupErrors = <AsyncError>[];
 
   /// Test processes which have been started and have not yet exited.
   ///
@@ -69,97 +72,108 @@ class VMPlatform extends PlatformPlugin {
 
     _setupPauseAfterTests();
 
-    MultiChannel outerChannel;
+    // Cleanup for everything acquired for this suite, registered as each
+    // resource is acquired. Run once the suite is done, or as soon as it fails
+    // to load.
     var cleanupCallbacks = <FutureOr<void> Function()>[];
+    RunnerSuite? suite;
+    try {
+      suite = await _loadSuite(
+        path,
+        platform,
+        suiteConfig,
+        message,
+        cleanupCallbacks,
+      );
+    } catch (_) {
+      _runCleanupCallbacks(cleanupCallbacks);
+      if (_closeMemo.hasRun) return null;
+      rethrow;
+    }
+    if (suite == null) _runCleanupCallbacks(cleanupCallbacks);
+    return suite;
+  }
+
+  /// Loads the suite at [path], adding cleanup for anything it acquires to
+  /// [cleanupCallbacks].
+  ///
+  /// Returns `null` if the platform was closed while loading.
+  Future<RunnerSuite?> _loadSuite(
+    String path,
+    SuitePlatform platform,
+    SuiteConfiguration suiteConfig,
+    Map<String, Object?> message,
+    List<FutureOr<void> Function()> cleanupCallbacks,
+  ) async {
+    MultiChannel outerChannel;
     Isolate? isolate;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
       // Everything compiled for this suite goes in a directory of its own so
       // that it can all be deleted as soon as the test process has exited.
       var dir = createTempDirectory('exec.');
-      String executable;
-      List<String> arguments;
-      try {
-        (executable, arguments) = await _compileExecutable(
-          platform,
-          path,
-          suiteConfig.metadata,
-          dir,
-        );
-      } catch (error) {
-        _trackCleanup(_tryDelete(dir));
-        rethrow;
-      }
+      // Replaced by deleting on exit once the test process has started.
+      var deleteDir = dir.tryDeleteWithRetry;
+      cleanupCallbacks.add(deleteDir);
+      var (executable, arguments) = await _compileExecutable(
+        platform,
+        path,
+        suiteConfig.metadata,
+        dir,
+      );
+      if (_closeMemo.hasRun) return null;
       var socketPath = p.join(dir.path, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
       );
-      Process process;
-      try {
-        process = await Process.start(
-          executable,
-          [...arguments, socketPath],
-          environment: _environmentFor(platform),
-          mode: ProcessStartMode.inheritStdio,
-        );
-      } catch (error) {
-        _trackCleanup(serverSocket.close());
-        _trackCleanup(_tryDelete(dir));
-        rethrow;
-      }
+      cleanupCallbacks.add(serverSocket.close);
+      var process = await Process.start(
+        executable,
+        [...arguments, socketPath],
+        environment: _environmentFor(platform),
+        mode: ProcessStartMode.inheritStdio,
+      );
       // The executable can't be deleted while it is still running, so wait for
       // the process to exit first. This starts now rather than when the suite
       // is done so that the directory is also deleted if the process exits
       // before the suite finishes loading.
-      _trackCleanup(_deleteOnExit(process, dir));
-
-      Socket socket;
-      try {
-        // Waiting for a connection alone would never finish if the process
-        // exits without connecting, for instance if it crashes on startup or
-        // is killed because the platform is closing.
-        socket = await Future.any([
-          serverSocket.fastFirst,
-          process.exitCode.then(
-            (exitCode) => throw LoadException(
-              path,
-              'The test process exited with code $exitCode before connecting '
-              'to the test runner.',
-            ),
-          ),
-        ]);
-      } catch (error) {
-        process.kill();
-        _trackCleanup(serverSocket.close());
-        if (_closeMemo.hasRun) return null;
-        rethrow;
-      }
-      outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
       cleanupCallbacks
-        ..add(socket.destroy)
-        ..add(serverSocket.close)
+        ..remove(deleteDir)
         ..add(process.kill);
+      _trackCleanup(_deleteOnExit(process, dir));
+      if (_closeMemo.hasRun) {
+        // The platform may have finished closing before the process was
+        // tracked, in which case nothing else will kill it.
+        process.kill(.sigkill);
+        return null;
+      }
+
+      // Waiting for a connection alone would never finish if the process
+      // exits without connecting, for instance if it crashes on startup or is
+      // killed because the platform is closing.
+      var socket = await Future.any([
+        serverSocket.fastFirst,
+        process.exitCode.then(
+          (exitCode) => throw LoadException(
+            path,
+            'The test process exited with code $exitCode before connecting '
+            'to the test runner.',
+          ),
+        ),
+      ]);
+      cleanupCallbacks.add(socket.destroy);
+      outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
     } else {
       var receivePort = ReceivePort();
-      try {
-        isolate = await _spawnIsolate(
-          path,
-          receivePort.sendPort,
-          suiteConfig.metadata,
-          platform.compiler,
-          cleanupCallbacks,
-        );
-        if (isolate == null) {
-          receivePort.close();
-          _runCleanupCallbacks(cleanupCallbacks);
-          return null;
-        }
-      } catch (error) {
-        receivePort.close();
-        _runCleanupCallbacks(cleanupCallbacks);
-        rethrow;
-      }
+      cleanupCallbacks.add(receivePort.close);
+      isolate = await _spawnIsolate(
+        path,
+        receivePort.sendPort,
+        suiteConfig.metadata,
+        platform.compiler,
+        cleanupCallbacks,
+      );
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
       // Request that the isolate is killed before running any callback
       // registered while compiling, so it is less likely to still be using the
@@ -266,19 +280,21 @@ class VMPlatform extends PlatformPlugin {
 
   @override
   Future close() => _closeMemo.runOnce(() async {
-    try {
-      // Suites which are still finishing can start more cleanup while this
-      // waits, so keep going until there is none left.
-      while (_pendingCleanups.isNotEmpty) {
-        for (var process in _runningProcesses) {
-          process.kill(.sigkill);
-        }
-        var pending = [..._pendingCleanups];
-        _pendingCleanups.clear();
-        await pending.wait;
+    // Suites which are still finishing can start more cleanup while this
+    // waits, so keep going until there is none left.
+    while (_pendingCleanups.isNotEmpty) {
+      for (var process in _runningProcesses) {
+        process.kill(.sigkill);
       }
-    } finally {
-      await [_compiler.dispose(), _tempDir.deleteWithRetry()].wait;
+      await Future.wait([..._pendingCleanups]);
+    }
+    _trackCleanup(_compiler.dispose());
+    _trackCleanup(_tempDir.deleteWithRetry());
+    await Future.wait([..._pendingCleanups]);
+
+    for (var AsyncError(:error, :stackTrace) in _cleanupErrors) {
+      warn('Failed to clean up after VM tests: $error');
+      stderr.writeln(stackTrace);
     }
   });
 
@@ -297,13 +313,16 @@ class VMPlatform extends PlatformPlugin {
 
   /// Adds [cleanup] to the cleanup that [close] waits for.
   ///
-  /// It is removed again once it completes successfully. If it fails, the
-  /// error is kept and surfaces from [close].
+  /// It is removed again once it completes. If it fails, the error is recorded
+  /// in [_cleanupErrors] to be reported by [close].
   void _trackCleanup(Future<void> cleanup) {
-    _pendingCleanups.add(cleanup);
-    cleanup.then((_) {
-      _pendingCleanups.remove(cleanup);
-    }).ignore();
+    late final Future<void> tracked;
+    tracked = cleanup
+        .onError<Object>((error, stackTrace) {
+          _cleanupErrors.add(AsyncError(error, stackTrace));
+        })
+        .whenComplete(() => _pendingCleanups.remove(tracked));
+    _pendingCleanups.add(tracked);
   }
 
   /// Deletes [entity] once [process] has exited.
@@ -317,7 +336,7 @@ class VMPlatform extends PlatformPlugin {
     } finally {
       _runningProcesses.remove(process);
     }
-    await _tryDelete(entity);
+    await entity.tryDeleteWithRetry();
   }
 
   String _aotRuntimeFor(SuitePlatform platform) {
@@ -500,46 +519,39 @@ stderr: ${processResult.stderr}''');
   ///
   /// Any callbacks added to [cleanupCallbacks] must be invoked once the suite
   /// is done with the isolate.
-  ///
-  /// Returns `null` if an exception occurs but [close] has already been called.
-  Future<Isolate?> _spawnIsolate(
+  Future<Isolate> _spawnIsolate(
     String path,
     SendPort message,
     Metadata suiteMetadata,
     Compiler compiler,
     List<FutureOr<void> Function()> cleanupCallbacks,
   ) async {
-    try {
-      var precompiledPath = _config.suiteDefaults.precompiledPath;
-      if (precompiledPath != null) {
-        return await _spawnPrecompiledIsolate(
-          path,
-          message,
-          precompiledPath,
-          compiler,
-        );
-      }
-      return await switch (compiler) {
-        Compiler.kernel => _spawnIsolateWithUri(
-          await _compileToKernel(path, suiteMetadata, cleanupCallbacks),
-          message,
-        ),
-        Compiler.source => _spawnIsolateWithUri(
-          await _bootstrapIsolateTestFile(
-            path,
-            suiteMetadata.languageVersionComment ??
-                await rootPackageLanguageVersionComment,
-          ),
-          message,
-        ),
-        _ => throw StateError(
-          'Unsupported compiler $compiler for the VM platform',
-        ),
-      };
-    } catch (_) {
-      if (_closeMemo.hasRun) return null;
-      rethrow;
+    var precompiledPath = _config.suiteDefaults.precompiledPath;
+    if (precompiledPath != null) {
+      return await _spawnPrecompiledIsolate(
+        path,
+        message,
+        precompiledPath,
+        compiler,
+      );
     }
+    return await switch (compiler) {
+      Compiler.kernel => _spawnIsolateWithUri(
+        await _compileToKernel(path, suiteMetadata, cleanupCallbacks),
+        message,
+      ),
+      Compiler.source => _spawnIsolateWithUri(
+        await _bootstrapIsolateTestFile(
+          path,
+          suiteMetadata.languageVersionComment ??
+              await rootPackageLanguageVersionComment,
+        ),
+        message,
+      ),
+      _ => throw StateError(
+        'Unsupported compiler $compiler for the VM platform',
+      ),
+    };
   }
 
   /// Compiles [path] to kernel and returns the uri to the compiled dill.
@@ -557,13 +569,12 @@ stderr: ${processResult.stderr}''');
       suiteMetadata,
     );
     var kernelOutputUri = response.kernelOutputUri;
+    if (kernelOutputUri != null) {
+      cleanupCallbacks.add(() => _compiler.release(kernelOutputUri));
+    }
     if (kernelOutputUri == null || response.errorCount > 0) {
-      if (kernelOutputUri != null) {
-        _trackCleanup(_compiler.release(kernelOutputUri));
-      }
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
     }
-    cleanupCallbacks.add(() => _compiler.release(kernelOutputUri));
     return absoluteUri(kernelOutputUri.toFilePath());
   }
 
@@ -685,18 +696,6 @@ stderr: ${processResult.stderr}''');
         );
     }
     return file.path;
-  }
-}
-
-/// Deletes [entity], ignoring any failure to do so.
-///
-/// Anything left behind is deleted along with the runner's temp directory when
-/// the runner is closed.
-Future<void> _tryDelete(FileSystemEntity entity) async {
-  try {
-    await entity.deleteWithRetry();
-  } on FileSystemException {
-    // Ignore, this will be deleted with the runner's temp directory.
   }
 }
 

@@ -203,7 +203,7 @@ class _TestCompilerForLanguageVersion {
       _dillToCache = kernelReadyToRun;
       _dillToCacheIsReleased = false;
       if (previousDillToCache != null && previousDillToCacheIsReleased) {
-        await _tryDelete(previousDillToCache);
+        await previousDillToCache.tryDeleteWithRetry();
       }
     }
 
@@ -262,6 +262,10 @@ class _TestCompilerForLanguageVersion {
 
   /// Deletes the kernel file at [kernelOutputUri], unless it is being kept as
   /// the candidate to cache under the `.dart_tool` dir.
+  ///
+  /// The file may still be held open, for instance by an isolate which has not
+  /// finished shutting down, in which case it is left to be deleted along with
+  /// the temp directory in [dispose].
   Future<void> release(Uri kernelOutputUri) async {
     if (_closeMemo.hasRun) return;
     final file = File.fromUri(kernelOutputUri);
@@ -270,20 +274,7 @@ class _TestCompilerForLanguageVersion {
       _dillToCacheIsReleased = true;
       return;
     }
-    await _tryDelete(file);
-  }
-
-  /// Deletes [file], ignoring any failure to do so.
-  ///
-  /// The file may still be held open, for instance by an isolate which has not
-  /// finished shutting down. Anything left behind is cleaned up along with the
-  /// temp directory in [dispose].
-  Future<void> _tryDelete(File file) async {
-    try {
-      await file.deleteWithRetry();
-    } on FileSystemException {
-      // Ignore, this file will be deleted with the temp directory.
-    }
+    await file.tryDeleteWithRetry();
   }
 
   Future<void> dispose() => _closeMemo.runOnce(() async {

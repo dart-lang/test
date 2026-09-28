@@ -342,6 +342,19 @@ extension RetryDelete on FileSystemEntity {
       }
     }
   }
+
+  /// Deletes this entity like [deleteWithRetry], but ignores a failure to do
+  /// so.
+  ///
+  /// For entities which are deleted early only to save space. Anything left
+  /// behind is deleted later along with the temporary directory containing it.
+  Future<void> tryDeleteWithRetry() async {
+    try {
+      await deleteWithRetry();
+    } on FileSystemException {
+      // Ignore, this will be deleted with the temporary directory.
+    }
+  }
 }
 
 extension WindowsFilePaths on String {
