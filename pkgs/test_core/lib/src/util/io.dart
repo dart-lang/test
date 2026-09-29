@@ -11,10 +11,8 @@ import 'dart:math';
 
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
-import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 
 import 'pretty_print.dart';
 

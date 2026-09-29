@@ -4,9 +4,7 @@
 
 import 'dart:async';
 
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 
 import '../../util/pretty_print.dart';
 import '../engine.dart';

@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 
 /// The maximum number of individual failing tests to list in the summary.
 const maxFailureSummaryCount = 5;
