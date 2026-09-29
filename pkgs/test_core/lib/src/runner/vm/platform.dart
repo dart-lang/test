@@ -282,6 +282,7 @@ class VMPlatform extends PlatformPlugin {
   Future close() => _closeMemo.runOnce(() async {
     // Suites which are still finishing can start more cleanup while this
     // waits, so keep going until there is none left.
+    // The Futures in `_pendingCleanups` remove themselves when completed.
     while (_pendingCleanups.isNotEmpty) {
       for (var process in _runningProcesses) {
         process.kill(.sigkill);
