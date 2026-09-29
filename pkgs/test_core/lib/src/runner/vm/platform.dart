@@ -306,7 +306,7 @@ class VMPlatform extends PlatformPlugin {
   /// [close] waits for them.
   void _runCleanupCallbacks(List<FutureOr<void> Function()> cleanupCallbacks) {
     cleanupCallbacks
-      // `Future.sync` so that one callback throwing doesn't skip the rest.
+      // `Future.sync` to guard against synchronous errors.
       ..map(Future.sync).forEach(_trackCleanup)
       ..clear();
   }
