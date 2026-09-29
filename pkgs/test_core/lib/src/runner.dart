@@ -257,7 +257,7 @@ class Runner {
     // browser tests don't store any state we care about and we want them to
     // shut down without waiting for their tear-downs.
     try {
-      await Future.wait([_loader.closeEphemeral(), _engine.close()]);
+      await [_loader.closeEphemeral(), _engine.close()].wait;
       timer?.cancel();
       await _loader.close();
     } finally {

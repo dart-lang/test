@@ -536,11 +536,11 @@ stderr: ${processResult.stderr}''');
       );
     }
     return await switch (compiler) {
-      Compiler.kernel => _spawnIsolateWithUri(
+      .kernel => _spawnIsolateWithUri(
         await _compileToKernel(path, suiteMetadata, cleanupCallbacks),
         message,
       ),
-      Compiler.source => _spawnIsolateWithUri(
+      .source => _spawnIsolateWithUri(
         await _bootstrapIsolateTestFile(
           path,
           suiteMetadata.languageVersionComment ??
