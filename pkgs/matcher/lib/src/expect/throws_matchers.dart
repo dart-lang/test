@@ -12,11 +12,13 @@ import 'throws_matcher.dart';
 /// A matcher for functions that throw ArgumentError.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_argument_error.dart}
 const Matcher throwsArgumentError = Throws(isArgumentError);
 
 /// A matcher for functions that throw ConcurrentModificationError.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_concurrent_modification_error.dart}
 const Matcher throwsConcurrentModificationError = Throws(
   isConcurrentModificationError,
 );
@@ -34,16 +36,19 @@ const Matcher throwsCyclicInitializationError = Throws(TypeMatcher<Error>());
 /// A matcher for functions that throw Exception.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_exception.dart}
 const Matcher throwsException = Throws(isException);
 
 /// A matcher for functions that throw FormatException.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_format_exception.dart}
 const Matcher throwsFormatException = Throws(isFormatException);
 
 /// A matcher for functions that throw NoSuchMethodError.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_no_such_method_error.dart}
 const Matcher throwsNoSuchMethodError = Throws(isNoSuchMethodError);
 
 /// A matcher for functions that throw NullThrownError.
@@ -59,19 +64,23 @@ const Matcher throwsNullThrownError = Throws(TypeMatcher<TypeError>());
 /// A matcher for functions that throw RangeError.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_range_error.dart}
 const Matcher throwsRangeError = Throws(isRangeError);
 
 /// A matcher for functions that throw StateError.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_state_error.dart}
 const Matcher throwsStateError = Throws(isStateError);
 
 /// A matcher for functions that throw Exception.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_unimplemented_error.dart}
 const Matcher throwsUnimplementedError = Throws(isUnimplementedError);
 
 /// A matcher for functions that throw UnsupportedError.
 ///
 /// See [throwsA] for objects that this can be matched against.
+/// {@example /example/throws/throws_unsupported_error.dart}
 const Matcher throwsUnsupportedError = Throws(isUnsupportedError);

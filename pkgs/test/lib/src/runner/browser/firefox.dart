@@ -42,7 +42,7 @@ class Firefox extends Browser {
     Uri url,
     ExecutableSettings settings,
   ) async {
-    var dir = createTempDir();
+    var dir = createTempDirectory('firefox.').path;
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
     var redirect = p.join(dir, 'redirect.html');

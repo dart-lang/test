@@ -9,12 +9,9 @@ import 'interfaces.dart';
 
 /// Returns a matcher that matches objects with type [T].
 ///
-/// ```dart
-/// expect(shouldBeDuration, isA<Duration>());
-/// ```
-///
 /// Expectations can be chained on top of the type using the
 /// [TypeMatcher.having] method to add additional constraints.
+/// {@example /example/type/is_a.dart}
 TypeMatcher<T> isA<T>() => TypeMatcher<T>();
 
 /// A [Matcher] subclass that supports validating the [Type] of the target
@@ -25,34 +22,12 @@ TypeMatcher<T> isA<T>() => TypeMatcher<T>();
 /// ```
 ///
 /// If you want to further validate attributes of the specified [Type], use the
-/// [having] function.
-///
-/// ```dart
-/// void shouldThrowRangeError(int value) {
-///   throw RangeError.range(value, 10, 20);
-/// }
-///
-/// expect(
-///     () => shouldThrowRangeError(5),
-///     throwsA(const TypeMatcher<RangeError>()
-///         .having((e) => e.start, 'start', greaterThanOrEqualTo(10))
-///         .having((e) => e.end, 'end', lessThanOrEqualTo(20))));
-/// ```
-///
-/// Notice that you can chain multiple calls to [having] to verify multiple
-/// aspects of an object.
+/// [having] function. Notice that you can chain multiple calls to [having] to
+/// verify multiple aspects of an object.
 ///
 /// Note: All of the top-level `isType` matchers exposed by this package are
 /// instances of [TypeMatcher], so you can use the [having] function without
 /// creating your own instance.
-///
-/// ```dart
-/// expect(
-///     () => shouldThrowRangeError(5),
-///     throwsA(isRangeError
-///         .having((e) => e.start, 'start', greaterThanOrEqualTo(10))
-///         .having((e) => e.end, 'end', lessThanOrEqualTo(20))));
-/// ```
 class TypeMatcher<T> extends Matcher {
   final String? _name;
 
@@ -74,15 +49,7 @@ class TypeMatcher<T> extends Matcher {
   ///
   /// Provides a human-readable [description] of the [feature] to make debugging
   /// failures easier.
-  ///
-  /// ```dart
-  /// /// Validates that the object is a [RangeError] with a message containing
-  /// /// the string 'details' and `start` and `end` properties that are `null`.
-  /// final _rangeMatcher = isRangeError
-  ///    .having((e) => e.message, 'message', contains('details'))
-  ///    .having((e) => e.start, 'start', isNull)
-  ///    .having((e) => e.end, 'end', isNull);
-  /// ```
+  /// {@example /example/type/having.dart}
   @useResult
   TypeMatcher<T> having(
     Object? Function(T) feature,

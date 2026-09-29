@@ -15,15 +15,11 @@ import 'util/pretty_print.dart';
 /// Returns a function that causes the test to fail if it's called.
 ///
 /// This can safely be passed in place of any callback that takes ten or fewer
-/// positional parameters. For example:
-///
-/// ```dart
-/// // Asserts that the stream never emits an event.
-/// stream.listen(neverCalled);
-/// ```
+/// positional parameters.
 ///
 /// This also ensures that the test doesn't complete until a call to
 /// [pumpEventQueue] finishes, so that the callback has a chance to be called.
+/// {@example /example/expect/never_called.dart}
 Null Function([
   Object?,
   Object?,

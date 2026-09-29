@@ -6,6 +6,7 @@ import 'interfaces.dart';
 import 'util.dart';
 
 /// Returns a matcher that inverts [valueOrMatcher] to its logical negation.
+/// {@example /example/operator/is_not.dart}
 Matcher isNot(Object? valueOrMatcher) => _IsNot(wrapMatcher(valueOrMatcher));
 
 class _IsNot extends Matcher {
@@ -28,6 +29,7 @@ class _IsNot extends Matcher {
 /// Instead of passing the matchers separately they can be passed as a single
 /// List argument. Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
+/// {@example /example/operator/all_of.dart}
 Matcher allOf(
   Object? arg0, [
   Object? arg1,
@@ -88,6 +90,7 @@ class _AllOf extends Matcher {
 ///
 /// Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
+/// {@example /example/operator/any_of.dart}
 Matcher anyOf(
   Object? arg0, [
   Object? arg1,

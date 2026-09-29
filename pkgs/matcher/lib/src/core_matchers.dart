@@ -8,6 +8,7 @@ import 'type_matcher.dart';
 import 'util.dart';
 
 /// Returns a matcher that matches the isEmpty property.
+/// {@example /example/core/is_empty.dart}
 const Matcher isEmpty = _Empty();
 
 class _Empty extends Matcher {
@@ -22,6 +23,7 @@ class _Empty extends Matcher {
 }
 
 /// Returns a matcher that matches the isNotEmpty property.
+/// {@example /example/core/is_not_empty.dart}
 const Matcher isNotEmpty = _NotEmpty();
 
 class _NotEmpty extends Matcher {
@@ -36,9 +38,11 @@ class _NotEmpty extends Matcher {
 }
 
 /// A matcher that matches any null value.
+/// {@example /example/core/is_null.dart}
 const Matcher isNull = _IsNull();
 
 /// A matcher that matches any non-null value.
+/// {@example /example/core/is_not_null.dart}
 const Matcher isNotNull = _IsNotNull();
 
 class _IsNull extends Matcher {
@@ -58,9 +62,11 @@ class _IsNotNull extends Matcher {
 }
 
 /// A matcher that matches the Boolean value true.
+/// {@example /example/core/is_true.dart}
 const Matcher isTrue = _IsTrue();
 
 /// A matcher that matches anything except the Boolean value true.
+/// {@example /example/core/is_false.dart}
 const Matcher isFalse = _IsFalse();
 
 class _IsTrue extends Matcher {
@@ -80,9 +86,11 @@ class _IsFalse extends Matcher {
 }
 
 /// A matcher that matches the numeric value NaN.
+/// {@example /example/core/is_nan.dart}
 const Matcher isNaN = _IsNaN();
 
 /// A matcher that matches any non-NaN value.
+/// {@example /example/core/is_not_nan.dart}
 const Matcher isNotNaN = _IsNotNaN();
 
 class _IsNaN extends FeatureMatcher<num> {
@@ -105,6 +113,7 @@ class _IsNotNaN extends FeatureMatcher<num> {
 
 /// Returns a matches that matches if the value is the same instance
 /// as [expected], using [identical].
+/// {@example /example/core/same.dart}
 Matcher same(Object? expected) => _IsSameAs(expected);
 
 class _IsSameAs extends Matcher {
@@ -119,6 +128,7 @@ class _IsSameAs extends Matcher {
 }
 
 /// A matcher that matches any value.
+/// {@example /example/core/anything.dart}
 const Matcher anything = _IsAnything();
 
 class _IsAnything extends Matcher {
@@ -144,6 +154,7 @@ class isInstanceOf<T> extends TypeMatcher<T> {
 /// The value passed to expect() should be a reference to the function.
 /// Note that the function cannot take arguments; to handle this
 /// a wrapper will have to be created.
+/// {@example /example/core/returns_normally.dart}
 const Matcher returnsNormally = _ReturnsNormally();
 
 class _ReturnsNormally extends FeatureMatcher<Function> {
@@ -181,13 +192,16 @@ class _ReturnsNormally extends FeatureMatcher<Function> {
 }
 
 /// A matcher for [Map].
+/// {@example /example/core/is_map.dart}
 const isMap = TypeMatcher<Map>();
 
 /// A matcher for [List].
+/// {@example /example/core/is_list.dart}
 const isList = TypeMatcher<List>();
 
 /// Returns a matcher that matches if an object has a length property
 /// that matches [matcher].
+/// {@example /example/core/has_length.dart}
 Matcher hasLength(Object? matcher) => _HasLength(wrapMatcher(matcher));
 
 class _HasLength extends Matcher {
@@ -231,6 +245,7 @@ class _HasLength extends Matcher {
 /// for [Map]s it means the map has the key, and for [Iterable]s
 /// it means the iterable has a matching element. In the case of iterables,
 /// [expected] can itself be a matcher.
+/// {@example /example/core/contains.dart}
 Matcher contains(Object? expected) => _Contains(expected);
 
 class _Contains extends Matcher {
@@ -278,6 +293,7 @@ class _Contains extends Matcher {
 
 /// Returns a matcher that matches if the match argument is in
 /// the expected value. This is the converse of [contains].
+/// {@example /example/core/is_in.dart}
 Matcher isIn(Object? expected) {
   if (expected is Iterable) {
     return _In(expected, expected.contains);
@@ -311,10 +327,6 @@ class _In<T> extends FeatureMatcher<T> {
 /// Returns a matcher that uses an arbitrary function that returns whether the
 /// value is considered a match.
 ///
-/// For example:
-///
-///     expect(actual, predicate<num>((v) => (v % 2) == 0, 'is even'));
-///
 /// Use this method when a value is checked for one conceptual property
 /// described by [description].
 ///
@@ -325,6 +337,7 @@ class _In<T> extends FeatureMatcher<T> {
 /// Using an explicit generict argument allows a passed function literal to have
 /// an inferred argument type of [T], and values of the wrong type will be
 /// rejected with an informative message.
+/// {@example /example/core/predicate.dart}
 Matcher predicate<T>(
   bool Function(T) f, [
   String description = 'satisfies function',

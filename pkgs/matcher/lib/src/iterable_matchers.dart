@@ -10,6 +10,7 @@ import 'util.dart';
 
 /// Returns a matcher which matches [Iterable]s in which all elements
 /// match the given [valueOrMatcher].
+/// {@example /example/iterable/every_element.dart}
 Matcher everyElement(Object? valueOrMatcher) =>
     _EveryElement(wrapMatcher(valueOrMatcher));
 
@@ -76,6 +77,7 @@ class _EveryElement extends _IterableMatcher {
 
 /// Returns a matcher which matches [Iterable]s in which at least one
 /// element matches the given [valueOrMatcher].
+/// {@example /example/iterable/any_element.dart}
 Matcher anyElement(Object? valueOrMatcher) =>
     _AnyElement(wrapMatcher(valueOrMatcher));
 
@@ -97,6 +99,7 @@ class _AnyElement extends _IterableMatcher {
 /// length and the same elements as [expected], in the same order.
 ///
 /// This is equivalent to [equals] but does not recurse.
+/// {@example /example/iterable/ordered_equals.dart}
 Matcher orderedEquals(Iterable expected) => _OrderedEquals(expected);
 
 class _OrderedEquals extends _IterableMatcher {
@@ -134,6 +137,7 @@ class _OrderedEquals extends _IterableMatcher {
 ///
 /// Note that this is worst case O(n^2) runtime and memory usage so it should
 /// only be used on small iterables.
+/// {@example /example/iterable/unordered_equals.dart}
 Matcher unorderedEquals(Iterable expected) => _UnorderedEquals(expected);
 
 class _UnorderedEquals extends _UnorderedMatches {
@@ -161,6 +165,7 @@ abstract class _IterableMatcher<T> extends FeatureMatcher<Iterable<T>> {
 ///
 /// Note that this is worst case O(n^2) runtime and memory usage so it should
 /// only be used on small iterables.
+/// {@example /example/iterable/unordered_matches.dart}
 Matcher unorderedMatches(Iterable expected) => _UnorderedMatches(expected);
 
 class _UnorderedMatches extends _IterableMatcher {
@@ -277,6 +282,7 @@ class _UnorderedMatches extends _IterableMatcher {
 /// The [comparator] function, taking an expected and an actual argument, and
 /// returning whether they match, will be applied to each pair in order.
 /// [description] should be a meaningful name for the comparator.
+/// {@example /example/iterable/pairwise_compare.dart}
 Matcher pairwiseCompare<S, T>(
   Iterable<S> expected,
   bool Function(S, T) comparator,
@@ -356,6 +362,7 @@ class _PairwiseCompare<S, T> extends _IterableMatcher {
 ///
 /// Note that this is worst case O(n^2) runtime and memory usage so it should
 /// only be used on small iterables.
+/// {@example /example/iterable/contains_all.dart}
 Matcher containsAll(Iterable expected) => _ContainsAll(expected);
 
 class _ContainsAll extends _UnorderedMatches {
@@ -377,6 +384,7 @@ class _ContainsAll extends _UnorderedMatches {
 /// `containsAllInOrder([2, 1])` or `containsAllInOrder([1, 2, 3])`.
 ///
 /// Will only match values which implement [Iterable].
+/// {@example /example/iterable/contains_all_in_order.dart}
 Matcher containsAllInOrder(Iterable expected) => _ContainsAllInOrder(expected);
 
 class _ContainsAllInOrder extends _IterableMatcher {
@@ -419,6 +427,7 @@ class _ContainsAllInOrder extends _IterableMatcher {
 
 /// Matches [Iterable]s where exactly one element matches the expected
 /// value, and all other elements don't match.
+/// {@example /example/iterable/contains_once.dart}
 Matcher containsOnce(Object? expected) => _ContainsOnce(expected);
 
 class _ContainsOnce extends _IterableMatcher {

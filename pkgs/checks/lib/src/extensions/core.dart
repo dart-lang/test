@@ -31,12 +31,16 @@ extension CoreChecks<T> on Subject<T> {
   /// void main() {
   ///   check(RegExp('^abc'))
   ///     ..pattern.contains('abc')
-  ///     ..isUnicode.isTrue();
+  ///     ..isUnicode.isTrue;
   /// }
   /// ```
+  ///
+  /// {@example /example/core/subject/has.dart}
   @meta.useResult
-  Subject<R> has<R>(R Function(T) extract, String name) {
-    return context.nest(() => ['has $name'], (value) {
+  Subject<R> has<R>(R Function(T) extract, String name) => context.nest(
+    () => ['has $name'],
+    addPredicate: (predicateNoun) => 'has $name: $predicateNoun',
+    (value) {
       try {
         return Extracted.value(extract(value));
       } catch (e, st) {
@@ -50,8 +54,8 @@ extension CoreChecks<T> on Subject<T> {
           ],
         );
       }
-    });
-  }
+    },
+  );
 
   /// Applies the expectations invoked in [condition] to this subject.
   ///
@@ -62,23 +66,27 @@ extension CoreChecks<T> on Subject<T> {
   /// ```
   /// check(something)
   ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
-  ///   ..has((s) => s.bar, 'bar').which((b) => b
+  ///   ..has((s) => s.bar, 'bar').which(.it()
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```
-  void which(Condition<T> condition) => condition(this);
+  ///
+  /// {@example /example/core/subject/which.dart}
+  void which(Condition<T> condition) => condition.applySync(this);
 
   /// Check that the expectations invoked in [condition] are not satisfied by
   /// this value.
   ///
   /// Asynchronous expectations are not allowed in [condition].
+  ///
+  /// {@example /example/core/subject/not.dart}
   void not(Condition<T> condition) {
     context.expect(
-      () => ['is not a value that:', ...indent(describe(condition))],
+      () => ['is not a value that:', ...indent(condition.describeSync())],
       (actual) {
-        if (softCheck(actual, condition) != null) return null;
+        if (condition.softCheckSync(actual) != null) return null;
         return Rejection(
-          which: ['is a value that: ', ...indent(describe(condition))],
+          which: ['is a value that:', ...indent(condition.describeSync())],
         );
       },
     );
@@ -88,12 +96,14 @@ extension CoreChecks<T> on Subject<T> {
   /// condition from [conditions].
   ///
   /// Asynchronous expectations are not allowed in [conditions].
+  ///
+  /// {@example /example/core/subject/any_of.dart}
   void anyOf(Iterable<Condition<T>> conditions) {
     context.expect(
       () => prefixFirst('matches any condition in ', literal(conditions)),
       (actual) {
         for (final condition in conditions) {
-          if (softCheck(actual, condition) == null) return null;
+          if (condition.softCheckSync(actual) == null) return null;
         }
         return Rejection(which: ['did not match any condition']);
       },
@@ -103,16 +113,20 @@ extension CoreChecks<T> on Subject<T> {
   /// Expects that the value is assignable to type [T].
   ///
   /// If the value is a [T], returns a [Subject] for further expectations.
-  Subject<R> isA<R>() {
-    return context.nest<R>(() => ['is a $R'], (actual) {
+  ///
+  /// {@example /example/core/subject/is_a.dart}
+  Subject<R> isA<R>([Condition<R>? and]) {
+    return context.nest<R>(() => ['is a $R'], atSameLevel: true, (actual) {
       if (actual is! R) {
-        return Extracted.rejection(which: ['Is a ${actual.runtimeType}']);
+        return Extracted.rejection(which: ['is a ${actual.runtimeType}']);
       }
       return Extracted.value(actual);
-    }, atSameLevel: true);
+    }, nestedCondition: and);
   }
 
   /// Expects that the value is not assignable to type [R].
+  ///
+  /// {@example /example/core/subject/is_not_a.dart}
   void isNotA<R>() {
     context.expect(() => ['is not a $R'], (actual) {
       if (actual is R) {
@@ -123,37 +137,55 @@ extension CoreChecks<T> on Subject<T> {
   }
 
   /// Expects that the value is equal to [other] according to [operator ==].
+  ///
+  /// {@example /example/core/subject/equals.dart}
   void equals(T other) {
-    context.expect(() => prefixFirst('equals ', literal(other)), (actual) {
-      if (actual == other) return null;
-      return Rejection(which: ['are not equal']);
-    });
+    context.expect(
+      () => prefixFirst('equals ', literal(other)),
+      predicateNoun: () => literal(other).singleOrNull,
+      (actual) {
+        if (actual == other) return null;
+        return Rejection(which: ['is not equal']);
+      },
+    );
   }
 
   /// Expects that the value is [identical] to [other].
+  ///
+  /// {@example /example/core/subject/identical_to.dart}
   void identicalTo(T other) {
-    context.expect(() => prefixFirst('is identical to ', literal(other)), (
-      actual,
-    ) {
-      if (identical(actual, other)) return null;
-      return Rejection(which: ['is not identical']);
-    });
+    context.expect(
+      () => prefixFirst('is identical to ', literal(other)),
+      predicateNoun: () => literal(other).singleOrNull,
+      (actual) {
+        if (identical(actual, other)) return null;
+        return Rejection(which: ['is not identical']);
+      },
+    );
   }
 }
 
 extension BoolChecks on Subject<bool> {
-  void isTrue() {
+  /// Expects that the value is `true`.
+  ///
+  /// {@example /example/core/bool/is_true.dart}
+  void get isTrue {
     context.expect(
       () => ['is true'],
+      predicateNoun: () => 'true',
       (actual) => actual
           ? null // force coverage
           : Rejection(),
     );
   }
 
-  void isFalse() {
+  /// Expects that the value is `false`.
+  ///
+  /// {@example /example/core/bool/is_false.dart}
+  void get isFalse {
     context.expect(
       () => ['is false'],
+      predicateNoun: () => 'false',
       (actual) => !actual
           ? null // force coverage
           : Rejection(),
@@ -162,38 +194,60 @@ extension BoolChecks on Subject<bool> {
 }
 
 extension NullableChecks<T> on Subject<T?> {
-  Subject<T> isNotNull() {
-    return context.nest<T>(() => ['is not null'], (actual) {
+  /// Expects that the value is not `null`, and returns a [Subject] for the
+  /// non-nullable value.
+  ///
+  /// {@example /example/core/nullable/is_not_null.dart}
+  Subject<T> isNotNull([Condition<T>? and]) {
+    return context.nest<T>(() => ['is not null'], atSameLevel: true, (actual) {
       if (actual == null) return Extracted.rejection();
       return Extracted.value(actual);
-    }, atSameLevel: true);
+    }, nestedCondition: and);
   }
 
-  void isNull() {
-    context.expect(() => const ['is null'], (actual) {
-      if (actual != null) return Rejection();
-      return null;
+  /// Expects that the value is `null`.
+  ///
+  /// {@example /example/core/nullable/is_null.dart}
+  void get isNull {
+    context.expect(() => const ['is null'], predicateNoun: () => 'null', (
+      actual,
+    ) {
+      if (actual == null) return null;
+      return Rejection();
     });
   }
 }
 
 extension ComparableChecks<T> on Subject<Comparable<T>> {
   /// Expects that this value is greater than [other].
+  ///
+  /// {@example /example/core/comparable/is_greater_than.dart}
   void isGreaterThan(T other) {
-    context.expect(() => prefixFirst('is greater than ', literal(other)), (
-      actual,
-    ) {
-      if (actual.compareTo(other) > 0) return null;
-      return Rejection(
-        which: prefixFirst('is not greater than ', literal(other)),
-      );
-    });
+    context.expect(
+      () => prefixFirst('is greater than ', literal(other)),
+      predicateNoun: () {
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value > $l' : null;
+      },
+      (actual) {
+        if (actual.compareTo(other) > 0) return null;
+        return Rejection(
+          which: prefixFirst('is not greater than ', literal(other)),
+        );
+      },
+    );
   }
 
   /// Expects that this value is greater than or equal to [other].
+  ///
+  /// {@example /example/core/comparable/is_greater_or_equal.dart}
   void isGreaterOrEqual(T other) {
     context.expect(
       () => prefixFirst('is greater than or equal to ', literal(other)),
+      predicateNoun: () {
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value >= $l' : null;
+      },
       (actual) {
         if (actual.compareTo(other) >= 0) return null;
         return Rejection(
@@ -207,19 +261,34 @@ extension ComparableChecks<T> on Subject<Comparable<T>> {
   }
 
   /// Expects that this value is less than [other].
+  ///
+  /// {@example /example/core/comparable/is_less_than.dart}
   void isLessThan(T other) {
-    context.expect(() => prefixFirst('is less than ', literal(other)), (
-      actual,
-    ) {
-      if (actual.compareTo(other) < 0) return null;
-      return Rejection(which: prefixFirst('is not less than ', literal(other)));
-    });
+    context.expect(
+      () => prefixFirst('is less than ', literal(other)),
+      predicateNoun: () {
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value < $l' : null;
+      },
+      (actual) {
+        if (actual.compareTo(other) < 0) return null;
+        return Rejection(
+          which: prefixFirst('is not less than ', literal(other)),
+        );
+      },
+    );
   }
 
   /// Expects that this value is less than or equal to [other].
+  ///
+  /// {@example /example/core/comparable/is_less_or_equal.dart}
   void isLessOrEqual(T other) {
     context.expect(
       () => prefixFirst('is less than or equal to ', literal(other)),
+      predicateNoun: () {
+        final l = literal(other).singleOrNull;
+        return l != null ? 'a value <= $l' : null;
+      },
       (actual) {
         if (actual.compareTo(other) <= 0) return null;
         return Rejection(

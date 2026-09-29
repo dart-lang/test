@@ -54,6 +54,7 @@ typedef ErrorFormatter =
 /// the test doesn't complete until the matcher has either matched or failed. If
 /// you want to wait for the matcher to complete before continuing the test, you
 /// can call [expectLater] instead and `await` the result.
+/// {@example /example/expect/expect.dart}
 void expect(
   dynamic actual,
   dynamic matcher, {
@@ -83,6 +84,7 @@ void expect(
 ///
 /// If the matcher fails asynchronously, that failure is piped to the returned
 /// future where it can be handled by user code.
+/// {@example /example/expect/expect_later.dart}
 Future expectLater(
   dynamic actual,
   dynamic matcher, {
@@ -184,6 +186,7 @@ Future _expect(
 
 /// Convenience method for throwing a new [TestFailure] with the provided
 /// [message].
+/// {@example /example/expect/fail.dart}
 Never fail(String message) => throw TestFailure(message);
 
 // The default error formatter.

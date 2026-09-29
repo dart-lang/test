@@ -129,6 +129,12 @@ final ArgParser _parser = (() {
     'shard-index',
     help: 'The index of this test runner invocation (of --total-shards).',
   );
+  parser.addFlag(
+    'shard-by-suite',
+    help:
+        'Distribute entire test suites (_test.dart files) across shards instead of individual tests.',
+    negatable: false,
+  );
   parser.addOption(
     'pub-serve',
     help: '[Removed] The port of a pub serve instance serving "test/".',
@@ -379,6 +385,7 @@ class _Parser {
 
     var shardIndex = _parseOption('shard-index', int.parse);
     var totalShards = _parseOption('total-shards', int.parse);
+    var shardBySuite = _ifParsed('shard-by-suite') as bool?;
     if ((shardIndex == null) != (totalShards == null)) {
       throw const FormatException(
         '--shard-index and --total-shards may only be passed together.',
@@ -477,6 +484,7 @@ class _Parser {
       concurrency: _parseOption('concurrency', int.parse),
       shardIndex: shardIndex,
       totalShards: totalShards,
+      shardBySuite: shardBySuite,
       timeout: _parseOption('timeout', Timeout.parse),
       suiteLoadTimeout: _parseOption('suite-load-timeout', Timeout.parse),
       globalPatterns: patterns,

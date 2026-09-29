@@ -4,7 +4,6 @@
 
 export 'src/checks.dart'
     show
-        AsyncCondition,
         AsyncConditionDisallowed,
         CheckFailure,
         Condition,
@@ -13,10 +12,6 @@ export 'src/checks.dart'
         Extracted,
         FailureDetail,
         Rejection,
-        Subject,
-        describe,
-        describeAsync,
-        softCheck,
-        softCheckAsync;
+        Subject;
 export 'src/describe.dart'
     show escape, indent, literal, postfixLast, prefixFirst;
