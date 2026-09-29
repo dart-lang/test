@@ -259,16 +259,19 @@ class Runner {
     // We close the loader's browsers while we're closing the engine because
     // browser tests don't store any state we care about and we want them to
     // shut down without waiting for their tear-downs.
-    await Future.wait([_loader.closeEphemeral(), _engine.close()]);
-    timer?.cancel();
-    await _loader.close();
-
-    // Every platform has been closed, so nothing should be using any temporary
-    // files any more.
-    await deleteRunnerTempDirectory();
+    try {
+      await [_loader.closeEphemeral(), _engine.close()].wait;
+      timer?.cancel();
+      await _loader.close();
+    } finally {
+      // Every platform has been closed, so nothing should be using any
+      // temporary files any more. If closing failed, delete them anyway, since
+      // the runner is exiting.
+      await deleteRunnerTempDirectory();
+    }
 
     // Flush any IOSinks created for file reporters.
-    await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
+    await _sinks.map((s) => s.flush().then((_) => s.close())).wait;
     _sinks.clear();
   });
 

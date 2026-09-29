@@ -11,6 +11,13 @@
   interrupted by a second signal (e.g. pressing Ctrl-C twice).
 * Bundle skipped tests into a single group at the end of the GitHub reporter
   output instead of interrupting passing test groups.
+* Delete the kernel file for a test suite once it has finished running, instead
+  of keeping every kernel file until the end of the run.
+* Compile each test suite for the `exe` and `cli` compilers into a directory of
+  its own, and delete it once the test process has exited, instead of keeping
+  every compiled snapshot or bundle until the end of the run.
+* Fail to load a test suite compiled with the `exe` or `cli` compiler if the
+  test process exits before connecting to the runner, instead of hanging.
 
 ## 0.6.20
 
