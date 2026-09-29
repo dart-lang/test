@@ -75,7 +75,7 @@ void main() {
     check(_testIterable).any(.it()..equals(1));
     check(_testIterable).isRejectedBy(
       .it()..any(.it()..equals(2)),
-      which: ['Contains no matching element'],
+      which: ['contains no matching element'],
     );
   });
 
@@ -285,8 +285,8 @@ void main() {
         which: [
           'does not have an element at index 1 that:',
           '  is less than <1>',
-          'Actual element at index 1: <1>',
-          'Which: is not less than <1>',
+          '  Actual element at index 1: <1>',
+          '  Which: is not less than <1>',
         ],
       );
     });

@@ -34,7 +34,7 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
   bool _closed = false;
 
   /// The temporary directory in which compiled JS is emitted.
-  final _compiledDir = createTempDir();
+  final _compiledDir = createTempDirectory('dart2js.').path;
 
   /// A map from test suite paths to Futures that will complete once those
   /// suites are finished compiling.

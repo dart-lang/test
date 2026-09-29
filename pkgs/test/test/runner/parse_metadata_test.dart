@@ -6,9 +6,7 @@
 library;
 
 import 'package:test/test.dart';
-import 'package:test_api/src/backend/platform_selector.dart';
-import 'package:test_api/src/backend/runtime.dart';
-import 'package:test_api/src/backend/suite_platform.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_core/src/runner/parse_metadata.dart';
 
 final _path = 'test.dart';

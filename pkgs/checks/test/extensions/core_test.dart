@@ -14,7 +14,7 @@ void main() {
         check(1).isA<int>();
       });
       test('failure case', () {
-        check(1).isRejectedBy(.it()..isA<String>(), which: ['Is a int']);
+        check(1).isRejectedBy(.it()..isA<String>(), which: ['is a int']);
       });
       test('evaluates condition', () {
         check(1).isRejectedBy(
@@ -66,7 +66,7 @@ void main() {
       check(false).not(.it()..isTrue);
       check(true).isRejectedBy(
         .it()..not(.it()..isTrue),
-        which: ['is a value that: ', '    is true'],
+        which: ['is a value that:', '    is true'],
       );
     });
 

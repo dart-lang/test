@@ -15,6 +15,7 @@ import 'util.dart';
 /// For [Iterable]s and [Map]s, this will recursively match the elements. To
 /// handle cyclic structures a recursion depth [limit] can be provided. The
 /// default limit is 100. [Set]s will be compared order-independently.
+/// {@example /example/equals/equals.dart}
 Matcher equals(Object? expected, [int limit = 100]) => expected is String
     ? _StringEqualsMatcher(expected)
     : _DeepMatcher(expected, limit);

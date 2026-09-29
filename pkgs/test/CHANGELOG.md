@@ -1,6 +1,17 @@
 ## 1.33.0-wip
 
 * Replace the Safari launch mechanism to use `safaridriver`.
+* Fix a hang when the runner is interrupted at the moment a test suite starts
+  loading.
+* Fix a `LiveTest.run() may not be called for a closed test` error when the
+  runner is interrupted at the moment a test suite is about to start loading.
+* Create all temporary directories used by the test runner, including browser
+  profiles and compiler output, under a single `dart_test.` directory which is
+  deleted when the run finishes.
+* Delete the temporary directory when the test runner is interrupted with
+  Control-C twice.
+* Bundle skipped tests into a single group at the end of the GitHub reporter
+  output instead of interrupting passing test groups.
 
 ## 1.32.0
 

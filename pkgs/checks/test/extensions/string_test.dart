@@ -200,22 +200,36 @@ void main() {
       test('allows missing leading/trailing whitespace', () {
         check('foo').equalsIgnoringWhitespace(' foo ');
       });
-      test('reports original extra characters for long string', () {
+      test('reports collapsed extra characters for long string', () {
         check('foo \t bar \n baz').isRejectedBy(
           .it()..equalsIgnoringWhitespace('foo bar'),
-          which: ['is too long with unexpected trailing characters:', ' baz'],
+          which: [
+            "with whitespace collapsed to 'foo bar baz' it:",
+            '  is too long with unexpected trailing characters:',
+            '   baz',
+          ],
         );
       });
-      test('reports original missing characters for short string', () {
+      test('reports collapsed missing characters for short string', () {
         check('foo  bar').isRejectedBy(
           .it()..equalsIgnoringWhitespace('foo bar baz'),
-          which: ['is too short with missing trailing characters:', ' baz'],
+          which: [
+            "with whitespace collapsed to 'foo bar' it:",
+            '  is too short with missing trailing characters:',
+            '   baz',
+          ],
         );
       });
-      test('reports index of different character with original characters', () {
+      test('reports index of different character in collapsed string', () {
         check('x  hit  x').isRejectedBy(
           .it()..equalsIgnoringWhitespace('x hat x'),
-          which: ['differs at offset 3:', '  x hat x', '  x hit x', '     ^'],
+          which: [
+            "with whitespace collapsed to 'x hit x' it:",
+            '  differs at offset 3:',
+            '    x hat x',
+            '    x hit x',
+            '       ^',
+          ],
         );
       });
     });

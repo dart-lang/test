@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
@@ -42,7 +42,7 @@ class Firefox extends Browser {
     Uri url,
     ExecutableSettings settings,
   ) async {
-    var dir = createTempDir();
+    var dir = createTempDirectory('firefox.').path;
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
     var redirect = p.join(dir, 'redirect.html');

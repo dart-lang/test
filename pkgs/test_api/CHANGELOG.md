@@ -1,3 +1,7 @@
+## 0.7.15-wip
+
+* export `LocalTest`, `MessageType`, `Status`, `Suite` from `backend.dart`.
+
 ## 0.7.14
 
 * Add `globalSetup` and `addGlobalTearDown` APIs to run setup scripts once on

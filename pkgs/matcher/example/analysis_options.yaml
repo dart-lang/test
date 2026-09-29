@@ -1,0 +1,9 @@
+# The examples record real failure output verbatim in comments so that
+# `test/example_test.dart` can verify it. Those comments cannot be reflowed
+# without breaking the comparison, and some messages are longer than 80
+# characters at the indentation a test body requires.
+include: ../analysis_options.yaml
+
+analyzer:
+  errors:
+    lines_longer_than_80_chars: ignore

@@ -54,7 +54,7 @@ void main() {
       );
       await signalAndQuit(test);
 
-      expectTempDirEmpty(skip: 'Failing on Travis.');
+      expectTempDirEmpty();
     }, tags: 'chrome');
 
     test('exits immediately if ^C is sent twice', () async {
@@ -75,6 +75,8 @@ void main() {
       await Future<void>.delayed(const Duration(seconds: 1));
 
       await signalAndQuit(test);
+
+      expectTempDirEmpty();
     });
   });
 
@@ -159,7 +161,7 @@ void main() {
       await expectLater(test.stdout, emitsThrough('running test'));
       await signalAndQuit(test);
 
-      expectTempDirEmpty(skip: 'Failing on Travis.');
+      expectTempDirEmpty();
     }, tags: 'chrome');
 
     test('kills a VM test immediately if ^C is sent twice', () async {
@@ -183,6 +185,8 @@ void main() {
       // one. Remove this hack when issue 23047 is fixed.
       await Future<void>.delayed(const Duration(seconds: 1));
       await signalAndQuit(test);
+
+      expectTempDirEmpty();
     });
 
     test('causes expectAsync() to always throw an error immediately', () async {
@@ -235,6 +239,8 @@ Future<void> signalAndQuit(TestProcess test) async {
   await expectLater(test.stderr, emitsDone);
 }
 
-void expectTempDirEmpty({Object? skip}) {
-  expect(Directory(_tempDir).listSync(), isEmpty, skip: skip);
+void expectTempDirEmpty() {
+  var dir = Directory(_tempDir);
+  var entries = dir.existsSync() ? dir.listSync() : const <FileSystemEntity>[];
+  expect(entries, isEmpty);
 }

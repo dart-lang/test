@@ -39,7 +39,7 @@ class Dart2JsCompilerPool extends CompilerPool {
     String path,
     SuiteConfiguration suiteConfig,
   ) {
-    return withTempDir((dir) async {
+    return withTempDir('dart2js.', (dir) async {
       var wrapperPath = p.join(dir, 'runInBrowser.dart');
       File(wrapperPath).writeAsStringSync(code);
 

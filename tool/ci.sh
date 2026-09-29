@@ -1,5 +1,5 @@
 #!/bin/bash
-# Created with package:mono_repo v6.7.2
+# Created with package:mono_repo v6.8.2
 
 # Support built in commands on windows out of the box.
 
@@ -72,8 +72,8 @@ for PKG in ${PKGS}; do
         dart analyze || EXIT_CODE=$?
         ;;
       command_00)
-        echo 'dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s'
-        dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=20s || EXIT_CODE=$?
+        echo 'dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=60s'
+        dart test -p chrome,vm -c dart2js,exe -r expanded --suite-load-timeout=60s || EXIT_CODE=$?
         ;;
       command_01)
         echo 'xvfb-run -s "-screen 0 1024x768x24" dart test --timeout=60s'

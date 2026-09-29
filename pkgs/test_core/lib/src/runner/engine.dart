@@ -8,13 +8,9 @@ import 'dart:math';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
@@ -529,7 +525,18 @@ class Engine {
 
     // Schedule a microtask to ensure that [onTestStarted] fires before the
     // first [LiveTest.onStateChange] event.
-    await Future.microtask(liveTest.run);
+    await null;
+    // The engine may have been closed while the microtask was pending, in
+    // which case the load test has been closed too (or is about to be) and
+    // running it would throw. There's nothing to load for a closed engine
+    // anyways.
+    if (_closed) return null;
+    await liveTest.run();
+
+    // The load test has finished, so no suite will be loaded if one hasn't
+    // been already. This is a no-op unless the test was closed before its body
+    // ran, in which case nothing else would ever complete the suite.
+    suite.ensureComplete();
 
     var innerSuite = await suite.suite;
     if (innerSuite == null) return null;

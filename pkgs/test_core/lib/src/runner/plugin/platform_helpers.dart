@@ -8,9 +8,7 @@ import 'dart:io';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
-    show Metadata, RemoteException, SuitePlatform, TestLocation;
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
+    show Group, Metadata, RemoteException, SuitePlatform, Test, TestLocation;
 
 import '../configuration.dart';
 import '../environment.dart';

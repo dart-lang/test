@@ -42,7 +42,7 @@ class VMPlatform extends PlatformPlugin {
     p.join(p.current, '.dart_tool', 'test', 'incremental_kernel'),
   );
   final _closeMemo = AsyncMemoizer<void>();
-  final _tempDir = Directory.systemTemp.createTempSync('dart_test.vm.');
+  final _tempDir = createTempDirectory('vm.');
 
   @override
   Future<RunnerSuite?> load(
@@ -65,7 +65,7 @@ class VMPlatform extends PlatformPlugin {
         path,
         suiteConfig.metadata,
       );
-      var dir = Directory(_tempDir.path).createTempSync('exec_').path;
+      var dir = createTempDirectory('exec.').path;
       var socketPath = p.join(dir, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),

@@ -5,13 +5,7 @@
 import 'dart:async';
 
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 
 import '../util/io_stub.dart' if (dart.library.io) '../util/io.dart';
 import 'load_exception.dart';
@@ -58,6 +52,29 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// This will return `null` if the suite is unavailable for some reason (for
   /// example if an error occurred while loading it).
   final Future<({RunnerSuite suite, Zone zone})?> _suiteAndZone;
+
+  /// The completer at the root of [_suiteAndZone].
+  ///
+  /// This is completed by the load test's body, either when the suite has
+  /// loaded or when the load test completes. If the load test is closed before
+  /// its body ever runs neither of those happen, so [ensureComplete]
+  /// completes it instead.
+  ///
+  /// This is not always the immediate source of [_suiteAndZone]: [changeSuite]
+  /// derives a new future from the old one, and the instance it creates shares
+  /// the original completer. Completing this still resolves those derived
+  /// futures, which is why the completer is tracked separately rather than
+  /// using [_suiteAndZone] directly.
+  final Completer<({RunnerSuite suite, Zone zone})?> _completer;
+
+  /// Completes [suite] with `null` unless it has already been completed.
+  ///
+  /// This should be called once the load test has finished running; if the
+  /// test was closed before its body ran then nothing else will ever complete
+  /// [suite], and anything waiting on it would wait forever.
+  void ensureComplete() {
+    if (!_completer.isCompleted) _completer.complete();
+  }
 
   /// Returns the test that loads the suite.
   ///
@@ -121,7 +138,7 @@ class LoadSuite extends Suite implements RunnerSuite {
         // have timeouts.
         invoker.onClose.then((_) => invoker.removeOutstandingCallback());
       },
-      completer.future,
+      completer,
       path: path,
       ignoreTimeouts: config.ignoreTimeouts,
     );
@@ -163,10 +180,12 @@ class LoadSuite extends Suite implements RunnerSuite {
     this.config,
     SuitePlatform platform,
     void Function() body,
-    this._suiteAndZone, {
+    Completer<({RunnerSuite suite, Zone zone})?> completer, {
     required super.ignoreTimeouts,
     super.path,
-  }) : super(
+  }) : _completer = completer,
+       _suiteAndZone = completer.future,
+       super(
          Group.root([
            LocalTest(name, Metadata(timeout: config.suiteLoadTimeout), body),
          ]),
@@ -176,6 +195,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// A constructor used by [changeSuite].
   LoadSuite._changeSuite(LoadSuite old, this._suiteAndZone)
     : config = old.config,
+      _completer = old._completer,
       super(
         old.group,
         old.platform,
@@ -186,6 +206,7 @@ class LoadSuite extends Suite implements RunnerSuite {
   /// A constructor used by [filter].
   LoadSuite._filtered(LoadSuite old, Group filtered)
     : config = old.config,
+      _completer = old._completer,
       _suiteAndZone = old._suiteAndZone,
       super(
         old.group,
@@ -224,6 +245,7 @@ class LoadSuite extends Suite implements RunnerSuite {
     var liveTest = test.load(this);
     liveTest.onMessage.listen((message) => print(message.text));
     await liveTest.run();
+    ensureComplete();
 
     if (liveTest.errors.isEmpty) return await suite;
 

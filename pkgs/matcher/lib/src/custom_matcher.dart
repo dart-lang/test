@@ -16,22 +16,8 @@ import 'util.dart';
 /// [featureValueOf] abstract method.
 ///
 /// The feature description will typically describe the item and the feature,
-/// while the feature name will just name the feature. For example, we may
-/// have a Widget class where each Widget has a price; we could make a
-/// [CustomMatcher] that can make assertions about prices with:
-///
-/// ```dart
-/// class HasPrice extends CustomMatcher {
-///   HasPrice(matcher) : super("Widget with price that is", "price", matcher);
-///   featureValueOf(actual) => (actual as Widget).price;
-/// }
-/// ```
-///
-/// and then use this for example like:
-///
-/// ```dart
-/// expect(inventoryItem, HasPrice(greaterThan(0)));
-/// ```
+/// while the feature name will just name the feature.
+/// {@example /example/expect/custom_matcher.dart}
 class CustomMatcher extends Matcher {
   final String _featureDescription;
   final String _featureName;

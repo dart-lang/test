@@ -86,5 +86,118 @@ void main() {
         check(() => 1).returnsNormally().equals(1);
       });
     });
+
+    group('prints', () {
+      test('succeeds for happy case', () {
+        check(() => print('Hello, world!')).prints().equals('Hello, world!\n');
+      });
+
+      test('combines multiple prints', () {
+        check(() {
+          print('Hello');
+          print('world!');
+        }).prints().equals('Hello\nworld!\n');
+      });
+
+      test('works with empty output', () {
+        check(() {}).prints(.it()..isEmpty);
+      });
+
+      test('fails for functions that print different output', () {
+        check(() => print('Hello, world!')).isRejectedBy(
+          .it()..prints(.it()..equals('Goodbye, world!\n')),
+          actual: ["'Hello, world!'"],
+          which: [
+            'differs at offset 0:',
+            '  Goodbye, w ...',
+            '  Hello, wor ...',
+            '  ^',
+          ],
+        );
+      });
+
+      test('fails for functions that throw synchronously', () {
+        check<void Function()>(() {
+          Error.throwWithStackTrace(
+            StateError('oops!'),
+            StackTrace.fromString('fake trace'),
+          );
+        }).isRejectedBy(
+          .it()..prints(),
+          actual: ['a function that throws'],
+          which: ['threw <Bad state: oops!> at:', '  fake trace'],
+        );
+      });
+
+      test('asserts if a void Function() returns a Future at runtime', () {
+        Future<void> asyncFn() async {}
+        final void Function() fn = asyncFn;
+        check(() => check(fn).prints()).throws<AssertionError>();
+      });
+    });
+
+    group('prints (async)', () {
+      test('succeeds for happy case', () async {
+        await check(
+          () => Future(() => print('Hello, world!')),
+        ).prints(.it()..equals('Hello, world!\n'));
+      });
+
+      test('combines multiple prints in async functions', () async {
+        await check(() async {
+          print('Hello');
+          await Future<void>.delayed(Duration.zero);
+          print('world!');
+        }).prints(.it()..equals('Hello\nworld!\n'));
+      });
+
+      test('works with empty output', () async {
+        await check(() async {}).prints(.it()..isEmpty);
+      });
+
+      test('fails for async functions that print different output', () async {
+        await check(
+          () => Future(() => print('Hello, world!')),
+        ).isRejectedByAsync(
+          .it()..prints(.it()..equals('Goodbye, world!\n')),
+          actual: ["'Hello, world!'"],
+          which: [
+            'differs at offset 0:',
+            '  Goodbye, w ...',
+            '  Hello, wor ...',
+            '  ^',
+          ],
+        );
+      });
+
+      test('fails for async functions that complete with an error', () async {
+        await check(() async {
+          await Future<void>.delayed(Duration.zero);
+          Error.throwWithStackTrace(
+            StateError('oops!'),
+            StackTrace.fromString('fake trace'),
+          );
+        }).isRejectedByAsync(
+          .it()..prints(),
+          actual: ['a function that throws'],
+          which: ['threw <Bad state: oops!> at:', '  fake trace'],
+        );
+      });
+
+      test('fails for synchronous errors in Future<void> Function()', () async {
+        await check(
+          () => Future<void>.sync(() {
+            Error.throwWithStackTrace(
+              StateError('oops!'),
+              StackTrace.fromString('fake trace'),
+            );
+          }),
+        ).isRejectedByAsync(
+          .it()..prints(),
+          actual: ['a function that throws'],
+          which: ['threw <Bad state: oops!> at:', '  fake trace'],
+        );
+      });
+    });
   });
 }

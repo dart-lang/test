@@ -19,6 +19,8 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [completionCondition] has optionally been checked.
+  ///
+  /// {@example /example/async/future/completes.dart}
   @awaitNotRequired
   Future<Subject<T>> completes([Condition<T>? completionCondition]) {
     return context.nestAsync<T>(
@@ -51,6 +53,8 @@ extension FutureChecks<T> on Subject<Future<T>> {
   /// Not compatible with [Condition.softCheck] or [Condition.softCheckSync]
   /// since there is no concrete end point where this condition has definitely
   /// succeeded.
+  ///
+  /// {@example /example/async/future/does_not_complete.dart}
   void get doesNotComplete {
     context.expectUnawaited(() => ['does not complete'], (actual, reject) {
       unawaited(
@@ -87,6 +91,8 @@ extension FutureChecks<T> on Subject<Future<T>> {
   ///
   /// The returned future will complete when the subject future has completed,
   /// and [errorCondition] has optionally been checked.
+  ///
+  /// {@example /example/async/future/throws.dart}
   @awaitNotRequired
   Future<Subject<E>> throws<E extends Object>([Condition<E>? errorCondition]) {
     return context.nestAsync<E>(
@@ -153,6 +159,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [emittedCondition] has optionally been checked.
+  ///
+  /// {@example /example/async/stream_queue/emits.dart}
   @awaitNotRequired
   Future<Subject<T>> emits([Condition<T>? emittedCondition]) {
     return context.nestAsync<T>(
@@ -197,6 +205,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// The returned future will complete when the stream has emitted, errored, or
   /// ended, and the [errorCondition] has optionally been checked.
+  ///
+  /// {@example /example/async/stream_queue/emits_error.dart}
   @awaitNotRequired
   Future<Subject<E>> emitsError<E extends Object>([
     Condition<E>? errorCondition,
@@ -247,6 +257,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes the matching event and all prior
   /// events.
+  ///
+  /// {@example /example/async/stream_queue/emits_through.dart}
   @awaitNotRequired
   Future<void> emitsThrough(Condition<T> condition) async {
     await _expectAsync(
@@ -281,17 +293,12 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// next. Subsequent conditions will not see any events consumed by earlier
   /// conditions.
   ///
-  /// ```dart
-  /// await check(someStream).withQueue.inOrder([
-  ///   (s) => s.emits((e) => e.equals(0)),
-  ///   (s) => s.emits((e) => e.equals(1)),
-  /// ]);
-  /// ```
-  ///
   /// If this expectation fails, the source queue will be left in its original
   /// state.
   /// If this expectation succeeds, consumes as many events from the source
   /// stream as are consumed by all the conditions.
+  ///
+  /// {@example /example/async/stream_queue/in_order.dart}
   @awaitNotRequired
   Future<void> inOrder(Iterable<Condition<StreamQueue<T>>> conditions) async {
     conditions = conditions.toList();
@@ -357,6 +364,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// If this expectation succeeds, consumes the same events from the source
   /// queue as the satisfied condition. If multiple conditions are satisfied,
   /// chooses the condition which consumed the most events.
+  ///
+  /// {@example /example/async/stream_queue/any_of.dart}
   @awaitNotRequired
   Future<void> anyOf(Iterable<Condition<StreamQueue<T>>> conditions) {
     conditions = conditions.toList();
@@ -452,6 +461,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// state.
   /// If this expectation succeeds, consumes all the events that did not satisfy
   /// [condition] until the end of the stream.
+  ///
+  /// {@example /example/async/stream_queue/never_emits.dart}
   @awaitNotRequired
   Future<void> neverEmits(Condition<T> condition) async {
     await _expectAsync(
@@ -487,6 +498,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If a non-matching event is emitted, no events are consumed.
   /// If a matching event is emitted, that event is consumed.
+  ///
+  /// {@example /example/async/stream_queue/may_emit.dart}
   @awaitNotRequired
   Future<void> mayEmit(Condition<T> condition) {
     return context.expectAsync(
@@ -520,6 +533,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   /// - A non-matching event is emitted.
   /// - An error is emitted.
   /// - The stream closes.
+  ///
+  /// {@example /example/async/stream_queue/may_emit_multiple.dart}
   @awaitNotRequired
   Future<void> mayEmitMultiple(Condition<T> condition) {
     return context.expectAsync(
@@ -552,6 +567,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
   ///
   /// If this expectation fails, the source queue will be left in its original
   /// state, the event or error that caused it to fail will not be consumed.
+  ///
+  /// {@example /example/async/stream_queue/is_done.dart}
   @awaitNotRequired
   Future<void> get isDone async {
     await _expectAsync(() => ['is done'], (actual) async {
@@ -587,6 +604,8 @@ extension WithQueueExtension<T> on Subject<Stream<T>> {
   /// Stream expectations operate on a queue, instead of directly on the stream,
   /// so that they can support conditional expectations and check multiple
   /// possibilities from the same point in the stream.
+  ///
+  /// {@example /example/async/stream/with_queue.dart}
   Subject<StreamQueue<T>> get withQueue => context.nest(
     () => [],
     (actual) => Extracted.value(StreamQueue(actual)),
@@ -606,6 +625,8 @@ extension FutureSubjectExtension<T> on Future<Subject<T>> {
   ///   ..isLessThan(10)
   ///   ..isGreaterThan(0));
   /// ```
+  ///
+  /// {@example /example/async/future_subject/which.dart}
   @awaitNotRequired
   Future<void> which(Condition<T> condition) async {
     await condition.apply(await this);
