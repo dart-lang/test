@@ -8,9 +8,9 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:glob/glob.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/identifier_regex.dart'; // ignore: implementation_imports
 import 'package:yaml/yaml.dart';
 

@@ -6,8 +6,7 @@
 
 import 'dart:async';
 
-import 'package:test_api/src/backend/live_test.dart';
-import 'package:test_api/src/backend/message.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart';
 

@@ -7,14 +7,19 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
-    show Metadata, RemoteException, SuitePlatform, TestLocation;
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+    show
+        Group,
+        LiveTest,
+        Message,
+        MessageType,
+        Metadata,
+        RemoteException,
+        Suite,
+        SuitePlatform,
+        Test,
+        TestLocation;
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
 import 'spawn_hybrid.dart';
 

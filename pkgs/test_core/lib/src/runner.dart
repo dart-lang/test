@@ -10,12 +10,15 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
-    show PlatformSelector, Runtime, SuitePlatform;
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
+    show
+        Group,
+        GroupEntry,
+        PlatformSelector,
+        Runtime,
+        Suite,
+        SuitePlatform,
+        Test;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import 'runner/configuration.dart';
