@@ -10,8 +10,7 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/backend.dart' show RemoteException;
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart' show RemoteException, Suite;
 import '../util/dart.dart' as dart;
 import '../util/package_config.dart';
 import 'application_exception.dart';
@@ -41,7 +40,8 @@ final class GlobalSetupManager {
   final _activeSetups = <_ActiveSetup>[];
   final _closeMemo = AsyncMemoizer<void>();
 
-  /// Runs [body] in a zone with this manager set as [GlobalSetupManager.current].
+  /// Runs [body] in a zone with this manager set as
+  /// [GlobalSetupManager.current].
   T asCurrent<T>(T Function() body) =>
       runZoned(body, zoneValues: {_currentKey: this});
 

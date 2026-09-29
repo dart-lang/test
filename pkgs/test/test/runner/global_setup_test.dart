@@ -216,11 +216,10 @@ void main() {
     await test.shouldExit(0);
   });
 
-  test(
-    'relative and root-relative paths in nested tests share the same global setup cache',
-    () async {
-      await d.dir('test', [
-        d.file('counter.dart', '''
+  test('relative and root-relative paths in nested tests share the same '
+      'global setup cache', () async {
+    await d.dir('test', [
+      d.file('counter.dart', '''
         import 'dart:io';
 
         int setUp() {
@@ -229,8 +228,8 @@ void main() {
           return file.readAsStringSync().length;
         }
       '''),
-        d.dir('sub', [
-          d.file('sub_test.dart', '''
+      d.dir('sub', [
+        d.file('sub_test.dart', '''
             import 'dart:io';
             import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
@@ -244,8 +243,8 @@ void main() {
               });
             }
           '''),
-        ]),
-        d.file('top_test.dart', '''
+      ]),
+      d.file('top_test.dart', '''
           import 'dart:io';
           import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
@@ -259,18 +258,14 @@ void main() {
             });
           }
         '''),
-      ]).create();
+    ]).create();
 
-      var test = await runTest([
-        'test/sub/sub_test.dart',
-        'test/top_test.dart',
-      ]);
-      expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
-      await test.shouldExit(0);
+    var test = await runTest(['test/sub/sub_test.dart', 'test/top_test.dart']);
+    expect(test.stdout, emitsThrough(contains('+2: All tests passed!')));
+    await test.shouldExit(0);
 
-      expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('x'));
-    },
-  );
+    expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('x'));
+  });
 
   test('supports absolute file: URIs', () async {
     await d.dir('test', [
@@ -593,7 +588,8 @@ void main() {
         test.stdout,
         emitsThrough(
           contains(
-            'globalSetup() must be called from within a test or setUp/setUpAll callback',
+            'globalSetup() must be called from within a test or '
+            'setUp/setUpAll callback',
           ),
         ),
       );

@@ -79,7 +79,8 @@ void internalBootstrapVmHook(
       } else {
         throw ArgumentError(
           'The global setup script must define a top-level `setUp` function '
-          'with zero arguments, one List<String> argument, or (List<String>, SendPort).',
+          'with zero arguments, one List<String> argument, '
+          'or (List<String>, SendPort).',
         );
       }
     }, zoneValues: {#test.global_teardowns: tearDowns});
@@ -88,7 +89,8 @@ void internalBootstrapVmHook(
       json.encode(result);
     } on Object catch (error) {
       throw ArgumentError(
-        'The global setup script returned a value that is not JSON-encodable: $error',
+        'The global setup script returned a value that is not JSON-encodable: '
+        '$error',
       );
     }
 

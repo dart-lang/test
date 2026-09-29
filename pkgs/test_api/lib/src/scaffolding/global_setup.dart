@@ -24,22 +24,29 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 /// callers or subsequent calls.
 ///
 /// The Dart file at [uri] must define a top-level `setUp()` function that
-/// returns a JSON-encodable value (or `Future` of one). A `void setUp()` function
-/// (or one that returns `null`) is permitted and results in a `null` value.
+/// returns a JSON-encodable value (or `Future` of one). A `void setUp()`
+/// function (or one that returns `null`) is permitted and results in a `null`
+/// value.
 ///
 /// [globalSetup] must be called from within a running test or a `setUp()` /
 /// `setUpAll()` callback. It is an error to call [globalSetup] directly from
 /// top-level `main()`.
 ///
 /// [uri] is resolved according to the following rules:
-/// * **Root-relative URIs** (paths beginning with `/`, e.g. `Uri(path: '/test/setup.dart')`):
-///   Interpreted relative to the root of the package (the directory containing `pubspec.yaml`).
-/// * **`package:` URIs** (e.g. `Uri.parse('package:my_pkg/test_helpers.dart')`):
+/// * **Root-relative URIs** (paths beginning with `/`, such as
+///   `Uri(path: '/test/setup.dart')`):
+///   Interpreted relative to the root of the package (the directory containing
+///   `pubspec.yaml`).
+/// * **`package:` URIs**, such as
+///   `Uri.parse('package:my_pkg/test_helpers.dart')`:
 ///   Resolved using the package configuration.
-/// * **Relative URIs** (paths without a scheme and without a leading `/`, e.g. `Uri(path: 'setup.dart')` or `Uri(path: '../setup.dart')`):
-///   Interpreted relative to the directory containing the test suite file being executed.
-///   Note: When calling [globalSetup] from a shared helper library imported by tests in different directories,
-///   prefer root-relative (`/test/...`) or `package:` URIs so the path resolves consistently regardless of which
+/// * **Relative URIs** (paths without a scheme and without a leading `/`,
+///   such as `Uri(path: 'setup.dart')` or `Uri(path: '../setup.dart')`):
+///   Interpreted relative to the directory containing the test suite file being
+///   executed.
+///   Note: When calling [globalSetup] from a shared helper library imported by
+///   tests in different directories, prefer root-relative (`/test/...`) or
+///   `package:` URIs so the path resolves consistently regardless of which
 ///   test file imports the helper.
 /// * **`file:` URIs** (e.g. `Uri.file('/abs/path/setup.dart')`):
 ///   Interpreted as absolute file paths on the filesystem.
@@ -52,7 +59,8 @@ Future<Object?> Function(Uri uri)? globalSetupStandaloneFallback;
 Future<Object?> globalSetup(Uri uri) async {
   if (Invoker.current == null) {
     throw StateError(
-      'globalSetup() must be called from within a test or setUp/setUpAll callback.',
+      'globalSetup() '
+      'must be called from within a test or setUp/setUpAll callback.',
     );
   }
 
@@ -110,7 +118,8 @@ Future<Object?> globalSetup(Uri uri) async {
 /// Registers a callback to be run during global teardown when the test runner
 /// closes.
 ///
-/// This must be called from within a global setup script invoked via [globalSetup].
+/// This must be called from within a global setup script invoked via
+/// [globalSetup].
 ///
 /// It is an error if this is called outside of a global setup script.
 void addGlobalTearDown(FutureOr<void> Function() callback) {
@@ -118,7 +127,8 @@ void addGlobalTearDown(FutureOr<void> Function() callback) {
       Zone.current[#test.global_teardowns] as List<FutureOr<void> Function()>?;
   if (list == null) {
     throw UnsupportedError(
-      'addGlobalTearDown() can only be called from within a global setup script.',
+      'addGlobalTearDown() '
+      'can only be called from within a global setup script.',
     );
   }
   list.add(callback);

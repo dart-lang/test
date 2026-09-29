@@ -124,7 +124,7 @@ class Loader {
   final _config = Configuration.current;
 
   /// Manages global setup hooks.
-  late final GlobalSetupManager globalSetupManager = GlobalSetupManager();
+  late final globalSetupManager = GlobalSetupManager();
 
   /// All suites that have been created by the loader.
   final _suites = <RunnerSuite>{};
