@@ -4,7 +4,7 @@
 
 import 'package:collection/collection.dart';
 
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 
 import 'runner_suite.dart';
 

@@ -6,8 +6,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:test/test.dart';
-import 'package:test_api/src/backend/group.dart';
-import 'package:test_api/src/backend/group_entry.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_core/src/runner/engine.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
