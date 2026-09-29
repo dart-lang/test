@@ -12,6 +12,8 @@
   Control-C twice.
 * Bundle skipped tests into a single group at the end of the GitHub reporter
   output instead of interrupting passing test groups.
+* Wait longer for Chrome to open the test page when running with `--debug` or
+  `--coverage`, and list the open tabs if the page is never found.
 
 ## 1.32.0
 

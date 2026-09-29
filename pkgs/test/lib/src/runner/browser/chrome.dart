@@ -165,6 +165,8 @@ Future<(WipConnection, Uri)> _connect(
       .firstWhere((line) => line.startsWith('DevTools listening'));
 
   var chromeConnection = ChromeConnection('localhost', port);
+  // The browser opens a redirect page first, so the tab can take a while to
+  // reach [url] on a heavily loaded machine. Wait up to about 20 seconds.
   ChromeTab? tab;
   var attempt = 0;
   while (tab == null) {
@@ -172,10 +174,13 @@ Future<(WipConnection, Uri)> _connect(
     var tabs = await chromeConnection.getTabs();
     tab = tabs.firstWhereOrNull((tab) => tab.url == url.toString());
     if (tab == null) {
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-      if (attempt > 20) {
-        throw StateError('Could not connect to test tab with url: $url');
+      if (attempt >= 100) {
+        throw StateError(
+          'Could not connect to test tab with url: $url\n'
+          'Open tabs: ${tabs.map((tab) => tab.url).join(', ')}',
+        );
       }
+      await Future<void>.delayed(const Duration(milliseconds: 200));
     }
   }
   var tabConnection = await tab.connect();
