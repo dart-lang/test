@@ -286,11 +286,11 @@ class VMPlatform extends PlatformPlugin {
       for (var process in _runningProcesses) {
         process.kill(.sigkill);
       }
-      await Future.wait([..._pendingCleanups]);
+      await [..._pendingCleanups].wait;
     }
     _trackCleanup(_compiler.dispose());
     _trackCleanup(_tempDir.deleteWithRetry());
-    await Future.wait([..._pendingCleanups]);
+    await [..._pendingCleanups].wait;
 
     for (var AsyncError(:error, :stackTrace) in _cleanupErrors) {
       warn('Failed to clean up after VM tests: $error');

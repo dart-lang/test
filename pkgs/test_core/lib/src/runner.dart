@@ -271,7 +271,7 @@ class Runner {
     }
 
     // Flush any IOSinks created for file reporters.
-    await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
+    await _sinks.map((s) => s.flush().then((_) => s.close())).wait;
     _sinks.clear();
   });
 
