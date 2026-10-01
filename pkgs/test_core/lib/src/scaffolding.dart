@@ -9,10 +9,14 @@ import 'package:path/path.dart' as p;
 import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout, pumpEventQueue;
 
+import 'package:test_api/src/scaffolding/global_setup.dart' // ignore: implementation_imports
+    show globalSetupStandaloneFallback;
+
 import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
 import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
+import 'runner/standalone_global_setup.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
 
@@ -33,6 +37,7 @@ Declarer? _globalDeclarer;
 /// [RemoteListener]. If the test file is run directly, this returns
 /// [_globalDeclarer] (and sets it up on the first call).
 Declarer get _declarer {
+  globalSetupStandaloneFallback ??= standaloneGlobalSetup;
   var declarer = Declarer.current;
   if (declarer != null) return declarer;
   if (_globalDeclarer != null) return _globalDeclarer!;
@@ -63,6 +68,7 @@ Declarer get _declarer {
       () => Invoker.guard(engine.run),
       zoneValues: {#test.declarer: _globalDeclarer},
     );
+    await closeStandaloneGlobalSetups();
     if (success == true) return null;
     print('');
     unawaited(Future.error('Dummy exception to set exit code.'));
