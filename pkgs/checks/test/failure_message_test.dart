@@ -99,7 +99,7 @@ Which: is not equal''');
     test('succeeded child context followed by failing check on parent', () {
       check(() {
         check([1])
-          ..has((l) => l.first, 'first').equals(1)
+          ..has('first', (l) => l.first).equals(1)
           ..equals([2]);
       }).throwsFailure().equals('''
 Expected: a List<int> that:
@@ -113,7 +113,7 @@ Which: is not equal''');
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
-      throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
+      throws<TestFailure>().has('message', (f) => f.message).isNotNull();
 }
 
 class EmptyToString {

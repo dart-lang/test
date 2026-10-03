@@ -31,7 +31,7 @@ extension StringChecks on Subject<String> {
   /// A [Subject] for the number of code units in the `String`.
   ///
   /// {@example /example/string/string/length.dart}
-  Subject<int> get length => has((m) => m.length, 'length');
+  Subject<int> get length => has('length', (m) => m.length);
 
   /// Expects that the `String` has no characters.
   ///

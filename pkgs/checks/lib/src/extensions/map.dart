@@ -12,22 +12,22 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   ///
   /// {@example /example/map/map/entries.dart}
   Subject<Iterable<MapEntry<K, V>>> get entries =>
-      has((m) => m.entries, 'entries');
+      has('entries', (m) => m.entries);
 
   /// A [Subject] for the [Map.keys] of the map.
   ///
   /// {@example /example/map/map/keys.dart}
-  Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
+  Subject<Iterable<K>> get keys => has('keys', (m) => m.keys);
 
   /// A [Subject] for the [Map.values] of the map.
   ///
   /// {@example /example/map/map/values.dart}
-  Subject<Iterable<V>> get values => has((m) => m.values, 'values');
+  Subject<Iterable<V>> get values => has('values', (m) => m.values);
 
   /// A [Subject] for the [Map.length] of the map.
   ///
   /// {@example /example/map/map/length.dart}
-  Subject<int> get length => has((m) => m.length, 'length');
+  Subject<int> get length => has('length', (m) => m.length);
 
   /// A [Subject] for the value at [key], which must be present in the map.
   ///

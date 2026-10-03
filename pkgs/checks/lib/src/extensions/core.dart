@@ -16,7 +16,7 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// ```dart
   /// check(RegExp('^abc'))
-  ///   .has((s) => s.pattern, 'pattern')
+  ///   .has('pattern', (s) => s.pattern)
   ///   .equals('^abc');
   /// ```
   ///
@@ -24,8 +24,8 @@ extension CoreChecks<T> on Subject<T> {
   /// methods using `has`:
   /// ```dart
   /// extension RegExpChecks on Subject<RegExp> {
-  ///   Subject<String> get pattern => has((s) => s.pattern, 'pattern');
-  ///   Subject<bool> get isUnicode => has((s) => s.isUnicode, 'isUnicode');
+  ///   Subject<String> get pattern => has('pattern', (s) => s.pattern);
+  ///   Subject<bool> get isUnicode => has('isUnicode', (s) => s.isUnicode);
   /// }
   ///
   /// void main() {
@@ -37,7 +37,7 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// {@example /example/core/subject/has.dart}
   @meta.useResult
-  Subject<R> has<R>(R Function(T) extract, String name) => context.nest(
+  Subject<R> has<R>(String name, R Function(T) extract) => context.nest(
     () => ['has $name'],
     addPredicate: (predicateNoun) => 'has $name: $predicateNoun',
     (value) {
@@ -65,8 +65,8 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// ```
   /// check(something)
-  ///   ..has((s) => s.foo, 'foo').equals(expectedFoo)
-  ///   ..has((s) => s.bar, 'bar').which(.it()
+  ///   ..has('foo', (s) => s.foo).equals(expectedFoo)
+  ///   ..has('bar', (s) => s.bar).which(.it()
   ///     ..isLessThan(10)
   ///     ..isGreaterThan(0));
   /// ```

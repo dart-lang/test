@@ -56,7 +56,7 @@ Expected: a List<int> that:
       final checkFuture = check(future).completes(.it()..equals(2));
       await check(checkFuture).throws<TestFailure>(
         .it()
-          ..has((f) => f.message, 'message').isNotNull().equals('''
+          ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<int> that completes to <2>
 Actual: a Future<int> that completes to <1>
 Which: is not equal'''),
@@ -514,7 +514,7 @@ Which: is not equal''');
         final checkStream = check(stream).withQueue.emits(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<int> that emits <2>
 Actual: a Stream<int> that emits <1>
 Which: is not equal'''),
@@ -528,7 +528,7 @@ Which: is not equal'''),
         ).withQueue.emitsError<int>(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<int> that emits error <2>
 Actual: a Stream<int> that emits error <1>
 Which: is not equal'''),
@@ -540,7 +540,7 @@ Which: is not equal'''),
         final checkFuture = check(future).throws<int>(.it()..equals(2));
         await check(checkFuture).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<void> that throws <2>
 Actual: a Future<void> that throws <1>
 Which: is not equal'''),
@@ -556,10 +556,10 @@ class Foo {
 }
 
 extension on Subject<Foo> {
-  Subject<String> get someField => has((f) => f.field, 'someField');
+  Subject<String> get someField => has('someField', (f) => f.field);
 }
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
-      throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
+      throws<TestFailure>().has('message', (f) => f.message).isNotNull();
 }

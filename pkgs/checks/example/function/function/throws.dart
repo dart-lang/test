@@ -8,7 +8,7 @@ void main() {
 
     // This check succeeds. The returned subject checks the thrown error.
     check(() => int.parse('not a number')).throws<FormatException>(
-      .it()..has((e) => e.source, 'source').equals('not a number'),
+      .it()..has('source', (e) => e.source).equals('not a number'),
     );
 
     // This check fails.

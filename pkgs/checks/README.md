@@ -118,7 +118,7 @@ properties with the `has` utility.
 
 ```dart
 check(someValue)
-  .has((value) => value.property, 'property')
+  .has('property', (value) => value.property)
   .equals(expectedPropertyValue);
 ```
 
@@ -211,7 +211,7 @@ extension CustomChecks on Subject<CustomType> {
       });
 
   // for field reads that will not get rejected, use `has`
-  Subject<Bar> get someField => has((a) => a.someField, 'someField');
+  Subject<Bar> get someField => has('someField', (a) => a.someField);
 }
 ```
 
