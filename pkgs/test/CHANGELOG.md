@@ -18,6 +18,9 @@
   compiled artifact until the end of the run.
 * Fail to load a test suite compiled with the `exe` or `cli` compiler if the
   test process exits before connecting to the runner, instead of hanging.
+* Fail a test suite running in an isolate if the isolate exits, instead of
+  hanging. The suite fails to load if the isolate exits while loading, and any
+  tests that haven't finished fail if it exits while they run.
 
 ## 1.32.0
 

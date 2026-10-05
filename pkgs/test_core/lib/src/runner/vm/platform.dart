@@ -107,6 +107,7 @@ class VMPlatform extends PlatformPlugin {
   ) async {
     MultiChannel outerChannel;
     Isolate? isolate;
+    Future<Never>? exitedBeforeConnecting;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
       // Everything compiled for this suite goes in a directory of its own so
@@ -167,14 +168,35 @@ class VMPlatform extends PlatformPlugin {
     } else {
       var receivePort = ReceivePort();
       cleanupCallbacks.add(receivePort.close);
+      var exitPort = ReceivePort();
+      cleanupCallbacks.add(exitPort.close);
       isolate = await _spawnIsolate(
         path,
         receivePort.sendPort,
+        exitPort.sendPort,
         suiteConfig.metadata,
         platform.compiler,
         cleanupCallbacks,
       );
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
+      // Unlike a socket, the isolate channel doesn't close when the isolate
+      // exits, so loading would never finish if the isolate exits first.
+      // Closing the port ends the channel once it has delivered any messages
+      // the isolate sent before exiting, so an error it reported is still the
+      // one that fails the load. Before connecting, the channel doesn't end
+      // when the port closes, so that wait races the exit instead. The port
+      // holds the exit message until it is listened to.
+      var exited = Completer<Never>();
+      exitPort.listen((_) {
+        receivePort.close();
+        exited.completeError(
+          LoadException(
+            path,
+            'The test isolate exited before connecting to the test runner.',
+          ),
+        );
+      });
+      exitedBeforeConnecting = exited.future;
       // Request that the isolate is killed before running any callback
       // registered while compiling, so it is less likely to still be using the
       // compilation artifacts when they are deleted. Killing is asynchronous,
@@ -190,7 +212,8 @@ class VMPlatform extends PlatformPlugin {
     // additional communication directly between the test bootstrapping and this
     // platform to enable pausing after tests for debugging.
     var outerQueue = StreamQueue(outerChannel.stream);
-    var channelId = (await outerQueue.next) as int;
+    var channelId =
+        (await Future.any([outerQueue.next, ?exitedBeforeConnecting])) as int;
     var channel = outerChannel
         .virtualChannel(channelId)
         .transformStream(
@@ -516,13 +539,15 @@ stderr: ${processResult.stderr}''');
   /// Spawns an isolate with the current configuration and passes it [message].
   ///
   /// This isolate connects an [IsolateChannel] to [message] and sends the
-  /// serialized tests over that channel.
+  /// serialized tests over that channel. A message is sent to [onExit] when the
+  /// isolate exits.
   ///
   /// Any callbacks added to [cleanupCallbacks] must be invoked once the suite
   /// is done with the isolate.
   Future<Isolate> _spawnIsolate(
     String path,
     SendPort message,
+    SendPort onExit,
     Metadata suiteMetadata,
     Compiler compiler,
     List<FutureOr<void> Function()> cleanupCallbacks,
@@ -532,6 +557,7 @@ stderr: ${processResult.stderr}''');
       return await _spawnPrecompiledIsolate(
         path,
         message,
+        onExit,
         precompiledPath,
         compiler,
       );
@@ -540,6 +566,7 @@ stderr: ${processResult.stderr}''');
       .kernel => _spawnIsolateWithUri(
         await _compileToKernel(path, suiteMetadata, cleanupCallbacks),
         message,
+        onExit,
       ),
       .source => _spawnIsolateWithUri(
         await _bootstrapIsolateTestFile(
@@ -548,6 +575,7 @@ stderr: ${processResult.stderr}''');
               await rootPackageLanguageVersionComment,
         ),
         message,
+        onExit,
       ),
       _ => throw StateError(
         'Unsupported compiler $compiler for the VM platform',
@@ -580,13 +608,18 @@ stderr: ${processResult.stderr}''');
   }
 
   /// Runs [uri] in an isolate, passing [message].
-  Future<Isolate> _spawnIsolateWithUri(Uri uri, SendPort message) async {
+  Future<Isolate> _spawnIsolateWithUri(
+    Uri uri,
+    SendPort message,
+    SendPort onExit,
+  ) async {
     return await Isolate.spawnUri(
       uri,
       [],
       message,
       packageConfig: await packageConfigUri,
       checked: true,
+      onExit: onExit,
       debugName: 'test_suite:$uri',
     );
   }
@@ -594,6 +627,7 @@ stderr: ${processResult.stderr}''');
   Future<Isolate> _spawnPrecompiledIsolate(
     String testPath,
     SendPort message,
+    SendPort onExit,
     String precompiledPath,
     Compiler compiler,
   ) async {
@@ -640,6 +674,7 @@ stderr: ${processResult.stderr}''');
       message,
       packageConfig: packageConfig?.uri,
       checked: true,
+      onExit: onExit,
       debugName: 'test_suite:$testUri',
     );
   }
