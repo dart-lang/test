@@ -20,6 +20,9 @@
   test process exits before connecting to the runner, instead of hanging.
 * Wait longer for Chrome to open the test page when running with `--debug` or
   `--coverage`, and list the open tabs if the page is never found.
+* Fail a test suite running in an isolate if the isolate exits, instead of
+  hanging. The suite fails to load if the isolate exits while loading, and any
+  tests that haven't finished fail if it exits while they run.
 
 ## 1.32.0
 
