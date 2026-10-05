@@ -44,6 +44,23 @@ class VMPlatform extends PlatformPlugin {
   final _closeMemo = AsyncMemoizer<void>();
   final _tempDir = createTempDirectory('vm.');
 
+  /// Cleanup work which was started without waiting for it, so that it does
+  /// not delay the suite it belongs to.
+  ///
+  /// Each future removes itself once it completes. Any still pending are
+  /// awaited in [close].
+  final _pendingCleanups = <Future<void>>{};
+
+  /// Errors from the cleanup in [_pendingCleanups], all reported by [close].
+  final _cleanupErrors = <AsyncError>[];
+
+  /// Test processes which have been started and have not yet exited.
+  ///
+  /// Any left when the platform is closed are killed forcefully, so that one
+  /// which ignores a request to exit, or which was never asked to because its
+  /// suite failed to load, can't keep [close] from completing.
+  final _runningProcesses = <Process>{};
+
   @override
   Future<RunnerSuite?> load(
     String path,
@@ -55,60 +72,115 @@ class VMPlatform extends PlatformPlugin {
 
     _setupPauseAfterTests();
 
+    // Cleanup for everything acquired for this suite, registered as each
+    // resource is acquired. Run once the suite is done, or as soon as it fails
+    // to load.
+    var cleanupCallbacks = <FutureOr<void> Function()>[];
+    RunnerSuite? suite;
+    try {
+      suite = await _loadSuite(
+        path,
+        platform,
+        suiteConfig,
+        message,
+        cleanupCallbacks,
+      );
+    } catch (_) {
+      _runCleanupCallbacks(cleanupCallbacks);
+      if (_closeMemo.hasRun) return null;
+      rethrow;
+    }
+    if (suite == null) _runCleanupCallbacks(cleanupCallbacks);
+    return suite;
+  }
+
+  /// Loads the suite at [path], adding cleanup for anything it acquires to
+  /// [cleanupCallbacks].
+  ///
+  /// Returns `null` if the platform was closed while loading.
+  Future<RunnerSuite?> _loadSuite(
+    String path,
+    SuitePlatform platform,
+    SuiteConfiguration suiteConfig,
+    Map<String, Object?> message,
+    List<FutureOr<void> Function()> cleanupCallbacks,
+  ) async {
     MultiChannel outerChannel;
-    var cleanupCallbacks = <void Function()>[];
     Isolate? isolate;
     if (platform.compiler == Compiler.exe ||
         platform.compiler == Compiler.cli) {
+      // Everything compiled for this suite goes in a directory of its own so
+      // that it can all be deleted as soon as the test process has exited.
+      var dir = createTempDirectory('exec.');
+      // Replaced by deleting on exit once the test process has started.
+      var deleteDir = dir.tryDeleteWithRetry;
+      cleanupCallbacks.add(deleteDir);
       var (executable, arguments) = await _compileExecutable(
         platform,
         path,
         suiteConfig.metadata,
+        dir,
       );
-      var dir = createTempDirectory('exec.').path;
-      var socketPath = p.join(dir, 'socket.sock');
+      if (_closeMemo.hasRun) return null;
+      var socketPath = p.join(dir.path, 'socket.sock');
       var serverSocket = await ServerSocket.bind(
         InternetAddress(socketPath, type: InternetAddressType.unix),
         0,
       );
-      Process process;
-      try {
-        process = await Process.start(
-          executable,
-          [...arguments, socketPath],
-          environment: _environmentFor(platform),
-          mode: ProcessStartMode.inheritStdio,
-        );
-      } catch (error) {
-        unawaited(serverSocket.close());
-        rethrow;
+      cleanupCallbacks.add(serverSocket.close);
+      var process = await Process.start(
+        executable,
+        [...arguments, socketPath],
+        environment: _environmentFor(platform),
+        mode: ProcessStartMode.inheritStdio,
+      );
+      // The executable can't be deleted while it is still running, so wait for
+      // the process to exit first. This starts now rather than when the suite
+      // is done so that the directory is also deleted if the process exits
+      // before the suite finishes loading.
+      cleanupCallbacks
+        ..remove(deleteDir)
+        ..add(process.kill);
+      _trackCleanup(_deleteOnExit(process, dir));
+      if (_closeMemo.hasRun) {
+        // The platform may have finished closing before the process was
+        // tracked, in which case nothing else will kill it.
+        process.kill(.sigkill);
+        return null;
       }
 
-      var socket = await serverSocket.fastFirst;
+      // Waiting for a connection alone would never finish if the process
+      // exits without connecting, for instance if it crashes on startup or is
+      // killed because the platform is closing.
+      var socket = await Future.any([
+        serverSocket.fastFirst,
+        process.exitCode.then(
+          (exitCode) => throw LoadException(
+            path,
+            'The test process exited with code $exitCode before connecting '
+            'to the test runner.',
+          ),
+        ),
+      ]);
+      cleanupCallbacks.add(socket.destroy);
       outerChannel = MultiChannel<Object?>(jsonSocketStreamChannel(socket));
-      cleanupCallbacks
-        ..add(socket.destroy)
-        ..add(serverSocket.close)
-        ..add(process.kill);
     } else {
       var receivePort = ReceivePort();
-      try {
-        isolate = await _spawnIsolate(
-          path,
-          receivePort.sendPort,
-          suiteConfig.metadata,
-          platform.compiler,
-        );
-        if (isolate == null) {
-          receivePort.close();
-          return null;
-        }
-      } catch (error) {
-        receivePort.close();
-        rethrow;
-      }
+      cleanupCallbacks.add(receivePort.close);
+      isolate = await _spawnIsolate(
+        path,
+        receivePort.sendPort,
+        suiteConfig.metadata,
+        platform.compiler,
+        cleanupCallbacks,
+      );
       outerChannel = MultiChannel(IsolateChannel.connectReceive(receivePort));
-      cleanupCallbacks.add(isolate.kill);
+      // Request that the isolate is killed before running any callback
+      // registered while compiling, so it is less likely to still be using the
+      // compilation artifacts when they are deleted. Killing is asynchronous,
+      // so this is best effort; anything that can't be deleted yet is left for
+      // the temp directory cleanup.
+      cleanupCallbacks.insert(0, isolate.kill);
     }
     cleanupCallbacks.add(outerChannel.sink.close);
 
@@ -124,16 +196,19 @@ class VMPlatform extends PlatformPlugin {
         .transformStream(
           StreamTransformer.fromHandlers(
             handleDone: (sink) async {
-              if (_shouldPauseAfterTests) {
-                outerChannel.sink.add('debug');
-                await outerQueue.next;
+              try {
+                if (_shouldPauseAfterTests) {
+                  outerChannel.sink.add('debug');
+                  await outerQueue.next;
+                }
+              } finally {
+                // Always close the sink, even if waiting for the debugger
+                // failed, otherwise the suite never completes.
+                _runCleanupCallbacks(cleanupCallbacks);
+                unawaited(eventSub?.cancel());
+                unawaited(client?.dispose());
+                sink.close();
               }
-              for (var fn in cleanupCallbacks) {
-                fn();
-              }
-              unawaited(eventSub?.cancel());
-              unawaited(client?.dispose());
-              sink.close();
             },
           ),
         );
@@ -204,9 +279,66 @@ class VMPlatform extends PlatformPlugin {
   }
 
   @override
-  Future close() => _closeMemo.runOnce(
-    () => Future.wait([_compiler.dispose(), _tempDir.deleteWithRetry()]),
-  );
+  Future close() => _closeMemo.runOnce(() async {
+    // Suites which are still finishing can start more cleanup while this
+    // waits, so keep going until there is none left.
+    // The Futures in `_pendingCleanups` remove themselves when completed.
+    while (_pendingCleanups.isNotEmpty) {
+      for (var process in _runningProcesses) {
+        process.kill(.sigkill);
+      }
+      await [..._pendingCleanups].wait;
+    }
+    _trackCleanup(_compiler.dispose());
+    _trackCleanup(_tempDir.deleteWithRetry());
+    await [..._pendingCleanups].wait;
+
+    for (var AsyncError(:error, :stackTrace) in _cleanupErrors) {
+      warn('Failed to clean up after VM tests: $error');
+      stderr.writeln(stackTrace);
+    }
+  });
+
+  /// Invokes and removes each callback in [cleanupCallbacks].
+  ///
+  /// Callbacks are invoked in the order they were added, and cleared so that
+  /// they are never invoked more than once. Callbacks are not awaited, so that
+  /// a slow cleanup can't delay the suite; instead they are tracked so that
+  /// [close] waits for them.
+  void _runCleanupCallbacks(List<FutureOr<void> Function()> cleanupCallbacks) {
+    cleanupCallbacks
+      // `Future.sync` to guard against synchronous errors.
+      ..map(Future.sync).forEach(_trackCleanup)
+      ..clear();
+  }
+
+  /// Adds [cleanup] to the cleanup that [close] waits for.
+  ///
+  /// It is removed again once it completes. If it fails, the error is recorded
+  /// in [_cleanupErrors] to be reported by [close].
+  void _trackCleanup(Future<void> cleanup) {
+    late final Future<void> tracked;
+    tracked = cleanup
+        .onError<Object>((error, stackTrace) {
+          _cleanupErrors.add(AsyncError(error, stackTrace));
+        })
+        .whenComplete(() => _pendingCleanups.remove(tracked));
+    _pendingCleanups.add(tracked);
+  }
+
+  /// Deletes [entity] once [process] has exited.
+  ///
+  /// The [process] is tracked in [_runningProcesses] until it exits, so that
+  /// [close] can kill it if it is still running.
+  Future<void> _deleteOnExit(Process process, FileSystemEntity entity) async {
+    _runningProcesses.add(process);
+    try {
+      await process.exitCode;
+    } finally {
+      _runningProcesses.remove(process);
+    }
+    await entity.tryDeleteWithRetry();
+  }
 
   String _aotRuntimeFor(SuitePlatform platform) {
     final sanSuffix = switch (platform.runtime) {
@@ -238,12 +370,15 @@ class VMPlatform extends PlatformPlugin {
 
   /// Compiles [path] to an executable or AOT snapshot for [platform].
   ///
+  /// All compilation output is written under [outputDir].
+  ///
   /// Returns a record of the executable to invoke and the initial arguments
   /// before any additional arguments (such as the socket path).
   Future<(String, List<String>)> _compileExecutable(
     SuitePlatform platform,
     String path,
     Metadata suiteMetadata,
+    Directory outputDir,
   ) async {
     if (_config.suiteDefaults.precompiledPath != null) {
       throw UnsupportedError(
@@ -253,13 +388,19 @@ class VMPlatform extends PlatformPlugin {
 
     switch (platform.compiler) {
       case Compiler.cli:
-        var executable = await _compileToCli(platform, path, suiteMetadata);
+        var executable = await _compileToCli(
+          platform,
+          path,
+          suiteMetadata,
+          outputDir,
+        );
         return (executable, const <String>[]);
       case Compiler.exe:
         var sharedLibrary = await _compileToNative(
           platform,
           path,
           suiteMetadata,
+          outputDir,
         );
         return (_aotRuntimeFor(platform), [sharedLibrary]);
       default:
@@ -269,11 +410,13 @@ class VMPlatform extends PlatformPlugin {
     }
   }
 
-  /// Compiles [path] to a native CLI bundle using `dart build cli`.
+  /// Compiles [path] to a native CLI bundle in [outputDir] using
+  /// `dart build cli`.
   Future<String> _compileToCli(
     SuitePlatform platform,
     String path,
     Metadata suiteMetadata,
+    Directory outputDir,
   ) async {
     var bootstrapPath = await _bootstrapNativeTestFile(
       path,
@@ -281,12 +424,7 @@ class VMPlatform extends PlatformPlugin {
           await rootPackageLanguageVersionComment,
     );
 
-    // Unique output per path to avoid overriding in concurrent tests.
-    var outputDir = p.join(
-      _tempDir.path,
-      'cli_build',
-      p.withoutExtension(path),
-    );
+    var buildDir = p.join(outputDir.path, 'cli_build');
     // Find the package the test belongs to. If the test is outside the package
     // config, fall back to workspace root (might be a workspace or a package). In
     // this case no hooks are run.
@@ -300,7 +438,7 @@ class VMPlatform extends PlatformPlugin {
       '--target',
       bootstrapPath,
       '--output',
-      outputDir,
+      buildDir,
       '--packages',
       (await packageConfigUri).toFilePath(),
       '--root-package',
@@ -317,7 +455,7 @@ stderr: ${processResult.stderr}''');
     }
     var executableSuffix = Platform.isWindows ? '.exe' : '';
     var executablePath = p.join(
-      outputDir,
+      buildDir,
       'bundle',
       'bin',
       '${p.basenameWithoutExtension(bootstrapPath)}$executableSuffix',
@@ -331,7 +469,7 @@ stderr: ${processResult.stderr}''');
     return executablePath;
   }
 
-  /// Compiles [path] to a native shared library using
+  /// Compiles [path] to a native shared library in [outputDir] using
   /// `dart compile aot-snapshot`.
   ///
   /// Preferable to `dart compile exe` because embedded snapshots are invisible
@@ -341,13 +479,16 @@ stderr: ${processResult.stderr}''');
     SuitePlatform platform,
     String path,
     Metadata suiteMetadata,
+    Directory outputDir,
   ) async {
     var bootstrapPath = await _bootstrapNativeTestFile(
       path,
       suiteMetadata.languageVersionComment ??
           await rootPackageLanguageVersionComment,
     );
-    var output = File(p.setExtension(bootstrapPath, '.so'));
+    var output = File(
+      p.join(outputDir.path, p.setExtension(p.basename(bootstrapPath), '.so')),
+    );
     var processResult = await Process.run(Platform.resolvedExecutable, [
       for (var experiment in enabledExperiments)
         '--enable-experiment=$experiment',
@@ -377,57 +518,65 @@ stderr: ${processResult.stderr}''');
   /// This isolate connects an [IsolateChannel] to [message] and sends the
   /// serialized tests over that channel.
   ///
-  /// Returns `null` if an exception occurs but [close] has already been called.
-  Future<Isolate?> _spawnIsolate(
+  /// Any callbacks added to [cleanupCallbacks] must be invoked once the suite
+  /// is done with the isolate.
+  Future<Isolate> _spawnIsolate(
     String path,
     SendPort message,
     Metadata suiteMetadata,
     Compiler compiler,
+    List<FutureOr<void> Function()> cleanupCallbacks,
   ) async {
-    try {
-      var precompiledPath = _config.suiteDefaults.precompiledPath;
-      if (precompiledPath != null) {
-        return await _spawnPrecompiledIsolate(
-          path,
-          message,
-          precompiledPath,
-          compiler,
-        );
-      }
-      return await switch (compiler) {
-        Compiler.kernel => _spawnIsolateWithUri(
-          await _compileToKernel(path, suiteMetadata),
-          message,
-        ),
-        Compiler.source => _spawnIsolateWithUri(
-          await _bootstrapIsolateTestFile(
-            path,
-            suiteMetadata.languageVersionComment ??
-                await rootPackageLanguageVersionComment,
-          ),
-          message,
-        ),
-        _ => throw StateError(
-          'Unsupported compiler $compiler for the VM platform',
-        ),
-      };
-    } catch (_) {
-      if (_closeMemo.hasRun) return null;
-      rethrow;
+    var precompiledPath = _config.suiteDefaults.precompiledPath;
+    if (precompiledPath != null) {
+      return await _spawnPrecompiledIsolate(
+        path,
+        message,
+        precompiledPath,
+        compiler,
+      );
     }
+    return await switch (compiler) {
+      .kernel => _spawnIsolateWithUri(
+        await _compileToKernel(path, suiteMetadata, cleanupCallbacks),
+        message,
+      ),
+      .source => _spawnIsolateWithUri(
+        await _bootstrapIsolateTestFile(
+          path,
+          suiteMetadata.languageVersionComment ??
+              await rootPackageLanguageVersionComment,
+        ),
+        message,
+      ),
+      _ => throw StateError(
+        'Unsupported compiler $compiler for the VM platform',
+      ),
+    };
   }
 
   /// Compiles [path] to kernel and returns the uri to the compiled dill.
-  Future<Uri> _compileToKernel(String path, Metadata suiteMetadata) async {
+  ///
+  /// Adds a callback to [cleanupCallbacks] which releases the compiled dill.
+  /// It must be invoked once the suite is done with it, otherwise the dill is
+  /// retained until the whole run is finished.
+  Future<Uri> _compileToKernel(
+    String path,
+    Metadata suiteMetadata,
+    List<FutureOr<void> Function()> cleanupCallbacks,
+  ) async {
     final response = await _compiler.compile(
       await absoluteUri(path),
       suiteMetadata,
     );
-    var compiledDill = response.kernelOutputUri?.toFilePath();
-    if (compiledDill == null || response.errorCount > 0) {
+    var kernelOutputUri = response.kernelOutputUri;
+    if (kernelOutputUri != null) {
+      cleanupCallbacks.add(() => _compiler.release(kernelOutputUri));
+    }
+    if (kernelOutputUri == null || response.errorCount > 0) {
       throw LoadException(path, response.compilerOutput ?? 'unknown error');
     }
-    return absoluteUri(compiledDill);
+    return absoluteUri(kernelOutputUri.toFilePath());
   }
 
   /// Runs [uri] in an isolate, passing [message].
