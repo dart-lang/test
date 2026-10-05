@@ -18,6 +18,8 @@
   compiled artifact until the end of the run.
 * Fail to load a test suite compiled with the `exe` or `cli` compiler if the
   test process exits before connecting to the runner, instead of hanging.
+* Wait longer for Chrome to open the test page when running with `--debug` or
+  `--coverage`, and list the open tabs if the page is never found.
 
 ## 1.32.0
 
