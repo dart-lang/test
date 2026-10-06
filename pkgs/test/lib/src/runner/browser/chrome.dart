@@ -31,10 +31,13 @@ class Chrome extends Browser {
   final name = 'Chrome';
 
   @override
-  final Future<Uri?> remoteDebuggerUrl;
+  Future<Uri?> get remoteDebuggerUrl async => (await _connection)?.$2;
 
-  final Future<WipConnection?> _tabConnection;
-  final Map<String, String> _idToUrl;
+  late final Future<(WipConnection, Uri)?> _connection = _connect();
+
+  final _idToUrl = <String, String>{};
+  final Future<int?> _debugPort;
+  final Uri _url;
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
@@ -44,9 +47,7 @@ class Chrome extends Browser {
     ExecutableSettings? settings,
   }) {
     settings ??= defaultSettings[Runtime.chrome]!;
-    var remoteDebuggerCompleter = Completer<Uri?>.sync();
-    var connectionCompleter = Completer<WipConnection?>();
-    var idToUrl = <String, String>{};
+    var debugPortCompleter = Completer<int?>();
     return Chrome._(
       () async {
         Future<Process> tryPort([int? port]) async {
@@ -64,34 +65,22 @@ class Chrome extends Browser {
                 '--remote-debugging-port=$port',
             ],
           );
-
-          if (port != null) {
-            var connectionFuture = _connect(process, port, idToUrl, url);
-            remoteDebuggerCompleter.complete(
-              connectionFuture.then((c) => c.$2),
-            );
-            connectionCompleter.complete(connectionFuture.then((c) => c.$1));
-          } else {
-            remoteDebuggerCompleter.complete(null);
-            connectionCompleter.complete(null);
-          }
-
+          debugPortCompleter.complete(port);
           return process;
         }
 
         if (!configuration.debug) return tryPort();
         return getUnusedPort<Process>(tryPort);
       },
-      remoteDebuggerCompleter.future,
-      connectionCompleter.future,
-      idToUrl,
+      url,
+      debugPortCompleter.future,
     );
   }
 
   /// Returns a Dart based hit-map containing coverage report, suitable for use
   /// with `package:coverage`.
   Future<Map<String, dynamic>> gatherCoverage() async {
-    var tabConnection = await _tabConnection;
+    var tabConnection = (await _connection)?.$1;
     if (tabConnection == null) return {};
     var response = await tabConnection.debugger.connection.sendCommand(
       'Profiler.takePreciseCoverage',
@@ -110,12 +99,65 @@ class Chrome extends Browser {
     return coverage;
   }
 
-  Chrome._(
-    super.startBrowser,
-    this.remoteDebuggerUrl,
-    this._tabConnection,
-    this._idToUrl,
-  );
+  Chrome._(super.startBrowser, this._url, this._debugPort);
+
+  /// Connects to the test tab through the DevTools protocol and starts
+  /// collecting coverage.
+  ///
+  /// Returns `null` if Chrome was started without a remote debugging port.
+  Future<(WipConnection, Uri)?> _connect() async {
+    var port = await _debugPort;
+    if (port == null) return null;
+
+    // Wait for Chrome to be in a ready state.
+    await output.firstWhere((line) => line.startsWith('DevTools listening'));
+
+    var chromeConnection = ChromeConnection('localhost', port);
+    // The browser opens a redirect page first, so the tab can take a while to
+    // reach [_url] on a heavily loaded machine. Wait up to about 20 seconds.
+    ChromeTab? tab;
+    var attempt = 0;
+    while (tab == null) {
+      attempt++;
+      var tabs = await chromeConnection.getTabs();
+      tab = tabs.firstWhereOrNull((tab) => tab.url == _url.toString());
+      if (tab == null) {
+        if (attempt >= 100) {
+          throw StateError(
+            'Could not connect to test tab with url: $_url\n'
+            'Open tabs: ${tabs.map((tab) => tab.url).join(', ')}',
+          );
+        }
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      }
+    }
+    var tabConnection = await tab.connect();
+
+    // Coverage reports are in terms of scriptIds so keep note of URLs.
+    // Register the listener before enabling the debugger so that initial
+    // script events sent during initialization are not missed.
+    tabConnection.debugger.onScriptParsed.listen((data) {
+      var script = data.script;
+      if (script.url.isNotEmpty) _idToUrl[script.scriptId] = script.url;
+    });
+
+    // Enable debugging.
+    await tabConnection.debugger.enable();
+
+    // Enable coverage collection.
+    await tabConnection.debugger.connection.sendCommand('Profiler.enable', {});
+    await tabConnection.debugger.connection.sendCommand(
+      'Profiler.startPreciseCoverage',
+      {'detailed': true, 'callCount': false},
+    );
+
+    var base = Uri.http('localhost:$port');
+    var devtoolsUrl = tab.devtoolsFrontendUrl;
+    var remoteDebuggerUrl = devtoolsUrl != null
+        ? base.resolve(devtoolsUrl)
+        : base;
+    return (tabConnection, remoteDebuggerUrl);
+  }
 
   Future<Uri?> _sourceUriProvider(String sourceUrl, String scriptId) async {
     var script = _idToUrl[scriptId];
@@ -150,65 +192,6 @@ class Chrome extends Browser {
     if (script == null) return null;
     return await httpClient.getString(script);
   }
-}
-
-Future<(WipConnection, Uri)> _connect(
-  Process process,
-  int port,
-  Map<String, String> idToUrl,
-  Uri url,
-) async {
-  // Wait for Chrome to be in a ready state.
-  await process.stderr
-      .transform(utf8.decoder)
-      .transform(const LineSplitter())
-      .firstWhere((line) => line.startsWith('DevTools listening'));
-
-  var chromeConnection = ChromeConnection('localhost', port);
-  // The browser opens a redirect page first, so the tab can take a while to
-  // reach [url] on a heavily loaded machine. Wait up to about 20 seconds.
-  ChromeTab? tab;
-  var attempt = 0;
-  while (tab == null) {
-    attempt++;
-    var tabs = await chromeConnection.getTabs();
-    tab = tabs.firstWhereOrNull((tab) => tab.url == url.toString());
-    if (tab == null) {
-      if (attempt >= 100) {
-        throw StateError(
-          'Could not connect to test tab with url: $url\n'
-          'Open tabs: ${tabs.map((tab) => tab.url).join(', ')}',
-        );
-      }
-      await Future<void>.delayed(const Duration(milliseconds: 200));
-    }
-  }
-  var tabConnection = await tab.connect();
-
-  // Coverage reports are in terms of scriptIds so keep note of URLs.
-  // Register the listener before enabling the debugger so that initial
-  // script events sent during initialization are not missed.
-  tabConnection.debugger.onScriptParsed.listen((data) {
-    var script = data.script;
-    if (script.url.isNotEmpty) idToUrl[script.scriptId] = script.url;
-  });
-
-  // Enable debugging.
-  await tabConnection.debugger.enable();
-
-  // Enable coverage collection.
-  await tabConnection.debugger.connection.sendCommand('Profiler.enable', {});
-  await tabConnection.debugger.connection.sendCommand(
-    'Profiler.startPreciseCoverage',
-    {'detailed': true, 'callCount': false},
-  );
-
-  var base = Uri.http('localhost:$port');
-  var devtoolsUrl = tab.devtoolsFrontendUrl;
-  var remoteDebuggerUrl = devtoolsUrl != null
-      ? base.resolve(devtoolsUrl)
-      : base;
-  return (tabConnection, remoteDebuggerUrl);
 }
 
 extension on HttpClient {
