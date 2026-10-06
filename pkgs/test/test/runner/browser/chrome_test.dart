@@ -194,4 +194,37 @@ echo "stdout line"
     expect(requestedPaths, ['/json']);
     expect(chrome.accumulatedOutput, expected);
   }, testOn: '!windows');
+
+  test('fails to connect if the DevTools line has no port', () async {
+    var devToolsLine =
+        'DevTools listening on ws://127.0.0.1/devtools/browser/fake';
+    var scriptFile = p.join(d.sandbox, 'fake_chrome.sh');
+    await d.file('fake_chrome.sh', '''
+#!/bin/sh
+echo "$devToolsLine" >&2
+''').create();
+    await Process.run('chmod', ['+x', scriptFile]);
+
+    var chrome = Chrome(
+      Uri.parse('http://localhost:12345/'),
+      configuration(debug: true),
+      settings: ExecutableSettings(
+        linuxExecutable: scriptFile,
+        macOSExecutable: scriptFile,
+        windowsExecutable: scriptFile,
+      ),
+    );
+    addTearDown(chrome.close);
+
+    await expectLater(
+      chrome.remoteDebuggerUrl,
+      throwsA(
+        isStateError.having(
+          (e) => e.message,
+          'message',
+          'Could not find the DevTools port in: $devToolsLine',
+        ),
+      ),
+    );
+  }, testOn: '!windows');
 }

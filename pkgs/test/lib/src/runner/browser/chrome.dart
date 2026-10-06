@@ -88,7 +88,11 @@ class Chrome extends Browser {
     // DevTools listening on ws://127.0.0.1:44203/devtools/browser/<id>
     const prefix = 'DevTools listening on ';
     var line = await output.firstWhere((line) => line.startsWith(prefix));
-    var port = Uri.parse(line.substring(prefix.length)).port;
+    var devToolsUri = Uri.tryParse(line.substring(prefix.length));
+    if (devToolsUri == null || !devToolsUri.hasPort) {
+      throw StateError('Could not find the DevTools port in: $line');
+    }
+    var port = devToolsUri.port;
 
     var chromeConnection = ChromeConnection('localhost', port);
     // The browser opens a redirect page first, so the tab can take a while to
