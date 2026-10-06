@@ -2,22 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
-import 'package:test_api/backend.dart';
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
-import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 import '../executable_settings.dart';
 import 'browser.dart';
 import 'chromium.dart';
-import 'default_settings.dart';
 
 /// A class for running an instance of Chrome.
 ///
@@ -36,46 +32,28 @@ class Chrome extends Browser {
   late final Future<(WipConnection, Uri)?> _connection = _connect();
 
   final _idToUrl = <String, String>{};
-  final Future<int?> _debugPort;
   final Uri _url;
+
+  /// Whether Chrome was started with remote debugging enabled.
+  final bool _debug;
 
   /// Starts a new instance of Chrome open to the given [url], which may be a
   /// [Uri] or a [String].
-  factory Chrome(
-    Uri url,
-    Configuration configuration, {
-    ExecutableSettings? settings,
-  }) {
-    settings ??= defaultSettings[Runtime.chrome]!;
-    var debugPortCompleter = Completer<int?>();
-    return Chrome._(
-      () async {
-        Future<Process> tryPort([int? port]) async {
-          var process = await ChromiumBasedBrowser.chrome.spawn(
-            url,
-            configuration,
-            settings: settings,
-            additionalArgs: [
-              if (port != null)
-                // Chrome doesn't provide any way of ensuring that this port was
-                // successfully bound. It produces an error if the binding fails,
-                // but without a reliable and fast way to tell if it succeeded
-                // that doesn't provide us much. It's very unlikely that this port
-                // will fail, though.
-                '--remote-debugging-port=$port',
-            ],
-          );
-          debugPortCompleter.complete(port);
-          return process;
-        }
-
-        if (!configuration.debug) return tryPort();
-        return getUnusedPort<Process>(tryPort);
-      },
-      url,
-      debugPortCompleter.future,
-    );
-  }
+  Chrome(Uri url, Configuration configuration, {ExecutableSettings? settings})
+    : _url = url,
+      _debug = configuration.debug,
+      super(
+        () => ChromiumBasedBrowser.chrome.spawn(
+          url,
+          configuration,
+          settings: settings,
+          additionalArgs: [
+            // Let Chrome pick an unused port, which it reports in the
+            // "DevTools listening" line.
+            if (configuration.debug) '--remote-debugging-port=0',
+          ],
+        ),
+      );
 
   /// Returns a Dart based hit-map containing coverage report, suitable for use
   /// with `package:coverage`.
@@ -99,18 +77,22 @@ class Chrome extends Browser {
     return coverage;
   }
 
-  Chrome._(super.startBrowser, this._url, this._debugPort);
-
   /// Connects to the test tab through the DevTools protocol and starts
   /// collecting coverage.
   ///
-  /// Returns `null` if Chrome was started without a remote debugging port.
+  /// Returns `null` if Chrome was started without remote debugging.
   Future<(WipConnection, Uri)?> _connect() async {
-    var port = await _debugPort;
-    if (port == null) return null;
+    if (!_debug) return null;
 
-    // Wait for Chrome to be in a ready state.
-    await output.firstWhere((line) => line.startsWith('DevTools listening'));
+    // Chrome picks the port and reports it once it's ready, for example:
+    // DevTools listening on ws://127.0.0.1:44203/devtools/browser/<id>
+    const prefix = 'DevTools listening on ';
+    var line = await output.firstWhere((line) => line.startsWith(prefix));
+    var devToolsUri = Uri.tryParse(line.substring(prefix.length));
+    if (devToolsUri == null || !devToolsUri.hasPort) {
+      throw StateError('Could not find the DevTools port in: $line');
+    }
+    var port = devToolsUri.port;
 
     var chromeConnection = ChromeConnection('localhost', port);
     // The browser opens a redirect page first, so the tab can take a while to

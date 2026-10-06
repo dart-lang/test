@@ -26,6 +26,9 @@
 * Include Chrome's stderr, which has its logging, in the browser output when
   running with `--debug` or `--coverage`. Previously it was missing from the
   error when Chrome failed or a suite timed out while loading.
+* Let Chrome choose its own remote debugging port when running with `--debug`
+  or `--coverage`, instead of picking a port that another process could take
+  before Chrome binds it.
 
 ## 1.32.0
 
