@@ -139,4 +139,41 @@ echo "\$@" > "$argsFile"
     expect(argsText, isNot(contains('secret_token_12345')));
     expect(argsText, contains('redirect.html'));
   }, testOn: '!windows');
+
+  test('keeps all output when connecting to DevTools', () async {
+    var scriptFile = p.join(d.sandbox, 'fake_chrome.sh');
+    await d.file('fake_chrome.sh', '''
+#!/bin/sh
+echo "DevTools listening on ws://127.0.0.1/devtools/browser/fake" >&2
+echo "stderr after DevTools" >&2
+echo "stdout line"
+''').create();
+    await Process.run('chmod', ['+x', scriptFile]);
+
+    var chrome = Chrome(
+      Uri.parse('http://localhost:12345/'),
+      configuration(debug: true),
+      settings: ExecutableSettings(
+        linuxExecutable: scriptFile,
+        macOSExecutable: scriptFile,
+        windowsExecutable: scriptFile,
+      ),
+    );
+    addTearDown(chrome.close);
+
+    var expected = unorderedEquals([
+      'DevTools listening on ws://127.0.0.1/devtools/browser/fake',
+      'stderr after DevTools',
+      'stdout line',
+    ]);
+    expect(await chrome.output.toList(), expected);
+    // Connecting starts only now, after the output has ended, so the
+    // "DevTools listening" line has to come from the replayed output. There's
+    // no DevTools server, so the connection itself fails.
+    await expectLater(
+      chrome.remoteDebuggerUrl,
+      throwsA(isA<SocketException>()),
+    );
+    expect(chrome.accumulatedOutput, expected);
+  }, testOn: '!windows');
 }

@@ -23,6 +23,9 @@
 * Fail a test suite running in an isolate if the isolate exits, instead of
   hanging. The suite fails to load if the isolate exits while loading, and any
   tests that haven't finished fail if it exits while they run.
+* Include Chrome's stderr, which has its logging, in the browser output when
+  running with `--debug` or `--coverage`. Previously it was missing from the
+  error when Chrome failed or a suite timed out while loading.
 
 ## 1.32.0
 
