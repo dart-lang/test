@@ -57,6 +57,7 @@
 - Add `prints()` check extensions on `Subject<void Function()>` and
   `Subject<Future<void> Function()>` to check expectations against captured
   printed output.
+- Require `package:meta` `^1.17.0`.
 
 ## 0.3.2
 
