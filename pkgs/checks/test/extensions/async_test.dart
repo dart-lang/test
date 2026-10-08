@@ -31,10 +31,7 @@ void main() {
         );
         await check(
           Condition.it<Future>()..completes(.it()..equals(42)),
-        ).hasAsyncDescriptionWhich(
-          .it()
-            ..deepEquals(['  completes to a value that:', '    equals <42>']),
-        );
+        ).hasAsyncDescriptionWhich(.it()..deepEquals(['  completes to <42>']));
       });
       test(
         'allows async expectation on subject extracted synchronously',
@@ -186,9 +183,7 @@ Which: threw 'error' at:
         ).hasAsyncDescriptionWhich(.it()..deepEquals(['  emits a value']));
         await check(
           Condition.it<StreamQueue<int>>()..emits(.it()..equals(42)),
-        ).hasAsyncDescriptionWhich(
-          .it()..deepEquals(['  emits a value that:', '    equals <42>']),
-        );
+        ).hasAsyncDescriptionWhich(.it()..deepEquals(['  emits <42>']));
       });
       test('does not consume error', () async {
         final queue = _countingStream(1, errorAt: 0);
@@ -251,9 +246,7 @@ Which: threw 'error' at:
           ),
         ).hasAsyncDescriptionWhich(
           .it()..deepEquals([
-            '  emits an error of type StateError that:',
-            '    has message that:',
-            '      equals \'foo\'',
+            "  emits an error of type StateError that has message: 'foo'",
           ]),
         );
       });

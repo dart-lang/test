@@ -5,6 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
+import '../describe.dart' show singleLineDescription;
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
@@ -108,6 +109,10 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         assert(conditionDescription.isNotEmpty);
         return ['contains a key that:', ...conditionDescription];
       },
+      predicateNoun: () {
+        final d = singleLineDescription(keyCondition);
+        return d != null ? 'a map containing a key that $d' : null;
+      },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty map']);
         for (var k in actual.keys) {
@@ -147,6 +152,10 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         final conditionDescription = valueCondition.describeSync();
         assert(conditionDescription.isNotEmpty);
         return ['contains a value that:', ...conditionDescription];
+      },
+      predicateNoun: () {
+        final d = singleLineDescription(valueCondition);
+        return d != null ? 'a map containing a value that $d' : null;
       },
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty map']);
