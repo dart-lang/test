@@ -1,4 +1,4 @@
-## 1.33.0-wip
+## 1.33.0
 
 * Replace the Safari launch mechanism to use `safaridriver`.
 * Fix a hang when the runner is interrupted at the moment a test suite starts
