@@ -1,4 +1,4 @@
-## 0.7.15-wip
+## 0.7.15
 
 * export `LocalTest`, `MessageType`, `Status`, `Suite` from `backend.dart`.
 
