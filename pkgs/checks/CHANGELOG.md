@@ -57,6 +57,13 @@
 - Add `prints()` check extensions on `Subject<void Function()>` and
   `Subject<Future<void> Function()>` to check expectations against captured
   printed output.
+- Improve collapsed failure messages when the only expectation on a nested
+  subject is a further nested subject. The inner description is joined to the
+  label for the outer subject with "that", so
+  `.throws<StateError>().has((e) => e.message, 'message').equals('foo')` reads
+  as `throws an error of type StateError that has message: 'foo'` instead of
+  `throws has message: 'foo'`, and chained `has` calls read as
+  `has value that has field: 'foo'` instead of `has value: has field: 'foo'`.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2
