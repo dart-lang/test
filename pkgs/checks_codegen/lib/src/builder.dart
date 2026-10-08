@@ -130,8 +130,8 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
 
   /// Whether [field] should get a `has` getter.
   ///
-  /// Private fields are skipped because the generated extension is in a
-  /// different library and cannot access them.
+  /// Checks whether the field can be referenced on an instance of the class
+  /// containing [field] from the generated library.
   bool _isCheckableField(FieldElement field) =>
       field.name != 'hashCode' &&
       !field.isStatic &&
