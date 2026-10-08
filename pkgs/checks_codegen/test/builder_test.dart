@@ -204,5 +204,47 @@ abstract class Foo {
         ..not(.it()..contains('functionField'))
         ..not(.it()..contains('method'));
     });
+
+    test('omits private fields and getters', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+          'a|test/foo.dart': '''
+abstract class Foo {
+    int get intField;
+    final int _privateField;
+    _Private get _privateGetter;
+}
+
+abstract class _Private {}
+''',
+        },
+        readerWriter: readerWriter,
+        flattenOutput: true,
+      );
+      final checksOutput = readerWriter.testing.readString(
+        AssetId('a', 'test/some_test.checks.dart'),
+      );
+      check(checksOutput)
+        ..containsInOrder([
+          "import 'package:checks/checks.dart';",
+          "import 'package:checks/context.dart' as _i1;",
+          "import 'foo.dart' as _i2;",
+          'extension FooChecks on _i1.Subject<_i2.Foo> {',
+          '  _i1.Subject<int> get intField => has((v) => '
+              "v.intField, 'intField');",
+          '}',
+        ])
+        ..not(.it()..contains('_private'))
+        ..not(.it()..contains('_Private'));
+    });
   });
 }
