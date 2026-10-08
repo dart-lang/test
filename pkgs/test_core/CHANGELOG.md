@@ -1,4 +1,4 @@
-## 0.6.21-wip
+## 0.6.21
 
 * Fix a hang when the runner is shut down at the moment a test suite starts
   loading.
