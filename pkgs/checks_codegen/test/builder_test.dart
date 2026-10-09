@@ -165,6 +165,30 @@ abstract class Foo {
       },
     );
 
+    test('names the field when a field type fails to resolve', () async {
+      final result = await testBuilder(builder, {
+        'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+        'a|test/foo.dart': '''
+abstract class Foo {
+    int get intField;
+    List<Missing> get unresolved;
+}
+''',
+      }, readerWriter: readerWriter);
+      check(result.errors).any(
+        .it()
+          ..contains('Failed to resolve the type of `Foo.unresolved`.')
+          ..contains('List<Missing> get unresolved;'),
+      );
+    });
+
     test(
       'includes function typed fields and omits methods and setters',
       () async {

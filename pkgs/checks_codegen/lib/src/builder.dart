@@ -121,7 +121,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       for (final field in element.fields)
         if (_isCheckableField(field))
           if (rawType.getGetter(field.name!) case final getter?)
-            _createHasGetter(field.name!, getter.returnType, importFor),
+            _createHasGetter(field, getter.returnType, importFor),
     ]);
     return Extension(
       (b) => b
@@ -140,11 +140,22 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       field.name != 'hashCode' && !field.isStatic;
 
   Future<Method> _createHasGetter(
-    String name,
+    FieldElement field,
     DartType type,
     Future<String?> Function(Element) importFor,
   ) async {
-    final typeReference = await _typeReference(type, importFor);
+    final name = field.name!;
+    final Reference typeReference;
+    try {
+      typeReference = await _typeReference(type, importFor);
+    } on _UnresolvedType {
+      throw InvalidGenerationSourceError(
+        'Failed to resolve the type of '
+        '`${field.enclosingElement.displayName}.$name`. '
+        'Check for a missing build dependency.',
+        element: field,
+      );
+    }
     return Method(
       (b) => b
         ..name = name
@@ -174,6 +185,8 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   /// The only type parameters which may be referenced within [type] are those
   /// of generic function types within [type], which are in scope where they
   /// are referenced.
+  ///
+  /// Throws an [_UnresolvedType] if any type within [type] failed to resolve.
   static Future<Reference> _typeReference(
     DartType type,
     Future<String?> Function(Element) importFor,
@@ -196,10 +209,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       ),
       FunctionType() => await _functionTypeReference(type, importFor),
       RecordType() => await _recordTypeReference(type, importFor),
-      _ => throw InvalidGenerationSourceError(
-        'Failed to resolve the type $type. '
-        'Check for a missing build dependency.',
-      ),
+      _ => throw const _UnresolvedType(),
     };
   }
 
@@ -324,4 +334,12 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       return exportingLibrary.uri.toString();
     }
   }
+}
+
+/// Thrown by [ChecksGenerator._typeReference] when a type failed to resolve.
+///
+/// Caught where the field that has the type is known so that the reported
+/// error can point to it.
+final class _UnresolvedType implements Exception {
+  const _UnresolvedType();
 }
