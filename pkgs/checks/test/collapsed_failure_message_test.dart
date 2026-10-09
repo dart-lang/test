@@ -610,6 +610,50 @@ Which: differs at offset 0:
   ^'''),
         );
       });
+
+      test('has within completes joins with the label', () async {
+        final future = Future.value(Foo('foo'));
+        final checkFuture = check(
+          future,
+        ).completes(.it()..someField.equals('bar'));
+        await check(checkFuture).throws<TestFailure>(
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Future<Foo> that completes to a value that has someField: 'bar'
+Actual: a Future<Foo> that completes to a value that has someField: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^'''),
+        );
+      });
+
+      test('has within map operator [] joins with the label', () {
+        check(() {
+          check({'a': Foo('foo')})['a'].someField.equals('bar');
+        }).throwsFailure().equals('''
+Expected: a Map<String, Foo> that contains a value for 'a' that has someField: 'bar'
+Actual: a Map<String, Foo> that contains a value for 'a' that has someField: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^''');
+      });
+
+      test('passing nested chain beside a failing clause joins with the '
+          'label', () {
+        check(() {
+          check(Wrapper(Foo('foo')))
+            ..value.isA<Foo>().someField.equals('foo')
+            ..value.isNull;
+        }).throwsFailure().equals('''
+Expected: a Wrapper that:
+  has value that has someField: 'foo'
+  has value: null
+Actual: a Wrapper that:
+  has value that has someField: 'foo'
+  has value: <Instance of 'Foo'>''');
+      });
     });
   });
 }
