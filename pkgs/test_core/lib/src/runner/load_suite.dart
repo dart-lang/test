@@ -13,6 +13,27 @@ import 'plugin/environment.dart';
 import 'runner_suite.dart';
 import 'suite.dart';
 
+/// The zone key for a function returning [remainingLoadTime].
+final _remainingLoadTimeKey = Object();
+
+/// The duration that the [Invoker] scales relative timeouts from, such as a
+/// suite load timeout of `2x`.
+const _invokerDefaultTimeout = Duration(seconds: 30);
+
+/// How long remains before the suite being loaded in the current zone fails
+/// from its suite load timeout.
+///
+/// Returns `null` when the load can't time out, because the suite load timeout
+/// is `none` or timeouts are ignored, and when called outside of a load suite's
+/// body.
+///
+/// This is only meaningful while the suite is loading. Callbacks registered
+/// during loading run in the same zone and may see a stale value later.
+///
+/// Platforms read this through `PlatformPlugin.remainingLoadTime`.
+Duration? get remainingLoadTime =>
+    (Zone.current[_remainingLoadTimeKey] as Duration? Function()?)?.call();
+
 /// A [Suite] emitted by a [Loader] that provides a test-like interface for
 /// loading a test file.
 ///
@@ -106,26 +127,37 @@ class LoadSuite extends Suite implements RunnerSuite {
         var invoker = Invoker.current;
         invoker!.addOutstandingCallback();
 
-        unawaited(() async {
-          RunnerSuite? suite;
-          try {
-            suite = await body();
-          } catch (_) {
-            invoker.removeOutstandingCallback();
-            rethrow;
-          }
-          if (completer.isCompleted) {
-            // If the load test has already been closed, close the suite it
-            // generated.
-            await suite?.close();
-            return;
-          }
+        // The invoker starts the load test's timeout just before it runs this
+        // body, so time from here approximates the time spent against it.
+        var loadTimeout = config.ignoreTimeouts
+            ? null
+            : config.suiteLoadTimeout.apply(_invokerDefaultTimeout);
+        var stopwatch = Stopwatch()..start();
+        Duration? remaining() =>
+            loadTimeout == null ? null : loadTimeout - stopwatch.elapsed;
 
-          completer.complete(
-            suite == null ? null : (suite: suite, zone: Zone.current),
-          );
-          invoker.removeOutstandingCallback();
-        }());
+        unawaited(
+          runZoned(() async {
+            RunnerSuite? suite;
+            try {
+              suite = await body();
+            } catch (_) {
+              invoker.removeOutstandingCallback();
+              rethrow;
+            }
+            if (completer.isCompleted) {
+              // If the load test has already been closed, close the suite it
+              // generated.
+              await suite?.close();
+              return;
+            }
+
+            completer.complete(
+              suite == null ? null : (suite: suite, zone: Zone.current),
+            );
+            invoker.removeOutstandingCallback();
+          }, zoneValues: {_remainingLoadTimeKey: remaining}),
+        );
 
         // If the test completes before the body callback, either an out-of-band
         // error occurred or the test was canceled. Either way, we return a `null`
