@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:meta/meta.dart' show internal;
+
 import 'checks.dart' show Condition;
 
 /// Returns a pretty-printed representation of [object].
@@ -159,6 +161,15 @@ Iterable<String> postfixLast(String postfix, Iterable<String> lines) sync* {
     yield hasNext ? line : '$line$postfix';
   }
 }
+
+/// The description of [condition] as a single line with no indentation, or
+/// `null` if the description spans multiple lines.
+///
+/// Used to build predicate nouns for expectations that embed the description
+/// of a [Condition], such as `IterableChecks.any`.
+@internal
+String? singleLineDescription(Condition<Object?> condition) =>
+    condition.describeSync().singleOrNull?.trimLeft();
 
 /// Returns [output] with all whitespace characters represented as their escape
 /// sequences.

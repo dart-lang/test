@@ -64,6 +64,15 @@
   as `throws an error of type StateError that has message: 'foo'` instead of
   `throws has message: 'foo'`, and chained `has` calls read as
   `has value that has field: 'foo'` instead of `has value: has field: 'foo'`.
+- Collapse nested subjects with a single expectation in the output of
+  `Condition.describe`, matching the format used for failure messages. For
+  example `.it()..length.equals(1)` describes as `has length: <1>` instead of
+  `has length that:` followed by `equals <1>` on an indented line.
+- Collapse the failure messages for `IterableChecks.any`,
+  `IterableChecks.every`, `MapChecks.containsKeyThat`, and
+  `MapChecks.containsValueThat` to a single line when the condition describes
+  in a single line, for example
+  `Expected: an iterable containing a value that is greater than <7>`.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2

@@ -8,9 +8,7 @@ void main() {
 
     // This check fails.
     check([2, 4, 16]).every(.it()..isLessThan(10));
-    // Expected: a List<int> that:
-    //   only has values that:
-    //     is less than <10>
+    // Expected: an iterable where every value is less than <10>
     // Actual: [2, 4, 16]
     // Which: has an element at index 2 that:
     //   Actual: <16>

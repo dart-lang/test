@@ -1158,9 +1158,11 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
     var successfulOverlap = 0;
     for (var clause in _clauses) {
-      final isFailingClause = thisContextFailed
-          ? identical(clause, _clauses.last)
-          : failingContext._nestsUnder(clause);
+      final isFailingClause =
+          rejection != null &&
+          (thisContextFailed
+              ? identical(clause, _clauses.last)
+              : failingContext._nestsUnder(clause));
       final clauseRejection = isFailingClause ? rejection : null;
       final details = clause.detail(failingContext, clauseRejection);
 
@@ -1191,9 +1193,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           canCollapse = false;
         }
       } else {
-        final collapsed = rejection != null && !clause.isLeaf
-            ? clause.collapsedExpected
-            : null;
+        final collapsed = !clause.isLeaf ? clause.collapsedExpected : null;
         clauseExpected = collapsed != null ? [collapsed] : details.expected;
         actual.addAll(indent(clauseExpected));
         if (collapsed != null) didCollapse = true;

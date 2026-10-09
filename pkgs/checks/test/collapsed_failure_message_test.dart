@@ -548,6 +548,90 @@ Which: is not equal'''),
       });
     });
 
+    group('described conditions', () {
+      test('any collapses a nested property', () {
+        check(() {
+          check([Foo('foo')]).any(.it()..someField.equals('bar'));
+        }).throwsFailure().equals('''
+Expected: an iterable containing a value that has someField: 'bar'
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any collapses through a satisfied precondition', () {
+        check(() {
+          check([
+            Wrapper(Foo('foo')),
+          ]).any(.it()..value.isA<Foo>().someField.equals('bar'));
+        }).throwsFailure().equals('''
+Expected: an iterable containing a value that has value that has someField: 'bar'
+Actual: [Instance of 'Wrapper']
+Which: contains no matching element''');
+      });
+
+      test('any with multiple expectations does not collapse', () {
+        check(() {
+          check([1]).any(
+            .it()
+              ..isGreaterThan(1)
+              ..isLessThan(3),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<int> that:
+  contains a value that:
+    is greater than <1>
+    is less than <3>
+Actual: [1]
+Which: contains no matching element''');
+      });
+
+      test('any with multiple nested expectations collapses each', () {
+        check(() {
+          check([Wrapper(Foo('foo'))]).any(
+            .it()
+              ..value.isNotNull()
+              ..value.isA<Foo>().someField.equals('bar'),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<Wrapper> that:
+  contains a value that:
+    has value that:
+      is not null
+    has value that has someField: 'bar'
+Actual: [Instance of 'Wrapper']
+Which: contains no matching element''');
+      });
+
+      test('every collapses', () {
+        check(() {
+          check([1, 2]).every(.it()..isGreaterThan(1));
+        }).throwsFailure().equals('''
+Expected: an iterable where every value is greater than <1>
+Actual: [1, 2]
+Which: has an element at index 0 that:
+  Actual: <1>
+  Which: is not greater than <1>''');
+      });
+
+      test('containsKeyThat collapses', () {
+        check(() {
+          check({'a': 1}).containsKeyThat(.it()..startsWith('b'));
+        }).throwsFailure().equals("""
+Expected: a map containing a key that starts with 'b'
+Actual: {'a': 1}
+Which: contains no matching key""");
+      });
+
+      test('containsValueThat collapses', () {
+        check(() {
+          check({'a': 1}).containsValueThat(.it()..isGreaterThan(1));
+        }).throwsFailure().equals('''
+Expected: a map containing a value that is greater than <1>
+Actual: {'a': 1}
+Which: contains no matching value''');
+      });
+    });
+
     group('nested subjects', () {
       test('has within has joins with the label', () {
         check(() {
