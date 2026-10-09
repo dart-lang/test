@@ -547,7 +547,124 @@ Which: is not equal'''),
         );
       });
     });
+
+    group('nested subjects', () {
+      test('has within has joins with the label', () {
+        check(() {
+          check(Wrapper(Foo('foo'))).value.isA<Foo>().someField.equals('bar');
+        }).throwsFailure().equals('''
+Expected: a Wrapper that has value that has someField: 'bar'
+Actual: a Wrapper that has value that has someField: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^''');
+      });
+
+      test('has within throws keeps the error type', () {
+        check(() {
+          check(
+            () => throw StateError('foo'),
+          ).throws<StateError>().has((e) => e.message, 'message').equals('bar');
+        }).throwsFailure().equals('''
+Expected: a () => Never that throws an error of type StateError that has message: 'bar'
+Actual: a () => Never that throws an error of type StateError that has message: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^''');
+      });
+
+      test('has within Future.throws over the length limit', () async {
+        final future = Future<void>.error(StateError('foo'));
+        final checkFuture = check(future).throws<StateError>(
+          .it()..has((e) => e.message, 'message').equals('bar'),
+        );
+        await check(checkFuture).throws<TestFailure>(
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Future<void> that:
+  completes to an error of type StateError that has message: 'bar'
+Actual: a Future<void> that:
+  completes to an error of type StateError that has message: 'foo'
+  Which: differs at offset 0:
+    bar
+    foo
+    ^'''),
+        );
+      });
+
+      test('has within emitsError keeps the error type', () async {
+        final queue = check(Stream<void>.error(StateError('foo'))).withQueue;
+        final checkStream = queue.emitsError<StateError>(
+          .it()..has((e) => e.message, 'message').equals('bar'),
+        );
+        await check(checkStream).throws<TestFailure>(
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Stream<void> that emits an error of type StateError that has message: 'bar'
+Actual: a Stream<void> that emits an error of type StateError that has message: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^'''),
+        );
+      });
+
+      test('has within completes joins with the label', () async {
+        final future = Future.value(Foo('foo'));
+        final checkFuture = check(
+          future,
+        ).completes(.it()..someField.equals('bar'));
+        await check(checkFuture).throws<TestFailure>(
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Future<Foo> that completes to a value that has someField: 'bar'
+Actual: a Future<Foo> that completes to a value that has someField: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^'''),
+        );
+      });
+
+      test('has within map operator [] joins with the label', () {
+        check(() {
+          check({'a': Foo('foo')})['a'].someField.equals('bar');
+        }).throwsFailure().equals('''
+Expected: a Map<String, Foo> that contains a value for 'a' that has someField: 'bar'
+Actual: a Map<String, Foo> that contains a value for 'a' that has someField: 'foo'
+Which: differs at offset 0:
+  bar
+  foo
+  ^''');
+      });
+
+      test('passing nested chain beside a failing clause joins with the '
+          'label', () {
+        check(() {
+          check(Wrapper(Foo('foo')))
+            ..value.isA<Foo>().someField.equals('foo')
+            ..value.isNull;
+        }).throwsFailure().equals('''
+Expected: a Wrapper that:
+  has value that has someField: 'foo'
+  has value: null
+Actual: a Wrapper that:
+  has value that has someField: 'foo'
+  has value: <Instance of 'Foo'>''');
+      });
+    });
   });
+}
+
+class Wrapper {
+  final Object? value;
+  Wrapper(this.value);
+}
+
+extension on Subject<Wrapper> {
+  Subject<Object?> get value => has((w) => w.value, 'value');
 }
 
 class Foo {
