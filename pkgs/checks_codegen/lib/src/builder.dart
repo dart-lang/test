@@ -54,19 +54,27 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
         'Check for a missing build dependency.',
       );
     }
-    final types = typesField.listValue;
-    final extensions = await Future.wait([
-      for (final object in types)
-        _createExtension(
-          directive.libraryFragment.importedLibraries,
-          object,
-          buildStep.resolver,
-          buildStep.inputId.path,
-        ),
-    ]);
+    final targets = [
+      for (final object in typesField.listValue) _CheckTarget(object),
+    ];
+    final referencedElements = <InterfaceElement>{};
+    for (final target in targets) {
+      referencedElements.add(target.element);
+      for (final (field: _, :type) in target.fields) {
+        _collectElements(type, referencedElements);
+      }
+    }
+    final importUris = await _resolveImports(
+      directive.libraryFragment,
+      referencedElements,
+      buildStep.resolver,
+      buildStep.inputId.path,
+    );
     final library = Library(
       (b) => b
-        ..body.addAll(extensions)
+        ..body.addAll([
+          for (final target in targets) _createExtension(target, importUris),
+        ])
         ..directives.add(
           Directive(
             (b) => b
@@ -95,34 +103,11 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     );
   }
 
-  Future<Extension> _createExtension(
-    List<LibraryElement> imports,
-    DartObject dartObject,
-    Resolver resolver,
-    String entryAssetPath,
-  ) async {
-    final type = dartObject.toTypeValue();
-    if (type is! InterfaceType) {
-      throw InvalidGenerationSourceError(
-        'Only interface types may be used for checks extensions: $type',
-      );
-    }
-    final element = type.element;
-    Future<String?> importFor(Element element) =>
-        _findImportFor(imports, element, resolver, entryAssetPath);
-    final import = await importFor(element);
-    // The extension is on the raw type, so field types are read from the type
-    // instantiated to bounds to match the static type of `v.field`.
-    final rawType = element.library.typeSystem.instantiateInterfaceToBounds(
-      element: element,
-      nullabilitySuffix: NullabilitySuffix.none,
-    );
-    final hasGetters = await Future.wait([
-      for (final field in element.fields)
-        if (_isCheckableField(field))
-          if (rawType.getGetter(field.name!) case final getter?)
-            _createHasGetter(field, getter.returnType, importFor),
-    ]);
+  Extension _createExtension(
+    _CheckTarget target,
+    Map<InterfaceElement, String> importUris,
+  ) {
+    final element = target.element;
     return Extension(
       (b) => b
         ..name = '${element.displayName}Checks'
@@ -130,24 +115,24 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
           (b) => b
             ..symbol = 'Subject'
             ..url = 'package:checks/context.dart'
-            ..types.add(refer(element.displayName, import)),
+            ..types.add(refer(element.displayName, importUris[element])),
         )
-        ..methods.addAll(hasGetters),
+        ..methods.addAll([
+          for (final (:field, :type) in target.fields)
+            _createHasGetter(field, type, importUris),
+        ]),
     );
   }
 
-  bool _isCheckableField(FieldElement field) =>
-      field.name != 'hashCode' && !field.isStatic;
-
-  Future<Method> _createHasGetter(
+  Method _createHasGetter(
     FieldElement field,
     DartType type,
-    Future<String?> Function(Element) importFor,
-  ) async {
+    Map<InterfaceElement, String> importUris,
+  ) {
     final name = field.name!;
     final Reference typeReference;
     try {
-      typeReference = await _typeReference(type, importFor);
+      typeReference = _typeReference(type, importUris);
     } on _UnresolvedType {
       throw InvalidGenerationSourceError(
         'Failed to resolve the type of '
@@ -179,6 +164,37 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     );
   }
 
+  /// Adds the element of every interface type within [type] to [elements].
+  ///
+  /// Must visit every interface type that [_typeReference] references, so
+  /// that an import is resolved for each of them.
+  static void _collectElements(DartType type, Set<InterfaceElement> elements) {
+    switch (type) {
+      case InterfaceType(:final element, :final typeArguments):
+        elements.add(element);
+        for (final typeArgument in typeArguments) {
+          _collectElements(typeArgument, elements);
+        }
+      case FunctionType():
+        for (final typeParameter in type.typeParameters) {
+          if (typeParameter.bound case final bound?) {
+            _collectElements(bound, elements);
+          }
+        }
+        _collectElements(type.returnType, elements);
+        for (final parameter in type.formalParameters) {
+          _collectElements(parameter.type, elements);
+        }
+      case RecordType(:final positionalFields, :final namedFields):
+        for (final field in positionalFields) {
+          _collectElements(field.type, elements);
+        }
+        for (final field in namedFields) {
+          _collectElements(field.type, elements);
+        }
+    }
+  }
+
   /// A reference to [type] which imports the libraries for every element
   /// referenced within [type].
   ///
@@ -187,10 +203,10 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   /// are referenced.
   ///
   /// Throws an [_UnresolvedType] if any type within [type] failed to resolve.
-  static Future<Reference> _typeReference(
+  static Reference _typeReference(
     DartType type,
-    Future<String?> Function(Element) importFor,
-  ) async {
+    Map<InterfaceElement, String> importUris,
+  ) {
     final isNullable = type.nullabilitySuffix == NullabilitySuffix.question;
     return switch (type) {
       DynamicType() => refer('dynamic'),
@@ -201,61 +217,54 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
           ..url = 'dart:core'
           ..isNullable = isNullable,
       ),
-      InterfaceType() => await _interfaceTypeReference(type, importFor),
+      InterfaceType() => _interfaceTypeReference(type, importUris),
       TypeParameterType(:final element) => TypeReference(
         (b) => b
           ..symbol = element.name
           ..isNullable = isNullable,
       ),
-      FunctionType() => await _functionTypeReference(type, importFor),
-      RecordType() => await _recordTypeReference(type, importFor),
+      FunctionType() => _functionTypeReference(type, importUris),
+      RecordType() => _recordTypeReference(type, importUris),
       _ => throw const _UnresolvedType(),
     };
   }
 
-  static Future<Reference> _interfaceTypeReference(
+  static Reference _interfaceTypeReference(
     InterfaceType type,
-    Future<String?> Function(Element) importFor,
-  ) async {
-    final import = await importFor(type.element);
-    final types = [
-      for (final typeArgument in type.typeArguments)
-        await _typeReference(typeArgument, importFor),
-    ];
-    return TypeReference(
-      (b) => b
-        ..symbol = type.element.name
-        ..url = import
-        ..types.addAll(types)
-        ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
-    );
-  }
+    Map<InterfaceElement, String> importUris,
+  ) => TypeReference(
+    (b) => b
+      ..symbol = type.element.name
+      ..url = importUris[type.element]!
+      ..types.addAll([
+        for (final typeArgument in type.typeArguments)
+          _typeReference(typeArgument, importUris),
+      ])
+      ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
+  );
 
-  static Future<Reference> _functionTypeReference(
+  static Reference _functionTypeReference(
     FunctionType type,
-    Future<String?> Function(Element) importFor,
-  ) async {
-    final typeParameters = <Reference>[];
-    for (final typeParameter in type.typeParameters) {
-      final bound = typeParameter.bound;
-      final boundReference = bound == null
-          ? null
-          : await _typeReference(bound, importFor);
-      typeParameters.add(
+    Map<InterfaceElement, String> importUris,
+  ) {
+    final typeParameters = [
+      for (final typeParameter in type.typeParameters)
         TypeReference(
           (b) => b
             ..symbol = typeParameter.name
-            ..bound = boundReference,
+            ..bound = switch (typeParameter.bound) {
+              final bound? => _typeReference(bound, importUris),
+              null => null,
+            },
         ),
-      );
-    }
-    final returnType = await _typeReference(type.returnType, importFor);
+    ];
+    final returnType = _typeReference(type.returnType, importUris);
     final requiredParameters = <Reference>[];
     final optionalParameters = <Reference>[];
     final namedParameters = <String, Reference>{};
     final namedRequiredParameters = <String, Reference>{};
     for (final parameter in type.formalParameters) {
-      final parameterType = await _typeReference(parameter.type, importFor);
+      final parameterType = _typeReference(parameter.type, importUris);
       if (parameter.isRequiredPositional) {
         requiredParameters.add(parameterType);
       } else if (parameter.isOptionalPositional) {
@@ -278,62 +287,208 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     );
   }
 
-  static Future<Reference> _recordTypeReference(
+  static Reference _recordTypeReference(
     RecordType type,
-    Future<String?> Function(Element) importFor,
-  ) async {
-    final positionalFieldTypes = [
-      for (final field in type.positionalFields)
-        await _typeReference(field.type, importFor),
-    ];
-    final namedFieldTypes = {
-      for (final field in type.namedFields)
-        field.name: await _typeReference(field.type, importFor),
-    };
-    return cb.RecordType(
-      (b) => b
-        ..positionalFieldTypes.addAll(positionalFieldTypes)
-        ..namedFieldTypes.addAll(namedFieldTypes)
-        ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
-    );
-  }
+    Map<InterfaceElement, String> importUris,
+  ) => cb.RecordType(
+    (b) => b
+      ..positionalFieldTypes.addAll([
+        for (final field in type.positionalFields)
+          _typeReference(field.type, importUris),
+      ])
+      ..namedFieldTypes.addAll({
+        for (final field in type.namedFields)
+          field.name: _typeReference(field.type, importUris),
+      })
+      ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
+  );
 
-  static Future<String?> _findImportFor(
-    Iterable<LibraryElement> imports,
-    Element element,
+  /// The URI to import for each of [elements].
+  ///
+  /// Elements declared in public SDK libraries are imported from their
+  /// declaring library. Other elements are imported from the first library
+  /// which exports them, searching in order:
+  ///
+  /// 1. The imports of [testLibrary].
+  /// 2. The imports of the libraries which declare [elements].
+  /// 3. For elements declared in private SDK libraries, the public SDK
+  ///    libraries, see [_findPublicSdkLibraries].
+  ///
+  /// Within the first two groups libraries outside of `src/` are searched
+  /// first.
+  ///
+  /// If no library exports an element it is imported from its declaring
+  /// library, which may be under `src/`. It is an error if that library is a
+  /// private SDK library, since it cannot be imported.
+  static Future<Map<InterfaceElement, String>> _resolveImports(
+    LibraryFragment testLibrary,
+    Set<InterfaceElement> elements,
     Resolver resolver,
     String entryAssetPath,
   ) async {
-    final elementLibrary = element.library!;
-    if (elementLibrary.isInSdk && !elementLibrary.name!.startsWith('dart._')) {
-      // For public SDK libraries, just use the source URI.
-      return elementLibrary.uri.toString();
+    final declaringLibraries = {
+      for (final element in elements) element.library,
+    };
+    final candidates = [
+      ...testLibrary.importedLibraries
+          .whereNot(_isPrivateSdkLibrary)
+          .sorted(_compareLibraries),
+      ...{
+        for (final library in declaringLibraries)
+          for (final fragment in library.fragments)
+            ...fragment.importedLibraries,
+      }.whereNot(_isPrivateSdkLibrary).sorted(_compareLibraries),
+    ];
+    List<LibraryElement>? publicSdkLibraries;
+    final importUris = <InterfaceElement, String>{};
+    for (final element in elements) {
+      final declaringLibrary = element.library;
+      if (_isPublicSdkLibrary(declaringLibrary)) {
+        importUris[element] = declaringLibrary.uri.toString();
+        continue;
+      }
+      var exportingLibrary = _findExportOf(candidates, element);
+      if (exportingLibrary == null && _isPrivateSdkLibrary(declaringLibrary)) {
+        publicSdkLibraries ??= await _findPublicSdkLibraries([
+          testLibrary.element,
+          ...declaringLibraries,
+        ], resolver);
+        exportingLibrary =
+            _findExportOf(publicSdkLibraries, element) ??
+            (throw InvalidGenerationSourceError(
+              'Cannot import `${element.displayName}`. It is declared in '
+              '${declaringLibrary.uri} and not exported by any public '
+              'library.',
+            ));
+      }
+      importUris[element] = await _importUriFor(
+        exportingLibrary ?? declaringLibrary,
+        resolver,
+        entryAssetPath,
+      );
     }
-    final elementName = element.name;
-    if (elementName == null) {
-      return elementLibrary.uri.toString();
-    }
-    final exported = imports.firstWhereOrNull(
-      (l) => l.exportNamespace.get2(elementName) == element,
+    return importUris;
+  }
+
+  /// Returns the first library in [candidates] which exports [element], if
+  /// any.
+  static LibraryElement? _findExportOf(
+    Iterable<LibraryElement> candidates,
+    InterfaceElement element,
+  ) {
+    final name = element.name;
+    if (name == null) return null;
+    return candidates.firstWhereOrNull(
+      (library) => library.exportNamespace.get2(name) == element,
     );
-    final exportingLibrary = exported ?? elementLibrary;
+  }
 
+  /// The public SDK libraries to search for elements declared in private SDK
+  /// libraries.
+  ///
+  /// Libraries reachable through imports and exports from [roots] come first,
+  /// since they are available on the platform the program targets. Some
+  /// elements are exported by multiple public SDK libraries for different
+  /// platforms, for instance `HttpStatus` from both `dart:io` and `dart:html`.
+  /// The remaining public SDK libraries known to [resolver] follow. Each group
+  /// is sorted by URI.
+  static Future<List<LibraryElement>> _findPublicSdkLibraries(
+    Iterable<LibraryElement> roots,
+    Resolver resolver,
+  ) async {
+    final reachable = <LibraryElement>{};
+    final toVisit = [...roots];
+    while (toVisit.isNotEmpty) {
+      final library = toVisit.removeLast();
+      if (!reachable.add(library)) continue;
+      for (final fragment in library.fragments) {
+        toVisit.addAll(fragment.importedLibraries);
+      }
+      toVisit.addAll(library.exportedLibraries);
+    }
+    final allLibraries = await resolver.libraries.toList();
+    String uri(LibraryElement library) => library.uri.toString();
+    return [
+      ...reachable.where(_isPublicSdkLibrary).sortedBy(uri),
+      ...allLibraries
+          .where(_isPublicSdkLibrary)
+          .whereNot(reachable.contains)
+          .sortedBy(uri),
+    ];
+  }
+
+  /// The URI to use in the generated library to import [library].
+  static Future<String> _importUriFor(
+    LibraryElement library,
+    Resolver resolver,
+    String entryAssetPath,
+  ) async {
+    if (library.isInSdk) return library.uri.toString();
     try {
-      final typeAssetId = await resolver.assetIdForElement(exportingLibrary);
-
-      if (typeAssetId.path.startsWith('lib/')) {
-        return typeAssetId.uri.toString();
+      final assetId = await resolver.assetIdForElement(library);
+      if (assetId.path.startsWith('lib/')) {
+        return assetId.uri.toString();
       } else {
-        return p.url.relative(
-          typeAssetId.path,
-          from: p.dirname(entryAssetPath),
-        );
+        return p.url.relative(assetId.path, from: p.dirname(entryAssetPath));
       }
     } on UnresolvableAssetException {
       // Asset may be in a summary.
-      return exportingLibrary.uri.toString();
+      return library.uri.toString();
     }
   }
+
+  static bool _isPrivateSdkLibrary(LibraryElement library) =>
+      library.isInSdk && library.uri.path.startsWith('_');
+
+  static bool _isPublicSdkLibrary(LibraryElement library) =>
+      library.isInSdk && !library.uri.path.startsWith('_');
+
+  /// Orders libraries by scheme, then libraries outside of `src/` first, then
+  /// by path.
+  static int _compareLibraries(LibraryElement a, LibraryElement b) {
+    final schemeComparison = a.uri.scheme.compareTo(b.uri.scheme);
+    if (schemeComparison != 0) return schemeComparison;
+    final aIsSrc = a.uri.path.contains('/src/');
+    final bIsSrc = b.uri.path.contains('/src/');
+    if (aIsSrc != bIsSrc) return aIsSrc ? 1 : -1;
+    return a.uri.path.compareTo(b.uri.path);
+  }
+}
+
+/// A class to generate a checks extension for.
+final class _CheckTarget {
+  final InterfaceElement element;
+
+  /// The fields to generate getters for, with their types.
+  ///
+  /// The extension is on the raw type, so field types are read from the type
+  /// instantiated to bounds to match the static type of `v.field`.
+  final List<({FieldElement field, DartType type})> fields;
+
+  _CheckTarget._(this.element, this.fields);
+
+  factory _CheckTarget(DartObject dartObject) {
+    final type = dartObject.toTypeValue();
+    if (type is! InterfaceType) {
+      throw InvalidGenerationSourceError(
+        'Only interface types may be used for checks extensions: $type',
+      );
+    }
+    final element = type.element;
+    final rawType = element.library.typeSystem.instantiateInterfaceToBounds(
+      element: element,
+      nullabilitySuffix: NullabilitySuffix.none,
+    );
+    return _CheckTarget._(element, [
+      for (final field in element.fields)
+        if (_isCheckableField(field))
+          if (rawType.getGetter(field.name!) case final getter?)
+            (field: field, type: getter.returnType),
+    ]);
+  }
+
+  static bool _isCheckableField(FieldElement field) =>
+      field.name != 'hashCode' && !field.isStatic;
 }
 
 /// Thrown by [ChecksGenerator._typeReference] when a type failed to resolve.

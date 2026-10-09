@@ -392,5 +392,204 @@ abstract class Baz {}
         '}',
       ]);
     });
+
+    test('imports through the imports of the declaring library', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+          'a|test/foo.dart': '''
+import 'dart:io';
+
+import 'package:b/b.dart';
+
+abstract class Foo {
+    final HttpClient client;
+    final List<Bar> bars;
+}
+''',
+          'b|lib/b.dart': '''
+export 'src/bar.dart';
+''',
+          'b|lib/src/bar.dart': '''
+abstract class Bar {}
+''',
+        },
+        readerWriter: readerWriter,
+        flattenOutput: true,
+      );
+      final checksOutput = readerWriter.testing.readString(
+        AssetId('a', 'test/some_test.checks.dart'),
+      );
+      check(checksOutput)
+        ..containsInOrder([
+          "import 'dart:io' as _i3;",
+          "import 'package:b/b.dart' as _i4;",
+          "import 'package:checks/checks.dart';",
+          "import 'package:checks/context.dart' as _i1;",
+          "import 'foo.dart' as _i2;",
+          'extension FooChecks on _i1.Subject<_i2.Foo> {',
+          '  _i1.Subject<_i3.HttpClient> get client => '
+              "has((v) => v.client, 'client');",
+          '  _i1.Subject<List<_i4.Bar>> get bars => '
+              "has((v) => v.bars, 'bars');",
+          '}',
+        ])
+        ..not(.it()..contains('dart:_http'))
+        ..not(.it()..contains('src/bar.dart'));
+    });
+
+    test('prefers libraries outside of src/', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+          'a|test/foo.dart': '''
+import 'package:b/src/bar.dart';
+
+import 'baz.dart';
+
+abstract class Foo {
+    final Bar bar;
+    final Baz baz;
+}
+''',
+          'a|test/baz.dart': '''
+import 'package:b/b.dart';
+
+abstract class Baz {}
+''',
+          'b|lib/b.dart': '''
+export 'src/bar.dart';
+''',
+          'b|lib/src/bar.dart': '''
+abstract class Bar {}
+''',
+        },
+        readerWriter: readerWriter,
+        flattenOutput: true,
+      );
+      final checksOutput = readerWriter.testing.readString(
+        AssetId('a', 'test/some_test.checks.dart'),
+      );
+      check(checksOutput)
+        ..contains("import 'package:b/b.dart' as _i")
+        ..not(.it()..contains('src/bar.dart'));
+    });
+
+    test('falls back to importing from src/', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+          'a|test/foo.dart': '''
+import 'package:b/src/bar.dart';
+
+abstract class Foo {
+    final Bar bar;
+}
+''',
+          'b|lib/src/bar.dart': '''
+abstract class Bar {}
+''',
+        },
+        readerWriter: readerWriter,
+        flattenOutput: true,
+      );
+      final checksOutput = readerWriter.testing.readString(
+        AssetId('a', 'test/some_test.checks.dart'),
+      );
+      check(checksOutput).contains("import 'package:b/src/bar.dart' as _i");
+    });
+
+    test(
+      'imports types from private SDK libraries through public SDK libraries',
+      () async {
+        await testBuilder(
+          builder,
+          {
+            'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+            'a|test/foo.dart': '''
+import 'status.dart';
+
+abstract class Foo {
+    final status = makeStatus();
+}
+''',
+            // `HttpStatus` is declared in `dart:_internal`, which does not
+            // import `dart:io`, and neither does any library declaring a type
+            // used by `Foo`.
+            'a|test/status.dart': '''
+import 'dart:io';
+
+HttpStatus? makeStatus() => null;
+''',
+          },
+          readerWriter: readerWriter,
+          flattenOutput: true,
+        );
+        final checksOutput = readerWriter.testing.readString(
+          AssetId('a', 'test/some_test.checks.dart'),
+        );
+        check(checksOutput)
+          ..contains("import 'dart:io' as _i")
+          ..contains('.HttpStatus?> get status')
+          ..not(.it()..contains('dart:_internal'));
+      },
+    );
+
+    test('fails for types only exported by private SDK libraries', () async {
+      final result = await testBuilder(builder, {
+        'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+        'a|test/foo.dart': '''
+import 'dart:_internal';
+
+abstract class Foo {
+    EfficientLengthIterable<int> get iterable;
+}
+''',
+      }, readerWriter: readerWriter);
+      check(result.errors).any(
+        .it()..contains(
+          'Cannot import `EfficientLengthIterable`. '
+          'It is declared in dart:_internal',
+        ),
+      );
+    });
   });
 }

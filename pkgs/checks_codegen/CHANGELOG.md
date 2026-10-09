@@ -8,6 +8,10 @@
 * Use the bounds for type parameters of the checked class, matching the
   extension on the raw type.
 * Skip setter-only fields.
+* Search the imports of the libraries declaring referenced types, in addition
+  to the imports of the test library, for a library to import each type from.
+  Prefer libraries outside of `src/`, and import types declared in private
+  SDK libraries, such as `HttpClient`, through a public SDK library.
 
  
 ## 0.1.0
