@@ -18,6 +18,8 @@ final _preferences = '''
 user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("dom.disable_open_during_load", false);
 user_pref("dom.max_script_run_time", 0);
+user_pref("devtools.console.stdout.content", true);
+user_pref("browser.dom.window.dump.enabled", true);
 ''';
 
 /// A class for running an instance of Firefox.
@@ -50,7 +52,7 @@ class Firefox extends Browser {
       '<script>location = ${jsonEncode(url.toString())}</script>',
     );
 
-    var process = await Process.start(
+    var process = await startBrowserProcess(
       settings.executable,
       ['--profile', dir, redirect, '--no-remote', ...settings.arguments],
       environment: {'MOZ_CRASHREPORTER_DISABLE': '1', 'MOZ_AUTOMATION': '1'},

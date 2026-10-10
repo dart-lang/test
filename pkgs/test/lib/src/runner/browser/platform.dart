@@ -284,6 +284,7 @@ class BrowserPlatform extends PlatformPlugin
       socketFuture,
       _browserSettings[browser]!,
       _config,
+      requestLog: support.requestLog,
     );
   }
 

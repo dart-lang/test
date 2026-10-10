@@ -24,6 +24,7 @@ import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
 import 'microsoft_edge.dart';
+import 'request_log.dart';
 import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -97,13 +98,29 @@ class BrowserManager {
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
+  ///
+  /// If [requestLog] is passed, a connection timeout reports the requests the
+  /// browser made to the test server. Each attempt to connect waits for
+  /// [connectTimeout], which tests can shorten.
   static Future<BrowserManager> start(
     Runtime runtime,
     Uri url,
     Future<WebSocketChannel> future,
     ExecutableSettings settings,
-    Configuration configuration,
-  ) => _start(runtime, url, future, settings, configuration, 1);
+    Configuration configuration, {
+    BrowserRequestLog? requestLog,
+    Duration connectTimeout = const Duration(seconds: 30),
+  }) => _start(
+    runtime,
+    url,
+    future,
+    settings,
+    configuration,
+    requestLog,
+    connectTimeout,
+    1,
+    [],
+  );
 
   static const _maxRetries = 3;
   static Future<BrowserManager> _start(
@@ -112,8 +129,12 @@ class BrowserManager {
     Future<WebSocketChannel> future,
     ExecutableSettings settings,
     Configuration configuration,
+    BrowserRequestLog? requestLog,
+    Duration connectTimeout,
     int attempt,
+    List<String> attemptReports,
   ) {
+    var startTime = DateTime.now();
     var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
@@ -147,18 +168,68 @@ class BrowserManager {
         });
 
     return completer.future.timeout(
-      const Duration(seconds: 30),
+      connectTimeout,
       onTimeout: () {
+        attemptReports.add(
+          _describeAttempt(attempt, browser, url, startTime, requestLog),
+        );
         browser.close();
         if (attempt >= _maxRetries) {
           throw ApplicationException(
             'Timed out waiting for ${runtime.name} to connect.\n'
-            'Browser output: ${browser.accumulatedOutput.join('\n')}',
+            '${attemptReports.join('\n')}',
           );
         }
-        return _start(runtime, url, future, settings, configuration, ++attempt);
+        return _start(
+          runtime,
+          url,
+          future,
+          settings,
+          configuration,
+          requestLog,
+          connectTimeout,
+          attempt + 1,
+          attemptReports,
+        );
       },
     );
+  }
+
+  /// Describes a failed attempt to connect to [browser], for diagnosing
+  /// connection timeouts.
+  static String _describeAttempt(
+    int attempt,
+    Browser browser,
+    Uri url,
+    DateTime startTime,
+    BrowserRequestLog? requestLog,
+  ) {
+    var elapsed = DateTime.now().difference(startTime);
+    var process = browser.process;
+    var exitCode = browser.exitCode;
+    var processState = process == null
+        ? 'not started'
+        : exitCode == null
+        ? 'pid ${process.pid}, still running'
+        : 'pid ${process.pid}, exited with code $exitCode';
+    var managerUrl = url.queryParameters['managerUrl'];
+    var requests = requestLog == null || managerUrl == null
+        ? null
+        : requestLog.describe(Uri.parse(managerUrl), startTime);
+    var output = browser.accumulatedOutput;
+    return [
+      'Attempt $attempt of $_maxRetries: no connection after '
+          '${(elapsed.inMilliseconds / 1000).toStringAsFixed(1)}s.',
+      '  Process: $processState',
+      if (browser.commandLine case var commandLine?) '  Command: $commandLine',
+      if (requests != null)
+        requests.isEmpty
+            ? '  Requests: none'
+            : '  Requests:\n${requests.map((r) => '    $r').join('\n')}',
+      output.isEmpty
+          ? '  Browser output: none'
+          : '  Browser output:\n${output.map((l) => '    $l').join('\n')}',
+    ].join('\n');
   }
 
   /// Starts the browser identified by [browser] using [settings] and has it load [url].
