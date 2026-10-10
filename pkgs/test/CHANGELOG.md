@@ -1,3 +1,10 @@
+## 1.33.1-wip
+
+* Fix loading precompiled browser tests when the precompiled directory contains
+  symlinks to files outside of it, such as the output of `build_runner test`.
+  Requests whose path would resolve outside the precompiled directory are
+  still rejected.
+
 ## 1.33.0
 
 * Replace the Safari launch mechanism to use `safaridriver`.
