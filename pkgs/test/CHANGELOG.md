@@ -1,3 +1,10 @@
+## 1.33.1-wip
+
+* When a browser fails to connect, report each attempt: how long it waited,
+  whether the browser process was still running, the command used to start it,
+  the requests it made to the test server, and its output.
+* Print console output from pages in Firefox to the browser output.
+
 ## 1.33.0
 
 * Replace the Safari launch mechanism to use `safaridriver`.

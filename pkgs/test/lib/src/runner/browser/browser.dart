@@ -9,6 +9,25 @@ import 'dart:io';
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 
+/// The command lines of processes started with [startBrowserProcess].
+final _commandLines = Expando<String>();
+
+/// Starts a browser [executable] with [arguments], like [Process.start], and
+/// remembers the command line for [Browser.commandLine].
+Future<Process> startBrowserProcess(
+  String executable,
+  List<String> arguments, {
+  Map<String, String>? environment,
+}) async {
+  var process = await Process.start(
+    executable,
+    arguments,
+    environment: environment,
+  );
+  _commandLines[process] = [executable, ...arguments].join(' ');
+  return process;
+}
+
 /// An interface for running browser instances.
 ///
 /// This is intentionally coarse-grained: browsers are controlled primary from
@@ -31,6 +50,21 @@ abstract class Browser {
   /// This will fire once the process has started successfully.
   Future<Process> get _process => _processCompleter.future;
   final _processCompleter = Completer<Process>();
+
+  /// The underlying process, or `null` if it hasn't started yet.
+  Process? get process => _startedProcess;
+  Process? _startedProcess;
+
+  /// The exit code of the underlying process, or `null` if it hasn't exited.
+  int? get exitCode => _exitCode;
+  int? _exitCode;
+
+  /// The command line used to start the browser, if it was started with
+  /// [startBrowserProcess].
+  String? get commandLine {
+    var process = _startedProcess;
+    return process == null ? null : _commandLines[process];
+  }
 
   /// Whether [close] has been called.
   var _closed = false;
@@ -101,6 +135,7 @@ abstract class Browser {
     runZonedGuarded(
       () async {
         var process = await startBrowser();
+        _startedProcess = process;
         _processCompleter.complete(process);
 
         Future<void> drainOutput(Stream<List<int>> stream) {
@@ -121,6 +156,7 @@ abstract class Browser {
         ], eagerError: true).whenComplete(_closeOutput);
 
         var exitCode = await process.exitCode;
+        _exitCode = exitCode;
 
         // This hack dodges an otherwise intractable race condition. When the user
         // presses Control-C, the signal is sent to the browser and the test

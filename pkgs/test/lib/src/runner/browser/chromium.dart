@@ -12,6 +12,7 @@ import 'package:test_core/src/runner/configuration.dart'; // ignore: implementat
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
+import 'browser.dart';
 import 'default_settings.dart';
 
 enum ChromiumBasedBrowser {
@@ -62,7 +63,7 @@ enum ChromiumBasedBrowser {
       ...additionalArgs,
     ];
 
-    var process = await Process.start(settings.executable, args);
+    var process = await startBrowserProcess(settings.executable, args);
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
