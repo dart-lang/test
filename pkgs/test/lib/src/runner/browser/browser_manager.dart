@@ -26,6 +26,10 @@ import 'firefox.dart';
 import 'microsoft_edge.dart';
 import 'safari.dart';
 
+/// The page a browser should load and the WebSocket connection it makes back
+/// to this process, once it is established.
+typedef BrowserConnection = ({Uri hostUrl, Future<WebSocketChannel> webSocket});
+
 /// A class that manages the connection to a single running browser.
 ///
 /// This is in charge of telling the browser which test suites to load and
@@ -86,37 +90,58 @@ class BrowserManager {
   // this lets us detect whether they're debugging reasonably accurately.
   late final RestartableTimer _timer;
 
-  /// Starts the browser identified by [runtime] and has it connect to [url].
+  /// Starts the browser identified by [runtime] and has it connect to this
+  /// process.
   ///
-  /// [url] should serve a page that establishes a WebSocket connection with
-  /// this process. That connection, once established, should be emitted via
-  /// [future]. If [debug] is true, starts the browser in debug mode, with its
-  /// debugger interfaces on and detected.
+  /// [newConnection] is called once for each browser started. It returns the
+  /// `hostUrl` for the browser to load, which should serve a page that
+  /// establishes a WebSocket connection with this process, and a `webSocket`
+  /// future which completes with that connection once it is established. Each
+  /// call should return a new URL and future, so that a browser which was
+  /// closed after timing out can't connect in place of its replacement. If
+  /// [debug] is true, starts the browser in debug mode, with its debugger
+  /// interfaces on and detected.
   ///
   /// The [settings] indicate how to invoke this browser's executable.
+  ///
+  /// If [connectTimeout] is passed, a browser which doesn't connect within
+  /// that time is closed and replaced with a new one, up to 3 attempts.
+  /// Otherwise this waits for the first browser to connect indefinitely.
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
   static Future<BrowserManager> start(
     Runtime runtime,
-    Uri url,
-    Future<WebSocketChannel> future,
+    BrowserConnection Function() newConnection,
     ExecutableSettings settings,
-    Configuration configuration,
-  ) => _start(runtime, url, future, settings, configuration, 1);
+    Configuration configuration, {
+    Duration? connectTimeout,
+  }) => _start(
+    runtime,
+    newConnection,
+    settings,
+    configuration,
+    connectTimeout,
+    1,
+  );
 
   static const _maxRetries = 3;
   static Future<BrowserManager> _start(
     Runtime runtime,
-    Uri url,
-    Future<WebSocketChannel> future,
+    BrowserConnection Function() newConnection,
     ExecutableSettings settings,
     Configuration configuration,
+    Duration? connectTimeout,
     int attempt,
   ) {
-    var browser = _newBrowser(url, runtime, settings, configuration);
+    var (:hostUrl, :webSocket) = newConnection();
+    var browser = _newBrowser(hostUrl, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
+
+    // Whether this attempt timed out and its browser was closed. A connection
+    // that arrives after that is from a browser that is shutting down.
+    var abandoned = false;
 
     // TODO(nweiz): Gracefully handle the browser being killed before the
     // tests complete.
@@ -132,12 +157,19 @@ class BrowserManager {
           }
         });
 
-    future
-        .then((webSocket) async {
-          if (completer.isCompleted) return;
-          var manager = BrowserManager._(browser, runtime, webSocket);
+    webSocket
+        .then((channel) async {
+          if (abandoned || completer.isCompleted) {
+            unawaited(channel.sink.close());
+            return;
+          }
+          var manager = BrowserManager._(browser, runtime, channel);
           await manager._environment;
-          if (completer.isCompleted) return;
+          if (abandoned || completer.isCompleted) {
+            unawaited(channel.sink.close());
+            unawaited(manager.close());
+            return;
+          }
           completer.complete(manager);
         })
         .onError((Object error, StackTrace stackTrace) {
@@ -146,9 +178,11 @@ class BrowserManager {
           completer.completeError(error, stackTrace);
         });
 
+    if (connectTimeout == null) return completer.future;
     return completer.future.timeout(
-      const Duration(seconds: 30),
+      connectTimeout,
       onTimeout: () {
+        abandoned = true;
         browser.close();
         if (attempt >= _maxRetries) {
           throw ApplicationException(
@@ -156,7 +190,14 @@ class BrowserManager {
             'Browser output: ${browser.accumulatedOutput.join('\n')}',
           );
         }
-        return _start(runtime, url, future, settings, configuration, ++attempt);
+        return _start(
+          runtime,
+          newConnection,
+          settings,
+          configuration,
+          connectTimeout,
+          ++attempt,
+        );
       },
     );
   }

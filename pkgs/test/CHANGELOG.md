@@ -9,6 +9,10 @@
   waited as long as the test timeout, or 30 seconds if that was longer,
   regardless of `suite_load_timeout`. Without a `suite_load_timeout`, loading a
   browser suite no longer times out, matching other platforms.
+* When a browser times out while connecting and is replaced, give the
+  replacement its own connection URL and ignore a late connection from the
+  closed browser. Previously the replacement could be handed the closed
+  browser's connection.
 
 ## 1.33.0
 

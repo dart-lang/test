@@ -264,22 +264,24 @@ class BrowserPlatform extends PlatformPlugin
     Compiler compiler,
   ) async {
     var support = await compilerSupport(compiler);
-    var (webSocketUrl, socketFuture) = support.webSocket;
-    var hostUrl = support.serverUrl
-        .resolve('packages/test/src/runner/browser/static/index.html')
-        .replace(
-          queryParameters: {
-            'managerUrl': webSocketUrl.toString(),
-            'debug': _config.debug.toString(),
-          },
-        );
 
     return BrowserManager.start(
       browser,
-      hostUrl,
-      socketFuture,
+      () {
+        var (webSocketUrl, socketFuture) = support.webSocket;
+        var hostUrl = support.serverUrl
+            .resolve('packages/test/src/runner/browser/static/index.html')
+            .replace(
+              queryParameters: {
+                'managerUrl': webSocketUrl.toString(),
+                'debug': _config.debug.toString(),
+              },
+            );
+        return (hostUrl: hostUrl, webSocket: socketFuture);
+      },
       _browserSettings[browser]!,
       _config,
+      connectTimeout: const Duration(seconds: 30),
     );
   }
 
