@@ -1,3 +1,8 @@
+## 0.6.22-wip
+
+* Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
+  loading a suite before the suite load timeout cuts it off.
+
 ## 0.6.21
 
 * Fix a hang when the runner is shut down at the moment a test suite starts
