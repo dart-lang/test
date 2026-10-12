@@ -15,8 +15,7 @@ void main() {
     ).withQueue.anyOf([.it()..emits(.it()..equals('starting')), .it()..isDone]);
     // Expected: a Stream<String> that:
     //   satisfies one of:
-    //     emits a value that:
-    //       equals 'starting'
+    //     emits 'starting'
     //   or,
     //     is done
     // Actual: a stream

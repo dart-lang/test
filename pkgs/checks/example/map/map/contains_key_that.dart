@@ -10,9 +10,7 @@ void main() {
 
     // This check fails.
     check(scores).containsKeyThat(.it()..startsWith('z'));
-    // Expected: a Map<String, int> that:
-    //   contains a key that:
-    //     starts with 'z'
+    // Expected: a map containing a key that starts with 'z'
     // Actual: {'alice': 90, 'bob': 85}
     // Which: contains no matching key
   });
