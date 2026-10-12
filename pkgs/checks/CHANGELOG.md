@@ -76,7 +76,7 @@
 - Collapse the failure messages for `IterableChecks.any`,
   `IterableChecks.every`, `MapChecks.containsKeyThat`, and
   `MapChecks.containsValueThat` to a single line when the condition describes
-  in a single line, for example
+  in a single line and the result fits within 80 columns, for example
   `Expected: an iterable containing a value that is greater than <7>`.
 - Require `package:meta` `^1.17.0`.
 

@@ -162,14 +162,21 @@ Iterable<String> postfixLast(String postfix, Iterable<String> lines) sync* {
   }
 }
 
-/// The description of [condition] as a single line with no indentation, or
-/// `null` if the description spans multiple lines.
+/// A predicate noun combining [prefix] with the description of [condition],
+/// for expectations that embed the description of a [Condition], such as
+/// `IterableChecks.any`.
 ///
-/// Used to build predicate nouns for expectations that embed the description
-/// of a [Condition], such as `IterableChecks.any`.
+/// Returns `null` if the description spans multiple lines, or if the combined
+/// noun is longer than [_maxLineLength]. The same limit applies when a
+/// collapsed description is joined to the label of a root subject, which
+/// these nouns stand in for.
 @internal
-String? singleLineDescription(Condition<Object?> condition) =>
-    condition.describeSync().singleOrNull?.trimLeft();
+String? describedPredicateNoun(String prefix, Condition<Object?> condition) {
+  final description = condition.describeSync().singleOrNull?.trimLeft();
+  if (description == null) return null;
+  final noun = '$prefix $description';
+  return noun.length <= _maxLineLength ? noun : null;
+}
 
 /// Returns [output] with all whitespace characters represented as their escape
 /// sequences.

@@ -605,6 +605,23 @@ Actual: [Instance of 'Foo']
 Which: contains no matching element''');
       });
 
+      test('any over the length limit does not collapse', () {
+        check(() {
+          check([Foo('foo')]).any(
+            .it()
+              ..has(
+                (f) => f.field,
+                'a long property name',
+              ).equals('a long expected value'),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<Foo> that:
+  contains a value that:
+    has a long property name: 'a long expected value'
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
       test('every collapses', () {
         check(() {
           check([1, 2]).every(.it()..isGreaterThan(1));
