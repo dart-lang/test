@@ -934,7 +934,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       context = _TestContext._alias(this, value);
       _aliases.add(context);
       if (label().isNotEmpty) {
-        _clauses.add(_GuardClause(label));
+        _clauses.add(_GuardClause(label, satisfied: value is _Present));
       }
     } else {
       context = _TestContext._child(value, label, addPredicate, this);
@@ -1032,7 +1032,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   _ClauseDescription? get _singleClause =>
-      _clauses.where((c) => c is! _GuardClause).singleOrNull;
+      _clauses.where((c) => c is! _GuardClause || !c.satisfied).singleOrNull;
 
   /// A collapsed single-line [FailureDetail], or `null` if this context cannot
   /// be collapsed.
@@ -1467,12 +1467,18 @@ class _ExpectationClause implements _ClauseDescription {
 /// `atSameLevel` (such as `isNotNull()` or `isA<T>()`).
 ///
 /// When value extraction succeeds, the clause represents a satisfied
-/// precondition. Succeeded guard clauses are included in uncollapsed
+/// precondition. Satisfied guard clauses are included in uncollapsed
 /// multi-line failure descriptions, but do not disqualify a context from
 /// collapsing when only a single expectation is otherwise checked on the
 /// subject.
+///
+/// When there is no value to extract from, such as within
+/// [Condition.describe], or when extraction is rejected, the guard is not
+/// [satisfied] and counts as an expectation like any other.
 final class _GuardClause extends _ExpectationClause {
-  _GuardClause(super.expected);
+  /// Whether the value was extracted, so the precondition is known to hold.
+  final bool satisfied;
+  _GuardClause(super.expected, {required this.satisfied});
 }
 
 /// The result of an expectation that failed for a subject.

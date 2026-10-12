@@ -558,13 +558,17 @@ Actual: [Instance of 'Foo']
 Which: contains no matching element''');
       });
 
-      test('any collapses through a satisfied precondition', () {
+      test('any keeps an unevaluated precondition', () {
         check(() {
           check([
-            Wrapper(Foo('foo')),
+            Wrapper(123),
           ]).any(.it()..value.isA<Foo>().someField.equals('bar'));
         }).throwsFailure().equals('''
-Expected: an iterable containing a value that has value that has someField: 'bar'
+Expected: a List<Wrapper> that:
+  contains a value that:
+    has value that:
+      is a Foo
+      has someField: 'bar'
 Actual: [Instance of 'Wrapper']
 Which: contains no matching element''');
       });
@@ -587,18 +591,17 @@ Which: contains no matching element''');
 
       test('any with multiple nested expectations collapses each', () {
         check(() {
-          check([Wrapper(Foo('foo'))]).any(
+          check([Foo('foo')]).any(
             .it()
-              ..value.isNotNull()
-              ..value.isA<Foo>().someField.equals('bar'),
+              ..someField.equals('bar')
+              ..someField.length.equals(3),
           );
         }).throwsFailure().equals('''
-Expected: a List<Wrapper> that:
+Expected: a List<Foo> that:
   contains a value that:
-    has value that:
-      is not null
-    has value that has someField: 'bar'
-Actual: [Instance of 'Wrapper']
+    has someField: 'bar'
+    has someField that has length: <3>
+Actual: [Instance of 'Foo']
 Which: contains no matching element''');
       });
 

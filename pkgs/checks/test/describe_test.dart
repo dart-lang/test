@@ -36,11 +36,15 @@ void main() {
         Condition.it<String>()..length.equals(1),
       ).hasSyncDescription().deepEquals(['  has length: <1>']);
     });
-    test('collapses through satisfied preconditions', () {
+    test('keeps unevaluated preconditions on nested subjects', () {
       check(
         Condition.it<Object?>()
           ..has((o) => o, 'self').isA<String>().length.equals(1),
-      ).hasSyncDescription().deepEquals(['  has self that has length: <1>']);
+      ).hasSyncDescription().deepEquals([
+        '  has self that:',
+        '    is a String',
+        '    has length: <1>',
+      ]);
     });
     test('collapses passing clauses alongside uncollapsible ones', () {
       check(
