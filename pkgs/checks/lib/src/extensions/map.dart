@@ -5,6 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
+import '../describe.dart' show describedPredicateNoun;
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
@@ -108,6 +109,8 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         assert(conditionDescription.isNotEmpty);
         return ['contains a key that:', ...conditionDescription];
       },
+      predicateNoun: () =>
+          describedPredicateNoun('a map containing a key that', keyCondition),
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty map']);
         for (var k in actual.keys) {
@@ -148,6 +151,10 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
         assert(conditionDescription.isNotEmpty);
         return ['contains a value that:', ...conditionDescription];
       },
+      predicateNoun: () => describedPredicateNoun(
+        'a map containing a value that',
+        valueCondition,
+      ),
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty map']);
         for (var v in actual.values) {
