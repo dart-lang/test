@@ -57,6 +57,27 @@
 - Add `prints()` check extensions on `Subject<void Function()>` and
   `Subject<Future<void> Function()>` to check expectations against captured
   printed output.
+- Improve collapsed failure messages when the only expectation on a nested
+  subject is a further nested subject. The inner description is joined to the
+  label for the outer subject with "that", so
+  `.throws<StateError>().has((e) => e.message, 'message').equals('foo')` reads
+  as `throws an error of type StateError that has message: 'foo'` instead of
+  `throws has message: 'foo'`, and chained `has` calls read as
+  `has value that has field: 'foo'` instead of `has value: has field: 'foo'`.
+- Collapse nested subjects with a single expectation in the output of
+  `Condition.describe`, matching the format used for failure messages. For
+  example `.it()..length.equals(1)` describes as `has length: <1>` instead of
+  `has length that:` followed by `equals <1>` on an indented line.
+- Collapse nested subjects with a single expectation at every depth of a
+  failure message. Previously only those directly under the subject with the
+  failing expectation collapsed; a passing sibling with multiple expectations
+  showed its own nested subjects in full, such as `has length that:` followed
+  by `equals <3>` instead of `has length: <3>`.
+- Collapse the failure messages for `IterableChecks.any`,
+  `IterableChecks.every`, `MapChecks.containsKeyThat`, and
+  `MapChecks.containsValueThat` to a single line when the condition describes
+  in a single line and the result fits within 80 columns, for example
+  `Expected: an iterable containing a value that is greater than <7>`.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2

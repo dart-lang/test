@@ -75,6 +75,27 @@ void main() {
       );
       await test.shouldExit(0);
     });
+
+    test('follows symlinks in the precompiled directory', () async {
+      // Mimics the merged output directory created by `build_runner test`,
+      // where each file is a symlink to a file elsewhere on disk.
+      for (var file in ['test.html', 'test.dart.browser_test.dart.js']) {
+        Link(
+          p.join(d.sandbox, 'linked_precompiled', file),
+        ).createSync(p.join(d.sandbox, 'precompiled', file), recursive: true);
+      }
+      var test = await runTest([
+        '-p',
+        'chrome',
+        '--precompiled=linked_precompiled/',
+        'test.dart',
+      ]);
+      expect(
+        test.stdout,
+        containsInOrder(['+0: success', '+1: All tests passed!']),
+      );
+      await test.shouldExit(0);
+    });
   }, tags: const ['chrome']);
 
   group('node tests', () {
