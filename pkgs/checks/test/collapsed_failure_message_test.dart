@@ -741,6 +741,33 @@ Actual: a Wrapper that:
   has value that has someField: 'foo'
   has value: <Instance of 'Foo'>''');
       });
+
+      test('passing sibling with multiple clauses collapses each nested '
+          'subject', () {
+        check(() {
+          check(Foo('foo'))
+            ..someField.which(
+              .it()
+                ..length.equals(3)
+                ..length.isLessThan(5),
+            )
+            ..someField.equals('bar');
+        }).throwsFailure().equals('''
+Expected: a Foo that:
+  has someField that:
+    has length: <3>
+    has length: a value < <5>
+  has someField: 'bar'
+Actual: a Foo that:
+  has someField that:
+    has length: <3>
+    has length: a value < <5>
+  has someField: 'foo'
+  Which: differs at offset 0:
+    bar
+    foo
+    ^''');
+      });
     });
   });
 }
