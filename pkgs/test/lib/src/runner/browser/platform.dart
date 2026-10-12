@@ -281,6 +281,7 @@ class BrowserPlatform extends PlatformPlugin
       _browserSettings[browser]!,
       _config,
       requestLog: support.requestLog,
+      connectTimeout: browserLoadTimeout(PlatformPlugin.remainingLoadTime),
     );
   }
 

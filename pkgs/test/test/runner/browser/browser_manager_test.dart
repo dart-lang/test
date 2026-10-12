@@ -21,38 +21,54 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../utils.dart';
 
-void main() {
-  test('reports every attempt when the browser never connects', () async {
-    var scriptFile = p.join(d.sandbox, 'fake_firefox.sh');
-    await d.file('fake_firefox.sh', '''
-#!/bin/sh
-echo "fake firefox started"
-exec sleep 60
-''').create();
-    await Process.run('chmod', ['+x', scriptFile]);
+final _webSocketUrl = Uri.parse('ws://localhost:1234/secret/0');
+final _hostUrl = Uri.parse(
+  'http://localhost:1234/secret/index.html',
+).replace(queryParameters: {'managerUrl': '$_webSocketUrl'});
 
-    var webSocketUrl = Uri.parse('ws://localhost:1234/secret/0');
-    var hostUrl = Uri.parse(
-      'http://localhost:1234/secret/index.html',
-    ).replace(queryParameters: {'managerUrl': '$webSocketUrl'});
+/// Writes an executable fake Firefox script running [body] and returns
+/// settings that launch it.
+Future<ExecutableSettings> _fakeFirefox(String body) async {
+  var scriptFile = p.join(d.sandbox, 'fake_firefox.sh');
+  await d.file('fake_firefox.sh', '#!/bin/sh\n$body\n').create();
+  await Process.run('chmod', ['+x', scriptFile]);
+  return ExecutableSettings(
+    linuxExecutable: scriptFile,
+    macOSExecutable: scriptFile,
+  );
+}
+
+/// Starts a browser manager for a fake Firefox that never connects.
+Future<BrowserManager> _start(
+  ExecutableSettings settings, {
+  BrowserRequestLog? requestLog,
+  Duration? connectTimeout,
+}) => BrowserManager.start(
+  Runtime.firefox,
+  _hostUrl,
+  Completer<WebSocketChannel>().future,
+  settings,
+  Configuration.empty,
+  requestLog: requestLog,
+  connectTimeout: connectTimeout,
+);
+
+void main() {
+  test('reports the attempt when the browser times out', () async {
+    var settings = await _fakeFirefox('''
+echo "fake firefox started"
+exec sleep 60''');
     var requestLog = BrowserRequestLog();
 
-    var manager = BrowserManager.start(
-      Runtime.firefox,
-      hostUrl,
-      Completer<WebSocketChannel>().future,
-      ExecutableSettings(
-        linuxExecutable: scriptFile,
-        macOSExecutable: scriptFile,
-      ),
-      Configuration.empty,
+    var manager = _start(
+      settings,
       requestLog: requestLog,
       connectTimeout: const Duration(seconds: 1),
     );
 
-    // Simulate the first browser loading the host page.
+    // Simulate the browser loading the host page.
     await requestLog.wrap((_) => shelf.Response.ok(''))(
-      shelf.Request('GET', hostUrl),
+      shelf.Request('GET', _hostUrl),
     );
 
     await expectLater(
@@ -62,18 +78,90 @@ exec sleep 60
           allOf([
             startsWith('Timed out waiting for Firefox to connect.\n'),
             stringContainsInOrder([
-              'Attempt 1 of 3: no connection after ',
+              'Attempt 1: no connection after ',
               'Process: pid ',
               ', still running',
-              'Command: $scriptFile --profile ',
+              'Command: ${settings.executable} --profile ',
               'redirect.html --no-remote',
               'Requests:\n    index.html (200) after ',
               'Browser output:\n    fake firefox started',
-              'Attempt 2 of 3',
-              'Requests: none',
-              'Attempt 3 of 3',
-              'Requests: none',
             ]),
+            // A timeout uses the whole budget, so there is no second attempt.
+            isNot(contains('Attempt 2')),
+          ]),
+        ),
+      ),
+    );
+  });
+
+  test('replaces a browser that exits before connecting', () async {
+    var countFile = p.join(d.sandbox, 'count');
+    // The first browser exits right away and the second never connects.
+    var settings = await _fakeFirefox('''
+if [ -e "$countFile" ]; then exec sleep 60; fi
+touch "$countFile"
+echo "fake firefox crashed"
+exit 1''');
+
+    await expectLater(
+      _start(settings, connectTimeout: const Duration(seconds: 2)),
+      throwsA(
+        isApplicationException(
+          allOf([
+            startsWith('Timed out waiting for Firefox to connect.\n'),
+            stringContainsInOrder([
+              'Attempt 1: exited before connecting after ',
+              'exited with code 1',
+              'fake firefox crashed',
+              'Attempt 2: no connection after ',
+              ', still running',
+            ]),
+          ]),
+        ),
+      ),
+    );
+  });
+
+  test(
+    'reports every attempt when each browser exits before connecting',
+    () async {
+      var settings = await _fakeFirefox('''
+echo "fake firefox crashed"
+exit 1''');
+
+      await expectLater(
+        _start(settings),
+        throwsA(
+          isApplicationException(
+            allOf([
+              startsWith('Firefox exited before connecting.\n'),
+              stringContainsInOrder([
+                'Attempt 1: exited before connecting after ',
+                'exited with code 1',
+                'fake firefox crashed',
+                'Attempt 2: exited before connecting after ',
+                'Attempt 3: exited before connecting after ',
+              ]),
+              isNot(contains('Attempt 4')),
+            ]),
+          ),
+        ),
+      );
+    },
+  );
+
+  test('does not retry a browser that fails to start', () async {
+    var missing = p.join(d.sandbox, 'does_not_exist');
+
+    await expectLater(
+      _start(
+        ExecutableSettings(linuxExecutable: missing, macOSExecutable: missing),
+      ),
+      throwsA(
+        isApplicationException(
+          allOf([
+            startsWith('Failed to run Firefox: '),
+            isNot(contains('Attempt')),
           ]),
         ),
       ),
