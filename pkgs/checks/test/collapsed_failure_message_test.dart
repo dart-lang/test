@@ -548,6 +548,110 @@ Which: is not equal'''),
       });
     });
 
+    group('described conditions', () {
+      test('any collapses a nested property', () {
+        check(() {
+          check([Foo('foo')]).any(.it()..someField.equals('bar'));
+        }).throwsFailure().equals('''
+Expected: an iterable containing a value that has someField: 'bar'
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any keeps an unevaluated precondition', () {
+        check(() {
+          check([
+            Wrapper(123),
+          ]).any(.it()..value.isA<Foo>().someField.equals('bar'));
+        }).throwsFailure().equals('''
+Expected: a List<Wrapper> that:
+  contains a value that:
+    has value that:
+      is a Foo
+      has someField: 'bar'
+Actual: [Instance of 'Wrapper']
+Which: contains no matching element''');
+      });
+
+      test('any with multiple expectations does not collapse', () {
+        check(() {
+          check([1]).any(
+            .it()
+              ..isGreaterThan(1)
+              ..isLessThan(3),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<int> that:
+  contains a value that:
+    is greater than <1>
+    is less than <3>
+Actual: [1]
+Which: contains no matching element''');
+      });
+
+      test('any with multiple nested expectations collapses each', () {
+        check(() {
+          check([Foo('foo')]).any(
+            .it()
+              ..someField.equals('bar')
+              ..someField.length.equals(3),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<Foo> that:
+  contains a value that:
+    has someField: 'bar'
+    has someField that has length: <3>
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any over the length limit does not collapse', () {
+        check(() {
+          check([Foo('foo')]).any(
+            .it()
+              ..has(
+                (f) => f.field,
+                'a long property name',
+              ).equals('a long expected value'),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<Foo> that:
+  contains a value that:
+    has a long property name: 'a long expected value'
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('every collapses', () {
+        check(() {
+          check([1, 2]).every(.it()..isGreaterThan(1));
+        }).throwsFailure().equals('''
+Expected: an iterable where every value is greater than <1>
+Actual: [1, 2]
+Which: has an element at index 0 that:
+  Actual: <1>
+  Which: is not greater than <1>''');
+      });
+
+      test('containsKeyThat collapses', () {
+        check(() {
+          check({'a': 1}).containsKeyThat(.it()..startsWith('b'));
+        }).throwsFailure().equals("""
+Expected: a map containing a key that starts with 'b'
+Actual: {'a': 1}
+Which: contains no matching key""");
+      });
+
+      test('containsValueThat collapses', () {
+        check(() {
+          check({'a': 1}).containsValueThat(.it()..isGreaterThan(1));
+        }).throwsFailure().equals('''
+Expected: a map containing a value that is greater than <1>
+Actual: {'a': 1}
+Which: contains no matching value''');
+      });
+    });
+
     group('nested subjects', () {
       test('has within has joins with the label', () {
         check(() {
@@ -653,6 +757,33 @@ Expected: a Wrapper that:
 Actual: a Wrapper that:
   has value that has someField: 'foo'
   has value: <Instance of 'Foo'>''');
+      });
+
+      test('passing sibling with multiple clauses collapses each nested '
+          'subject', () {
+        check(() {
+          check(Foo('foo'))
+            ..someField.which(
+              .it()
+                ..length.equals(3)
+                ..length.isLessThan(5),
+            )
+            ..someField.equals('bar');
+        }).throwsFailure().equals('''
+Expected: a Foo that:
+  has someField that:
+    has length: <3>
+    has length: a value < <5>
+  has someField: 'bar'
+Actual: a Foo that:
+  has someField that:
+    has length: <3>
+    has length: a value < <5>
+  has someField: 'foo'
+  Which: differs at offset 0:
+    bar
+    foo
+    ^''');
       });
     });
   });

@@ -1,5 +1,14 @@
-## 1.33.1-wip
+## 1.34.0-wip
 
+* Fix loading precompiled browser tests when the precompiled directory contains
+  symlinks to files outside of it, such as the output of `build_runner test`.
+  Requests whose path would resolve outside the precompiled directory are
+  still rejected.
+* Give a browser until shortly before the `suite_load_timeout` to load a test
+  suite, so the failure includes the browser output. Previously the browser
+  waited as long as the test timeout, or 30 seconds if that was longer,
+  regardless of `suite_load_timeout`. Without a `suite_load_timeout`, loading a
+  browser suite no longer times out, matching other platforms.
 * When a browser fails to connect, report each attempt: how long it waited,
   whether the browser process was still running, the command used to start it,
   the requests it made to the test server, and its output.
@@ -36,6 +45,7 @@
 * Let Chrome choose its own remote debugging port when running with `--debug`
   or `--coverage`, instead of picking a port that another process could take
   before Chrome binds it.
+* Add flag `--shard-by-suite` to control sharding strategy.
 
 ## 1.32.0
 
@@ -85,7 +95,6 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-suite` to control sharding strategy.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
