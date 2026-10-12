@@ -3,12 +3,12 @@
 * Add a runnable example for every matcher, linked from its documentation, and
   a test that keeps the failure output recorded in those examples in sync with
   the output the matchers actually produce.
+* Require Dart 3.11
 
 ## 0.12.20
 
 * Allow exceptions from `operator ==` to bubble up and fail the test instead of
   treating them as unequal objects.
-* Require Dart 3.11
 
 ## 0.12.19
 

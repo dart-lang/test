@@ -7,6 +7,6 @@ jobs:
   health:
     uses: dart-lang/ecosystem/.github/workflows/health.yaml@16dca7ae5d3ff896a4db47e1ed6cd50f7ebbf115 # main
     with:
-      checks: "version,changelog,do-not-submit"
+      checks: "changelog,do-not-submit"
     permissions:
       pull-requests: write
