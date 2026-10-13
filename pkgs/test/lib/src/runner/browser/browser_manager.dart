@@ -205,7 +205,7 @@ class BrowserManager {
         Error.throwWithStackTrace(exit.error, stackTrace);
       }
       // The process has exited, but its output may not have been read yet.
-      await browser.output.drain<void>().timeout(
+      await browser.outputDrained.timeout(
         const Duration(seconds: 1),
         onTimeout: () {},
       );

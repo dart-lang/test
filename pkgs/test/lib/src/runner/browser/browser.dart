@@ -105,6 +105,20 @@ abstract class Browser {
   /// Whether the browser output has ended and [output] is closed.
   var _outputDone = false;
 
+  /// Completes once all of the browser's stdout and stderr is in
+  /// [accumulatedOutput], or the browser is closed.
+  ///
+  /// Unlike [output], this doesn't complete early when the browser fails, so
+  /// it can be used to wait for the output of a browser that exited.
+  Future<void> get outputDrained => _outputDrainedCompleter.future;
+  final _outputDrainedCompleter = Completer<void>();
+
+  void _completeOutputDrained() {
+    if (!_outputDrainedCompleter.isCompleted) {
+      _outputDrainedCompleter.complete();
+    }
+  }
+
   void _addOutput(String line) {
     accumulatedOutput.add(line);
     for (var listener in _outputListeners) {
@@ -153,7 +167,10 @@ abstract class Browser {
         Future.wait([
           drainOutput(process.stdout),
           drainOutput(process.stderr),
-        ], eagerError: true).whenComplete(_closeOutput);
+        ], eagerError: true).whenComplete(() {
+          _closeOutput();
+          _completeOutputDrained();
+        });
 
         var exitCode = await process.exitCode;
         _exitCode = exitCode;
@@ -218,6 +235,7 @@ abstract class Browser {
       unawaited(stream.cancel());
     }
     _closeOutput();
+    _completeOutputDrained();
 
     (await _process).kill();
 

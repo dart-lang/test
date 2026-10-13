@@ -26,6 +26,11 @@ final _hostUrl = Uri.parse(
   'http://localhost:1234/secret/index.html',
 ).replace(queryParameters: {'managerUrl': '$_webSocketUrl'});
 
+/// A fake browser script body that writes output and then exits with an error.
+const _crash = '''
+echo "fake firefox crashed"
+exit 1''';
+
 /// Writes an executable fake Firefox script running [body] and returns
 /// settings that launch it.
 Future<ExecutableSettings> _fakeFirefox(String body) async {
@@ -100,8 +105,7 @@ exec sleep 60''');
     var settings = await _fakeFirefox('''
 if [ -e "$countFile" ]; then exec sleep 60; fi
 touch "$countFile"
-echo "fake firefox crashed"
-exit 1''');
+$_crash''');
 
     await expectLater(
       _start(settings, connectTimeout: const Duration(seconds: 2)),
@@ -125,9 +129,7 @@ exit 1''');
   test(
     'reports every attempt when each browser exits before connecting',
     () async {
-      var settings = await _fakeFirefox('''
-echo "fake firefox crashed"
-exit 1''');
+      var settings = await _fakeFirefox(_crash);
 
       await expectLater(
         _start(settings),
