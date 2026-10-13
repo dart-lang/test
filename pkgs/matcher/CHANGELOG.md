@@ -4,6 +4,10 @@
   a test that keeps the failure output recorded in those examples in sync with
   the output the matchers actually produce.
 * Require Dart 3.11
+* `isNot` and `anyOf` throw an `ArgumentError` when used with an asynchronous
+  matcher such as `completes`, directly or nested in other matchers. These
+  operators can't combine asynchronous results correctly. The `throws`
+  matchers are still allowed when matched against a synchronous callback.
 
 ## 0.12.20
 

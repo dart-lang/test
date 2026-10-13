@@ -6,6 +6,7 @@
 
 import 'package:test_api/hooks.dart';
 
+import '../async_matcher_restriction.dart';
 import '../description.dart';
 import '../equals_matcher.dart';
 import '../interfaces.dart';
@@ -63,13 +64,15 @@ void expect(
   @Deprecated('Will be removed in 0.13.0.') bool verbose = false,
   @Deprecated('Will be removed in 0.13.0.') ErrorFormatter? formatter,
 }) {
-  _expect(
-    actual,
-    matcher,
-    reason: reason,
-    skip: skip,
-    verbose: verbose,
-    formatter: formatter,
+  allowAsyncMatchers(
+    () => _expect(
+      actual,
+      matcher,
+      reason: reason,
+      skip: skip,
+      verbose: verbose,
+      formatter: formatter,
+    ),
   );
 }
 
@@ -90,7 +93,9 @@ Future expectLater(
   dynamic matcher, {
   String? reason,
   Object? /* String|bool */ skip,
-}) => _expect(actual, matcher, reason: reason, skip: skip);
+}) => allowAsyncMatchers(
+  () => _expect(actual, matcher, reason: reason, skip: skip),
+);
 
 /// The implementation of [expect] and [expectLater].
 Future _expect(
