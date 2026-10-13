@@ -1,9 +1,14 @@
-## 1.33.1-wip
+## 1.34.0-wip
 
 * Fix loading precompiled browser tests when the precompiled directory contains
   symlinks to files outside of it, such as the output of `build_runner test`.
   Requests whose path would resolve outside the precompiled directory are
   still rejected.
+* Give a browser until shortly before the `suite_load_timeout` to load a test
+  suite, so the failure includes the browser output. Previously the browser
+  waited as long as the test timeout, or 30 seconds if that was longer,
+  regardless of `suite_load_timeout`. Without a `suite_load_timeout`, loading a
+  browser suite no longer times out, matching other platforms.
 
 ## 1.33.0
 
