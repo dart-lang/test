@@ -17,6 +17,15 @@ class BrowserRequestLog {
 
   final _requests = <_LoggedRequest>[];
 
+  /// The clock that request times are measured on.
+  final _clock = Stopwatch()..start();
+
+  /// The current time on the clock that request times are measured on.
+  ///
+  /// Pass this to [describe] later to describe only the requests made after
+  /// now.
+  Duration get now => _clock.elapsed;
+
   /// Middleware that records requests to the wrapped handler.
   shelf.Handler wrap(shelf.Handler inner) => (request) async {
     var entry = _entryFor(request);
@@ -38,18 +47,18 @@ class BrowserRequestLog {
   };
 
   /// Describes the requests made on behalf of the browser manager connecting
-  /// to [webSocketUrl] since [since], one line per request.
-  List<String> describe(Uri webSocketUrl, DateTime since) => [
+  /// to [webSocketUrl] since [since], a value of [now], one line per request.
+  List<String> describe(Uri webSocketUrl, Duration since) => [
     for (var request in _requests)
       if (request.managerKey == webSocketUrl.toString() ||
           request.managerKey == webSocketUrl.path)
-        if (!request.time.isBefore(since))
+        if (request.time >= since)
           '${request.label} (${request.result ?? 'pending'}) after '
-              '${_seconds(request.time.difference(since))}',
+              '${_seconds(request.time - since)}',
   ];
 
   _LoggedRequest? _entryFor(shelf.Request request) {
-    var time = DateTime.now();
+    var time = now;
     var label = request.url.pathSegments.lastOrNull ?? '/';
     if (request.headers['upgrade']?.toLowerCase() == 'websocket') {
       return _LoggedRequest(
@@ -74,7 +83,8 @@ String _seconds(Duration duration) =>
     '${(duration.inMilliseconds / 1000).toStringAsFixed(1)}s';
 
 class _LoggedRequest {
-  final DateTime time;
+  /// When the request arrived, on [BrowserRequestLog._clock].
+  final Duration time;
 
   /// A short description of the request, without the server's secret path.
   final String label;

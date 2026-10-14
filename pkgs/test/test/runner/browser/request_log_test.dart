@@ -18,12 +18,12 @@ final _hostPage = Uri.parse(
 void main() {
   late BrowserRequestLog log;
   late shelf.Handler handler;
-  late DateTime start;
+  late Duration start;
 
   setUp(() {
     log = BrowserRequestLog();
     handler = log.wrap((request) => shelf.Response.ok(''));
-    start = DateTime.now();
+    start = log.now;
   });
 
   test('records the host page and resources it loads', () async {
@@ -80,7 +80,7 @@ void main() {
     await handler(shelf.Request('GET', _hostPage));
 
     expect(
-      log.describe(_webSocketUrl, DateTime.now().add(const Duration(days: 1))),
+      log.describe(_webSocketUrl, log.now + const Duration(days: 1)),
       isEmpty,
     );
   });

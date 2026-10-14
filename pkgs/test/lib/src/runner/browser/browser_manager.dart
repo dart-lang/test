@@ -120,12 +120,15 @@ class BrowserManager {
     settings,
     configuration,
     requestLog,
-    connectTimeout == null ? null : DateTime.now().add(connectTimeout),
+    connectTimeout,
     1,
     [],
   );
 
   static const _maxAttempts = 3;
+
+  /// Starts attempt number [attempt] to connect to a browser, which has
+  /// [timeout] to connect, or no limit if it's `null`.
   static Future<BrowserManager> _start(
     Runtime runtime,
     Uri url,
@@ -133,11 +136,16 @@ class BrowserManager {
     ExecutableSettings settings,
     Configuration configuration,
     BrowserRequestLog? requestLog,
-    DateTime? deadline,
+    Duration? timeout,
     int attempt,
     List<String> attemptReports,
   ) async {
-    var startTime = DateTime.now();
+    var stopwatch = Stopwatch()..start();
+    var requestsSince = requestLog?.now ?? Duration.zero;
+    var managerUrl = url.queryParameters['managerUrl'];
+    List<String>? requests() => requestLog == null || managerUrl == null
+        ? null
+        : requestLog.describe(Uri.parse(managerUrl), requestsSince);
     var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
@@ -175,12 +183,11 @@ class BrowserManager {
           completer.completeError(error, stackTrace);
         });
 
-    var timeout = deadline?.difference(startTime);
     try {
       return await (timeout == null
           ? completer.future
           : completer.future.timeout(
-              timeout.isNegative ? Duration.zero : timeout,
+              timeout,
               onTimeout: () => throw const _ConnectTimeout(),
             ));
     } on _ConnectTimeout {
@@ -188,10 +195,9 @@ class BrowserManager {
         _describeAttempt(
           attempt,
           'no connection',
+          stopwatch.elapsed,
           browser,
-          url,
-          startTime,
-          requestLog,
+          requests(),
         ),
       );
       unawaited(browser.close());
@@ -200,8 +206,8 @@ class BrowserManager {
         '${attemptReports.join('\n')}',
       );
     } on _ExitedBeforeConnecting catch (exit, stackTrace) {
-      var outOfTime = deadline != null && !DateTime.now().isBefore(deadline);
-      if (attempt == 1 && outOfTime) {
+      bool outOfTime() => timeout != null && stopwatch.elapsed >= timeout;
+      if (attempt == 1 && outOfTime()) {
         Error.throwWithStackTrace(exit.error, stackTrace);
       }
       // The process has exited, but its output may not have been read yet.
@@ -213,13 +219,12 @@ class BrowserManager {
         _describeAttempt(
           attempt,
           'exited before connecting',
+          stopwatch.elapsed,
           browser,
-          url,
-          startTime,
-          requestLog,
+          requests(),
         ),
       );
-      if (attempt >= _maxAttempts || outOfTime) {
+      if (attempt >= _maxAttempts || outOfTime()) {
         // Each report includes the exit code and output.
         throw ApplicationException(
           '${runtime.name} exited before connecting.\n'
@@ -233,26 +238,25 @@ class BrowserManager {
         settings,
         configuration,
         requestLog,
-        deadline,
+        timeout == null ? null : timeout - stopwatch.elapsed,
         attempt + 1,
         attemptReports,
       );
     }
   }
 
-  /// Describes a failed attempt to connect to [browser], for diagnosing
-  /// connection failures.
+  /// Describes a failed attempt to connect to [browser], which ended with
+  /// [outcome] after [elapsed], for diagnosing connection failures.
   ///
-  /// The [outcome] says how the attempt ended.
+  /// The [requests] are the browser's requests to the test server, if they
+  /// were recorded.
   static String _describeAttempt(
     int attempt,
     String outcome,
+    Duration elapsed,
     Browser browser,
-    Uri url,
-    DateTime startTime,
-    BrowserRequestLog? requestLog,
+    List<String>? requests,
   ) {
-    var elapsed = DateTime.now().difference(startTime);
     var process = browser.process;
     var exitCode = browser.exitCode;
     var processState = process == null
@@ -260,10 +264,6 @@ class BrowserManager {
         : exitCode == null
         ? 'pid ${process.pid}, still running'
         : 'pid ${process.pid}, exited with code $exitCode';
-    var managerUrl = url.queryParameters['managerUrl'];
-    var requests = requestLog == null || managerUrl == null
-        ? null
-        : requestLog.describe(Uri.parse(managerUrl), startTime);
     var output = browser.accumulatedOutput;
     return [
       'Attempt $attempt: $outcome after '
