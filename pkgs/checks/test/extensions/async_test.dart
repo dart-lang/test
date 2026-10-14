@@ -331,7 +331,9 @@ Which: threw 'error' at:
           which: [
             'satisfied 1 conditions then',
             'failed to satisfy the condition at index 1',
-            'because it closed without emitting enough values',
+            'because it:',
+            '  Actual: a stream',
+            '  Which: closed without emitting enough values',
           ],
         );
       });
@@ -343,7 +345,6 @@ Which: threw 'error' at:
             'satisfied 1 conditions then',
             'failed to satisfy the condition at index 1',
             'because it:',
-            '  Expected: emits <2>',
             '  Actual: emits <1>',
             '  Which: is not equal',
           ],
@@ -583,9 +584,11 @@ Which: threw 'error' at:
           which: [
             'failed to satisfy any condition',
             'failed the condition at index 0 because it:',
-            '  closed without emitting enough values',
+            '  Actual: a stream',
+            '  Which: closed without emitting enough values',
             'failed the condition at index 1 because it:',
-            '  ended after emitting 0 elements with none matching',
+            '  Actual: a stream',
+            '  Which: ended after emitting 0 elements with none matching',
           ],
         );
       });
@@ -599,11 +602,11 @@ Which: threw 'error' at:
           which: [
             'failed to satisfy any condition',
             'failed the condition at index 0 because it:',
-            '  Expected: emits <42>',
             '  Actual: emits <0>',
             '  Which: is not equal',
             'failed the condition at index 1 because it:',
-            '  ended after emitting 1 elements with none matching',
+            '  Actual: a stream',
+            '  Which: ended after emitting 1 elements with none matching',
           ],
         );
       });

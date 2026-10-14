@@ -300,20 +300,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
           final element = iterator.current;
           final failure = elementCondition.softCheckSync(element);
           if (failure == null) continue;
-          final which = failure.rejection.which;
           return Rejection(
             which: [
               'has an element at index $i that:',
-              ...indent(failure.detail.actual.skip(1)),
-              ...indent(
-                prefixFirst('Actual: ', failure.rejection.actual),
-                failure.detail.depth + 1,
-              ),
-              if (which != null && which.isNotEmpty)
-                ...indent(
-                  prefixFirst('Which: ', which),
-                  failure.detail.depth + 1,
-                ),
+              ...indent(failure.describeNested()),
             ],
           );
         }
@@ -466,19 +456,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
           final condition = elementCondition(expectedValue);
           final failure = condition.softCheckSync(actualValue);
           if (failure == null) continue;
-          final innerDescription = condition.describeSync();
-          final which = failure.rejection.which;
           return Rejection(
             which: [
               'does not have an element at index $i that:',
-              ...innerDescription,
-              ...indent(
-                prefixFirst(
-                  'Actual element at index $i: ',
-                  failure.rejection.actual,
-                ),
-              ),
-              if (which != null) ...indent(prefixFirst('Which: ', which)),
+              ...condition.describeSync(),
+              ...indent(failure.describeNested()),
             ],
           );
         }
