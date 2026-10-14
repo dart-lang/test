@@ -213,6 +213,15 @@ class BrowserPlatform extends PlatformPlugin
 
     if (_closed) return null;
 
+    // Connecting to the browser and loading the suite in it are consecutive
+    // steps of loading this suite, and each times out shortly before the suite
+    // load timeout with an error that includes the browser's output. Each
+    // step computes its timeout from the time remaining when it starts, so
+    // they share one deadline and loading gets whatever connecting left.
+    //
+    // The browser manager is shared between suites, so only the suite that
+    // starts the browser times out connecting. Other suites wait on that
+    // connection and its deadline.
     var browserManager = await _browserManagerFor(browser, compiler);
     if (_closed || browserManager == null) return null;
 
