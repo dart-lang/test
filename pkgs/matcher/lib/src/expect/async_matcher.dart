@@ -6,6 +6,7 @@
 
 import 'package:test_api/hooks.dart';
 
+import '../async_matcher_restriction.dart';
 import '../description.dart';
 import '../equals_matcher.dart';
 import '../interfaces.dart';
@@ -33,8 +34,20 @@ abstract class AsyncMatcher extends Matcher {
   /// throw a [TestFailure] and [matches] will synchronously return `false`.
   dynamic /*FutureOr<String>*/ matchAsync(dynamic item);
 
+  /// Whether this matcher may be used inside operators that only support
+  /// synchronous matchers, such as `isNot` and `anyOf`, for inputs where
+  /// [matchAsync] returns synchronously.
+  ///
+  /// When `false`, [matches] rejects any use inside those operators before
+  /// calling [matchAsync]. When `true`, [matches] calls [matchAsync] and
+  /// rejects the use only if it returns a [Future]. Subclasses that override
+  /// this to return `true` should avoid starting asynchronous work whose
+  /// result would be lost when the returned [Future] is discarded.
+  bool get mayMatchSynchronously => false;
+
   @override
   bool matches(dynamic item, Map matchState) {
+    if (!mayMatchSynchronously) checkAsyncMatcherAllowed(this);
     final result = matchAsync(item);
     expect(
       result,
@@ -47,6 +60,14 @@ abstract class AsyncMatcher extends Matcher {
     );
 
     if (result is Future) {
+      if (mayMatchSynchronously) {
+        try {
+          checkAsyncMatcherAllowed(this);
+        } catch (_) {
+          result.ignore();
+          rethrow;
+        }
+      }
       final outstandingWork = TestHandle.current.markPending();
       result.then((realResult) {
         if (realResult != null) {

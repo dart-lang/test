@@ -2,10 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'async_matcher_restriction.dart';
 import 'interfaces.dart';
 import 'util.dart';
 
 /// Returns a matcher that inverts [valueOrMatcher] to its logical negation.
+///
+/// Asynchronous matchers such as `completes` cannot be negated, directly or
+/// nested in other matchers. They report a pending result as a match and fail
+/// the test later, so the result cannot be inverted. Matching throws an
+/// [ArgumentError] if an asynchronous matcher is used. Negate the inner
+/// matcher instead where possible, as in `completion(isNot(1))`, or use a
+/// dedicated matcher such as `doesNotComplete` or `neverEmits`.
+///
+/// `throwsA` and the other `throws` matchers may be negated when matched
+/// against a synchronous callback. Matching throws an [ArgumentError] if they
+/// are matched against a [Future] or a callback that returns a [Future].
 /// {@example /example/operator/is_not.dart}
 Matcher isNot(Object? valueOrMatcher) => _IsNot(wrapMatcher(valueOrMatcher));
 
@@ -16,7 +28,7 @@ class _IsNot extends Matcher {
 
   @override
   bool matches(dynamic item, Map matchState) =>
-      !_matcher.matches(item, matchState);
+      !restrictAsyncMatchers('isNot', () => _matcher.matches(item, matchState));
 
   @override
   Description describe(Description description) =>
@@ -90,6 +102,14 @@ class _AllOf extends Matcher {
 ///
 /// Any argument that is not a matcher is implicitly wrapped in a
 /// Matcher to check for equality.
+///
+/// Asynchronous matchers such as `completes` cannot be used as arguments,
+/// directly or nested in other matchers. They report a pending result as a
+/// match, so `anyOf` cannot tell whether they matched. Matching throws an
+/// [ArgumentError] if an asynchronous matcher is used. `throwsA` and the
+/// other `throws` matchers may be used when matched against a synchronous
+/// callback, but not against a [Future] or a callback that returns a
+/// [Future].
 /// {@example /example/operator/any_of.dart}
 Matcher anyOf(
   Object? arg0, [
@@ -109,14 +129,15 @@ class _AnyOf extends Matcher {
   const _AnyOf(this._matchers);
 
   @override
-  bool matches(dynamic item, Map matchState) {
-    for (var matcher in _matchers) {
-      if (matcher.matches(item, matchState)) {
-        return true;
-      }
-    }
-    return false;
-  }
+  bool matches(dynamic item, Map matchState) =>
+      restrictAsyncMatchers('anyOf', () {
+        for (var matcher in _matchers) {
+          if (matcher.matches(item, matchState)) {
+            return true;
+          }
+        }
+        return false;
+      });
 
   @override
   Description describe(Description description) =>
