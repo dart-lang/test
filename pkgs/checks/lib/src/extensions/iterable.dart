@@ -5,7 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
-import '../describe.dart' show describedPredicateNoun;
+import '../describe.dart' show describedClause, describedPredicateNoun;
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
@@ -258,11 +258,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/any.dart}
   void any(Condition<T> elementCondition) {
     context.expect(
-      () {
-        final conditionDescription = elementCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a value that:', ...conditionDescription];
-      },
+      () => describedClause('contains a value that', elementCondition),
       predicateNoun: () => describedPredicateNoun(
         'an iterable containing a value that',
         elementCondition,
@@ -285,13 +281,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/every.dart}
   void every(Condition<T> elementCondition) {
     context.expect(
-      () {
-        final conditionDescription = elementCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['only has values that:', ...conditionDescription];
-      },
+      () => describedClause('every element', elementCondition),
       predicateNoun: () => describedPredicateNoun(
-        'an iterable where every value',
+        'an iterable where every element',
         elementCondition,
       ),
       (actual) {
