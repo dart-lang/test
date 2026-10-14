@@ -605,7 +605,7 @@ Actual: [Instance of 'Foo']
 Which: contains no matching element''');
       });
 
-      test('any over the length limit does not collapse', () {
+      test('any over the length limit collapses its clause', () {
         check(() {
           check([Foo('foo')]).any(
             .it()
@@ -616,9 +616,36 @@ Which: contains no matching element''');
           );
         }).throwsFailure().equals('''
 Expected: a List<Foo> that:
-  contains a value that:
-    has a long property name: 'a long expected value'
+  contains a value that has a long property name: 'a long expected value'
 Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any with a clause over the length limit does not collapse', () {
+        check(() {
+          check([Foo('foo')]).any(
+            .it()
+              ..has(
+                (f) => f.field,
+                'a much longer property name for testing',
+              ).equals('a long expected value'),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<Foo> that:
+  contains a value that:
+    has a much longer property name for testing: 'a long expected value'
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any within any collapses', () {
+        check(() {
+          check([
+            [1],
+          ]).any(.it()..any(.it()..isGreaterThan(1)));
+        }).throwsFailure().equals('''
+Expected: an iterable containing a value that contains a value that is greater than <1>
+Actual: [[1]]
 Which: contains no matching element''');
       });
 
@@ -626,11 +653,29 @@ Which: contains no matching element''');
         check(() {
           check([1, 2]).every(.it()..isGreaterThan(1));
         }).throwsFailure().equals('''
-Expected: an iterable where every value is greater than <1>
+Expected: an iterable where every element is greater than <1>
 Actual: [1, 2]
 Which: has an element at index 0 that:
   Actual: <1>
   Which: is not greater than <1>''');
+      });
+
+      test('every with multiple expectations does not collapse', () {
+        check(() {
+          check([1, 2]).every(
+            .it()
+              ..isGreaterThan(0)
+              ..isLessThan(2),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<int> that:
+  every element:
+    is greater than <0>
+    is less than <2>
+Actual: [1, 2]
+Which: has an element at index 1 that:
+  Actual: <2>
+  Which: is not less than <2>''');
       });
 
       test('containsKeyThat collapses', () {
