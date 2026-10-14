@@ -9,25 +9,6 @@ import 'dart:io';
 import 'package:test_core/src/runner/application_exception.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/errors.dart'; // ignore: implementation_imports
 
-/// The command lines of processes started with [startBrowserProcess].
-final _commandLines = Expando<String>();
-
-/// Starts a browser [executable] with [arguments], like [Process.start], and
-/// remembers the command line for [Browser.commandLine].
-Future<Process> startBrowserProcess(
-  String executable,
-  List<String> arguments, {
-  Map<String, String>? environment,
-}) async {
-  var process = await Process.start(
-    executable,
-    arguments,
-    environment: environment,
-  );
-  _commandLines[process] = [executable, ...arguments].join(' ');
-  return process;
-}
-
 /// An interface for running browser instances.
 ///
 /// This is intentionally coarse-grained: browsers are controlled primary from
@@ -59,12 +40,10 @@ abstract class Browser {
   int? get exitCode => _exitCode;
   int? _exitCode;
 
-  /// The command line used to start the browser, if it was started with
-  /// [startBrowserProcess].
-  String? get commandLine {
-    var process = _startedProcess;
-    return process == null ? null : _commandLines[process];
-  }
+  /// The command line used to start the browser, or `null` if it hasn't
+  /// started yet.
+  String? get commandLine => _commandLine;
+  String? _commandLine;
 
   /// Whether [close] has been called.
   var _closed = false;
@@ -139,17 +118,19 @@ abstract class Browser {
   /// Creates a new browser.
   ///
   /// This is intended to be called by subclasses. They pass in [startBrowser],
-  /// which asynchronously returns the browser process. Any errors in
-  /// [startBrowser] (even those raised asynchronously after it returns) are
-  /// piped to [onExit] and will cause the browser to be killed.
-  Browser(Future<Process> Function() startBrowser) {
+  /// which asynchronously returns the browser process and the command line
+  /// used to start it, for diagnostics. Any errors in [startBrowser] (even
+  /// those raised asynchronously after it returns) are piped to [onExit] and
+  /// will cause the browser to be killed.
+  Browser(Future<(Process, String)> Function() startBrowser) {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
     runZonedGuarded(
       () async {
-        var process = await startBrowser();
+        var (process, commandLine) = await startBrowser();
         _startedProcess = process;
+        _commandLine = commandLine;
         _processCompleter.complete(process);
 
         Future<void> drainOutput(Stream<List<int>> stream) {

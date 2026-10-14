@@ -12,7 +12,6 @@ import 'package:test_core/src/runner/configuration.dart'; // ignore: implementat
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
-import 'browser.dart';
 import 'default_settings.dart';
 
 enum ChromiumBasedBrowser {
@@ -23,7 +22,10 @@ enum ChromiumBasedBrowser {
 
   const ChromiumBasedBrowser(this.runtime);
 
-  Future<Process> spawn(
+  /// Starts the browser open to [url].
+  ///
+  /// Returns the process and the command line used to start it.
+  Future<(Process, String)> spawn(
     Uri url,
     Configuration configuration, {
     ExecutableSettings? settings,
@@ -63,10 +65,10 @@ enum ChromiumBasedBrowser {
       ...additionalArgs,
     ];
 
-    var process = await startBrowserProcess(settings.executable, args);
+    var process = await Process.start(settings.executable, args);
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
-    return process;
+    return (process, [settings.executable, ...args].join(' '));
   }
 }
