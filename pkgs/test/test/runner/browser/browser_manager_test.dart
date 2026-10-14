@@ -21,10 +21,15 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../utils.dart';
 
-final _webSocketUrl = Uri.parse('ws://localhost:1234/secret/0');
-final _hostUrl = Uri.parse(
-  'http://localhost:1234/secret/index.html',
-).replace(queryParameters: {'managerUrl': '$_webSocketUrl'});
+final _webSocketUrl = Uri(
+  scheme: 'ws',
+  host: 'localhost',
+  port: 1234,
+  path: '/secret/0',
+);
+final _hostUrl = Uri.http('localhost:1234', '/secret/index.html', {
+  'managerUrl': '$_webSocketUrl',
+});
 
 /// A fake browser script body that writes output and then exits with an error.
 const _crash = '''

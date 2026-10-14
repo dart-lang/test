@@ -9,11 +9,17 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:test/src/runner/browser/request_log.dart';
 import 'package:test/test.dart';
 
-final _webSocketUrl = Uri.parse('ws://localhost:1234/secret/0');
-final _hostPage = Uri.parse(
-  'http://localhost:1234/secret/packages/test/src/runner/browser/static/'
-  'index.html',
-).replace(queryParameters: {'managerUrl': '$_webSocketUrl'});
+final _webSocketUrl = Uri(
+  scheme: 'ws',
+  host: 'localhost',
+  port: 1234,
+  path: '/secret/0',
+);
+final _hostPage = Uri.http(
+  'localhost:1234',
+  '/secret/packages/test/src/runner/browser/static/index.html',
+  {'managerUrl': '$_webSocketUrl'},
+);
 
 void main() {
   late BrowserRequestLog log;
@@ -31,7 +37,7 @@ void main() {
     await handler(
       shelf.Request(
         'GET',
-        Uri.parse('http://localhost:1234/secret/host.dart.js'),
+        Uri.http('localhost:1234', '/secret/host.dart.js'),
         headers: {'referer': '$_hostPage'},
       ),
     );
@@ -48,7 +54,7 @@ void main() {
       handler(
         shelf.Request(
           'GET',
-          Uri.parse('http://localhost:1234/secret/0'),
+          Uri.http('localhost:1234', '/secret/0'),
           headers: {'upgrade': 'websocket'},
         ),
       ),
@@ -70,7 +76,7 @@ void main() {
       ),
     );
     await handler(
-      shelf.Request('GET', Uri.parse('http://localhost:1234/secret/other.js')),
+      shelf.Request('GET', Uri.http('localhost:1234', '/secret/other.js')),
     );
 
     expect(log.describe(_webSocketUrl, start), isEmpty);
