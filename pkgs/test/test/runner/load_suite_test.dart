@@ -12,6 +12,7 @@ import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_core/src/runner/load_exception.dart';
 import 'package:test_core/src/runner/load_suite.dart';
+import 'package:test_core/src/runner/platform.dart';
 import 'package:test_core/src/runner/runner_suite.dart';
 import 'package:test_core/src/runner/suite.dart';
 
@@ -221,6 +222,82 @@ void main() {
       expect(suite.group.entries, hasLength(1));
 
       expect(suite.getSuite(), throwsA('error'));
+    });
+  });
+
+  group('PlatformPlugin.remainingLoadTime', () {
+    /// Loads a suite with [config] and returns the remaining load time that
+    /// the body sees after waiting for [delay].
+    Future<Duration?> remainingLoadTimeIn(
+      SuiteConfiguration config, {
+      Duration delay = Duration.zero,
+    }) async {
+      Duration? remaining;
+      var suite = LoadSuite('name', config, suitePlatform, () async {
+        await Future<void>.delayed(delay);
+        remaining = PlatformPlugin.remainingLoadTime;
+        return innerSuite;
+      });
+      var liveTest = (suite.group.entries.single as Test).load(suite);
+      await liveTest.run();
+      expectTestPassed(liveTest);
+      return remaining;
+    }
+
+    test('is null outside of a load suite', () {
+      expect(PlatformPlugin.remainingLoadTime, isNull);
+    });
+
+    test('is null without a suite load timeout', () async {
+      expect(await remainingLoadTimeIn(SuiteConfiguration.empty), isNull);
+    });
+
+    test('is null with a suite load timeout of none', () async {
+      expect(
+        await remainingLoadTimeIn(
+          suiteConfiguration(suiteLoadTimeout: Timeout.none),
+        ),
+        isNull,
+      );
+    });
+
+    test('is null when timeouts are ignored', () async {
+      expect(
+        await remainingLoadTimeIn(
+          suiteConfiguration(
+            suiteLoadTimeout: Timeout.parse('1m'),
+            ignoreTimeouts: true,
+          ),
+        ),
+        isNull,
+      );
+    });
+
+    test('counts down from the suite load timeout', () async {
+      var remaining = await remainingLoadTimeIn(
+        suiteConfiguration(suiteLoadTimeout: Timeout.parse('1m')),
+        delay: const Duration(milliseconds: 100),
+      );
+      expect(
+        remaining,
+        allOf(
+          lessThanOrEqualTo(const Duration(seconds: 59, milliseconds: 900)),
+          greaterThan(const Duration(seconds: 50)),
+        ),
+      );
+    });
+
+    test('scales a relative suite load timeout from 30 seconds', () async {
+      var remaining = await remainingLoadTimeIn(
+        suiteConfiguration(suiteLoadTimeout: Timeout.parse('2x')),
+      );
+      expect(
+        remaining,
+        allOf(
+          lessThanOrEqualTo(const Duration(minutes: 1)),
+          greaterThan(const Duration(seconds: 50)),
+        ),
+      );
     });
   });
 }
