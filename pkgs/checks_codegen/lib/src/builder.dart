@@ -128,9 +128,14 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
     );
   }
 
+  /// Whether [field] should get a `has` getter.
+  ///
+  /// Checks whether the field can be referenced on an instance of the class
+  /// containing [field] from the generated library.
   bool _isCheckableField(FieldElement field) =>
       field.name != 'hashCode' &&
       !field.isStatic &&
+      !field.isPrivate &&
       field.type is! FunctionType;
 
   Future<Method> _createHasGetter(
