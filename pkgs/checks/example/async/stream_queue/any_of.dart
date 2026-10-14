@@ -27,7 +27,7 @@ void main() {
     //     ready
     //     ^
     // failed the condition at index 1 because it:
-    //   Actual: a stream
-    //   Which: emitted an unexpected value: 'ready'
+    //   Actual: a stream that emitted 'ready'
+    //   Which: emitted a value before closing
   });
 }
