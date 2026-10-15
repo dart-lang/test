@@ -1,5 +1,6 @@
 ## 1.34.0-wip
 
+* Enable asserts in the `cli` compiler if supported.
 * Fix loading precompiled browser tests when the precompiled directory contains
   symlinks to files outside of it, such as the output of `build_runner test`.
   Requests whose path would resolve outside the precompiled directory are
