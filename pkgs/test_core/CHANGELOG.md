@@ -1,5 +1,6 @@
 ## 0.6.22-wip
 
+* Enable asserts in the `cli` compiler if supported.
 * Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
   loading a suite before the suite load timeout cuts it off.
 
