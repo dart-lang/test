@@ -208,6 +208,69 @@ void main() {
         ],
       );
     });
+
+    test('includes the property for a collapsed nested failure', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(.it()..field.equals('bar')),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          "  Actual: has field: 'foo'",
+          '  Which: differs at offset 0:',
+          '    bar',
+          '    foo',
+          '    ^',
+        ],
+      );
+    });
+
+    test('includes the property when only the actual collapses', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..field.which(
+              .it()
+                ..startsWith('f')
+                ..endsWith('x'),
+            ),
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          "  Actual: has field: 'foo'",
+          "  Which: does not end with 'x'",
+        ],
+      );
+    });
+
+    test('includes passing clauses before a failing clause', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..field.equals('foo')
+            ..field.length.equals(4),
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          "    has field: 'foo'",
+          '    has field that has length: <3>',
+          '    Which: is not equal',
+        ],
+      );
+    });
+
+    test('describes a rejected guard within the condition', () {
+      check([_Wrapper(123)]).isRejectedBy(
+        .it()..every(.it()..value.isA<_Foo>().field.equals('bar')),
+        actual: ["[Instance of '_Wrapper']"],
+        which: [
+          'has an element at index 0 that:',
+          '  Actual: has value: <123>',
+          '  Which: is a int',
+        ],
+      );
+    });
   });
 
   group('unorderedEquals', () {
@@ -285,8 +348,27 @@ void main() {
         which: [
           'does not have an element at index 1 that:',
           '  is less than <1>',
-          '  Actual element at index 1: <1>',
+          '  Actual: <1>',
           '  Which: is not less than <1>',
+        ],
+      );
+    });
+    test('includes the property for a nested failure', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..pairwiseMatches(
+          ['bar'],
+          (expected) => .it()..field.equals(expected),
+          'has field',
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'does not have an element at index 0 that:',
+          "  has field: 'bar'",
+          "  Actual: has field: 'foo'",
+          '  Which: differs at offset 0:',
+          '    bar',
+          '    foo',
+          '    ^',
         ],
       );
     });
@@ -313,4 +395,22 @@ void main() {
       );
     });
   });
+}
+
+class _Foo {
+  final String field;
+  _Foo(this.field);
+}
+
+class _Wrapper {
+  final Object? value;
+  _Wrapper(this.value);
+}
+
+extension on Subject<_Foo> {
+  Subject<String> get field => has((f) => f.field, 'field');
+}
+
+extension on Subject<_Wrapper> {
+  Subject<Object?> get value => has((w) => w.value, 'value');
 }
