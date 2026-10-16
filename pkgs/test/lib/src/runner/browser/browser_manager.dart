@@ -24,6 +24,7 @@ import 'browser.dart';
 import 'chrome.dart';
 import 'firefox.dart';
 import 'microsoft_edge.dart';
+import 'request_log.dart';
 import 'safari.dart';
 
 /// A class that manages the connection to a single running browser.
@@ -97,23 +98,54 @@ class BrowserManager {
   ///
   /// Returns the browser manager, or throws an [ApplicationException] if a
   /// connection fails to be established.
+  ///
+  /// If [connectTimeout] is passed, the browser has that long to connect,
+  /// after which this fails with a report of each attempt. If a browser exits
+  /// before connecting, it is replaced with a new one while time remains, up to
+  /// 3 attempts. Without a [connectTimeout], this waits indefinitely for a
+  /// browser to connect. If [requestLog] is passed, the report includes the
+  /// requests each browser made to the test server.
   static Future<BrowserManager> start(
     Runtime runtime,
     Uri url,
     Future<WebSocketChannel> future,
     ExecutableSettings settings,
-    Configuration configuration,
-  ) => _start(runtime, url, future, settings, configuration, 1);
+    Configuration configuration, {
+    BrowserRequestLog? requestLog,
+    Duration? connectTimeout,
+  }) => _start(
+    runtime,
+    url,
+    future,
+    settings,
+    configuration,
+    requestLog,
+    connectTimeout,
+    1,
+    [],
+  );
 
-  static const _maxRetries = 3;
+  static const _maxAttempts = 3;
+
+  /// Starts attempt number [attempt] to connect to a browser, which has
+  /// [timeout] to connect, or no limit if it's `null`.
   static Future<BrowserManager> _start(
     Runtime runtime,
     Uri url,
     Future<WebSocketChannel> future,
     ExecutableSettings settings,
     Configuration configuration,
+    BrowserRequestLog? requestLog,
+    Duration? timeout,
     int attempt,
-  ) {
+    List<String> attemptReports,
+  ) async {
+    var stopwatch = Stopwatch()..start();
+    var requestsSince = requestLog?.now ?? Duration.zero;
+    var managerUrl = url.queryParameters['managerUrl'];
+    List<String>? requests() => requestLog == null || managerUrl == null
+        ? null
+        : requestLog.describe(Uri.parse(managerUrl), requestsSince);
     var browser = _newBrowser(url, runtime, settings, configuration);
 
     var completer = Completer<BrowserManager>();
@@ -127,9 +159,14 @@ class BrowserManager {
           ),
         )
         .onError<Object>((error, stackTrace) {
-          if (!completer.isCompleted) {
-            completer.completeError(error, stackTrace);
-          }
+          if (completer.isCompleted) return;
+          // A process that never started, for example because the executable
+          // doesn't exist, would fail the same way again. Only a browser that
+          // started and then exited is worth replacing.
+          completer.completeError(
+            browser.process == null ? error : _ExitedBeforeConnecting(error),
+            stackTrace,
+          );
         });
 
     future
@@ -146,19 +183,101 @@ class BrowserManager {
           completer.completeError(error, stackTrace);
         });
 
-    return completer.future.timeout(
-      const Duration(seconds: 30),
-      onTimeout: () {
-        browser.close();
-        if (attempt >= _maxRetries) {
-          throw ApplicationException(
-            'Timed out waiting for ${runtime.name} to connect.\n'
-            'Browser output: ${browser.accumulatedOutput.join('\n')}',
-          );
-        }
-        return _start(runtime, url, future, settings, configuration, ++attempt);
-      },
-    );
+    try {
+      return await (timeout == null
+          ? completer.future
+          : completer.future.timeout(
+              timeout,
+              onTimeout: () => throw const _ConnectTimeout(),
+            ));
+    } on _ConnectTimeout {
+      attemptReports.add(
+        _describeAttempt(
+          attempt,
+          'no connection',
+          stopwatch.elapsed,
+          browser,
+          requests(),
+        ),
+      );
+      unawaited(browser.close());
+      throw ApplicationException(
+        'Timed out waiting for ${runtime.name} to connect.\n'
+        '${attemptReports.join('\n')}',
+      );
+    } on _ExitedBeforeConnecting catch (exit, stackTrace) {
+      bool outOfTime() => timeout != null && stopwatch.elapsed >= timeout;
+      if (attempt == 1 && outOfTime()) {
+        Error.throwWithStackTrace(exit.error, stackTrace);
+      }
+      // The process has exited, but its output may not have been read yet.
+      await browser.outputDrained.timeout(
+        const Duration(seconds: 1),
+        onTimeout: () {},
+      );
+      attemptReports.add(
+        _describeAttempt(
+          attempt,
+          'exited before connecting',
+          stopwatch.elapsed,
+          browser,
+          requests(),
+        ),
+      );
+      if (attempt >= _maxAttempts || outOfTime()) {
+        // Each report includes the exit code and output.
+        throw ApplicationException(
+          '${runtime.name} exited before connecting.\n'
+          '${attemptReports.join('\n')}',
+        );
+      }
+      return _start(
+        runtime,
+        url,
+        future,
+        settings,
+        configuration,
+        requestLog,
+        timeout == null ? null : timeout - stopwatch.elapsed,
+        attempt + 1,
+        attemptReports,
+      );
+    }
+  }
+
+  /// Describes a failed attempt to connect to [browser], which ended with
+  /// [outcome] after [elapsed], for diagnosing connection failures.
+  ///
+  /// The [requests] are the browser's requests to the test server, if they
+  /// were recorded.
+  static String _describeAttempt(
+    int attempt,
+    String outcome,
+    Duration elapsed,
+    Browser browser,
+    List<String>? requests,
+  ) {
+    var process = browser.process;
+    var exitCode = browser.exitCode;
+    var processState = process == null
+        ? 'not started'
+        : exitCode == null
+        ? 'pid ${process.pid}, still running'
+        : 'pid ${process.pid}, exited with code $exitCode';
+    var output = browser.accumulatedOutput;
+    return [
+      'Attempt $attempt: $outcome after '
+          '${(elapsed.inMilliseconds / 1000).toStringAsFixed(1)}s.',
+      '  Process: $processState',
+      if (browser.commandLine case var commandLine?) '  Command: $commandLine',
+      if (requests != null)
+        requests.isEmpty
+            ? '  Requests: none'
+            : '  Requests:\n${requests.map((r) => '    $r').join('\n')}',
+      output.isEmpty
+          ? '  Browser output: none'
+          : '  Browser output:\n${output.map((l) => '    $l').join('\n')}',
+    ].join('\n');
   }
 
   /// Starts the browser identified by [browser] using [settings] and has it load [url].
@@ -396,4 +515,17 @@ class _BrowserEnvironment implements Environment {
 
   @override
   CancelableOperation<void> displayPause() => _manager._displayPause();
+}
+
+/// Thrown when a browser doesn't connect before the connect timeout.
+class _ConnectTimeout implements Exception {
+  const _ConnectTimeout();
+}
+
+/// Wraps the [error] from a browser that started but exited before it
+/// connected, so the attempt can be retried.
+class _ExitedBeforeConnecting implements Exception {
+  final Object error;
+
+  _ExitedBeforeConnecting(this.error);
 }
