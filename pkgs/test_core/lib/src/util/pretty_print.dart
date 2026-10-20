@@ -39,7 +39,8 @@ String truncate(String text, int maxLength) {
 
   // If there's no room for any text after the ellipsis, as in a very narrow
   // terminal, return as much of the ellipsis as fits.
-  if (maxLength < 4) return '.' * maxLength;
+  const ellipsisLength = 3;
+  if (maxLength <= ellipsisLength) return '.' * maxLength;
 
   // If we can fit the first and last three words, do so.
   var words = text.split(' ');
