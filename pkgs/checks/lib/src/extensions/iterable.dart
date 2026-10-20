@@ -5,6 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
+import '../describe.dart' show describedPredicateNoun;
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
@@ -262,6 +263,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         assert(conditionDescription.isNotEmpty);
         return ['contains a value that:', ...conditionDescription];
       },
+      predicateNoun: () => describedPredicateNoun(
+        'an iterable containing a value that',
+        elementCondition,
+      ),
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         for (var e in actual) {
@@ -285,6 +290,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
         assert(conditionDescription.isNotEmpty);
         return ['only has values that:', ...conditionDescription];
       },
+      predicateNoun: () => describedPredicateNoun(
+        'an iterable where every value',
+        elementCondition,
+      ),
       (actual) {
         final iterator = actual.iterator;
         for (var i = 0; iterator.moveNext(); i++) {

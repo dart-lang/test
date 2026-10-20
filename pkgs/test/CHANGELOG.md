@@ -1,4 +1,17 @@
-## 1.33.0-wip
+## 1.34.0-wip
+
+* Enable asserts in the `cli` compiler if supported.
+* Fix loading precompiled browser tests when the precompiled directory contains
+  symlinks to files outside of it, such as the output of `build_runner test`.
+  Requests whose path would resolve outside the precompiled directory are
+  still rejected.
+* Give a browser until shortly before the `suite_load_timeout` to load a test
+  suite, so the failure includes the browser output. Previously the browser
+  waited as long as the test timeout, or 30 seconds if that was longer,
+  regardless of `suite_load_timeout`. Without a `suite_load_timeout`, loading a
+  browser suite no longer times out, matching other platforms.
+
+## 1.33.0
 
 * Replace the Safari launch mechanism to use `safaridriver`.
 * Fix a hang when the runner is interrupted at the moment a test suite starts
@@ -12,6 +25,24 @@
   Control-C twice.
 * Bundle skipped tests into a single group at the end of the GitHub reporter
   output instead of interrupting passing test groups.
+* Delete the kernel file compiled for a test suite once that suite has finished
+  running, and delete the snapshot or bundle compiled with the `exe` and `cli`
+  compilers once the test process has exited, instead of retaining every
+  compiled artifact until the end of the run.
+* Fail to load a test suite compiled with the `exe` or `cli` compiler if the
+  test process exits before connecting to the runner, instead of hanging.
+* Wait longer for Chrome to open the test page when running with `--debug` or
+  `--coverage`, and list the open tabs if the page is never found.
+* Fail a test suite running in an isolate if the isolate exits, instead of
+  hanging. The suite fails to load if the isolate exits while loading, and any
+  tests that haven't finished fail if it exits while they run.
+* Include Chrome's stderr, which has its logging, in the browser output when
+  running with `--debug` or `--coverage`. Previously it was missing from the
+  error when Chrome failed or a suite timed out while loading.
+* Let Chrome choose its own remote debugging port when running with `--debug`
+  or `--coverage`, instead of picking a port that another process could take
+  before Chrome binds it.
+* Add flag `--shard-by-suite` to control sharding strategy.
 
 ## 1.32.0
 
@@ -63,7 +94,6 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-suite` to control sharding strategy.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`

@@ -45,7 +45,48 @@ abstract class Browser {
   /// Standard IO streams for the underlying browser process.
   final _ioSubscriptions = <StreamSubscription<String>>[];
 
-  final output = <String>[];
+  /// The lines the browser process has written to stdout and stderr so far.
+  final accumulatedOutput = <String>[];
+
+  /// The lines the browser process writes to stdout and stderr.
+  ///
+  /// Each listener receives every line already in [accumulatedOutput],
+  /// followed by each new line as it is written. The stream closes once both
+  /// stdout and stderr have closed, or the browser is closed.
+  late final Stream<String> output = Stream.multi((controller) {
+    accumulatedOutput.forEach(controller.add);
+    if (_outputDone) {
+      controller.close();
+      return;
+    }
+    _outputListeners.add(controller);
+    controller.onCancel = () {
+      _outputListeners.remove(controller);
+    };
+  });
+
+  /// The active listeners on [output].
+  final _outputListeners = <MultiStreamController<String>>{};
+
+  /// Whether the browser output has ended and [output] is closed.
+  var _outputDone = false;
+
+  void _addOutput(String line) {
+    accumulatedOutput.add(line);
+    for (var listener in _outputListeners) {
+      listener.add(line);
+    }
+  }
+
+  void _closeOutput() {
+    if (_outputDone) return;
+    _outputDone = true;
+    var listeners = [..._outputListeners];
+    _outputListeners.clear();
+    for (var listener in listeners) {
+      listener.close();
+    }
+  }
 
   /// Creates a new browser.
   ///
@@ -62,20 +103,22 @@ abstract class Browser {
         var process = await startBrowser();
         _processCompleter.complete(process);
 
-        void drainOutput(Stream<List<int>> stream) {
-          try {
-            _ioSubscriptions.add(
-              stream
-                  .transform(utf8.decoder)
-                  .transform(const LineSplitter())
-                  .listen(output.add, cancelOnError: true),
-            );
-          } on StateError catch (_) {}
+        Future<void> drainOutput(Stream<List<int>> stream) {
+          final sub = stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(_addOutput);
+          _ioSubscriptions.add(sub);
+          return sub.asFuture();
         }
 
-        // If we don't drain the stdout and stderr the process can hang.
-        drainOutput(process.stdout);
-        drainOutput(process.stderr);
+        // If we don't drain the stdout and stderr the process can hang. An error
+        // on either stream is reported to the zone right away, which kills the
+        // browser.
+        Future.wait([
+          drainOutput(process.stdout),
+          drainOutput(process.stderr),
+        ], eagerError: true).whenComplete(_closeOutput);
 
         var exitCode = await process.exitCode;
 
@@ -94,7 +137,7 @@ abstract class Browser {
         }
 
         if (!_closed && exitCode != 0) {
-          var outputString = output.join('\n');
+          var outputString = accumulatedOutput.join('\n');
           var message = '$name failed with exit code $exitCode.';
           if (outputString.isNotEmpty) {
             message += '\nStandard output:\n$outputString';
@@ -106,6 +149,8 @@ abstract class Browser {
         _onExitCompleter.complete();
       },
       (error, stackTrace) {
+        _closeOutput();
+
         // Ignore any errors after the browser has been closed.
         if (_closed) return;
 
@@ -136,6 +181,7 @@ abstract class Browser {
     for (var stream in _ioSubscriptions) {
       unawaited(stream.cancel());
     }
+    _closeOutput();
 
     (await _process).kill();
 

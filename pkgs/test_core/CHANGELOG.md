@@ -1,4 +1,10 @@
-## 0.6.21-wip
+## 0.6.22-wip
+
+* Enable asserts in the `cli` compiler if supported.
+* Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
+  loading a suite before the suite load timeout cuts it off.
+
+## 0.6.21
 
 * Fix a hang when the runner is shut down at the moment a test suite starts
   loading.
@@ -11,6 +17,17 @@
   interrupted by a second signal (e.g. pressing Ctrl-C twice).
 * Bundle skipped tests into a single group at the end of the GitHub reporter
   output instead of interrupting passing test groups.
+* Delete the kernel file for a test suite once it has finished running, instead
+  of keeping every kernel file until the end of the run.
+* Compile each test suite for the `exe` and `cli` compilers into a directory of
+  its own, and delete it once the test process has exited, instead of keeping
+  every compiled snapshot or bundle until the end of the run.
+* Fail to load a test suite compiled with the `exe` or `cli` compiler if the
+  test process exits before connecting to the runner, instead of hanging.
+* Fail a test suite running in an isolate if the isolate exits, instead of
+  hanging. The suite fails to load if the isolate exits while loading, and any
+  tests that haven't finished fail if it exits while they run.
+* Add flag `--shard-by-suite` to control sharding strategy.
 
 ## 0.6.20
 
@@ -34,7 +51,6 @@
 * Add support for `-c cli` (the native CLI compiler) to the vm platform.
 * Support using the OS platform selector to configure browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-suite` to control sharding strategy.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
 * Update `parse_metadata.dart` to be compatible with `analyzer >=13.0.0 <15.0.0`.

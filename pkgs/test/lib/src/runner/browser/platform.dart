@@ -24,6 +24,7 @@ import 'compilers/dart2js.dart';
 import 'compilers/dart2wasm.dart';
 import 'compilers/precompiled.dart';
 import 'default_settings.dart';
+import 'load_timeout.dart';
 
 class BrowserPlatform extends PlatformPlugin
     implements CustomizablePlatform<ExecutableSettings> {
@@ -215,11 +216,6 @@ class BrowserPlatform extends PlatformPlugin
     var browserManager = await _browserManagerFor(browser, compiler);
     if (_closed || browserManager == null) return null;
 
-    var timeout = const Duration(seconds: 30);
-    if (suiteConfig.metadata.timeout.apply(timeout) case final suiteTimeout?
-        when suiteTimeout > timeout) {
-      timeout = suiteTimeout;
-    }
     var suite = await browserManager.load(
       path,
       suiteUrl,
@@ -227,7 +223,7 @@ class BrowserPlatform extends PlatformPlugin
       message,
       platform.compiler,
       mapper: (await compilerSupport(compiler)).stackTraceMapperForPath(path),
-      timeout: timeout,
+      timeout: browserLoadTimeout(PlatformPlugin.remainingLoadTime),
     );
     if (_closed) return null;
     return suite;

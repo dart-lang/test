@@ -153,7 +153,7 @@ class BrowserManager {
         if (attempt >= _maxRetries) {
           throw ApplicationException(
             'Timed out waiting for ${runtime.name} to connect.\n'
-            'Browser output: ${browser.output.join('\n')}',
+            'Browser output: ${browser.accumulatedOutput.join('\n')}',
           );
         }
         return _start(runtime, url, future, settings, configuration, ++attempt);
@@ -312,7 +312,7 @@ class BrowserManager {
           throw LoadException(
             path,
             'Timed out waiting for browser to load test suite. '
-            'Browser output: ${_browser.output.join('\n')}',
+            'Browser output: ${_browser.accumulatedOutput.join('\n')}',
           );
         },
       );

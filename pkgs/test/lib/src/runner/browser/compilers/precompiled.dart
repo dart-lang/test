@@ -24,6 +24,7 @@ import '../../../util/math.dart';
 import '../../../util/one_off_handler.dart';
 import '../../../util/package_map.dart';
 import '../../../util/path_handler.dart';
+import '../../../util/symlink_following_static_handler.dart';
 import 'compiler_support.dart';
 
 class JsPrecompiledSupport = PrecompiledSupport with JsHtmlWrapper;
@@ -71,7 +72,7 @@ abstract class PrecompiledSupport extends CompilerSupport {
   ) {
     var cascade = shelf.Cascade()
         .add(_webSocketHandler.handler)
-        .add(createStaticHandler(_root))
+        .add(createSymlinkFollowingStaticHandler(_root))
         // TODO: This packages dir handler should not be necessary?
         .add(packagesDirHandler())
         // Even for precompiled tests, we will auto-create a bootstrap html file

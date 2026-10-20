@@ -302,9 +302,9 @@ extension ContextExtension<T> on Subject<T> {
 /// ```
 ///
 /// A nesting context can optionally provide an [addPredicate] callback.
-/// [addPredicate] takes a single-line `predicateNoun` string (produced by a
-/// nested expectation or deeper child nesting context) and returns a combined
-/// single-line description attaching that predicate to this parent subject.
+/// [addPredicate] takes a single-line `predicateNoun` string produced by an
+/// expectation on the nested subject, and returns a combined single-line
+/// predicate attaching that noun to this parent subject.
 ///
 /// For example:
 /// - `has` uses `(predicateNoun) => 'has $name: $predicateNoun'`
@@ -314,6 +314,19 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// If this level cannot be collapsed (for example, if a property name, key, or
 /// value is multiline), [addPredicate] should return `null`.
+///
+/// When the single expectation on the nested subject is itself a further
+/// nesting (for instance `.has(...).has(...)`), it collapses to a predicate
+/// rather than a noun, and is not passed to [addPredicate]. Instead it is
+/// joined to the label with "that", the same as the "<label> that:" line in the
+/// multi-line format:
+///
+/// ```
+/// Expected: a () => void that throws an error of type StateError that has message: 'foo'
+/// ```
+///
+/// A context which does not provide an [addPredicate] callback is never
+/// collapsed.
 /// {@endtemplate}
 ///
 ///
@@ -362,9 +375,10 @@ extension ContextExtension<T> on Subject<T> {
 ///      do not count against this limit).
 ///    - The leaf expectation provides a [predicateNoun] callback that returns a
 ///      non-null single-line string.
-///    - All parent nesting contexts provide an [addPredicate] callback that
-///      successfully combines the nested predicate noun into a single-line
-///      description.
+///    - All parent nesting contexts provide an [addPredicate] callback. The
+///      innermost context must successfully combine the predicate noun into a
+///      single-line description, and outer contexts must have single-line
+///      labels to join with "that".
 ///    - The combined description at the root context does not exceed the
 ///      length limit (80 characters for labeled roots).
 ///
@@ -920,7 +934,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       context = _TestContext._alias(this, value);
       _aliases.add(context);
       if (label().isNotEmpty) {
-        _clauses.add(_GuardClause(label));
+        _clauses.add(_GuardClause(label, satisfied: value is _Present));
       }
     } else {
       context = _TestContext._child(value, label, addPredicate, this);
@@ -1018,7 +1032,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }
 
   _ClauseDescription? get _singleClause =>
-      _clauses.where((c) => c is! _GuardClause).singleOrNull;
+      _clauses.where((c) => c is! _GuardClause || !c.satisfied).singleOrNull;
 
   /// A collapsed single-line [FailureDetail], or `null` if this context cannot
   /// be collapsed.
@@ -1047,8 +1061,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     final (childExpected, childActual) = childCollapsed;
     (String, String)? expandedCollapsed;
     if (_addPredicate != null) {
-      final exp = _addPredicate(childExpected);
-      final act = _addPredicate(childActual);
+      final exp = _expandChild(childExpected, childIsLeaf: clause.isLeaf);
+      final act = _expandChild(childActual, childIsLeaf: clause.isLeaf);
       if (exp != null && act != null) expandedCollapsed = (exp, act);
     } else if (_parent == null) {
       if (clause.isLeaf) {
@@ -1069,6 +1083,29 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     );
   }
 
+  /// Expands the collapsed single-line description of the single clause under
+  /// this context into a predicate describing this context.
+  ///
+  /// A leaf expectation collapses to a noun phrase (such as `<2>`), which is
+  /// passed to [_addPredicate] (giving, for instance, `has length: <2>`).
+  ///
+  /// A nested context collapses to a predicate (such as `has length: <2>`)
+  /// which cannot be used as a noun phrase. It is joined to the label for this
+  /// context with "that", mirroring the "<label> that:" line in the multi-line
+  /// format (giving, for instance, `has name that has length: <2>`).
+  ///
+  /// Returns `null` if this context does not support collapsing, if
+  /// [_addPredicate] rejects the noun phrase, or if the label for this context
+  /// spans multiple lines.
+  String? _expandChild(String child, {required bool childIsLeaf}) {
+    final addPredicate = _addPredicate;
+    if (addPredicate == null) return null;
+    if (childIsLeaf) return addPredicate(child);
+    final label = _labelCallback().singleOrNull;
+    if (label == null) return null;
+    return '$label that $child';
+  }
+
   String? _collapseWithRootLabel(String child) {
     if (_parent != null) return null;
     final rootLabel = _labelCallback().singleOrNull;
@@ -1079,9 +1116,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   @override
   String? get collapsedExpected {
-    final child = _singleClause?.collapsedExpected;
+    final clause = _singleClause;
+    final child = clause?.collapsedExpected;
     if (child == null) return null;
-    return _addPredicate?.call(child);
+    return _expandChild(child, childIsLeaf: clause!.isLeaf);
   }
 
   /// The [FailureDetail] for this context when the overall expectation cannot
@@ -1120,9 +1158,11 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
     var successfulOverlap = 0;
     for (var clause in _clauses) {
-      final isFailingClause = thisContextFailed
-          ? identical(clause, _clauses.last)
-          : failingContext._nestsUnder(clause);
+      final isFailingClause =
+          rejection != null &&
+          (thisContextFailed
+              ? identical(clause, _clauses.last)
+              : failingContext._nestsUnder(clause));
       final clauseRejection = isFailingClause ? rejection : null;
       final details = clause.detail(failingContext, clauseRejection);
 
@@ -1153,9 +1193,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           canCollapse = false;
         }
       } else {
-        final collapsed = rejection != null && !clause.isLeaf
-            ? clause.collapsedExpected
-            : null;
+        final collapsed = !clause.isLeaf ? clause.collapsedExpected : null;
         clauseExpected = collapsed != null ? [collapsed] : details.expected;
         actual.addAll(indent(clauseExpected));
         if (collapsed != null) didCollapse = true;
@@ -1429,12 +1467,18 @@ class _ExpectationClause implements _ClauseDescription {
 /// `atSameLevel` (such as `isNotNull()` or `isA<T>()`).
 ///
 /// When value extraction succeeds, the clause represents a satisfied
-/// precondition. Succeeded guard clauses are included in uncollapsed
+/// precondition. Satisfied guard clauses are included in uncollapsed
 /// multi-line failure descriptions, but do not disqualify a context from
 /// collapsing when only a single expectation is otherwise checked on the
 /// subject.
+///
+/// When there is no value to extract from, such as within
+/// [Condition.describe], or when extraction is rejected, the guard is not
+/// [satisfied] and counts as an expectation like any other.
 final class _GuardClause extends _ExpectationClause {
-  _GuardClause(super.expected);
+  /// Whether the value was extracted, so the precondition is known to hold.
+  final bool satisfied;
+  _GuardClause(super.expected, {required this.satisfied});
 }
 
 /// The result of an expectation that failed for a subject.

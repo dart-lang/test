@@ -13,19 +13,26 @@ import '../io.dart';
 void main() {
   setUpAll(precompileTestExecutable);
 
-  for (var compiler in ['exe', 'cli']) {
+  for (var (compiler, label, exitSuite) in [
+    // Calling `exit` in an isolate would end the test runner too.
+    ('kernel', 'Kernel', 'Isolate.exit()'),
+    ('source', 'Source', 'Isolate.exit()'),
+    ('exe', 'Exe', 'exit(0)'),
+    ('cli', 'Cli', 'exit(0)'),
+  ]) {
     test(
       'gracefully handles an early test suite exit with the $compiler compiler',
       () async {
         await d.file('test.dart', '''
         import 'dart:io';
+        import 'dart:isolate';
 
         import 'package:test/test.dart';
 
         void main() {
           test('runs', () {});
           test('exits', () {
-            exit(0);
+            $exitSuite;
           });
         }''').create();
 
@@ -33,7 +40,7 @@ void main() {
         expect(
           test.stdout,
           containsInOrder([
-            '+1: [VM, ${compiler == 'exe' ? 'Exe' : 'Cli'}] exits - did not complete [E]',
+            '+1: [VM, $label] exits - did not complete [E]',
             '+1: Some tests failed.',
           ]),
         );

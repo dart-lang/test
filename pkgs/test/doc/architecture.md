@@ -35,9 +35,9 @@ gradually build up an in-memory representation of a test suite. The runner is in
 charge of setting up these variables, but the frontend never communicates with
 the runner directly.
 
-[Invoker]: https://github.com/dart-lang/test/blob/master/lib/src/backend/invoker.dart
+[Invoker]: ../../test_api/lib/src/backend/invoker.dart
 [completion]: https://pub.dev/documentation/matcher/latest/expect/completion.html
-[Declarer]: https://github.com/dart-lang/test/blob/master/lib/src/backend/declarer.dart
+[Declarer]: ../../test_api/lib/src/backend/declarer.dart
 
 ### Backend
 
@@ -46,10 +46,10 @@ in-memory structure of a test suite. A [`Suite`][Suite] represents a single test
 file, and class contains a tree of [`Group`][Group]s, each of which contains
 many [`Test`][Test]s. These classes are built using a [`Declarer`][Declarer].
 
-[backend]: https://github.com/dart-lang/test/tree/master/lib/src/backend
-[Suite]: https://github.com/dart-lang/test/blob/master/lib/src/backend/suite.dart
-[Group]: https://github.com/dart-lang/test/blob/master/lib/src/backend/group.dart
-[Test]: https://github.com/dart-lang/test/blob/master/lib/src/backend/test.dart
+[backend]: ../../test_api/lib/src/backend/
+[Suite]: ../../test_api/lib/src/backend/suite.dart
+[Group]: ../../test_api/lib/src/backend/group.dart
+[Test]: ../../test_api/lib/src/backend/test.dart
 
 The backend also contains the [`Invoker`][Invoker], which is responsible for
 actually running an individual test case—including tracking how many outstanding
@@ -57,7 +57,7 @@ asynchronous callbacks are pending, handling exceptions, and timing out the test
 if it takes too long. The `Invoker` provides information about the status of a
 running test as streams and futures on a [`LiveTest`][LiveTest] object.
 
-[LiveTest]: https://github.com/dart-lang/test/blob/master/lib/src/backend/live_test.dart
+[LiveTest]: ../../test_api/lib/src/backend/live_test.dart
 
 The backend provides a bridge between the frontend and the runner. The runner
 sets up the `Declarer` and starts the `Invoker`, which the frontend functions
@@ -69,9 +69,9 @@ The [`lib/src/runner`][runner] directory contains the code that's executed when
 `dart test` is invoked. It's in charge of locating test files, loading them,
 executing them, and communicating their results to the user. It's also by far
 the biggest section. For more information on the runner architecture, see
-[Lifecycle of a Test Run](#lifecycle-of-a-test-suite) below.
+[Lifecycle of a Test Run](#lifecycle-of-a-test-run) below.
 
-[runner]: https://github.com/dart-lang/test/tree/master/lib/src/runner
+[runner]: ../../test_core/lib/src/runner/
 
 ## Lifecycle of a Test Run
 
@@ -83,9 +83,9 @@ When the user first invokes `dart test`, the command-line arguments and
 various components necessary for a test run, and connects them to one another.
 It's also in charge of handling certain `Configuration` flags.
 
-[configuration files]: https://github.com/dart-lang/test/blob/master/doc/configuration.md
-[Configuration]: https://github.com/dart-lang/test/tree/master/lib/src/runner/configuration.dart
-[Runner]: https://github.com/dart-lang/test/tree/master/lib/src/runner.dart
+[configuration files]: configuration.md
+[Configuration]: ../../test_core/lib/src/runner/configuration.dart
+[Runner]: ../../test_core/lib/src/runner.dart
 
 The first thing the runner starts is the [`Engine`][Engine]. The engine iterates
 through a test suite's tests and invokes them in order. It knows how to handle
@@ -93,7 +93,7 @@ set-up and tear-down functions, and how to combine the output of multiple test
 suites running concurrently. It exposes its progress through a collection of
 getters and streams that provide access to individual [`LiveTest`][LiveTest]s.
 
-[Engine]: https://github.com/dart-lang/test/tree/master/lib/src/runner/engine.dart
+[Engine]: ../../test_core/lib/src/runner/engine.dart
 
 The runner then passes the `Engine` to a [`Reporter`][Reporter], which listens
 to the `Engine`'s streams and exposes the information there to the user, usually
@@ -101,8 +101,8 @@ by printing human-readable text. [`CompactReporter`][CompactReporter] is the
 default on Posix platforms, but others may be selected based on the
 `Configuration`. Nearly everything the user sees comes through the reporter.
 
-[Reporter]: https://github.com/dart-lang/test/tree/master/lib/src/runner/reporter.dart
-[CompactReporter]: https://github.com/dart-lang/test/tree/master/lib/src/runner/reporter/compact.dart
+[Reporter]: ../../test_core/lib/src/runner/reporter.dart
+[CompactReporter]: ../../test_core/lib/src/runner/reporter/compact.dart
 
 The `Engine` and `Reporter` can't do much of anything, though, without any test
 suites to run. The next step is to load those suites. The [`Loader`][Loader] is
@@ -111,7 +111,7 @@ test files they contain—by default any files matching `*_test.dart`. It then
 proceeds to load each file on all the platforms specified in the `Configuration`
 that's also supported by the test suite.
 
-[Loader]: https://github.com/dart-lang/test/tree/master/lib/src/runner/loader.dart
+[Loader]: ../../test_core/lib/src/runner/loader.dart
 
 The specifics of loading suites differs based on whether the platform is a
 browser or the Dart VM. I'll cover each platform below, but for now let's stick
@@ -120,7 +120,7 @@ to what they have in common. Every platform will emit a
 single test that, when invoked, produces the actual `Suite` defined in the test
 file.
 
-[LoadSuite]: https://github.com/dart-lang/test/tree/master/lib/src/runner/load_suite.dart
+[LoadSuite]: ../../test_core/lib/src/runner/load_suite.dart
 
 Wrapping the loading process in a synthetic `Suite` gives us the very useful
 invariant that *all test errors occur within a `Suite`*. Loading can fail in all
@@ -145,8 +145,8 @@ handled by the [`VMPlatform`][VMPlatform], which extends the
 support a user-accessible platform plugin API, so we model platforms as plugins
 to prepare for that.
 
-[VMPlatform]: https://github.com/dart-lang/test/tree/master/lib/src/runner/vm/platform.dart
-[PlatformPlugin]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/platform.dart
+[VMPlatform]: ../../test_core/lib/src/runner/vm/platform.dart
+[PlatformPlugin]: ../../test_core/lib/src/runner/platform.dart
 [issue 49]: https://github.com/dart-lang/test/issues/49
 
 In its simplest form, a `PlatformPlugin`'s responsibility is just to create a
@@ -161,9 +161,9 @@ context of the [`serializeSuite()`][remote platform helpers] helper, and the
 
 [StreamChannel]: https://pub.dev/packages/stream_channel
 [Isolate]: https://api.dart.dev/stable/dart-isolate/Isolate-class.html
-[IsolateChannel]: https://pub.dev/documentation/stream_channel/latest/stream_channel/IsolateChannel-class.html
-[remote platform helpers]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/remote_platform_helpers.dart
-[platform helpers]: https://github.com/dart-lang/test/tree/master/lib/src/runner/plugin/platform_helpers.dart
+[IsolateChannel]: https://pub.dev/documentation/stream_channel/latest/isolate_channel/IsolateChannel-class.html
+[remote platform helpers]: ../../test_core/lib/src/runner/plugin/remote_platform_helpers.dart
+[platform helpers]: ../../test_core/lib/src/runner/plugin/platform_helpers.dart
 
 When a test suite is serialized and deserialized, it's not just converted to and
 from some static representation like JSON. The [`Engine`][Engine] needs
@@ -182,8 +182,8 @@ deserialized. The deserialization process then converts them into
 `Engine` can then run just like normal `Test`s in a normal [`Suite`][Suite].
 
 [MultiChannel]: https://pub.dev/documentation/stream_channel/latest/stream_channel/MultiChannel-class.html
-[RunnerTest]: https://github.com/dart-lang/test/tree/master/lib/src/runner/runner_test.dart
-[RunnerSuite]: https://github.com/dart-lang/test/tree/master/lib/src/runner/runner_suite.dart
+[RunnerTest]: ../../test_core/lib/src/runner/runner_test.dart
+[RunnerSuite]: ../../test_core/lib/src/runner/runner_suite.dart
 
 ### Loading a Suite in the Browser
 
@@ -194,8 +194,8 @@ takes more control over the loading process. It emits its own
 [`RunnerSuite`][RunnerSuite], which allows it to expose its own
 [`Environment`][Environment] to enable debugging.
 
-[BrowserPlatform]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/platform.dart
-[Environment]: https://github.com/dart-lang/test/tree/master/lib/src/runner/environment.dart
+[BrowserPlatform]: ../lib/src/runner/browser/platform.dart
+[Environment]: ../../test_core/lib/src/runner/environment.dart
 
 Whereas the [`VMPlatform`][VMPlatform] loads each separate suite in isolation,
 the `BrowserPlatform` shares a substantial amount of resources between suites.
@@ -209,8 +209,8 @@ controlled by its own [`BrowserManager`][BrowserManager], which uses
 `WebSocket`s to communicate with Dart code running in the main frame—also known
 as [the host][host].
 
-[BrowserManager]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/browser_manager.dart
-[host]: https://github.com/dart-lang/test/tree/master/lib/src/runner/browser/static/host.dart
+[BrowserManager]: ../lib/src/runner/browser/browser_manager.dart
+[host]: ../tool/host.dart
 
 Each browser is spawned with a tab pointing to
 `packages/test/src/runner/browser/static/index.html`, the host page. The host's

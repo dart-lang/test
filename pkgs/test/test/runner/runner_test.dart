@@ -317,6 +317,25 @@ $_usage''');
       await test.shouldExit(1);
     });
 
+    test('a test isolate exits before the suite loads', () async {
+      await d.file('test.dart', '''
+import 'dart:isolate';
+
+void main() => Isolate.exit();
+''').create();
+      var test = await runTest(['test.dart']);
+
+      expect(
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": '
+              'Connection closed before test suite loaded.',
+        ]),
+      );
+      await test.shouldExit(1);
+    });
+
     test('multiple load errors occur', () async {
       await d.file('test.dart', 'invalid Dart file').create();
       var test = await runTest(['test.dart', 'nonexistent.dart']);
