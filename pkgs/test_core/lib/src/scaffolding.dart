@@ -16,7 +16,8 @@ import 'runner/engine.dart';
 import 'runner/plugin/environment.dart';
 import 'runner/reporter/direct.dart';
 import 'runner/runner_suite.dart';
-import 'runner/standalone_global_setup.dart';
+import 'runner/standalone_global_setup_stub.dart'
+    if (dart.library.io) 'runner/standalone_global_setup.dart';
 import 'runner/suite.dart';
 import 'util/os.dart';
 

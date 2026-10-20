@@ -1,5 +1,7 @@
 ## 0.6.22-wip
 
+* Support `globalSetup` and `addGlobalTearDown` host runner execution and
+  caching across test suites.
 * Enable asserts in the `cli` compiler if supported.
 * Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
   loading a suite before the suite load timeout cuts it off.
@@ -31,8 +33,6 @@
 
 ## 0.6.20
 
-* Support `globalSetup` and `addGlobalTearDown` host runner execution and
-  caching across test suites.
 * Pass sanitizer environment defaults when running tests compiled as native CLI
   bundles.
 * Add support for `DART_TEST_REPORTER` environment variable.

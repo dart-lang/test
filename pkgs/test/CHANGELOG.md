@@ -1,5 +1,7 @@
 ## 1.34.0-wip
 
+* Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
+  once on the host runner and cache results across all tests and test suites.
 * Enable asserts in the `cli` compiler if supported.
 * Fix loading precompiled browser tests when the precompiled directory contains
   symlinks to files outside of it, such as the output of `build_runner test`.
@@ -46,8 +48,6 @@
 
 ## 1.32.0
 
-* Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
-  once on the host runner and cache results across all tests and test suites.
 * Precompiled browser tests: stop serving files from outside the precompiled
   root directory. The static handler no longer sets `serveFilesOutsidePath`,
   restoring path-containment parity with the dart2js and dart2wasm compilers.
