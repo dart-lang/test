@@ -96,6 +96,26 @@ void main() {
     );
   });
 
+  group('retry:', () {
+    test('reports attempts and flaky tests', () {
+      return _expectReport(
+        '''
+        var attempts = 0;
+        test('flaky', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+        }, retry: 1);
+        test('success', () {});''',
+        '''
+        +0 -1: flaky [E] (attempt 1 of 2)
+          oh no
+          test.dart 9:30  main.<fn>
+
+        Retry: flaky
+        +2: All tests passed! (1 flaky)''',
+      );
+    });
+  });
+
   group('print:', () {
     test('handles multiple prints', () {
       return _expectReport(

@@ -268,6 +268,89 @@ void main() {
     );
   });
 
+  group('retry:', () {
+    test('reports which tests were retried', () {
+      return _expectReport(
+        '''
+      var attempts = 0;
+      test('flaky', () {
+        if (++attempts == 1) throw 'oh no';
+      }, retry: 1);
+      test('failure', () => throw 'still no', retry: 1);
+      test('success', () {}, retry: 1);
+    ''',
+        [
+          [
+            suiteJson(0),
+            testStartJson(1, 'loading test.dart', groupIDs: []),
+            testDoneJson(1, hidden: true),
+          ],
+          [
+            groupJson(2, testCount: 3),
+            testStartJson(3, 'flaky', line: 7, column: 7),
+            errorJson(3, 'oh no'),
+            printJson(3, 'Retry: flaky'),
+            testDoneJson(3, retried: true),
+            testStartJson(4, 'failure', line: 11, column: 7),
+            errorJson(4, 'still no'),
+            printJson(4, 'Retry: failure'),
+            errorJson(4, 'still no'),
+            testDoneJson(4, result: 'error', retried: true),
+            testStartJson(5, 'success', line: 12, column: 7),
+            testDoneJson(5),
+          ],
+        ],
+        doneJson(success: false),
+      );
+    });
+
+    test('hides a setUpAll that passes on retry', () {
+      return _expectReport(
+        '''
+      var attempts = 0;
+      group('group', () {
+        setUpAll(() {
+          if (++attempts == 1) throw 'oh no';
+        });
+        test('test', () {});
+      }, retry: 1);
+    ''',
+        [
+          [
+            suiteJson(0),
+            testStartJson(1, 'loading test.dart', groupIDs: []),
+            testDoneJson(1, hidden: true),
+          ],
+          [
+            groupJson(2),
+            groupJson(3, name: 'group', parentID: 2, line: 7, column: 7),
+            testStartJson(
+              4,
+              'group (setUpAll)',
+              groupIDs: [2, 3],
+              line: 8,
+              column: 9,
+            ),
+            errorJson(4, 'oh no'),
+            printJson(4, 'Retry: group (setUpAll)'),
+            testDoneJson(4, hidden: true, retried: true),
+            testStartJson(
+              5,
+              'group test',
+              groupIDs: [2, 3],
+              line: 12,
+              column: 9,
+            ),
+            testDoneJson(5),
+            testStartJson(6, 'group (tearDownAll)', groupIDs: [2, 3]),
+            testDoneJson(6, hidden: true),
+          ],
+        ],
+        doneJson(),
+      );
+    });
+  });
+
   group('print:', () {
     test('handles multiple prints', () {
       return _expectReport(

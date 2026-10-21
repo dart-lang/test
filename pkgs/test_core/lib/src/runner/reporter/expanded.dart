@@ -11,6 +11,7 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'attempt_counter.dart';
 import 'failure_summary.dart';
 
 /// A reporter that prints each test on its own line.
@@ -86,6 +87,9 @@ class ExpandedReporter implements Reporter {
 
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
+
+  /// The number of attempts each test has started, for tests with `retry`.
+  final _attempts = AttemptCounter();
 
   final StringSink _sink;
 
@@ -164,6 +168,8 @@ class ExpandedReporter implements Reporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
+    _subscriptions.add(_attempts.watch(liveTest));
+
     if (liveTest.suite is! LoadSuite) {
       if (!_stopwatch.isRunning) _stopwatch.start();
 
@@ -224,7 +230,10 @@ class ExpandedReporter implements Reporter {
 
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
+    _progressLine(
+      _description(liveTest),
+      suffix: ' $_bold$_red[E]$_noColor${_attempts.describe(liveTest)}',
+    );
 
     if (error is! LoadException) {
       _sink
@@ -262,7 +271,7 @@ class ExpandedReporter implements Reporter {
           suffix: ' - did not complete $_bold$_red[E]$_noColor',
         );
       }
-      _progressLine('Some tests failed.', color: _red);
+      _progressLine('Some tests failed.', color: _red, suffix: _flakySuffix);
 
       writeFailureSummary(
         _sink,
@@ -272,9 +281,18 @@ class ExpandedReporter implements Reporter {
         noColor: _noColor,
       );
     } else if (_engine.passed.isEmpty) {
-      _progressLine('All tests skipped.');
+      _progressLine('All tests skipped.', suffix: _flakySuffix);
     } else {
-      _progressLine('All tests passed!');
+      _progressLine('All tests passed!', suffix: _flakySuffix);
+    }
+
+    if (_engine.liveTests.isNotEmpty) {
+      writeFlakySummary(
+        _sink,
+        flaky: _engine.flaky,
+        yellow: _yellow,
+        noColor: _noColor,
+      );
     }
 
     if (_shouldPrintStackTraceChainingNotice) {
@@ -286,6 +304,14 @@ class ExpandedReporter implements Reporter {
           "For example, 'dart test --chain-stack-traces'.",
         );
     }
+  }
+
+  /// The suffix for the final progress line describing flaky tests, or `null`
+  /// if no test passed on retry.
+  String? get _flakySuffix {
+    final flakyCount = _engine.flaky.length;
+    if (flakyCount == 0) return null;
+    return ' $_yellow($flakyCount flaky)$_noColor';
   }
 
   /// Prints a line representing the current state of the tests.
