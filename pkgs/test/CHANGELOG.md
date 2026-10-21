@@ -1,4 +1,5 @@
 ## 1.34.0-wip
+* Support `matcher: ^0.13.0`.
 
 * Enable asserts in the `cli` compiler if supported.
 * Fix loading precompiled browser tests when the precompiled directory contains
