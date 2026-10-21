@@ -15,6 +15,3 @@ workspace:
   - pkgs/test_core
 dev_dependencies:
   dart_flutter_team_lints: ^3.1.0
-dependency_overrides:
-  matcher:
-    path: pkgs/matcher
