@@ -26,14 +26,11 @@ void main() {
           'AppState Model and Discovery State Tests 3. Clearing search '
           'restores results';
 
+      // Returns as much of the three character `...` ellipsis as fits, and
+      // never more than the ellipsis.
       for (var maxLength in [4, 3, 2, 1, 0, -10]) {
         test('maxLength $maxLength', () {
-          var result = truncate(description, maxLength);
-          expect(
-            result.length,
-            lessThanOrEqualTo(maxLength < 0 ? 0 : maxLength),
-          );
-          expect(result, matches(RegExp(r'^\.*$')));
+          expect(truncate(description, maxLength), '.' * maxLength.clamp(0, 3));
         });
       }
     });

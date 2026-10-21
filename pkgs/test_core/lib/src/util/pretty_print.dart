@@ -37,16 +37,16 @@ String truncate(String text, int maxLength) {
   // Return the full message if it fits.
   if (text.length <= maxLength) return text;
 
-  // If there's no room for any text after the ellipsis, as in a very narrow
-  // terminal, return as much of the ellipsis as fits.
-  const ellipsisLength = 3;
-  if (maxLength <= ellipsisLength) return '.' * maxLength;
+  // The fallbacks below need at least `ellipsis.length` characters. With less
+  // room, as in a very narrow terminal, return as much of the ellipsis as fits.
+  const ellipsis = ' ...';
+  if (maxLength < ellipsis.length) return '.' * maxLength;
 
   // If we can fit the first and last three words, do so.
   var words = text.split(' ');
   if (words.length > 1) {
     var i = words.length;
-    var length = words.first.length + 4;
+    var length = words.first.length + ellipsis.length;
     do {
       i--;
       length += 1 + words[i].length;
@@ -56,7 +56,7 @@ String truncate(String text, int maxLength) {
       // Require at least 3 words at the end.
       var buffer = StringBuffer();
       buffer.write(words.first);
-      buffer.write(' ...');
+      buffer.write(ellipsis);
       for (; i < words.length; i++) {
         buffer.write(' ');
         buffer.write(words[i]);
@@ -67,7 +67,7 @@ String truncate(String text, int maxLength) {
 
   // Otherwise truncate to return the trailing text, but attempt to start at
   // the beginning of a word.
-  var result = text.substring(text.length - maxLength + 4);
+  var result = text.substring(text.length - maxLength + ellipsis.length);
   var firstSpace = result.indexOf(' ');
   if (firstSpace > 0) {
     result = result.substring(firstSpace);
