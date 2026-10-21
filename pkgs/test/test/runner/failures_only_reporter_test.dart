@@ -108,7 +108,7 @@ void main() {
         '''
         +0 -1: flaky [E] (attempt 1 of 2)
           oh no
-          test.dart 9:30  main.<fn>
+          test.dart 8:32  main.<fn>
 
         Retry: flaky
         +2: All tests passed! (1 flaky)''',

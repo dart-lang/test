@@ -531,7 +531,7 @@ void main() {
         +0: flaky
         +0 -1: flaky [E] (attempt 1 of 2)
           oh no
-          test.dart 9:30  main.<fn>
+          test.dart 8:32  main.<fn>
 
         Retry: flaky
         +1: success
@@ -556,18 +556,18 @@ void main() {
         +0: flaky
         +0 -1: flaky [E] (attempt 1 of 2)
           oh no
-          test.dart 9:30  main.<fn>
+          test.dart 8:32  main.<fn>
 
         Retry: flaky
         +1: failure
         +1 -1: failure [E] (attempt 1 of 2)
           still no
-          test.dart 11:31  main.<fn>
+          test.dart 10:31  main.<fn>
 
         Retry: failure
         +1 -1: failure [E] (attempt 2 of 2)
           still no
-          test.dart 11:31  main.<fn>
+          test.dart 10:31  main.<fn>
 
         +1 -1: Some tests failed. (1 flaky)
 

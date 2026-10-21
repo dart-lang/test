@@ -461,7 +461,7 @@ void main() {
         '''
           ::group::⚠️ flaky (passed on attempt 2 of 3)
           oh no
-          test.dart 9:32  main.<fn>
+          test.dart 8:34  main.<fn>
           Retry: flaky
           ::endgroup::
           ::group::✅ Passing tests
@@ -484,7 +484,7 @@ void main() {
         '''
           ::group::⚠️ group (setUpAll) (passed on attempt 2 of 2)
           oh no
-          test.dart 10:34  main.<fn>.<fn>
+          test.dart 9:36  main.<fn>.<fn>
           Retry: group (setUpAll)
           ::endgroup::
           ::group::✅ Passing tests
@@ -507,15 +507,15 @@ void main() {
         '''
           ::group::⚠️ flaky (passed on attempt 2 of 2)
           oh no
-          test.dart 9:32  main.<fn>
+          test.dart 8:34  main.<fn>
           Retry: flaky
           ::endgroup::
           ::group::❌ failure (failed after 2 attempts)
           still no
-          test.dart 11:33  main.<fn>
+          test.dart 10:33  main.<fn>
           Retry: failure
           still no
-          test.dart 11:33  main.<fn>
+          test.dart 10:33  main.<fn>
           ::endgroup::
           ::group::✅ Passing tests
           ✅ stable
