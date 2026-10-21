@@ -1,3 +1,7 @@
+## 0.13.0-wip
+
+* *Breaking change*: Removed `mirror_matchers.dart` and `MirrorMatchers`.
+
 ## 0.12.21-wip
 
 * Add a runnable example for every matcher, linked from its documentation, and
