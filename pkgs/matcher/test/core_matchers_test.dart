@@ -136,6 +136,27 @@ void main() {
     );
   });
 
+  test('matchers that throw expose the exception', () {
+    for (var matcher in [
+      equals(_ThrowingEquals()),
+      allOf(equals(_ThrowingEquals())),
+      everyElement(equals(_ThrowingEquals())),
+    ]) {
+      expect(
+        () {
+          expect([0], matcher);
+        },
+        throwsA(
+          isA<TestFailure>().having(
+            (e) => e.message,
+            'message',
+            contains(_ThrowingEquals.message),
+          ),
+        ),
+      );
+    }
+  });
+
   test('anything', () {
     var a = <Object?, Object?>{};
     shouldPass(0, anything);
