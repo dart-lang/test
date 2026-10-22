@@ -1,5 +1,7 @@
 ## 1.34.0-wip
 
+* Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
+  once on the host runner and cache results across all tests and test suites.
 * Enable asserts in the `cli` compiler if supported.
 * Fix a `RangeError` crash in the compact reporter when the terminal is too
   narrow to fit a test's description.
