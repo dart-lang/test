@@ -14,7 +14,7 @@ import 'package:test_api/backend.dart';
 ///
 /// This must not import `dart:io`, because it's used by reporters that are
 /// available when test files are run directly.
-class AttemptCounter {
+final class AttemptCounter {
   final _attempts = <LiveTest, int>{};
 
   /// Tests whose final attempt has finished.
