@@ -515,6 +515,128 @@ void main() {
       );
     });
   });
+
+  group('retry:', () {
+    test('reports attempts and flaky tests', () async {
+      await _expectReport(
+        '''
+        var attempts = 0;
+        test('flaky', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+        }, retry: 1);
+        test('success', () {});
+      ''',
+        '''
+        +0: loading test.dart
+        +0: flaky
+        +0 -1: flaky [E] (attempt 1 of 2)
+          oh no
+          test.dart 8:32  main.<fn>
+
+        Retry: flaky
+        +1: success
+        +2: All tests passed! (1 flaky)
+
+        Flaky tests (passed on retry):
+          test.dart: flaky''',
+      );
+    });
+
+    test('reports flaky tests alongside failing tests', () async {
+      await _expectReport(
+        '''
+        var attempts = 0;
+        test('flaky', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+        }, retry: 1);
+        test('failure', () => throw TestFailure('still no'), retry: 1);
+      ''',
+        '''
+        +0: loading test.dart
+        +0: flaky
+        +0 -1: flaky [E] (attempt 1 of 2)
+          oh no
+          test.dart 8:32  main.<fn>
+
+        Retry: flaky
+        +1: failure
+        +1 -1: failure [E] (attempt 1 of 2)
+          still no
+          test.dart 10:31  main.<fn>
+
+        Retry: failure
+        +1 -1: failure [E] (attempt 2 of 2)
+          still no
+          test.dart 10:31  main.<fn>
+
+        +1 -1: Some tests failed. (1 flaky)
+
+        Failing tests:
+          test.dart: failure
+
+        Flaky tests (passed on retry):
+          test.dart: flaky''',
+      );
+    });
+
+    test('does not report attempts with --no-retry', () async {
+      await _expectReport(
+        '''
+        test('failure', () => throw TestFailure('oh no'), retry: 1);
+      ''',
+        '''
+        +0: loading test.dart
+        +0: failure
+        +0 -1: failure [E]
+          oh no
+          test.dart 6:31  main.<fn>
+
+        +0 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: failure''',
+        args: ['--no-retry'],
+      );
+    });
+
+    test('does not report an attempt for errors after completion', () async {
+      await _expectReport(
+        '''
+        test('fail after completion', () {
+          Future(() {
+            Zone.current.handleUncaughtError('foo', StackTrace.current);
+          });
+        }, retry: 1);
+
+        test('second test so that the first failure is reported', () {});
+      ''',
+        '''
+        +0: loading test.dart
+        +0: fail after completion
+        +1: second test so that the first failure is reported
+        +0 -1: second test so that the first failure is reported
+        +0 -1: fail after completion [E]
+          foo
+          test.dart 8:64  main.<fn>.<fn>
+          ===== asynchronous gap ===========================
+          dart:async      new Future
+          test.dart 7:11  main.<fn>
+
+          This test failed after it had already completed.
+          Make sure to use a matching library which informs the test runner
+          of pending async work.
+          test.dart 8:64  main.<fn>.<fn>
+          ===== asynchronous gap ===========================
+          dart:async      new Future
+          test.dart 7:11  main.<fn>
+
+        +1 -1: Some tests failed.
+
+        Failing tests:
+          test.dart: fail after completion''',
+      );
+    });
+  });
 }
 
 Future<void> _expectReport(
