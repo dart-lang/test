@@ -18,6 +18,7 @@ import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
 import 'attempt_counter.dart';
+import 'failure_summary.dart';
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
@@ -381,11 +382,8 @@ class CompactReporter implements Reporter {
 
   /// The suffix for the final progress line describing flaky tests, or `null`
   /// if no test passed on retry.
-  String? get _flakySuffix {
-    final flakyCount = _engine.flaky.length;
-    if (flakyCount == 0) return null;
-    return ' $_yellow($flakyCount flaky)$_noColor';
-  }
+  String? get _flakySuffix =>
+      flakySuffix(_engine.flaky.length, yellow: _yellow, noColor: _noColor);
 
   /// Prints a line representing the current state of the tests.
   ///

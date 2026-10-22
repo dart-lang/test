@@ -22,12 +22,15 @@ final class AttemptCounter {
 
   /// Starts tracking attempts for [liveTest].
   ///
-  /// This must be called before [liveTest] starts running, for example from a
-  /// listener on `Engine.onTestStarted`. The returned subscription should be
-  /// canceled along with the reporter's other subscriptions.
+  /// This should be called before [liveTest] starts running, for example from
+  /// a listener on `Engine.onTestStarted`. If it's called later, the attempt
+  /// that is already running or complete counts as the first one. The returned
+  /// subscription should be canceled along with the reporter's other
+  /// subscriptions.
   StreamSubscription<State> watch(LiveTest liveTest) {
     liveTest.onComplete.then((_) => _finished.add(liveTest));
     var previous = liveTest.state.status;
+    if (previous != Status.pending) _attempts[liveTest] = 1;
     return liveTest.onStateChange.listen((state) {
       if (state.status == Status.running && previous != Status.running) {
         _attempts[liveTest] = (_attempts[liveTest] ?? 0) + 1;

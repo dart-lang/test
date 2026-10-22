@@ -196,14 +196,20 @@ class GithubReporter implements Reporter {
         _sink.writeln(_GithubMarkup.endGroup);
         _inPassingGroup = false;
       }
-      // A test that passed on retry still has the errors from its failed
-      // attempts. Show them, but don't present the test as a failure.
+      // A test that passed or was skipped on retry still has the errors from
+      // its failed attempts. Show them, but don't present the test as a
+      // failure.
       final attempts = _attempts.attemptsFor(test);
       final maxAttempts = test.test.metadata.retry + 1;
       final String title;
-      if (_engine.flaky.contains(test)) {
+      if (skipped) {
         // The attempt count is only missing if the reporter missed the test's
         // first state change, for example while paused.
+        title = attempts == 0
+            ? '${_GithubMarkup.skipped} $name (skipped on retry)'
+            : '${_GithubMarkup.skipped} $name '
+                  '(skipped on attempt $attempts of $maxAttempts)';
+      } else if (_engine.flaky.contains(test)) {
         title = attempts == 0
             ? '${_GithubMarkup.flaky} $name (passed on retry)'
             : '${_GithubMarkup.flaky} $name '

@@ -540,6 +540,25 @@ void main() {
         args: ['--no-retry'],
       );
     });
+
+    test('reports a test that fails and is skipped on retry as skipped', () {
+      return _expectReport(
+        '''
+          var attempts = 0;
+          test('skipped on retry', () {
+            if (++attempts == 1) throw 'oh no';
+            markTestSkipped('not this time');
+          }, retry: 1);''',
+        '''
+          ::group::⏭️ skipped on retry (skipped on attempt 2 of 2)
+          oh no
+          test.dart 8:34  main.<fn>
+          Retry: skipped on retry
+          not this time
+          ::endgroup::
+          🎉 0 tests passed, 1 skipped.''',
+      );
+    });
   });
 }
 

@@ -7,6 +7,18 @@ import 'package:test_api/backend.dart';
 /// The maximum number of individual failing tests to list in the summary.
 const maxFailureSummaryCount = 5;
 
+/// The suffix for a reporter's final progress line describing [flakyCount]
+/// tests that passed on retry, such as ` (2 flaky)`, or `null` if
+/// [flakyCount] is 0.
+String? flakySuffix(
+  int flakyCount, {
+  required String yellow,
+  required String noColor,
+}) {
+  if (flakyCount == 0) return null;
+  return ' $yellow($flakyCount flaky)$noColor';
+}
+
 /// Writes a summary of failed and incomplete tests to [sink].
 ///
 /// [failed] are tests that completed with a failure or error. [active] are

@@ -11,22 +11,23 @@
   regardless of `suite_load_timeout`. Without a `suite_load_timeout`, loading a
   browser suite no longer times out, matching other platforms.
 * Report tests that fail and then pass on retry as flaky in every reporter.
-  Previously a `setUpAll` or `tearDownAll` that passed on retry was still
-  counted as failed in the summary, even though the run succeeded. A test that
-  fails and is then skipped on retry is now counted only as skipped.
+  Previously a `setUpAll` that passed on retry was still counted as failed in
+  the summary, even though the run succeeded. A test that fails and is then
+  skipped on retry is now counted only as skipped.
   * The compact, expanded, and failures-only reporters show which attempt
     failed, for example `[E] (attempt 1 of 2)`, and add a flaky count to the
     final line. The expanded reporter also lists the flaky tests.
   * The GitHub reporter shows a test that passed on retry as
     `⚠️ <name> (passed on attempt N of M)`, adds a flaky count to the summary,
     and uses a `::warning::` annotation when the only problems are flaky tests.
+    A test that fails and is then skipped on retry is shown as skipped.
   * The GitHub reporter prints the output and errors within each test's group
     in the order they were emitted, for all tests. Previously all printed
     output came first, so output from `printOnFailure` and `tearDown` appeared
     before the error that caused it.
   * The JSON reporter adds a `retried` field to `testDone` events and reports
-    protocol version 0.1.2. A `setUpAll` or `tearDownAll` that passes on retry
-    is now hidden, as the protocol documents.
+    protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden,
+    as the protocol documents.
 
 ## 1.33.0
 
