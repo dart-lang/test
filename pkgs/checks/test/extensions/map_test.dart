@@ -16,8 +16,8 @@ void main() {
   test('entries', () {
     check(_testMap).entries.any(
       .it()
-        ..has((p0) => p0.key, 'key').equals('a')
-        ..has((p0) => p0.value, 'value').equals(1),
+        ..has('key', (p0) => p0.key).equals('a')
+        ..has('value', (p0) => p0.value).equals(1),
     );
   });
   test('keys', () {
