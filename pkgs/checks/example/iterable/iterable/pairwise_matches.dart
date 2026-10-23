@@ -21,7 +21,7 @@ void main() {
     // Actual: [2, 4, 6]
     // Which: does not have an element at index 2 that:
     //   is greater than <7>
-    //   Actual element at index 2: <6>
+    //   Actual: <6>
     //   Which: is not greater than <7>
   });
 }

@@ -78,6 +78,23 @@
   `MapChecks.containsValueThat` to a single line when the condition describes
   in a single line and the result fits within 80 columns, for example
   `Expected: an iterable containing a value that is greater than <7>`.
+- Fix the failure details from `Condition.softCheck` when a precondition such
+  as `isA<T>()` is rejected and further expectations follow it. The last
+  expectation was treated as the one that failed, which triggered an assertion
+  error, or attributed the rejection to the wrong expectation. This could be
+  seen in the failure message for `IterableChecks.every`.
+- Fix the failure message for `IterableChecks.every` to keep the nested
+  property for the element that failed, for example
+  `Actual: has field: 'foo'` instead of `Actual: 'foo'`.
+- Add `CheckFailure.describeNested` to describe a failure from soft checking
+  a condition within the `which` of another `Rejection`, in the same format
+  as a failure message from `check`.
+- Use the format of a failure message from `check` for the conditions that
+  failed in `StreamChecks.inOrder`, `StreamChecks.anyOf`, and
+  `IterableChecks.pairwiseMatches`. Each failure now has an `Actual:` line,
+  which `inOrder` and `anyOf` previously omitted when the condition failed
+  without collapsing to a single line, and `inOrder` and `anyOf` no longer
+  repeat the `Expected:` description of the condition.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2
