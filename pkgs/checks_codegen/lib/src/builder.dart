@@ -6,9 +6,13 @@ import 'dart:async';
 
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
-import 'package:code_builder/code_builder.dart' hide FunctionType;
+import 'package:code_builder/code_builder.dart' hide FunctionType, RecordType;
+import 'package:code_builder/code_builder.dart'
+    as cb
+    show FunctionType, RecordType;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart' as source_gen show LibraryBuilder;
@@ -104,16 +108,20 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
       );
     }
     final element = type.element;
-    final import = await _findImportFor(
-      imports,
-      element,
-      resolver,
-      entryAssetPath,
+    Future<String?> importFor(Element element) =>
+        _findImportFor(imports, element, resolver, entryAssetPath);
+    final import = await importFor(element);
+    // The extension is on the raw type, so field types are read from the type
+    // instantiated to bounds to match the static type of `v.field`.
+    final rawType = element.library.typeSystem.instantiateInterfaceToBounds(
+      element: element,
+      nullabilitySuffix: NullabilitySuffix.none,
     );
     final hasGetters = await Future.wait([
       for (final field in element.fields)
         if (_isCheckableField(field))
-          _createHasGetter(imports, field, resolver, entryAssetPath),
+          if (rawType.getGetter(field.name!) case final getter?)
+            _createHasGetter(field.name!, getter.returnType, importFor),
     ]);
     return Extension(
       (b) => b
@@ -129,29 +137,14 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
   }
 
   bool _isCheckableField(FieldElement field) =>
-      field.name != 'hashCode' &&
-      !field.isStatic &&
-      field.type is! FunctionType;
+      field.name != 'hashCode' && !field.isStatic;
 
   Future<Method> _createHasGetter(
-    List<LibraryElement> imports,
-    FieldElement field,
-    Resolver resolver,
-    String entryAssetPath,
+    String name,
+    DartType type,
+    Future<String?> Function(Element) importFor,
   ) async {
-    final type = field.type;
-    if (type is! InterfaceType) {
-      throw InvalidGenerationSourceError(
-        'Only interface types may be used for checks extensions:: $type',
-      );
-    }
-    final import = await _findImportFor(
-      imports,
-      type.element,
-      resolver,
-      entryAssetPath,
-    );
-    final name = field.name!;
+    final typeReference = await _typeReference(type, importFor);
     return Method(
       (b) => b
         ..name = name
@@ -160,7 +153,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
           (b) => b
             ..symbol = 'Subject'
             ..url = 'package:checks/context.dart'
-            ..types.add(refer(field.type.getDisplayString(), import)),
+            ..types.add(typeReference),
         )
         ..lambda = true
         ..body = refer('has').call([
@@ -172,6 +165,126 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
           ).closure,
           literalString(name),
         ]).code,
+    );
+  }
+
+  /// A reference to [type] which imports the libraries for every element
+  /// referenced within [type].
+  ///
+  /// The only type parameters which may be referenced within [type] are those
+  /// of generic function types within [type], which are in scope where they
+  /// are referenced.
+  static Future<Reference> _typeReference(
+    DartType type,
+    Future<String?> Function(Element) importFor,
+  ) async {
+    final isNullable = type.nullabilitySuffix == NullabilitySuffix.question;
+    return switch (type) {
+      DynamicType() => refer('dynamic'),
+      VoidType() => refer('void'),
+      NeverType() => TypeReference(
+        (b) => b
+          ..symbol = 'Never'
+          ..url = 'dart:core'
+          ..isNullable = isNullable,
+      ),
+      InterfaceType() => await _interfaceTypeReference(type, importFor),
+      TypeParameterType(:final element) => TypeReference(
+        (b) => b
+          ..symbol = element.name
+          ..isNullable = isNullable,
+      ),
+      FunctionType() => await _functionTypeReference(type, importFor),
+      RecordType() => await _recordTypeReference(type, importFor),
+      _ => throw InvalidGenerationSourceError(
+        'Failed to resolve the type $type. '
+        'Check for a missing build dependency.',
+      ),
+    };
+  }
+
+  static Future<Reference> _interfaceTypeReference(
+    InterfaceType type,
+    Future<String?> Function(Element) importFor,
+  ) async {
+    final import = await importFor(type.element);
+    final types = [
+      for (final typeArgument in type.typeArguments)
+        await _typeReference(typeArgument, importFor),
+    ];
+    return TypeReference(
+      (b) => b
+        ..symbol = type.element.name
+        ..url = import
+        ..types.addAll(types)
+        ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
+    );
+  }
+
+  static Future<Reference> _functionTypeReference(
+    FunctionType type,
+    Future<String?> Function(Element) importFor,
+  ) async {
+    final typeParameters = <Reference>[];
+    for (final typeParameter in type.typeParameters) {
+      final bound = typeParameter.bound;
+      final boundReference = bound == null
+          ? null
+          : await _typeReference(bound, importFor);
+      typeParameters.add(
+        TypeReference(
+          (b) => b
+            ..symbol = typeParameter.name
+            ..bound = boundReference,
+        ),
+      );
+    }
+    final returnType = await _typeReference(type.returnType, importFor);
+    final requiredParameters = <Reference>[];
+    final optionalParameters = <Reference>[];
+    final namedParameters = <String, Reference>{};
+    final namedRequiredParameters = <String, Reference>{};
+    for (final parameter in type.formalParameters) {
+      final parameterType = await _typeReference(parameter.type, importFor);
+      if (parameter.isRequiredPositional) {
+        requiredParameters.add(parameterType);
+      } else if (parameter.isOptionalPositional) {
+        optionalParameters.add(parameterType);
+      } else if (parameter.isRequiredNamed) {
+        namedRequiredParameters[parameter.name!] = parameterType;
+      } else {
+        namedParameters[parameter.name!] = parameterType;
+      }
+    }
+    return cb.FunctionType(
+      (b) => b
+        ..returnType = returnType
+        ..types.addAll(typeParameters)
+        ..requiredParameters.addAll(requiredParameters)
+        ..optionalParameters.addAll(optionalParameters)
+        ..namedParameters.addAll(namedParameters)
+        ..namedRequiredParameters.addAll(namedRequiredParameters)
+        ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
+    );
+  }
+
+  static Future<Reference> _recordTypeReference(
+    RecordType type,
+    Future<String?> Function(Element) importFor,
+  ) async {
+    final positionalFieldTypes = [
+      for (final field in type.positionalFields)
+        await _typeReference(field.type, importFor),
+    ];
+    final namedFieldTypes = {
+      for (final field in type.namedFields)
+        field.name: await _typeReference(field.type, importFor),
+    };
+    return cb.RecordType(
+      (b) => b
+        ..positionalFieldTypes.addAll(positionalFieldTypes)
+        ..namedFieldTypes.addAll(namedFieldTypes)
+        ..isNullable = type.nullabilitySuffix == NullabilitySuffix.question,
     );
   }
 
