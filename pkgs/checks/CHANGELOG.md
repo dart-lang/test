@@ -27,6 +27,10 @@
     - `isNotNegative`
     - `isNull`
     - `isTrue`
+- Add `has2`, which takes the `name` argument before the `extract` callback.
+  This is a temporary API to allow migrating usages incrementally before the
+  arguments to `has` are swapped to the same order. `has2` will be removed
+  before this version is published.
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and
