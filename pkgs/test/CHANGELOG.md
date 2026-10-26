@@ -1,5 +1,6 @@
 ## 1.34.0-wip
 
+* Support `matcher: ^0.13.0`.
 * Enable asserts in the `cli` compiler if supported.
 * Fix a `RangeError` crash in the compact reporter when the terminal is too
   narrow to fit a test's description.
