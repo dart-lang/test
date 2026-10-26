@@ -40,15 +40,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     () => ['has last element'],
     addPredicate: (predicateNoun) => 'has last element: $predicateNoun',
     (actual) {
-      final iterator = actual.iterator;
-      if (!iterator.moveNext()) {
+      if (actual.isEmpty) {
         return Extracted.rejection(which: ['has no elements']);
       }
-      var current = iterator.current;
-      while (iterator.moveNext()) {
-        current = iterator.current;
-      }
-      return Extracted.value(current);
+      return Extracted.value(actual.last);
     },
   );
 
