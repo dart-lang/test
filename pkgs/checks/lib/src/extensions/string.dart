@@ -74,6 +74,7 @@ extension StringChecks on Subject<String> {
       },
       (actual) {
         if (actual.startsWith(other)) return null;
+        if (other is String) return _findDifference(actual, other);
         return Rejection(
           which: prefixFirst('does not start with ', literal(other)),
         );

@@ -164,7 +164,10 @@ void main() {
       ).isNotNull().deepEquals([
         "has an element at ['a'] that:",
         "  Actual: 'b'",
-        "  Which: does not start with 'a'",
+        '  Which: differs at offset 0:',
+        '    a',
+        '    b',
+        '    ^',
       ]);
     });
 

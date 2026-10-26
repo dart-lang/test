@@ -1,6 +1,9 @@
 ## 0.4.1-wip
 
 - Add a data driven fix to replace `AsyncCondition` with `Condition`.
+- Report the offset of the first differing character in the failure message
+  for `StringChecks.startsWith` with a `String` argument, in the same style as
+  `StringChecks.equals`.
 
 ## 0.4.0
 
