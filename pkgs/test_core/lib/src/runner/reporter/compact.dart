@@ -17,6 +17,8 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'attempt_counter.dart';
+import 'failure_summary.dart';
 
 /// A reporter that prints test results to the console in a single
 /// continuously-updating line.
@@ -108,6 +110,9 @@ class CompactReporter implements Reporter {
 
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
+
+  /// The number of attempts each test has started, for tests with `retry`.
+  final _attempts = AttemptCounter();
 
   final StringSink _sink;
 
@@ -216,6 +221,8 @@ class CompactReporter implements Reporter {
       _progressLine(_description(liveTest));
     }
 
+    _subscriptions.add(_attempts.watch(liveTest));
+
     _subscriptions.add(
       liveTest.onStateChange.listen((state) => _onStateChange(liveTest, state)),
     );
@@ -281,7 +288,7 @@ class CompactReporter implements Reporter {
     _progressLine(
       _description(liveTest),
       truncate: false,
-      suffix: ' $_bold$_red[E]$_noColor',
+      suffix: ' $_bold$_red[E]$_noColor${_attempts.describe(liveTest)}',
     );
     if (!_printedNewline) _sink.writeln('');
     _printedNewline = true;
@@ -339,13 +346,16 @@ class CompactReporter implements Reporter {
         );
         _sink.writeln('');
       }
-      _progressLine('Some tests failed.', color: _red);
+      _progressLine('Some tests failed.', color: _red, suffix: _flakySuffix);
       _sink.writeln('');
     } else if (_engine.passed.isEmpty) {
-      _progressLine('${_yellow}All tests skipped.$_noColor');
+      _progressLine(
+        '${_yellow}All tests skipped.$_noColor',
+        suffix: _flakySuffix,
+      );
       _sink.writeln('');
     } else if (_engine.skipped.isEmpty) {
-      _progressLine('All tests passed!');
+      _progressLine('All tests passed!', suffix: _flakySuffix);
       _sink.writeln('');
     } else {
       final skippedCount = _engine.skipped.length;
@@ -355,7 +365,7 @@ class CompactReporter implements Reporter {
         '$_noColor',
       );
       _sink.writeln('');
-      _progressLine('All other tests passed!');
+      _progressLine('All other tests passed!', suffix: _flakySuffix);
       _sink.writeln('');
     }
 
@@ -369,6 +379,11 @@ class CompactReporter implements Reporter {
         );
     }
   }
+
+  /// The suffix for the final progress line describing flaky tests, or `null`
+  /// if no test passed on retry.
+  String? get _flakySuffix =>
+      flakySuffix(_engine.flaky.length, yellow: _yellow, noColor: _noColor);
 
   /// Prints a line representing the current state of the tests.
   ///
