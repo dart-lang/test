@@ -31,6 +31,14 @@
   * The JSON reporter adds a `retried` field to `testDone` events and reports
     protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden,
     as the protocol documents.
+* When a browser fails to connect, report each attempt: how long it waited,
+  whether the browser process was still running, the command used to start it,
+  the requests it made to the test server, and its output.
+* Give a browser until shortly before the `suite_load_timeout` to connect,
+  instead of 30 seconds for each of up to 3 attempts. A browser that exits
+  before connecting is still replaced, up to 3 attempts, while time remains.
+  Without a `suite_load_timeout`, connecting to a browser no longer times out.
+* Print console output from pages in Firefox to the browser output.
 
 ## 1.33.0
 

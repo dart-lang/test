@@ -28,18 +28,17 @@ class Safari extends Browser {
       );
 
   /// Starts a new instance of Safari open to the given [url].
-  static Future<Process> _startBrowser(
+  ///
+  /// Returns the `safaridriver` process and the command line used to start it.
+  static Future<(Process, String)> _startBrowser(
     Uri url,
     ExecutableSettings settings,
   ) async {
     var port = await getUnusedPort<int>((p) async => p);
+    var args = [...settings.arguments, '--port', port.toString()];
     Process process;
     try {
-      process = await Process.start(settings.executable, [
-        ...settings.arguments,
-        '--port',
-        port.toString(),
-      ]);
+      process = await Process.start(settings.executable, args);
     } catch (e) {
       throw ApplicationException(
         'Failed to start safaridriver: ${getErrorMessage(e)}.\n\n'
@@ -92,7 +91,7 @@ class Safari extends Browser {
 
     unawaited(connect());
 
-    return process;
+    return (process, [settings.executable, ...args].join(' '));
   }
 }
 
