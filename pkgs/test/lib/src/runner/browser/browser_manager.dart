@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:pool/pool.dart';
@@ -257,13 +258,12 @@ class BrowserManager {
     Browser browser,
     List<String>? requests,
   ) {
-    var process = browser.process;
-    var exitCode = browser.exitCode;
-    var processState = process == null
-        ? 'not started'
-        : exitCode == null
-        ? 'pid ${process.pid}, still running'
-        : 'pid ${process.pid}, exited with code $exitCode';
+    var processState = switch ((browser.process, browser.exitCode)) {
+      (Process(:final pid), final exitCode?) =>
+        'pid $pid, exited with code $exitCode',
+      (Process(:final pid), null) => 'pid $pid, still running',
+      (null, _) => 'not started',
+    };
     var output = browser.accumulatedOutput;
     return [
       'Attempt $attempt: $outcome after '
