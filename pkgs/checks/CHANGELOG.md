@@ -10,6 +10,12 @@
     `Condition.it<SomeType>()..someCheck()`.
   - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
     top level methods in favor of the instance members on `Condition`.
+  - Swap the positional arguments to `has` so the name comes first:
+    `has((v) => v.property, 'property')` becomes
+    `has('property', (v) => v.property)`. A data driven fix is included, so
+    `dart fix --apply` will update most call sites. Call sites where the
+    extractor argument is statically `dynamic` produce no analysis error and
+    will not be updated by the fix; these need to be found manually.
   - Expectation extension methods which take no arguments have been changed to
     getters:
     - `doesNotComplete`

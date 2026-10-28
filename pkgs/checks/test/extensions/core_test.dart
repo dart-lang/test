@@ -36,17 +36,17 @@ void main() {
   group('HasField', () {
     group('has', () {
       test('happy case', () {
-        check(1).has((v) => v.isOdd, 'isOdd').isTrue;
+        check(1).has('isOdd', (v) => v.isOdd).isTrue;
       });
       test('failure case', () {
         check(null).isRejectedBy(
           .it()
-            ..has((v) {
+            ..has('foo', (v) {
               Error.throwWithStackTrace(
                 UnimplementedError(),
                 StackTrace.fromString('fake trace'),
               );
-            }, 'foo').isNotNull(),
+            }).isNotNull(),
           which: [
             'threw while trying to read foo: <UnimplementedError> at:',
             '  fake trace',
@@ -54,7 +54,7 @@ void main() {
         );
       });
       test('returns valid subject', () {
-        check(1).has((v) => v.isOdd, 'isOdd').isTrue;
+        check(1).has('isOdd', (v) => v.isOdd).isTrue;
       });
     });
 

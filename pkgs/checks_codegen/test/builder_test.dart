@@ -59,9 +59,9 @@ abstract class Bar {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<_i3.Bar> get barField => '
-            "has((v) => v.barField, 'barField');",
-        '  _i1.Subject<int> get intField => has((v) => '
-            "v.intField, 'intField');",
+            "has('barField', (v) => v.barField);",
+        "  _i1.Subject<int> get intField => has('intField', (v) => "
+            'v.intField);',
         '}',
       ]);
     });
@@ -103,9 +103,9 @@ abstract class Bar {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<_i3.Bar> get barField => '
-            "has((v) => v.barField, 'barField');",
+            "has('barField', (v) => v.barField);",
         '  _i1.Subject<int> get intField => '
-            "has((v) => v.intField, 'intField');",
+            "has('intField', (v) => v.intField);",
         '}',
       ]);
     });
@@ -197,8 +197,8 @@ abstract class Foo {
           "import 'package:checks/context.dart' as _i1;",
           "import 'foo.dart' as _i2;",
           'extension FooChecks on _i1.Subject<_i2.Foo> {',
-          '  _i1.Subject<int> get intField => has((v) => '
-              "v.intField, 'intField');",
+          "  _i1.Subject<int> get intField => has('intField', (v) => "
+              'v.intField);',
           '}',
         ])
         ..not(.it()..contains('functionField'))

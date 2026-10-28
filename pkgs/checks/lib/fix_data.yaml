@@ -1,0 +1,45 @@
+version: 1
+transforms:
+  # Matches `has(...)` invoked without a target (e.g. inside an extension on
+  # Subject), where the matcher derives the container from the resolved element.
+  - title: "Swap the arguments to 'has'"
+    date: 2026-09-18
+    element:
+      uris: ['package:checks/checks.dart', 'package:checks/context.dart']
+      method: 'has'
+      inExtension: 'CoreChecks'
+    changes:
+      - kind: 'addParameter'
+        index: 0
+        name: 'name'
+        style: required_positional
+        argumentValue:
+          expression: '{% name %}'
+      - kind: 'removeParameter'
+        index: 1
+    variables:
+      name:
+        kind: 'fragment'
+        value: 'arguments[1]'
+
+  # Matches `subject.has(...)`, where the matcher derives the container from the
+  # static type of the target rather than from the extension.
+  - title: "Swap the arguments to 'has'"
+    date: 2026-09-18
+    element:
+      uris: ['package:checks/checks.dart', 'package:checks/context.dart']
+      method: 'has'
+      inClass: 'Subject'
+    changes:
+      - kind: 'addParameter'
+        index: 0
+        name: 'name'
+        style: required_positional
+        argumentValue:
+          expression: '{% name %}'
+      - kind: 'removeParameter'
+        index: 1
+    variables:
+      name:
+        kind: 'fragment'
+        value: 'arguments[1]'
