@@ -600,9 +600,6 @@ void main() {
     });
 
     test('does not report an attempt for errors after completion', () async {
-      // The second test triggers the first test's error. If the first test
-      // scheduled the error itself, it could reach the runner before the
-      // second test starts, which changes the progress lines.
       await _expectReport(
         '''
         var secondTestStarted = Completer<void>();
