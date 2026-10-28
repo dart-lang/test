@@ -163,14 +163,14 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
             ..types.add(refer(field.type.getDisplayString(), import)),
         )
         ..lambda = true
-        ..body = refer('has').call([
+        ..body = refer('has2').call([
+          literalString(name),
           Method(
             (b) => b
               ..lambda = true
               ..requiredParameters.add(Parameter((b) => b..name = 'v'))
               ..body = refer('v').property(name).code,
           ).closure,
-          literalString(name),
         ]).code,
     );
   }
