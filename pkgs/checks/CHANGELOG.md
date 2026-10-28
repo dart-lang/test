@@ -82,6 +82,9 @@
   `MapChecks.containsValueThat` to a single line when the condition describes
   in a single line and the result fits within 80 columns, for example
   `Expected: an iterable containing a value that is greater than <7>`.
+- Report the offset of the first differing character in the failure message
+  for `StringChecks.startsWith` with a `String` argument, in the same style as
+  `StringChecks.equals`.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2

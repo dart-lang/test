@@ -10,6 +10,9 @@ void main() {
     check('package:checks').startsWith('dart:');
     // Expected: a string starting with 'dart:'
     // Actual: 'package:checks'
-    // Which: does not start with 'dart:'
+    // Which: differs at offset 0:
+    //   dart:
+    //   package:ch ...
+    //   ^
   });
 }
