@@ -105,9 +105,11 @@
   its value. An asynchronous expectation which has not finished when a later
   expectation fails is also left out, instead of being described as
   satisfied.
-- Fix the failure message for `IterableChecks.every` to keep the nested
-  property for the element that failed, for example
-  `Actual: has field: 'foo'` instead of `Actual: 'foo'`.
+- Fix the failure messages for `IterableChecks.every` and for `Condition`
+  elements in `IterableChecks.deepEquals` to keep the nested property for the
+  element that failed, for example `Actual: has field: 'foo'` instead of
+  `Actual: 'foo'`. `deepEquals` now uses the same format as `every`, with
+  `Which:` in place of `which`.
 - Add `CheckFailure.describeNested` to describe a failure from soft checking
   a condition within the `which` of another `Rejection`, in the same format
   as a failure message from `check`.
