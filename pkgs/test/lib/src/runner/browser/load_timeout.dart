@@ -8,7 +8,8 @@
 /// the generic timeout on the load suite.
 const _loadTimeoutMargin = Duration(seconds: 1);
 
-/// How long to wait for a browser to load a compiled suite, or `null` to wait
+/// How long to wait for a step of loading a suite in a browser, such as
+/// connecting to the browser or loading the compiled suite, or `null` to wait
 /// indefinitely.
 ///
 /// The [remainingLoadTime] is how long remains before the load suite times
@@ -16,6 +17,9 @@ const _loadTimeoutMargin = Duration(seconds: 1);
 /// up on the browser shortly before it. When there is none, because the suite
 /// load timeout is `none` or isn't configured, don't time out the browser
 /// either.
+///
+/// Call this when each step starts. Consecutive steps then share the same
+/// deadline, and each step gets whatever time the earlier steps left.
 Duration? browserLoadTimeout(Duration? remainingLoadTime) {
   if (remainingLoadTime == null) return null;
   var timeout = remainingLoadTime - _loadTimeoutMargin;
