@@ -44,9 +44,10 @@ void main() {
 
   group('test entrypoint', () {
     test('must not transitively import package:analyzer', () async {
-      final path = await importCheck.findPathToPackage(
+      final path = await importCheck.findPath(
         startUri: .parse('package:test/test.dart'),
-        targetPackage: 'analyzer',
+        platform: .vm,
+        isTarget: (uri) => _isInPackage(uri, 'analyzer'),
       );
       expect(
         path,
@@ -55,13 +56,82 @@ void main() {
             'package:test/test.dart must not transitively import '
             'package:analyzer.\n'
             'Found path:\n'
-            '${path?.map((u) => '  -> $u').join('\n')}',
+            '${_formatPath(path)}',
       );
     });
   });
+
+  group('web entrypoints', () {
+    for (final entrypoint in [
+      'package:test/expect.dart',
+      'package:test/scaffolding.dart',
+      'package:test/test.dart',
+    ]) {
+      test('$entrypoint must not transitively import VM-only libraries '
+          'when compiled for the web', () async {
+        final path = await importCheck.findPath(
+          startUri: .parse(entrypoint),
+          platform: .web,
+          isTarget: (uri) =>
+              uri.isScheme('dart') && _vmOnlyLibraries.contains(uri.path),
+        );
+        expect(
+          path,
+          isNull,
+          reason:
+              '$entrypoint must not transitively import a VM-only library '
+              'when compiled for the web. Use a conditional import with a '
+              'stub for platform-specific code.\n'
+              'Found path:\n'
+              '${_formatPath(path)}',
+        );
+      });
+    }
+  });
 }
 
+/// Core libraries which are not available when compiling for the web.
+const _vmOnlyLibraries = {'cli', 'ffi', 'io', 'isolate', 'mirrors'};
+
 Uri _testApiLibrary(String path) => .parse('package:test_api/$path');
+
+bool _isInPackage(Uri uri, String package) =>
+    uri.isScheme('package') &&
+    uri.pathSegments.isNotEmpty &&
+    uri.pathSegments.first == package;
+
+String? _formatPath(List<Uri>? path) => path?.map((u) => '  -> $u').join('\n');
+
+/// The platform used to resolve conditional imports.
+enum _Platform {
+  vm(
+    available: {'cli', 'io', 'isolate'},
+    unavailable: {'html', 'js', 'js_interop'},
+  ),
+  web(
+    available: {'html', 'js', 'js_interop'},
+    unavailable: {'cli', 'io', 'isolate'},
+  );
+
+  const _Platform({required this.available, required this.unavailable});
+
+  /// Libraries for which a `dart.library.<name>` condition is `true`.
+  final Set<String> available;
+
+  /// Libraries for which a `dart.library.<name>` condition is `false`.
+  final Set<String> unavailable;
+
+  /// The value of the configuration condition [name] on this platform, or
+  /// `null` if it is unknown.
+  bool? evaluate(String name) {
+    const prefix = 'dart.library.';
+    if (!name.startsWith(prefix)) return null;
+    final library = name.substring(prefix.length);
+    if (available.contains(library)) return true;
+    if (unavailable.contains(library)) return false;
+    return null;
+  }
+}
 
 class _ImportCheck {
   final PackageConfig _packageConfig;
@@ -109,14 +179,9 @@ class _ImportCheck {
     while (queue.isNotEmpty) {
       final current = queue.removeFirst();
 
-      final imports = await _findImports(current);
+      final imports = await _findImports(current, .vm);
       final samePackageImports = imports
-          .where(
-            (u) =>
-                u.isScheme('package') &&
-                u.pathSegments.isNotEmpty &&
-                u.pathSegments.first == package,
-          )
+          .where((u) => _isInPackage(u, package))
           .toSet();
 
       yield _Source(current, samePackageImports);
@@ -125,9 +190,13 @@ class _ImportCheck {
     }
   }
 
-  Future<List<Uri>?> findPathToPackage({
+  /// Returns the shortest import path from [startUri] to a URI matching
+  /// [isTarget], resolving conditional imports for [platform], or `null` if
+  /// there is no such path.
+  Future<List<Uri>?> findPath({
     required Uri startUri,
-    required String targetPackage,
+    required _Platform platform,
+    required bool Function(Uri) isTarget,
   }) async {
     var queue = Queue<Uri>()..add(startUri);
     var parents = <Uri, Uri?>{startUri: null};
@@ -140,15 +209,12 @@ class _ImportCheck {
     while (queue.isNotEmpty) {
       var current = queue.removeFirst();
 
-      if (current.isScheme('package') &&
-          current.pathSegments.isNotEmpty &&
-          current.pathSegments.first == targetPackage) {
-        return reconstructPath(current);
-      }
+      if (isTarget(current)) return reconstructPath(current);
+      if (!current.isScheme('package') && !current.isScheme('file')) continue;
 
       List<Uri> neighbors;
       try {
-        neighbors = await _findImports(current);
+        neighbors = await _findImports(current, platform);
       } catch (e) {
         continue;
       }
@@ -156,20 +222,19 @@ class _ImportCheck {
       for (var neighbor in neighbors) {
         if (parents.containsKey(neighbor)) continue;
         parents[neighbor] = current;
+        if (isTarget(neighbor)) return reconstructPath(neighbor);
         queue.add(neighbor);
-
-        if (neighbor.isScheme('package') &&
-            neighbor.pathSegments.isNotEmpty &&
-            neighbor.pathSegments.first == targetPackage) {
-          return reconstructPath(neighbor);
-        }
       }
     }
 
     return null;
   }
 
-  Future<List<Uri>> _findImports(Uri from) async {
+  /// Returns the URIs directly imported, exported, or included as parts by
+  /// [from], resolving conditional imports for [platform].
+  ///
+  /// Includes `dart:` URIs.
+  Future<List<Uri>> _findImports(Uri from, _Platform platform) async {
     Uri? fileUri;
     if (from.isScheme('package')) {
       fileUri = _packageConfig.resolve(from);
@@ -203,17 +268,7 @@ class _ImportCheck {
           var name = config.name.toSource();
           var value = config.value?.stringValue ?? 'true';
 
-          bool? conditionValue;
-          if (name == 'dart.library.io' ||
-              name == 'dart.library.cli' ||
-              name == 'dart.library.isolate') {
-            conditionValue = true;
-          } else if (name == 'dart.library.html' ||
-              name == 'dart.library.js' ||
-              name == 'dart.library.js_interop') {
-            conditionValue = false;
-          }
-
+          var conditionValue = platform.evaluate(name);
           if (conditionValue != null && conditionValue.toString() == value) {
             selectedUri = config.uri.stringValue;
             break;
@@ -230,9 +285,7 @@ class _ImportCheck {
       }
     }
 
-    return uris
-        .where((u) => !u.isScheme('dart') && !u.isScheme('dart-mac'))
-        .toList();
+    return uris;
   }
 }
 

@@ -39,7 +39,7 @@ Future<void> expectJsonReport(
   // A single start event is emitted first.
   final start = {
     'type': 'start',
-    'protocolVersion': '0.1.1',
+    'protocolVersion': '0.1.2',
     // Runner version cannot be read in the synthetic package
     'runnerVersion': null,
     'pid': testPid,
@@ -205,12 +205,14 @@ Map<String, Object> testDoneJson(
   String result = 'success',
   bool hidden = false,
   bool skipped = false,
+  bool retried = false,
 }) => {
   'type': 'testDone',
   'testID': id,
   'result': result,
   'hidden': hidden,
   'skipped': skipped,
+  'retried': retried,
 };
 
 /// Returns the event emitted by the JSON reporter indicating that the entire

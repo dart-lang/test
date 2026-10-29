@@ -1,7 +1,28 @@
 ## 0.6.22-wip
 
+* Enable asserts in the `cli` compiler if supported.
+* Fix a `RangeError` crash in the compact reporter when the terminal is too
+  narrow to fit a test's description.
 * Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
   loading a suite before the suite load timeout cuts it off.
+* Report tests that fail and then pass on retry as flaky. Previously a
+  `setUpAll` that passed on retry was still counted as failed in the summary,
+  even though the run succeeded. `Engine.flaky` and `LiveSuite.flaky` hold the
+  tests that passed on retry. A test that fails and is then skipped on retry
+  is now counted only as skipped.
+* When a test configured with `retry` fails, the compact, expanded, and
+  failures-only reporters show the attempt, for example
+  `[E] (attempt 1 of 2)`, and the final summary counts flaky tests. The
+  expanded reporter also lists them.
+* The GitHub reporter shows a test that passed on retry as
+  `⚠️ <name> (passed on attempt N of M)`, adds a flaky count to the summary,
+  and uses a `::warning::` annotation when the only problems are flaky tests.
+  A test that fails and is then skipped on retry is shown as skipped.
+  Output and errors within each test's group are printed in the order they
+  were emitted, for all tests.
+* The JSON reporter adds a `retried` field to `testDone` events and reports
+  protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
+  the protocol documents.
 
 ## 0.6.21
 

@@ -5,7 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
-import '../describe.dart' show describedPredicateNoun;
+import '../describe.dart' show describedClause, describedPredicateNoun;
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
@@ -13,22 +13,22 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   ///
   /// {@example /example/map/map/entries.dart}
   Subject<Iterable<MapEntry<K, V>>> get entries =>
-      has((m) => m.entries, 'entries');
+      has2('entries', (m) => m.entries);
 
   /// A [Subject] for the [Map.keys] of the map.
   ///
   /// {@example /example/map/map/keys.dart}
-  Subject<Iterable<K>> get keys => has((m) => m.keys, 'keys');
+  Subject<Iterable<K>> get keys => has2('keys', (m) => m.keys);
 
   /// A [Subject] for the [Map.values] of the map.
   ///
   /// {@example /example/map/map/values.dart}
-  Subject<Iterable<V>> get values => has((m) => m.values, 'values');
+  Subject<Iterable<V>> get values => has2('values', (m) => m.values);
 
   /// A [Subject] for the [Map.length] of the map.
   ///
   /// {@example /example/map/map/length.dart}
-  Subject<int> get length => has((m) => m.length, 'length');
+  Subject<int> get length => has2('length', (m) => m.length);
 
   /// A [Subject] for the value at [key], which must be present in the map.
   ///
@@ -104,11 +104,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// {@example /example/map/map/contains_key_that.dart}
   void containsKeyThat(Condition<K> keyCondition) {
     context.expect(
-      () {
-        final conditionDescription = keyCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a key that:', ...conditionDescription];
-      },
+      () => describedClause('contains a key that', keyCondition),
       predicateNoun: () =>
           describedPredicateNoun('a map containing a key that', keyCondition),
       (actual) {
@@ -146,11 +142,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// {@example /example/map/map/contains_value_that.dart}
   void containsValueThat(Condition<V> valueCondition) {
     context.expect(
-      () {
-        final conditionDescription = valueCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a value that:', ...conditionDescription];
-      },
+      () => describedClause('contains a value that', valueCondition),
       predicateNoun: () => describedPredicateNoun(
         'a map containing a value that',
         valueCondition,
