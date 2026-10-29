@@ -19,7 +19,7 @@ void main() {
       );
     });
 
-    test('describes a rejected guard followed by nested clauses', () {
+    test('describes a rejected guard without the clauses after it', () {
       final failure = (Condition.it<Object?>()..isA<String>().length.equals(1))
           .softCheckSync(1);
       check(failure).isNotNull()
@@ -29,7 +29,7 @@ void main() {
         ).isNotNull().deepEquals(['is a int'])
         ..has((f) => f.detail, 'detail')
             .has((d) => d.expected, 'expected')
-            .deepEquals([' that:', '  is a String', '  has length: <1>']);
+            .deepEquals([' that:', '  is a String']);
     });
   });
   group('softCheckAsync', () {
@@ -41,6 +41,18 @@ void main() {
         actual: ['<0>'],
         which: ['is not greater than <1>'],
       );
+    });
+
+    test('omits clauses after a failed asynchronous expectation', () async {
+      final failure =
+          await (Condition.it<Future<int>>()
+                ..completes(.it()..equals(2))
+                ..has((f) => 0, 'zero').equals(0))
+              .softCheck(Future.value(1));
+      check(failure)
+          .isNotNull()
+          .has((f) => f.describeNested(), 'describeNested')
+          .deepEquals(['Actual: completes to <1>', 'Which: is not equal']);
     });
   });
   group('CheckFailure.describeNested', () {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:checks/checks.dart';
 import 'package:test/scaffolding.dart';
 
@@ -107,6 +109,48 @@ Expected: a List<int> that:
   equals [2]
 Actual: [1]
 Which: is not equal''');
+    });
+    test('describes an expectation made before an asynchronous expectation '
+        'fails', () async {
+      final subject = check(Future.value(1));
+      final completion = subject.completes(.it()..equals(2));
+      subject.has((f) => 0, 'zero').equals(0);
+      await check(completion).throws<TestFailure>(
+        .it()
+          ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Future<int> that:
+  has zero: <0>
+  completes to <2>
+Actual: a Future<int> that:
+  has zero: <0>
+  completes to <1>
+  Which: is not equal'''),
+      );
+    });
+    test('omits expectations after an unawaited expectation which fails '
+        'later', () async {
+      Object? failure;
+      final completer = Completer<int>();
+      runZonedGuarded(
+        () {
+          check(completer.future)
+            ..doesNotComplete
+            ..has((f) => 0, 'zero').equals(0);
+          completer.complete(1);
+        },
+        (e, _) {
+          failure = e;
+        },
+      );
+      await pumpEventQueue();
+      check(failure)
+          .isA<TestFailure>()
+          .has((f) => f.message, 'message')
+          .isNotNull()
+          .equals('''
+Expected: a Future<int> that:
+  does not complete
+Actual: a future that completed to <1>''');
     });
   });
 }

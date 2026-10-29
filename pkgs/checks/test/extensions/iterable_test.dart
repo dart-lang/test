@@ -243,6 +243,43 @@ void main() {
       );
     });
 
+    test('omits clauses after the failing clause', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..field.startsWith('f')
+            ..field.equals('bar')
+            ..field.length.equals(999),
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          "    has field: a string starting with 'f'",
+          "    has field: 'foo'",
+          '    Which: differs at offset 0:',
+          '      bar',
+          '      foo',
+          '      ^',
+        ],
+      );
+    });
+
+    test('collapses when the failing clause is followed by others', () {
+      check([_Wrapper(123)]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..value.equals(1)
+            ..value.equals(5),
+        ),
+        actual: ["[Instance of '_Wrapper']"],
+        which: [
+          'has an element at index 0 that:',
+          '  Actual: has value: <123>',
+          '  Which: is not equal',
+        ],
+      );
+    });
+
     test('includes passing clauses before a failing clause', () {
       check([_Foo('foo')]).isRejectedBy(
         .it()..every(

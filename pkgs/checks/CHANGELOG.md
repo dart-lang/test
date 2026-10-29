@@ -97,6 +97,10 @@
   expectation was treated as the one that failed, which triggered an assertion
   error, or attributed the rejection to the wrong expectation. This could be
   seen in the failure message for `IterableChecks.every`.
+- Omit the expectations after the one that failed from failure messages.
+  Within a soft check, such as the condition for `IterableChecks.every`, and
+  after an unawaited expectation which fails later, the later expectations
+  were described as if the value satisfied them.
 - Fix the failure message for `IterableChecks.every` to keep the nested
   property for the element that failed, for example
   `Actual: has field: 'foo'` instead of `Actual: 'foo'`.

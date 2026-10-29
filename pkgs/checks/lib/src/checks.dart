@@ -1030,12 +1030,20 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }) {
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
+    final clauses = _clausesThroughFailure(
+      failingContext,
+      rejection,
+      failingClause: failingClause,
+      thisContextFailed: thisContextFailed,
+    );
     return _collapsedDetails(
+          clauses,
           failingContext,
           rejection,
           failingClause: failingClause,
         ) ??
         _fullDetails(
+          clauses,
           failingContext,
           rejection,
           failingClause: failingClause,
@@ -1043,28 +1051,57 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
         );
   }
 
-  _ClauseDescription? get _singleClause =>
-      _clauses.where((c) => c is! _GuardClause || !c.satisfied).singleOrNull;
+  /// The clauses to describe for a failure of [failingContext].
+  ///
+  /// When there is a [rejection], these are the clauses up to and including
+  /// the one on the path to the failure: [failingClause] when this context
+  /// failed, otherwise the nested context which [failingContext] is nested
+  /// under.
+  ///
+  /// Later clauses are not described. A failure from `check` throws before
+  /// they are added, but they are still added after a failure within a soft
+  /// check, and after an unawaited expectation which fails later.
+  Iterable<_ClauseDescription> _clausesThroughFailure(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+    required bool thisContextFailed,
+  }) {
+    if (rejection == null) return _clauses;
+    final index = _clauses.indexWhere(
+      (clause) => thisContextFailed
+          ? identical(clause, failingClause)
+          : failingContext._nestsUnder(clause),
+    );
+    return index < 0 ? _clauses : _clauses.take(index + 1);
+  }
+
+  _ClauseDescription? get _singleClause => _singleClauseOf(_clauses);
+
+  static _ClauseDescription? _singleClauseOf(
+    Iterable<_ClauseDescription> clauses,
+  ) => clauses.where((c) => c is! _GuardClause || !c.satisfied).singleOrNull;
 
   /// A collapsed single-line [FailureDetail], or `null` if this context cannot
   /// be collapsed.
   ///
-  /// If this context has exactly one clause, and that child clause produces a
-  /// collapsed representation (`childCollapsed`), this method attempts to
-  /// expand that child representation into a single-line failure detail for
-  /// this context level.
+  /// If this context has exactly one clause in [clauses], and that child
+  /// clause produces a collapsed representation (`childCollapsed`), this
+  /// method attempts to expand that child representation into a single-line
+  /// failure detail for this context level.
   ///
   /// Returns `null` if there is not exactly one clause, if the child clause did
   /// not collapse, or if expanding the child representation at this level fails
   /// (e.g., if `_addPredicate` returns `null` or the resulting root string
   /// exceeds length limits).
   FailureDetail? _collapsedDetails(
+    Iterable<_ClauseDescription> clauses,
     _TestContext failingContext,
     Rejection? rejection, {
     required _ClauseDescription? failingClause,
   }) {
     if (rejection == null) return null;
-    final clause = _singleClause;
+    final clause = _singleClauseOf(clauses);
     if (clause == null) return null;
     final details = clause.detail(
       failingContext,
@@ -1157,6 +1194,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// - Otherwise, formats `actual` hierarchically with indentation, retaining
   ///   any collapsed child property descriptions.
   FailureDetail _fullDetails(
+    Iterable<_ClauseDescription> clauses,
     _TestContext failingContext,
     Rejection? rejection, {
     required _ClauseDescription? failingClause,
@@ -1164,7 +1202,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   }) {
     var foundOverlap = thisContextFailed ? 0 : -1;
     var foundDepth = thisContextFailed ? 0 : -1;
-    if (_clauses.isEmpty) {
+    if (clauses.isEmpty) {
       return FailureDetail(_labelCallback(), foundOverlap, foundDepth);
     }
 
@@ -1176,7 +1214,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     var actualHasLabel = true;
 
     var successfulOverlap = 0;
-    for (var clause in _clauses) {
+    for (var clause in clauses) {
       final isFailingClause =
           rejection != null &&
           (thisContextFailed
