@@ -669,13 +669,51 @@ Which: has an element at index 0 that:
           );
         }).throwsFailure().equals('''
 Expected: a List<int> that:
-  every element:
+  only has elements where each:
     is greater than <0>
     is less than <2>
 Actual: [1, 2]
 Which: has an element at index 1 that:
   Actual: <2>
   Which: is not less than <2>''');
+      });
+
+      test('every within every collapses', () {
+        check(() {
+          check([
+            [1, 20],
+          ]).every(.it()..every(.it()..isLessThan(10)));
+        }).throwsFailure().equals('''
+Expected: an iterable where every element only has elements where each is less than <10>
+Actual: [[1, 20]]
+Which: has an element at index 0 that:
+  Actual: [1, 20]
+  Which: has an element at index 1 that:
+    Actual: <20>
+    Which: is not less than <10>''');
+      });
+
+      test('every within any collapses its clause', () {
+        check(() {
+          check([
+            [1, 20],
+          ]).any(.it()..every(.it()..isLessThan(10)));
+        }).throwsFailure().equals('''
+Expected: a List<List<int>> that:
+  contains a value that only has elements where each is less than <10>
+Actual: [[1, 20]]
+Which: contains no matching element''');
+      });
+
+      test('every within containsKeyThat collapses', () {
+        check(() {
+          check({
+            [1, 20]: 0,
+          }).containsKeyThat(.it()..every(.it()..isLessThan(10)));
+        }).throwsFailure().equals('''
+Expected: a map containing a key that only has elements where each is less than <10>
+Actual: {[1, 20]: 0}
+Which: contains no matching key''');
       });
 
       test('containsKeyThat collapses', () {

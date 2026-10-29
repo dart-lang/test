@@ -84,8 +84,10 @@
   within 80 columns, such as `contains a value that is greater than <7>`.
   This applies where they are one of several expectations, or are nested
   inside the condition of another of these expectations.
-- Describe the condition for `IterableChecks.every` as `every element` instead
-  of `only has values that`, for example `every element is less than <10>`.
+- Describe the condition for `IterableChecks.every` as
+  `only has elements where each` instead of `only has values that`, for
+  example `only has elements where each is less than <10>`, so that it reads
+  as a sentence when nested in another condition.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2

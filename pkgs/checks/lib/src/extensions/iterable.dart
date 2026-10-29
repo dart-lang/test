@@ -281,7 +281,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/every.dart}
   void every(Condition<T> elementCondition) {
     context.expect(
-      () => describedClause('every element', elementCondition),
+      () => describedClause('only has elements where each', elementCondition),
       predicateNoun: () => describedPredicateNoun(
         'an iterable where every element',
         elementCondition,
