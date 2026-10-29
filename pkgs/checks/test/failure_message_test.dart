@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:checks/checks.dart';
+import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 void main() {
@@ -135,6 +136,19 @@ Expected: a Future<int> that has zero: <1>
 Actual: a Future<int> that has zero: <0>
 Which: is not equal''');
       completer.complete(1);
+    });
+    test('omits an asynchronous expectation which has not finished when a '
+        'later nested expectation fails', () async {
+      final completer = Completer<Rejection?>();
+      check(() {
+        check(0)
+          ..context.expectAsync(() => ['waits'], (_) => completer.future)
+          ..has((v) => v, 'self').equals(1);
+      }).throwsFailure().equals('''
+Expected: a int that has self: <1>
+Actual: a int that has self: <0>
+Which: is not equal''');
+      completer.complete(null);
     });
     test('omits expectations after an unawaited expectation which fails '
         'later', () async {

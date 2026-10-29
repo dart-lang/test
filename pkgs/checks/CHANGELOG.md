@@ -102,7 +102,9 @@
   after an unawaited expectation which fails later, the later expectations
   were described as if the value satisfied them. This includes expectations
   made while an asynchronous expectation such as `completes` was waiting for
-  its value.
+  its value. An asynchronous expectation which has not finished when a later
+  expectation fails is also left out, instead of being described as
+  satisfied.
 - Fix the failure message for `IterableChecks.every` to keep the nested
   property for the element that failed, for example
   `Actual: has field: 'foo'` instead of `Actual: 'foo'`.

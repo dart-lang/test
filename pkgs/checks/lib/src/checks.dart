@@ -876,12 +876,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     String? Function()? predicateNoun,
   }) async {
     final expectation = _ExpectationClause(clause, predicateNoun);
-    _clauses.add(expectation);
+    // Keep this expectation's place among the clauses while it is checked,
+    // without describing it as satisfied before it has finished.
+    final pending = _PendingClause();
+    _clauses.add(pending);
     final outstandingWork = TestHandle.current.markPending();
     try {
       final rejection = await _value.apply(
         (actual) async => (await predicate(actual))?._fillActual(actual),
       );
+      _clauses[_clauses.indexOf(pending)] = expectation;
       if (rejection == null) return;
       _fail(_failure(rejection, expectation));
     } finally {
@@ -1085,8 +1089,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     return index < 0 ? clauses : clauses.take(index + 1);
   }
 
-  /// The clauses which can be described, leaving out asynchronous nested
-  /// expectations which are still waiting for their value.
+  /// The clauses which can be described, leaving out asynchronous
+  /// expectations which have not finished.
   Iterable<_ClauseDescription> get _describedClauses =>
       _clauses.where((c) => c is! _PendingClause);
 
@@ -1577,12 +1581,14 @@ final class _GuardClause extends _ExpectationClause {
   _GuardClause(super.expected, {required this.satisfied});
 }
 
-/// A placeholder for the clause of an asynchronous nested expectation, such
-/// as `completes`, which is still waiting for its value.
+/// A placeholder for the clause of an asynchronous expectation which has not
+/// finished, such as `completes` while it waits for the value, or an
+/// expectation from [Context.expectAsync] while its predicate runs.
 ///
 /// It keeps the place of the expectation in the order the expectations were
 /// made, so that expectations made while it waits come after it. It is
-/// replaced once the value is available, and is not described before then.
+/// replaced once the expectation finishes, and is not described before then,
+/// so an expectation which has not finished is never described as satisfied.
 final class _PendingClause implements _ClauseDescription {
   @override
   FailureDetail detail(
