@@ -5,7 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
-import '../describe.dart' show describedPredicateNoun;
+import '../describe.dart' show describedClause, describedPredicateNoun;
 import 'core.dart';
 
 extension MapChecks<K, V> on Subject<Map<K, V>> {
@@ -104,11 +104,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// {@example /example/map/map/contains_key_that.dart}
   void containsKeyThat(Condition<K> keyCondition) {
     context.expect(
-      () {
-        final conditionDescription = keyCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a key that:', ...conditionDescription];
-      },
+      () => describedClause('contains a key that', keyCondition),
       predicateNoun: () =>
           describedPredicateNoun('a map containing a key that', keyCondition),
       (actual) {
@@ -146,11 +142,7 @@ extension MapChecks<K, V> on Subject<Map<K, V>> {
   /// {@example /example/map/map/contains_value_that.dart}
   void containsValueThat(Condition<V> valueCondition) {
     context.expect(
-      () {
-        final conditionDescription = valueCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a value that:', ...conditionDescription];
-      },
+      () => describedClause('contains a value that', valueCondition),
       predicateNoun: () => describedPredicateNoun(
         'a map containing a value that',
         valueCondition,

@@ -82,6 +82,16 @@
   `MapChecks.containsValueThat` to a single line when the condition describes
   in a single line and the result fits within 80 columns, for example
   `Expected: an iterable containing a value that is greater than <7>`.
+- Describe `IterableChecks.any`, `IterableChecks.every`,
+  `MapChecks.containsKeyThat`, and `MapChecks.containsValueThat` in a single
+  line when the condition describes in a single line and the result fits
+  within 80 columns, such as `contains a value that is greater than <7>`.
+  This applies where they are one of several expectations, or are nested
+  inside the condition of another of these expectations.
+- Describe the condition for `IterableChecks.every` as
+  `only has elements where each` instead of `only has values that`, for
+  example `only has elements where each is less than <10>`, so that it reads
+  as a sentence when nested in another condition.
 - Require `package:meta` `^1.17.0`.
 
 ## 0.3.2
