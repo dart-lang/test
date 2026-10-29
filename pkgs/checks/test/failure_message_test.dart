@@ -110,22 +110,31 @@ Expected: a List<int> that:
 Actual: [1]
 Which: is not equal''');
     });
-    test('describes an expectation made before an asynchronous expectation '
-        'fails', () async {
+    test('omits an expectation made before an earlier asynchronous '
+        'expectation fails', () async {
       final subject = check(Future.value(1));
       final completion = subject.completes(.it()..equals(2));
       subject.has((f) => 0, 'zero').equals(0);
       await check(completion).throws<TestFailure>(
         .it()
           ..has((f) => f.message, 'message').isNotNull().equals('''
-Expected: a Future<int> that:
-  has zero: <0>
-  completes to <2>
-Actual: a Future<int> that:
-  has zero: <0>
-  completes to <1>
-  Which: is not equal'''),
+Expected: a Future<int> that completes to <2>
+Actual: a Future<int> that completes to <1>
+Which: is not equal'''),
       );
+    });
+    test('omits an asynchronous expectation which has not completed when '
+        'a later expectation fails', () async {
+      final completer = Completer<int>();
+      check(() {
+        check(completer.future)
+          ..completes()
+          ..has((f) => 0, 'zero').equals(1);
+      }).throwsFailure().equals('''
+Expected: a Future<int> that has zero: <1>
+Actual: a Future<int> that has zero: <0>
+Which: is not equal''');
+      completer.complete(1);
     });
     test('omits expectations after an unawaited expectation which fails '
         'later', () async {

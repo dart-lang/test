@@ -961,6 +961,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     Condition<R>? nestedCondition, {
     String? Function(String predicateNoun)? addPredicate,
   }) async {
+    // Keep this expectation's place among the clauses while waiting for the
+    // value, so that expectations made in the meantime come after it.
+    final pending = _PendingClause();
+    _clauses.add(pending);
     final outstandingWork = TestHandle.current.markPending();
     try {
       final result = await _value.mapAsync(
@@ -969,12 +973,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       final rejection = result._rejection;
       if (rejection != null) {
         final expectation = _ExpectationClause(label);
-        _clauses.add(expectation);
+        _clauses[_clauses.indexOf(pending)] = expectation;
         _fail(_failure(rejection, expectation));
       }
       final value = result._value ?? _Absent<R>();
       final context = _TestContext<R>._child(value, label, addPredicate, this);
-      _clauses.add(context);
+      if (rejection == null) {
+        _clauses[_clauses.indexOf(pending)] = context;
+      } else {
+        _clauses.add(context);
+      }
       final subject = Subject<R>._(context);
       await nestedCondition?.apply(subject);
       return subject;
@@ -1067,16 +1075,22 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     required _ClauseDescription? failingClause,
     required bool thisContextFailed,
   }) {
-    if (rejection == null) return _clauses;
-    final index = _clauses.indexWhere(
+    final clauses = _describedClauses.toList();
+    if (rejection == null) return clauses;
+    final index = clauses.indexWhere(
       (clause) => thisContextFailed
           ? identical(clause, failingClause)
           : failingContext._nestsUnder(clause),
     );
-    return index < 0 ? _clauses : _clauses.take(index + 1);
+    return index < 0 ? clauses : clauses.take(index + 1);
   }
 
-  _ClauseDescription? get _singleClause => _singleClauseOf(_clauses);
+  /// The clauses which can be described, leaving out asynchronous nested
+  /// expectations which are still waiting for their value.
+  Iterable<_ClauseDescription> get _describedClauses =>
+      _clauses.where((c) => c is! _PendingClause);
+
+  _ClauseDescription? get _singleClause => _singleClauseOf(_describedClauses);
 
   static _ClauseDescription? _singleClauseOf(
     Iterable<_ClauseDescription> clauses,
@@ -1561,6 +1575,27 @@ final class _GuardClause extends _ExpectationClause {
   /// Whether the value was extracted, so the precondition is known to hold.
   final bool satisfied;
   _GuardClause(super.expected, {required this.satisfied});
+}
+
+/// A placeholder for the clause of an asynchronous nested expectation, such
+/// as `completes`, which is still waiting for its value.
+///
+/// It keeps the place of the expectation in the order the expectations were
+/// made, so that expectations made while it waits come after it. It is
+/// replaced once the value is available, and is not described before then.
+final class _PendingClause implements _ClauseDescription {
+  @override
+  FailureDetail detail(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+  }) => throw StateError('A pending clause is not described');
+
+  @override
+  String? get collapsedExpected => null;
+
+  @override
+  bool get isLeaf => true;
 }
 
 /// The result of an expectation that failed for a subject.

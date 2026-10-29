@@ -100,7 +100,9 @@
 - Omit the expectations after the one that failed from failure messages.
   Within a soft check, such as the condition for `IterableChecks.every`, and
   after an unawaited expectation which fails later, the later expectations
-  were described as if the value satisfied them.
+  were described as if the value satisfied them. This includes expectations
+  made while an asynchronous expectation such as `completes` was waiting for
+  its value.
 - Fix the failure message for `IterableChecks.every` to keep the nested
   property for the element that failed, for example
   `Actual: has field: 'foo'` instead of `Actual: 'foo'`.
