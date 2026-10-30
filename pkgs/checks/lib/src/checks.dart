@@ -1626,8 +1626,10 @@ final class CheckFailure {
   /// the value that failed.
   ///
   /// This failure is formatted the same way as a failure message from `check`,
-  /// except that the condition which failed has no label for its root subject,
-  /// so there is no line for it. The caller provides that line instead.
+  /// except that the condition which failed has no label for its root subject.
+  /// The caller provides a line describing the value instead, and where a
+  /// failure message from `check` would have `Actual: <label> that:`, the
+  /// description has a line with only `Actual:`.
   ///
   /// For example, an expectation that every element of an iterable satisfies a
   /// condition can describe the first element that does not:
@@ -1647,7 +1649,7 @@ final class CheckFailure {
   ///
   /// When [rootLabel] is true, the description of the actual value starts with
   /// the line for the label of the root subject, prefixed with "Actual: ", as
-  /// in a failure message from `check`. Otherwise that line is omitted.
+  /// in a failure message from `check`. Otherwise "Actual:" replaces that line.
   Iterable<String> _actualAndWhich({required bool rootLabel}) {
     final which = rejection.which;
     final Iterable<String> actual;
@@ -1662,7 +1664,7 @@ final class CheckFailure {
           ? const <String>[]
           : indent(prefixFirst('Actual: ', rejection.actual), depth);
       actual = !rootLabel && detail._actualHasLabel && described.isNotEmpty
-          ? [...described.skip(1), ...rejected]
+          ? ['Actual:', ...described.skip(1), ...rejected]
           : [...prefixFirst('Actual: ', described), ...rejected];
     }
     return [

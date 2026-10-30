@@ -85,7 +85,7 @@ void main() {
       ).deepEquals(['Actual: has length: <3>', 'Which: is not less than <2>']);
     });
 
-    test('omits the root label line from a custom actual', () {
+    test('replaces the root label line in a custom actual', () {
       check(
         describeNested(
           Condition.it<String>()
@@ -94,13 +94,14 @@ void main() {
           'abc',
         ),
       ).deepEquals([
+        'Actual:',
         "  starts with 'a'",
         '  has length: <3>',
         '  Which: is not equal',
       ]);
     });
 
-    test('omits the root label line before the rejected actual', () {
+    test('replaces the root label line before the rejected actual', () {
       check(
         describeNested(
           Condition.it<String>()
@@ -117,6 +118,7 @@ void main() {
           'abc',
         ),
       ).deepEquals([
+        'Actual:',
         '  has a derived length that:',
         '  Actual: <3>',
         '  Which: is not less than <2>',

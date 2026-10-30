@@ -196,6 +196,7 @@ void main() {
         ),
       ).isNotNull().deepEquals([
         'has an element at [<0>] that:',
+        '  Actual:',
         '    is a String',
         "    starts with 'a'",
         '    has length: <3>',

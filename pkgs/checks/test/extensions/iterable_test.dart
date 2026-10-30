@@ -254,6 +254,7 @@ void main() {
         actual: ["[Instance of '_Foo']"],
         which: [
           'has an element at index 0 that:',
+          '  Actual:',
           "    has field: a string starting with 'f'",
           "    has field: 'foo'",
           '    Which: differs at offset 0:',
@@ -290,6 +291,7 @@ void main() {
         actual: ["[Instance of '_Foo']"],
         which: [
           'has an element at index 0 that:',
+          '  Actual:',
           "    has field: 'foo'",
           '    has field that has length: <3>',
           '    Which: is not equal',
@@ -406,6 +408,27 @@ void main() {
           '    bar',
           '    foo',
           '    ^',
+        ],
+      );
+    });
+    test('separates the condition from an actual which does not collapse', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..pairwiseMatches(
+          [4],
+          (expected) => .it()
+            ..field.equals('foo')
+            ..field.length.equals(expected),
+          'has field',
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'does not have an element at index 0 that:',
+          "  has field: 'foo'",
+          '  has field that has length: <4>',
+          '  Actual:',
+          "    has field: 'foo'",
+          '    has field that has length: <3>',
+          '    Which: is not equal',
         ],
       );
     });
