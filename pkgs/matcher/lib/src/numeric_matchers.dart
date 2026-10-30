@@ -20,10 +20,25 @@ class _IsCloseTo extends FeatureMatcher<num> {
 
   @override
   bool typedMatches(num item, Map matchState) {
-    var diff = item - _value;
-    if (diff < 0) diff = -diff;
-    return diff <= _delta;
+    if (_hasIntegerDistance(item)) {
+      if (_delta.isNaN || _delta < 0) return false;
+      if (_delta == double.infinity) return true;
+      return _integerDistance(item) <= BigInt.from(_delta);
+    }
+    return (item - _value).abs() <= _delta;
   }
+
+  // Converting large integers to double before subtracting can lose a small
+  // difference. Integer subtraction itself can also overflow.
+  bool _hasIntegerDistance(num item) =>
+      (item is int || _value is int) &&
+      item.isFinite &&
+      _value.isFinite &&
+      (item is int || item == item.truncateToDouble()) &&
+      (_value is int || _value == _value.truncateToDouble());
+
+  BigInt _integerDistance(num item) =>
+      (BigInt.from(item) - BigInt.from(_value)).abs();
 
   @override
   Description describe(Description description) => description
@@ -39,9 +54,13 @@ class _IsCloseTo extends FeatureMatcher<num> {
     Map matchState,
     bool verbose,
   ) {
-    var diff = item - _value;
-    if (diff < 0) diff = -diff;
-    return mismatchDescription.add(' differs by ').addDescriptionOf(diff);
+    var diff = _hasIntegerDistance(item)
+        ? _integerDistance(item)
+        : (item - _value).abs();
+    mismatchDescription.add(' differs by ');
+    return diff is BigInt
+        ? mismatchDescription.add('<$diff>')
+        : mismatchDescription.addDescriptionOf(diff);
   }
 }
 
