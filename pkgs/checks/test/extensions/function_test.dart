@@ -135,6 +135,31 @@ void main() {
         final void Function() fn = asyncFn;
         check(() => check(fn).prints()).throws<AssertionError>();
       });
+
+      test('joins a nested subject with the label', () {
+        check(() {
+          check(() => print('foo')).prints().length.equals(3);
+        }).throwsFailure().equals('''
+Expected: a () => void that prints output that has length: <3>
+Actual: a () => void that prints output that has length: <4>
+Which: is not equal''');
+      });
+
+      test('labels the output for multiple expectations', () {
+        check(() {
+          check(() => print('foo')).prints(
+            .it()
+              ..startsWith('f')
+              ..endsWith('x'),
+          );
+        }).throwsFailure().equals('''
+Expected: a () => void that:
+  prints output that:
+    starts with 'f'
+    ends with 'x'
+Actual: a () => void that prints 'foo'
+Which: does not end with 'x\'''');
+      });
     });
 
     group('prints (async)', () {
@@ -199,6 +224,24 @@ void main() {
           which: ['threw <Bad state: oops!> at:', '  fake trace'],
         );
       });
+
+      test('joins a nested subject with the label', () async {
+        final result = check(
+          () async => print('foo'),
+        ).prints(.it()..length.equals(3));
+        await check(result).throws<TestFailure>(
+          .it()
+            ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a () => Future<void> that prints output that has length: <3>
+Actual: a () => Future<void> that prints output that has length: <4>
+Which: is not equal'''),
+        );
+      });
     });
   });
+}
+
+extension on Subject<void Function()> {
+  Subject<String> throwsFailure() =>
+      throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
 }
