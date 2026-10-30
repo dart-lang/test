@@ -11,10 +11,11 @@ import 'dart:isolate';
 import 'package:async/async.dart';
 import 'package:coverage/coverage.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart';
-import 'package:vm_service/vm_service.dart' hide Isolate;
+import 'package:vm_service/vm_service.dart' hide Isolate, Version;
 import 'package:vm_service/vm_service_io.dart';
 
 import '../../runner/configuration.dart';
@@ -33,6 +34,11 @@ import 'environment.dart';
 import 'test_compiler.dart';
 
 var _shouldPauseAfterTests = false;
+
+final bool _supportsCliCompilerAsserts = () {
+  var current = Version.parse(Platform.version.split(' ').first);
+  return current > Version.parse('3.14.0-107.0.dev');
+}();
 
 /// A platform that loads tests in isolates spawned within this Dart process.
 class VMPlatform extends PlatformPlugin {
@@ -469,6 +475,7 @@ class VMPlatform extends PlatformPlugin {
       if (platform.runtime == Runtime.vmAsan) '--target-sanitizer=asan',
       if (platform.runtime == Runtime.vmMsan) '--target-sanitizer=msan',
       if (platform.runtime == Runtime.vmTsan) '--target-sanitizer=tsan',
+      if (_supportsCliCompilerAsserts) '--enable-asserts',
     ]);
     if (processResult.exitCode != 0) {
       throw LoadException(path, '''
