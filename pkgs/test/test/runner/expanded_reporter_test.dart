@@ -602,13 +602,17 @@ void main() {
     test('does not report an attempt for errors after completion', () async {
       await _expectReport(
         '''
+        var secondTestStarted = Completer<void>();
         test('fail after completion', () {
-          Future(() {
+          secondTestStarted.future.then((_) {
             Zone.current.handleUncaughtError('foo', StackTrace.current);
           });
         }, retry: 1);
 
-        test('second test so that the first failure is reported', () {});
+        test('second test so that the first failure is reported', () async {
+          secondTestStarted.complete();
+          await Future<void>(() {});
+        });
       ''',
         '''
         +0: loading test.dart
@@ -617,18 +621,18 @@ void main() {
         +0 -1: second test so that the first failure is reported
         +0 -1: fail after completion [E]
           foo
-          test.dart 8:64  main.<fn>.<fn>
+          test.dart 9:64  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async      new Future
-          test.dart 7:11  main.<fn>
+          dart:async      Future.then
+          test.dart 8:36  main.<fn>
 
           This test failed after it had already completed.
           Make sure to use a matching library which informs the test runner
           of pending async work.
-          test.dart 8:64  main.<fn>.<fn>
+          test.dart 9:64  main.<fn>.<fn>
           ===== asynchronous gap ===========================
-          dart:async      new Future
-          test.dart 7:11  main.<fn>
+          dart:async      Future.then
+          test.dart 8:36  main.<fn>
 
         +1 -1: Some tests failed.
 

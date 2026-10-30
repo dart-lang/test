@@ -5,14 +5,14 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
-import '../describe.dart' show describedPredicateNoun;
+import '../describe.dart' show describedClause, describedPredicateNoun;
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
   /// A [Subject] for the number of elements in the iterable.
   ///
   /// {@example /example/iterable/iterable/length.dart}
-  Subject<int> get length => has((l) => l.length, 'length');
+  Subject<int> get length => has2('length', (l) => l.length);
 
   /// A [Subject] for the first element of the iterable.
   ///
@@ -40,15 +40,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     () => ['has last element'],
     addPredicate: (predicateNoun) => 'has last element: $predicateNoun',
     (actual) {
-      final iterator = actual.iterator;
-      if (!iterator.moveNext()) {
+      if (actual.isEmpty) {
         return Extracted.rejection(which: ['has no elements']);
       }
-      var current = iterator.current;
-      while (iterator.moveNext()) {
-        current = iterator.current;
-      }
-      return Extracted.value(current);
+      return Extracted.value(actual.last);
     },
   );
 
@@ -258,11 +253,7 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/any.dart}
   void any(Condition<T> elementCondition) {
     context.expect(
-      () {
-        final conditionDescription = elementCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a value that:', ...conditionDescription];
-      },
+      () => describedClause('contains a value that', elementCondition),
       predicateNoun: () => describedPredicateNoun(
         'an iterable containing a value that',
         elementCondition,
@@ -285,13 +276,9 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/every.dart}
   void every(Condition<T> elementCondition) {
     context.expect(
-      () {
-        final conditionDescription = elementCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['only has values that:', ...conditionDescription];
-      },
+      () => describedClause('only has elements where each', elementCondition),
       predicateNoun: () => describedPredicateNoun(
-        'an iterable where every value',
+        'an iterable where every element',
         elementCondition,
       ),
       (actual) {
