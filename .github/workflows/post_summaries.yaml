@@ -7,12 +7,11 @@ on:
   workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows:
       - Health
-      - Publish
     types:
       - completed
 
 jobs:
   upload:
-    uses: dart-lang/ecosystem/.github/workflows/post_summaries.yaml@16dca7ae5d3ff896a4db47e1ed6cd50f7ebbf115 # main
+    uses: dart-lang/ecosystem/.github/workflows/post_summaries.yaml@78abf72b3cfcc7c6c822032d8915153019fe79b7 # main
     permissions:
       pull-requests: write
