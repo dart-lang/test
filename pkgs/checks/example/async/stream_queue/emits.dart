@@ -12,15 +12,15 @@ void main() {
     await check(const Stream<int>.empty()).withQueue.emits();
     // Expected: a Stream<int> that:
     //   emits a value
-    // Actual: a stream
-    // Which: closed without emitting enough values
+    // Actual: a stream that closed
+    // Which: did not emit a value
   });
 
   test('emits on a stream that emits an error', () async {
     await check(Stream<int>.error(StateError('nope'))).withQueue.emits();
     // Expected: a Stream<int> that:
     //   emits a value
-    // Actual: a stream with error <Bad state: nope>
+    // Actual: a stream that emitted error <Bad state: nope>
     // Which: emitted an error instead of a value at:
   });
 }
