@@ -313,39 +313,14 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           descriptions.addAll(await condition.describe());
           final failure = await condition.softCheck(actual);
           if (failure != null) {
-            final which = failure.rejection.which;
             return Rejection(
               actual: ['a stream'],
               which: [
                 if (satisfiedCount > 0)
                   'satisfied $satisfiedCount conditions then',
                 'failed to satisfy the condition at index $satisfiedCount',
-                if (failure.detail.collapsedDetails case (
-                  final expected,
-                  final actual,
-                )) ...[
-                  'because it:',
-                  '  Expected: $expected',
-                  '  Actual: $actual',
-                  if (which != null) ...indent(prefixFirst('Which: ', which)),
-                ] else if (failure.detail.depth > 0) ...[
-                  'because it:',
-                  ...indent(
-                    failure.detail.actual.skip(1),
-                    failure.detail.depth - 1,
-                  ),
-                  ...indent(
-                    prefixFirst('Actual: ', failure.rejection.actual),
-                    failure.detail.depth,
-                  ),
-                  if (which != null)
-                    ...indent(
-                      prefixFirst('Which: ', which),
-                      failure.detail.depth,
-                    ),
-                ] else ...[
-                  if (which != null) ...prefixFirst('because it ', which),
-                ],
+                'because it:',
+                ...indent(failure.describeNested()),
               ],
             );
           }
@@ -406,44 +381,14 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           return null;
         }
         transaction.reject();
-        Iterable<String> failureDetails(int index, CheckFailure? failure) {
-          final actual = failure!.rejection.actual;
-          final which = failure.rejection.which;
-          final detail = failure.detail;
-          final failed = 'failed the condition at index $index';
-          if (detail.collapsedDetails case (final expected, final actual)) {
-            return [
-              '$failed because it:',
-              '  Expected: $expected',
-              '  Actual: $actual',
-              if (which != null) ...indent(prefixFirst('Which: ', which)),
-            ];
-          } else if (detail.depth > 0) {
-            return [
-              '$failed because it:',
-              ...indent(detail.actual.skip(1), detail.depth - 1),
-              ...indent(prefixFirst('Actual: ', actual), detail.depth),
-              if (which != null)
-                ...indent(prefixFirst('Which: ', which), detail.depth),
-            ];
-          } else {
-            return [
-              if (which == null)
-                failed
-              else ...[
-                '$failed because it:',
-                ...indent(which),
-              ],
-            ];
-          }
-        }
-
         return Rejection(
           actual: ['a stream'],
           which: [
             'failed to satisfy any condition',
-            for (var i = 0; i < failures.length; i++)
-              ...failureDetails(i, failures[i]),
+            for (var i = 0; i < failures.length; i++) ...[
+              'failed the condition at index $i because it:',
+              ...indent(failures[i]!.describeNested()),
+            ],
           ],
         );
       },

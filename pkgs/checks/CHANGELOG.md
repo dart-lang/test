@@ -27,6 +27,7 @@
     - `isNotNegative`
     - `isNull`
     - `isTrue`
+  - Remove the public constructors for `CheckFailure` and `FailureDetail`.
 - Add `has2`, which takes the `name` argument before the `extract` callback.
   This is a temporary API to allow migrating usages incrementally before the
   arguments to `has` are swapped to the same order. `has2` will be removed
@@ -92,6 +93,33 @@
   `only has elements where each` instead of `only has values that`, for
   example `only has elements where each is less than <10>`, so that it reads
   as a sentence when nested in another condition.
+- Fix the failure details from `Condition.softCheck` when a precondition such
+  as `isA<T>()` is rejected and further expectations follow it. The last
+  expectation was treated as the one that failed, which triggered an assertion
+  error, or attributed the rejection to the wrong expectation. This could be
+  seen in the failure message for `IterableChecks.every`.
+- Omit the expectations after the one that failed from failure messages.
+  Within a soft check, such as the condition for `IterableChecks.every`, and
+  after an unawaited expectation which fails later, the later expectations
+  were described as if the value satisfied them. This includes expectations
+  made while an asynchronous expectation such as `completes` was waiting for
+  its value. An asynchronous expectation which has not finished when a later
+  expectation fails is also left out, instead of being described as
+  satisfied.
+- Fix the failure messages for `IterableChecks.every` and for `Condition`
+  elements in `IterableChecks.deepEquals` to keep the nested property for the
+  element that failed, for example `Actual: has field: 'foo'` instead of
+  `Actual: 'foo'`. `deepEquals` now uses the same format as `every`, with
+  `Which:` in place of `which`.
+- Add `CheckFailure.describeNested` to describe a failure from soft checking
+  a condition within the `which` of another `Rejection`, in the same format
+  as a failure message from `check`.
+- Use the format of a failure message from `check` for the conditions that
+  failed in `StreamChecks.inOrder`, `StreamChecks.anyOf`, and
+  `IterableChecks.pairwiseMatches`. Each failure now has an `Actual:` line,
+  which `inOrder` and `anyOf` previously omitted when the condition failed
+  without collapsing to a single line, and `inOrder` and `anyOf` no longer
+  repeat the `Expected:` description of the condition.
 - Require `package:meta` `^1.17.0`.
 - Use the `Iterable.last` member of the iterable for `IterableChecks.last`
   instead of iterating to the final element.

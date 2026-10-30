@@ -21,13 +21,13 @@ void main() {
     // Actual: a stream
     // Which: failed to satisfy any condition
     // failed the condition at index 0 because it:
-    //   Expected: emits 'starting'
     //   Actual: emits 'ready'
     //   Which: differs at offset 0:
     //     starting
     //     ready
     //     ^
     // failed the condition at index 1 because it:
-    //   emitted an unexpected value: 'ready'
+    //   Actual: a stream
+    //   Which: emitted an unexpected value: 'ready'
   });
 }

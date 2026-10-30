@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:checks/checks.dart';
+import 'package:checks/context.dart';
 import 'package:test/scaffolding.dart';
 
 void main() {
@@ -107,6 +110,70 @@ Expected: a List<int> that:
   equals [2]
 Actual: [1]
 Which: is not equal''');
+    });
+    test('omits an expectation made before an earlier asynchronous '
+        'expectation fails', () async {
+      final subject = check(Future.value(1));
+      final completion = subject.completes(.it()..equals(2));
+      subject.has((f) => 0, 'zero').equals(0);
+      await check(completion).throws<TestFailure>(
+        .it()
+          ..has((f) => f.message, 'message').isNotNull().equals('''
+Expected: a Future<int> that completes to <2>
+Actual: a Future<int> that completes to <1>
+Which: is not equal'''),
+      );
+    });
+    test('omits an asynchronous expectation which has not completed when '
+        'a later expectation fails', () async {
+      final completer = Completer<int>();
+      check(() {
+        check(completer.future)
+          ..completes()
+          ..has((f) => 0, 'zero').equals(1);
+      }).throwsFailure().equals('''
+Expected: a Future<int> that has zero: <1>
+Actual: a Future<int> that has zero: <0>
+Which: is not equal''');
+      completer.complete(1);
+    });
+    test('omits an asynchronous expectation which has not finished when a '
+        'later nested expectation fails', () async {
+      final completer = Completer<Rejection?>();
+      check(() {
+        check(0)
+          ..context.expectAsync(() => ['waits'], (_) => completer.future)
+          ..has((v) => v, 'self').equals(1);
+      }).throwsFailure().equals('''
+Expected: a int that has self: <1>
+Actual: a int that has self: <0>
+Which: is not equal''');
+      completer.complete(null);
+    });
+    test('omits expectations after an unawaited expectation which fails '
+        'later', () async {
+      Object? failure;
+      final completer = Completer<int>();
+      runZonedGuarded(
+        () {
+          check(completer.future)
+            ..doesNotComplete
+            ..has((f) => 0, 'zero').equals(0);
+          completer.complete(1);
+        },
+        (e, _) {
+          failure = e;
+        },
+      );
+      await pumpEventQueue();
+      check(failure)
+          .isA<TestFailure>()
+          .has((f) => f.message, 'message')
+          .isNotNull()
+          .equals('''
+Expected: a Future<int> that:
+  does not complete
+Actual: a future that completed to <1>''');
     });
   });
 }
