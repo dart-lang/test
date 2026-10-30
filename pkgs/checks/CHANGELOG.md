@@ -121,6 +121,8 @@
   without collapsing to a single line, and `inOrder` and `anyOf` no longer
   repeat the `Expected:` description of the condition.
 - Require `package:meta` `^1.17.0`.
+- Use the `Iterable.last` member of the iterable for `IterableChecks.last`
+  instead of iterating to the final element.
 
 ## 0.3.2
 

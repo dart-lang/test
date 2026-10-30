@@ -34,6 +34,9 @@ void main() {
         <Object>[],
       ).isRejectedBy(.it()..last.equals(0), which: ['has no elements']);
     });
+    test('uses the last member of the iterable', () {
+      check(_LastOverride([0, 1], 42)).last.equals(42);
+    });
   });
 
   group('single', () {
@@ -473,4 +476,16 @@ extension on Subject<_Foo> {
 
 extension on Subject<_Wrapper> {
   Subject<Object?> get value => has((w) => w.value, 'value');
+}
+
+/// An iterable whose [last] member returns a value which is not the final
+/// element produced by its [iterator].
+class _LastOverride extends Iterable<int> {
+  final List<int> _elements;
+  @override
+  final int last;
+  _LastOverride(this._elements, this.last);
+
+  @override
+  Iterator<int> get iterator => _elements.iterator;
 }
