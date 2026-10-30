@@ -169,8 +169,8 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
       (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
-            actual: ['a stream'],
-            which: ['closed without emitting enough values'],
+            actual: ['a stream that closed'],
+            which: ['did not emit a value'],
           );
         }
         try {
@@ -178,7 +178,7 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           return Extracted.value(await actual.next);
         } catch (e, st) {
           return Extracted.rejection(
-            actual: prefixFirst('a stream with error ', literal(e)),
+            actual: prefixFirst('a stream that emitted error ', literal(e)),
             which: [
               'emitted an error instead of a value at:',
               ...indent(LineSplitter.split(st.toString())),
@@ -217,22 +217,22 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
       (actual) async {
         if (!await actual.hasNext) {
           return Extracted.rejection(
-            actual: ['a stream'],
-            which: ['closed without emitting an expected error'],
+            actual: ['a stream that closed'],
+            which: ['did not emit an error'],
           );
         }
         try {
           final value = await actual.peek;
           return Extracted.rejection(
-            actual: prefixFirst('a stream emitting value ', literal(value)),
-            which: ['closed without emitting an error'],
+            actual: prefixFirst('a stream that emitted ', literal(value)),
+            which: ['emitted a value instead of an error'],
           );
         } on E catch (e) {
           await actual.next.then<void>((_) {}, onError: (_) {});
           return Extracted.value(e);
         } catch (e, st) {
           return Extracted.rejection(
-            actual: prefixFirst('a stream with error ', literal(e)),
+            actual: prefixFirst('a stream that emitted error ', literal(e)),
             which: [
               'emitted an error which is not $E at:',
               ...indent(LineSplitter.split(st.toString())),
@@ -272,16 +272,22 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         ];
       },
       (actual) async {
-        var count = 0;
+        final emitted = _EmittedValues<T>();
         while (await actual.hasNext) {
-          if (await condition.softCheck(await actual.next) == null) {
+          final value = await actual.next;
+          if (await condition.softCheck(value) == null) {
             return null;
           }
-          count++;
+          emitted.add(value);
         }
         return Rejection(
-          actual: ['a stream'],
-          which: ['ended after emitting $count elements with none matching'],
+          actual: emitted.count == 0
+              ? ['a stream that closed']
+              : prefixFirst(
+                  'a stream that closed after emitting ',
+                  emitted.describe(),
+                ),
+          which: ['did not emit a matching value'],
         );
       },
     );
@@ -313,39 +319,14 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           descriptions.addAll(await condition.describe());
           final failure = await condition.softCheck(actual);
           if (failure != null) {
-            final which = failure.rejection.which;
             return Rejection(
               actual: ['a stream'],
               which: [
                 if (satisfiedCount > 0)
                   'satisfied $satisfiedCount conditions then',
                 'failed to satisfy the condition at index $satisfiedCount',
-                if (failure.detail.collapsedDetails case (
-                  final expected,
-                  final actual,
-                )) ...[
-                  'because it:',
-                  '  Expected: $expected',
-                  '  Actual: $actual',
-                  if (which != null) ...indent(prefixFirst('Which: ', which)),
-                ] else if (failure.detail.depth > 0) ...[
-                  'because it:',
-                  ...indent(
-                    failure.detail.actual.skip(1),
-                    failure.detail.depth - 1,
-                  ),
-                  ...indent(
-                    prefixFirst('Actual: ', failure.rejection.actual),
-                    failure.detail.depth,
-                  ),
-                  if (which != null)
-                    ...indent(
-                      prefixFirst('Which: ', which),
-                      failure.detail.depth,
-                    ),
-                ] else ...[
-                  if (which != null) ...prefixFirst('because it ', which),
-                ],
+                'because it:',
+                ...indent(failure.describeNested()),
               ],
             );
           }
@@ -406,44 +387,14 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
           return null;
         }
         transaction.reject();
-        Iterable<String> failureDetails(int index, CheckFailure? failure) {
-          final actual = failure!.rejection.actual;
-          final which = failure.rejection.which;
-          final detail = failure.detail;
-          final failed = 'failed the condition at index $index';
-          if (detail.collapsedDetails case (final expected, final actual)) {
-            return [
-              '$failed because it:',
-              '  Expected: $expected',
-              '  Actual: $actual',
-              if (which != null) ...indent(prefixFirst('Which: ', which)),
-            ];
-          } else if (detail.depth > 0) {
-            return [
-              '$failed because it:',
-              ...indent(detail.actual.skip(1), detail.depth - 1),
-              ...indent(prefixFirst('Actual: ', actual), detail.depth),
-              if (which != null)
-                ...indent(prefixFirst('Which: ', which), detail.depth),
-            ];
-          } else {
-            return [
-              if (which == null)
-                failed
-              else ...[
-                '$failed because it:',
-                ...indent(which),
-              ],
-            ];
-          }
-        }
-
         return Rejection(
           actual: ['a stream'],
           which: [
             'failed to satisfy any condition',
-            for (var i = 0; i < failures.length; i++)
-              ...failureDetails(i, failures[i]),
+            for (var i = 0; i < failures.length; i++) ...[
+              'failed the condition at index $i because it:',
+              ...indent(failures[i]!.describeNested()),
+            ],
           ],
         );
       },
@@ -474,18 +425,18 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
         return ['never emits a value satisfying an asynchronous condition'];
       },
       (actual) async {
-        var count = 0;
-        await for (var emitted in actual.rest) {
-          if (await condition.softCheck(emitted) == null) {
+        final emitted = _EmittedValues<T>();
+        await for (var value in actual.rest) {
+          emitted.add(value);
+          if (await condition.softCheck(value) == null) {
             return Rejection(
-              actual: ['a stream'],
-              which: [
-                ...prefixFirst('emitted ', literal(emitted)),
-                if (count > 0) 'following $count other items',
-              ],
+              actual: prefixFirst('a stream that emitted ', emitted.describe()),
+              which: prefixFirst(
+                'emitted a matching value at index ${emitted.count - 1}: ',
+                literal(value),
+              ),
             );
           }
-          count++;
         }
         return null;
       },
@@ -574,27 +525,49 @@ extension StreamChecks<T> on Subject<StreamQueue<T>> {
     await _expectAsync(() => ['is done'], (actual) async {
       if (!await actual.hasNext) return null;
       try {
+        final value = await actual.next;
         return Rejection(
-          actual: ['a stream'],
-          which: prefixFirst(
-            'emitted an unexpected value: ',
-            literal(await actual.next),
-          ),
+          actual: prefixFirst('a stream that emitted ', literal(value)),
+          which: ['emitted a value before closing'],
         );
       } catch (e, st) {
         return Rejection(
-          actual: ['a stream'],
+          actual: prefixFirst('a stream that emitted error ', literal(e)),
           which: [
-            ...prefixFirst(
-              'emitted an unexpected error: ',
-              postfixLast(' at:', literal(e)),
-            ),
+            'emitted an error before closing at:',
             ...indent(LineSplitter.split(st.toString())),
           ],
         );
       }
     });
   }
+}
+
+/// The values emitted by a stream while checking an expectation, for
+/// describing the stream in a rejection.
+///
+/// Keeps only the first [_limit] values, along with the [count] of all values,
+/// so that checking a long stream does not hold on to every value.
+class _EmittedValues<T> {
+  static const _limit = 25;
+
+  final _values = <T>[];
+
+  /// The number of values emitted, including those which were not kept.
+  int count = 0;
+
+  void add(T value) {
+    if (_values.length < _limit) _values.add(value);
+    count++;
+  }
+
+  /// A description of the emitted values.
+  ///
+  /// Lists the values, for example `[1, 2, 3]`, or when there are more values
+  /// than were kept, `30 values, starting with [1, 2, 3, ...]`.
+  Iterable<String> describe() => count <= _limit
+      ? literal(_values)
+      : prefixFirst('$count values, starting with ', literal(_values));
 }
 
 extension WithQueueExtension<T> on Subject<Stream<T>> {

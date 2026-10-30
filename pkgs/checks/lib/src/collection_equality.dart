@@ -160,16 +160,9 @@ List<String>? _compareValue(
   } else if (expectedValue is Condition) {
     final failure = expectedValue.softCheckSync(actualValue);
     if (failure != null) {
-      final which = failure.rejection.which;
       return [
         'has an element ${path.append(pathAppend)}that:',
-        ...indent(failure.detail.actual.skip(1)),
-        ...indent(
-          prefixFirst('Actual: ', failure.rejection.actual),
-          failure.detail.depth + 1,
-        ),
-        if (which != null)
-          ...indent(prefixFirst('which ', which), failure.detail.depth + 1),
+        ...indent(failure.describeNested()),
       ];
     }
   } else {
