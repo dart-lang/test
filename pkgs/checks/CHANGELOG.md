@@ -93,6 +93,8 @@
   example `only has elements where each is less than <10>`, so that it reads
   as a sentence when nested in another condition.
 - Require `package:meta` `^1.17.0`.
+- Use the `Iterable.last` member of the iterable for `IterableChecks.last`
+  instead of iterating to the final element.
 
 ## 0.3.2
 
