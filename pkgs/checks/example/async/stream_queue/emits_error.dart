@@ -14,8 +14,8 @@ void main() {
     await check(Stream.fromIterable([1, 2, 3])).withQueue.emitsError();
     // Expected: a Stream<int> that:
     //   emits an error
-    // Actual: a stream emitting value <1>
-    // Which: closed without emitting an error
+    // Actual: a stream that emitted <1>
+    // Which: emitted a value instead of an error
   });
 
   test('emitsError when the error has a different type', () async {
@@ -24,7 +24,7 @@ void main() {
     ).withQueue.emitsError<ArgumentError>();
     // Expected: a Stream<int> that:
     //   emits an error of type ArgumentError
-    // Actual: a stream with error <Bad state: nope>
+    // Actual: a stream that emitted error <Bad state: nope>
     // Which: emitted an error which is not ArgumentError at:
   });
 }

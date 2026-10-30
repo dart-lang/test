@@ -120,6 +120,15 @@
   which `inOrder` and `anyOf` previously omitted when the condition failed
   without collapsing to a single line, and `inOrder` and `anyOf` no longer
   repeat the `Expected:` description of the condition.
+- Describe what the stream did in the `Actual:` line of failures from
+  `StreamChecks.emits`, `emitsError`, `emitsThrough`, `neverEmits`, and
+  `isDone`, instead of `a stream`. For example `emitsThrough` reports
+  `Actual: a stream that closed after emitting ['a', 'b', 'c']` and
+  `neverEmits` reports the values up to and including the matching one. Up to
+  the first 25 values are listed, along with the total count for a longer
+  stream.
+- Fix the failure message for `StreamChecks.emitsError` when the stream emits
+  a value, which said `closed without emitting an error`.
 - Require `package:meta` `^1.17.0`.
 - Use the `Iterable.last` member of the iterable for `IterableChecks.last`
   instead of iterating to the final element.
