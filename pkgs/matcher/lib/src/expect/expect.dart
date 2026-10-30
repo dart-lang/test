@@ -184,9 +184,18 @@ Future _expect(
       return Future.sync(() {});
     }
   } catch (e, trace) {
-    reason ??= '$e at $trace';
+    // The matcher didn't finish populating `matchState`, so it can't describe
+    // the mismatch.
+    fail(
+      formatFailure(
+        matcher as Matcher,
+        actual,
+        '',
+        reason: reason ?? '$e at $trace',
+      ),
+    );
   }
-  fail(formatter(actual, matcher as Matcher, reason, matchState, verbose));
+  fail(formatter(actual, matcher, reason, matchState, verbose));
 }
 
 /// Convenience method for throwing a new [TestFailure] with the provided
