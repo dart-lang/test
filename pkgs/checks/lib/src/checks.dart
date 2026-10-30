@@ -1001,7 +1001,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// a soft check a failure does not stop further clauses being added, and an
   /// unawaited expectation may fail after later clauses are added.
   CheckFailure _failure(Rejection rejection, _ClauseDescription expectation) =>
-      CheckFailure(
+      CheckFailure._(
         rejection,
         () => _root.detail(this, rejection, failingClause: expectation),
       );
@@ -1147,7 +1147,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     if (expandedCollapsed == null) return null;
 
-    return FailureDetail(
+    return FailureDetail._(
       [expandedCollapsed.$1],
       -1,
       0,
@@ -1221,7 +1221,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     var foundOverlap = thisContextFailed ? 0 : -1;
     var foundDepth = thisContextFailed ? 0 : -1;
     if (clauses.isEmpty) {
-      return FailureDetail(_labelCallback(), foundOverlap, foundDepth);
+      return FailureDetail._(_labelCallback(), foundOverlap, foundDepth);
     }
 
     final expected = [...postfixLast(' that:', _labelCallback())];
@@ -1549,7 +1549,7 @@ class _ExpectationClause implements _ClauseDescription {
         collapsedDetails = (collapsedExpected, collapsedActual);
       }
     }
-    return FailureDetail(
+    return FailureDetail._(
       _expected(),
       -1,
       -1,
@@ -1619,7 +1619,7 @@ final class CheckFailure {
 
   final FailureDetail Function() _readDetail;
 
-  CheckFailure(this.rejection, this._readDetail);
+  CheckFailure._(this.rejection, this._readDetail);
 
   /// The "Actual:" and "Which:" lines describing this failure, for use within
   /// the `which` of another [Rejection], nested under a line which describes
@@ -1768,23 +1768,14 @@ final class FailureDetail {
   /// replaces the label line.
   final bool _actualHasLabel;
 
-  FailureDetail(
+  FailureDetail._(
     this.expected,
     this._actualOverlap,
     this.depth, {
     this.collapsedDetails,
     Iterable<String>? actual,
+    bool actualHasLabel = true,
   }) : _actual = actual,
-       _actualHasLabel = true;
-
-  FailureDetail._(
-    this.expected,
-    this._actualOverlap,
-    this.depth, {
-    Iterable<String>? actual,
-    required bool actualHasLabel,
-  }) : _actual = actual,
-       collapsedDetails = null,
        _actualHasLabel = actualHasLabel;
 }
 
