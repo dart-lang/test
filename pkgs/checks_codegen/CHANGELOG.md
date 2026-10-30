@@ -2,6 +2,7 @@
 
 * Remove unused `matcher` dependency.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
+* Skip private fields, which are not accessible from the generated library.
 
 ## 0.1.0
 
