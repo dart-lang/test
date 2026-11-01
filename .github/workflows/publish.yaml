@@ -33,7 +33,7 @@ jobs:
     needs: package
     permissions:
       id-token: write
-    uses: dart-lang/setup-dart/.github/workflows/publish.yml@a5bff6576dfc51b47eb77d4b7084bba6a4daf8d2 # main
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@a1d8526c926344e01ba48a7368788c05ac98cb29 # main
     with:
       working-directory: ${{ needs.package.outputs.directory }}
       use-flutter: false
