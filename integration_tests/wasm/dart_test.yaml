@@ -3,3 +3,7 @@ platforms: [chrome, firefox]
 # old to support WASM+GC, which would be required to run Dart tests.
 #platforms: [chrome, firefox, node]
 compilers: [dart2wasm]
+
+# Without a suite load timeout, a browser that never connects hangs the run
+# instead of failing with a report of what the browser did.
+suite_load_timeout: 2m

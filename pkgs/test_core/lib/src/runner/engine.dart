@@ -178,6 +178,15 @@ class Engine {
   Set<LiveTest> get failed => _failedGroup.set;
   final _failedGroup = UnionSetController<LiveTest>(disjoint: true);
 
+  /// The set of tests that failed at least one attempt and then passed on
+  /// retry.
+  ///
+  /// This includes synthetic tests such as `setUpAll` and `tearDownAll`, which
+  /// are not counted in [passed]. Regular tests in this set are also in
+  /// [passed], so it is not part of [liveTests].
+  Set<LiveTest> get flaky => _flakyGroup.set;
+  final _flakyGroup = UnionSetController<LiveTest>(disjoint: true);
+
   /// The tests that are still running, in the order they began running.
   List<LiveTest> get active => UnmodifiableListView(_active);
   final _active = QueueList<LiveTest>();
@@ -565,6 +574,7 @@ class Engine {
     _passedGroup.add(liveSuite.passed);
     _skippedGroup.add(liveSuite.skipped);
     _failedGroup.add(liveSuite.failed);
+    _flakyGroup.add(liveSuite.flaky);
   }
 
   /// Pauses the engine.

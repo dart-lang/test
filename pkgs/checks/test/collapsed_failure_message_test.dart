@@ -56,7 +56,7 @@ Expected: a List<int> that:
       final checkFuture = check(future).completes(.it()..equals(2));
       await check(checkFuture).throws<TestFailure>(
         .it()
-          ..has((f) => f.message, 'message').isNotNull().equals('''
+          ..has2('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<int> that completes to <2>
 Actual: a Future<int> that completes to <1>
 Which: is not equal'''),
@@ -514,7 +514,7 @@ Which: is not equal''');
         final checkStream = check(stream).withQueue.emits(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has2('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<int> that emits <2>
 Actual: a Stream<int> that emits <1>
 Which: is not equal'''),
@@ -528,7 +528,7 @@ Which: is not equal'''),
         ).withQueue.emitsError<int>(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has2('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<int> that emits error <2>
 Actual: a Stream<int> that emits error <1>
 Which: is not equal'''),
@@ -540,7 +540,7 @@ Which: is not equal'''),
         final checkFuture = check(future).throws<int>(.it()..equals(2));
         await check(checkFuture).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has2('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<void> that throws <2>
 Actual: a Future<void> that throws <1>
 Which: is not equal'''),
@@ -605,7 +605,7 @@ Actual: [Instance of 'Foo']
 Which: contains no matching element''');
       });
 
-      test('any over the length limit does not collapse', () {
+      test('any over the length limit collapses its clause', () {
         check(() {
           check([Foo('foo')]).any(
             .it()
@@ -616,9 +616,36 @@ Which: contains no matching element''');
           );
         }).throwsFailure().equals('''
 Expected: a List<Foo> that:
-  contains a value that:
-    has a long property name: 'a long expected value'
+  contains a value that has a long property name: 'a long expected value'
 Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any with a clause over the length limit does not collapse', () {
+        check(() {
+          check([Foo('foo')]).any(
+            .it()
+              ..has(
+                (f) => f.field,
+                'a much longer property name for testing',
+              ).equals('a long expected value'),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<Foo> that:
+  contains a value that:
+    has a much longer property name for testing: 'a long expected value'
+Actual: [Instance of 'Foo']
+Which: contains no matching element''');
+      });
+
+      test('any within any collapses', () {
+        check(() {
+          check([
+            [1],
+          ]).any(.it()..any(.it()..isGreaterThan(1)));
+        }).throwsFailure().equals('''
+Expected: an iterable containing a value that contains a value that is greater than <1>
+Actual: [[1]]
 Which: contains no matching element''');
       });
 
@@ -626,11 +653,67 @@ Which: contains no matching element''');
         check(() {
           check([1, 2]).every(.it()..isGreaterThan(1));
         }).throwsFailure().equals('''
-Expected: an iterable where every value is greater than <1>
+Expected: an iterable where every element is greater than <1>
 Actual: [1, 2]
 Which: has an element at index 0 that:
   Actual: <1>
   Which: is not greater than <1>''');
+      });
+
+      test('every with multiple expectations does not collapse', () {
+        check(() {
+          check([1, 2]).every(
+            .it()
+              ..isGreaterThan(0)
+              ..isLessThan(2),
+          );
+        }).throwsFailure().equals('''
+Expected: a List<int> that:
+  only has elements where each:
+    is greater than <0>
+    is less than <2>
+Actual: [1, 2]
+Which: has an element at index 1 that:
+  Actual: <2>
+  Which: is not less than <2>''');
+      });
+
+      test('every within every collapses', () {
+        check(() {
+          check([
+            [1, 20],
+          ]).every(.it()..every(.it()..isLessThan(10)));
+        }).throwsFailure().equals('''
+Expected: an iterable where every element only has elements where each is less than <10>
+Actual: [[1, 20]]
+Which: has an element at index 0 that:
+  Actual: [1, 20]
+  Which: has an element at index 1 that:
+    Actual: <20>
+    Which: is not less than <10>''');
+      });
+
+      test('every within any collapses its clause', () {
+        check(() {
+          check([
+            [1, 20],
+          ]).any(.it()..every(.it()..isLessThan(10)));
+        }).throwsFailure().equals('''
+Expected: a List<List<int>> that:
+  contains a value that only has elements where each is less than <10>
+Actual: [[1, 20]]
+Which: contains no matching element''');
+      });
+
+      test('every within containsKeyThat collapses', () {
+        check(() {
+          check({
+            [1, 20]: 0,
+          }).containsKeyThat(.it()..every(.it()..isLessThan(10)));
+        }).throwsFailure().equals('''
+Expected: a map containing a key that only has elements where each is less than <10>
+Actual: {[1, 20]: 0}
+Which: contains no matching key''');
       });
 
       test('containsKeyThat collapses', () {
@@ -804,10 +887,10 @@ class Foo {
 }
 
 extension on Subject<Foo> {
-  Subject<String> get someField => has((f) => f.field, 'someField');
+  Subject<String> get someField => has2('someField', (f) => f.field);
 }
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
-      throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
+      throws<TestFailure>().has2('message', (f) => f.message).isNotNull();
 }

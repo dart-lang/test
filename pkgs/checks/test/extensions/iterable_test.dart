@@ -34,6 +34,9 @@ void main() {
         <Object>[],
       ).isRejectedBy(.it()..last.equals(0), which: ['has no elements']);
     });
+    test('uses the last member of the iterable', () {
+      check(_LastOverride([0, 1], 42)).last.equals(42);
+    });
   });
 
   group('single', () {
@@ -208,6 +211,108 @@ void main() {
         ],
       );
     });
+
+    test('includes the property for a collapsed nested failure', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(.it()..field.equals('bar')),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          "  Actual: has field: 'foo'",
+          '  Which: differs at offset 0:',
+          '    bar',
+          '    foo',
+          '    ^',
+        ],
+      );
+    });
+
+    test('includes the property when only the actual collapses', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..field.which(
+              .it()
+                ..startsWith('f')
+                ..endsWith('x'),
+            ),
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          "  Actual: has field: 'foo'",
+          "  Which: does not end with 'x'",
+        ],
+      );
+    });
+
+    test('omits clauses after the failing clause', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..field.startsWith('f')
+            ..field.equals('bar')
+            ..field.length.equals(999),
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          '  Actual:',
+          "    has field: a string starting with 'f'",
+          "    has field: 'foo'",
+          '    Which: differs at offset 0:',
+          '      bar',
+          '      foo',
+          '      ^',
+        ],
+      );
+    });
+
+    test('collapses when the failing clause is followed by others', () {
+      check([_Wrapper(123)]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..value.equals(1)
+            ..value.equals(5),
+        ),
+        actual: ["[Instance of '_Wrapper']"],
+        which: [
+          'has an element at index 0 that:',
+          '  Actual: has value: <123>',
+          '  Which: is not equal',
+        ],
+      );
+    });
+
+    test('includes passing clauses before a failing clause', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..every(
+          .it()
+            ..field.equals('foo')
+            ..field.length.equals(4),
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'has an element at index 0 that:',
+          '  Actual:',
+          "    has field: 'foo'",
+          '    has field that has length: <3>',
+          '    Which: is not equal',
+        ],
+      );
+    });
+
+    test('describes a rejected guard within the condition', () {
+      check([_Wrapper(123)]).isRejectedBy(
+        .it()..every(.it()..value.isA<_Foo>().field.equals('bar')),
+        actual: ["[Instance of '_Wrapper']"],
+        which: [
+          'has an element at index 0 that:',
+          '  Actual: has value: <123>',
+          '  Which: is a int',
+        ],
+      );
+    });
   });
 
   group('unorderedEquals', () {
@@ -285,8 +390,48 @@ void main() {
         which: [
           'does not have an element at index 1 that:',
           '  is less than <1>',
-          '  Actual element at index 1: <1>',
+          '  Actual: <1>',
           '  Which: is not less than <1>',
+        ],
+      );
+    });
+    test('includes the property for a nested failure', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..pairwiseMatches(
+          ['bar'],
+          (expected) => .it()..field.equals(expected),
+          'has field',
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'does not have an element at index 0 that:',
+          "  has field: 'bar'",
+          "  Actual: has field: 'foo'",
+          '  Which: differs at offset 0:',
+          '    bar',
+          '    foo',
+          '    ^',
+        ],
+      );
+    });
+    test('separates the condition from an actual which does not collapse', () {
+      check([_Foo('foo')]).isRejectedBy(
+        .it()..pairwiseMatches(
+          [4],
+          (expected) => .it()
+            ..field.equals('foo')
+            ..field.length.equals(expected),
+          'has field',
+        ),
+        actual: ["[Instance of '_Foo']"],
+        which: [
+          'does not have an element at index 0 that:',
+          "  has field: 'foo'",
+          '  has field that has length: <4>',
+          '  Actual:',
+          "    has field: 'foo'",
+          '    has field that has length: <3>',
+          '    Which: is not equal',
         ],
       );
     });
@@ -313,4 +458,34 @@ void main() {
       );
     });
   });
+}
+
+class _Foo {
+  final String field;
+  _Foo(this.field);
+}
+
+class _Wrapper {
+  final Object? value;
+  _Wrapper(this.value);
+}
+
+extension on Subject<_Foo> {
+  Subject<String> get field => has((f) => f.field, 'field');
+}
+
+extension on Subject<_Wrapper> {
+  Subject<Object?> get value => has((w) => w.value, 'value');
+}
+
+/// An iterable whose [last] member returns a value which is not the final
+/// element produced by its [iterator].
+class _LastOverride extends Iterable<int> {
+  final List<int> _elements;
+  @override
+  final int last;
+  _LastOverride(this._elements, this.last);
+
+  @override
+  Iterator<int> get iterator => _elements.iterator;
 }
