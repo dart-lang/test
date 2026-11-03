@@ -32,6 +32,103 @@ void main() {
     );
   });
 
+  test('closeTo with integer limits', () {
+    var min = int.parse('-9223372036854775808');
+    var max = int.parse('9223372036854775807');
+    shouldFail(
+      min,
+      closeTo(0, 0),
+      endsWith('differs by <9223372036854775808>'),
+    );
+    shouldFail(
+      max,
+      closeTo(min, max),
+      endsWith('differs by <18446744073709551615>'),
+    );
+    shouldFail(
+      min,
+      closeTo(max, max),
+      endsWith('differs by <18446744073709551615>'),
+    );
+    shouldPass(max, closeTo(0, max));
+    shouldFail(
+      min,
+      closeTo(0, max),
+      endsWith('differs by <9223372036854775808>'),
+    );
+    shouldPass(min, closeTo(0, 9223372036854775808.0));
+    shouldPass(max - 1, closeTo(max, 1));
+    shouldPass(min + 1, closeTo(min, 1));
+  }, skip: identical(1, 1.0));
+
+  test('closeTo preserves integer precision with double values', () {
+    var large = int.parse('9007199254740993');
+    shouldFail(
+      large,
+      closeTo(0, 9007199254740992.0),
+      endsWith('differs by <9007199254740993>'),
+    );
+    shouldFail(
+      large,
+      closeTo(9007199254740992.0, 0),
+      endsWith('differs by <1>'),
+    );
+    shouldFail(
+      9007199254740992.0,
+      closeTo(large, 0),
+      endsWith('differs by <1>'),
+    );
+    shouldPass(large, closeTo(9007199254740992.0, 1));
+  }, skip: identical(1, 1.0));
+
+  test(
+    'closeTo preserves distances beyond double precision on all platforms',
+    () {
+      const large = 9007199254740992;
+      shouldFail(
+        -1,
+        closeTo(large, large),
+        endsWith('differs by <9007199254740993>'),
+      );
+      shouldFail(
+        large,
+        closeTo(-1, large),
+        endsWith('differs by <9007199254740993>'),
+      );
+      shouldPass(0, closeTo(large, large));
+    },
+  );
+
+  test('closeTo with non-finite numbers and negative deltas', () {
+    for (var value in [
+      0,
+      0.0,
+      double.infinity,
+      double.negativeInfinity,
+      double.nan,
+    ]) {
+      expect(closeTo(value, double.nan).matches(value, {}), isFalse);
+      expect(closeTo(value, -1).matches(value, {}), isFalse);
+      expect(
+        closeTo(value, double.negativeInfinity).matches(value, {}),
+        isFalse,
+      );
+      expect(closeTo(value, double.infinity).matches(double.nan, {}), isFalse);
+    }
+    shouldPass(1, closeTo(0, double.infinity));
+    shouldPass(double.infinity, closeTo(0, double.infinity));
+    shouldPass(0, closeTo(double.infinity, double.infinity));
+    expect(
+      closeTo(double.infinity, double.infinity).matches(double.infinity, {}),
+      isFalse,
+    );
+    expect(closeTo(0, 1).matches(double.infinity, {}), isFalse);
+    shouldPass(1.25, closeTo(1, 0.25));
+    shouldPass(1, closeTo(1.25, 0.25));
+    shouldPass(1, closeTo(1, 0.5));
+    expect(closeTo(1, 0.5).matches(2, {}), isFalse);
+  });
+
   test('inInclusiveRange', () {
     shouldFail(
       -1,
