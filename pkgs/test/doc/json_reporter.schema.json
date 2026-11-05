@@ -188,7 +188,8 @@
         "testID": {"type": "integer", "minimum": 0},
         "result": {"type": "string", "enum": ["success", "failure", "error"]},
         "hidden": {"type": "boolean"},
-        "skipped": {"type": "boolean"}
+        "skipped": {"type": "boolean"},
+        "retried": {"type": "boolean"}
       }
     },
 

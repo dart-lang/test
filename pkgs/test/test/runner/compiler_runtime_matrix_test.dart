@@ -210,7 +210,7 @@ void main() {
               );
               await test.shouldExit(0);
             },
-            skip: compiler == Compiler.cli
+            skip: compiler == Compiler.cli && !supportsCliCompilerAsserts
                 ? 'https://github.com/dart-lang/test/issues/2718'
                 : runtime == Runtime.safari
                 ? 'https://github.com/dart-lang/test/issues/2720'

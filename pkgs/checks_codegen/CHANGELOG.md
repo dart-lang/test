@@ -1,5 +1,6 @@
 ## 0.1.1-wip
 
+* Remove unused `matcher` dependency.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
 * Import the types used as type arguments in field types, for example `Bar`
   in a field of type `List<Bar>`.
@@ -13,7 +14,6 @@
   Prefer libraries outside of `src/`, and import types declared in private
   SDK libraries, such as `HttpClient`, through a public SDK library.
 
- 
 ## 0.1.0
 
 -   Initial release.

@@ -31,16 +31,13 @@ void main() {
         );
         await check(
           Condition.it<Future>()..completes(.it()..equals(42)),
-        ).hasAsyncDescriptionWhich(
-          .it()
-            ..deepEquals(['  completes to a value that:', '    equals <42>']),
-        );
+        ).hasAsyncDescriptionWhich(.it()..deepEquals(['  completes to <42>']));
       });
       test(
         'allows async expectation on subject extracted synchronously',
         () async {
           final condition = Condition.it<List<Future<int>>>()
-            ..has((l) => l.first, 'first').completes(.it()..equals(42));
+            ..has2('first', (l) => l.first).completes(.it()..equals(42));
           final failure1 = await condition.softCheck([Future.value(42)]);
           check(failure1).isNull;
           final failure2 = await condition.softCheck([Future.value(0)]);
@@ -57,7 +54,7 @@ void main() {
         'succeeds for a future that compeletes to an error of the expected type',
         () async {
           await check(_futureFail()).throws<UnimplementedError>(
-            .it()..has((p0) => p0.message, 'message').isNull,
+            .it()..has2('message', (p0) => p0.message).isNull,
           );
         },
       );
@@ -95,7 +92,7 @@ void main() {
       });
       test('returns Future<Subject> and can be awaited', () async {
         (await check(_futureFail()).throws<UnimplementedError>())
-            .has((p0) => p0.message, 'message')
+            .has2('message', (p0) => p0.message)
             .isNull;
       });
     });
@@ -119,7 +116,7 @@ void main() {
         await pumpEventQueue();
         check(testFailure)
             .isA<TestFailure>()
-            .has((f) => f.message, 'message')
+            .has2('message', (f) => f.message)
             .isNotNull()
             .equals('''
 Expected: a Future<String> that:
@@ -144,7 +141,7 @@ Actual: a future that completed to 'value\'''');
         await pumpEventQueue();
         check(testFailure)
             .isA<TestFailure>()
-            .has((f) => f.message, 'message')
+            .has2('message', (f) => f.message)
             .isNotNull()
             .equals('''
 Expected: a Future<String> that:
@@ -169,14 +166,16 @@ Which: threw 'error' at:
       test('fails for a stream that closes without emitting', () async {
         await check(_countingStream(0)).isRejectedByAsync(
           .it()..emits(),
-          actual: ['a stream'],
-          which: ['closed without emitting enough values'],
+          actual: ['a stream that closed'],
+          which: ['did not emit a value'],
         );
       });
       test('fails for a stream that emits an error', () async {
         await check(_countingStream(1, errorAt: 0)).isRejectedByAsync(
           .it()..emits(),
-          actual: ['a stream with error <UnimplementedError: Error at 1>'],
+          actual: [
+            'a stream that emitted error <UnimplementedError: Error at 1>',
+          ],
           which: ['emitted an error instead of a value at:', '  fake trace'],
         );
       });
@@ -186,9 +185,7 @@ Which: threw 'error' at:
         ).hasAsyncDescriptionWhich(.it()..deepEquals(['  emits a value']));
         await check(
           Condition.it<StreamQueue<int>>()..emits(.it()..equals(42)),
-        ).hasAsyncDescriptionWhich(
-          .it()..deepEquals(['  emits a value that:', '    equals <42>']),
-        );
+        ).hasAsyncDescriptionWhich(.it()..deepEquals(['  emits <42>']));
       });
       test('does not consume error', () async {
         final queue = _countingStream(1, errorAt: 0);
@@ -211,16 +208,16 @@ Which: threw 'error' at:
         () async {
           await check(_countingStream(0)).isRejectedByAsync(
             .it()..emitsError(),
-            actual: ['a stream'],
-            which: ['closed without emitting an expected error'],
+            actual: ['a stream that closed'],
+            which: ['did not emit an error'],
           );
         },
       );
       test('fails for a stream that emits value', () async {
         await check(_countingStream(1)).isRejectedByAsync(
           .it()..emitsError(),
-          actual: ['a stream emitting value <0>'],
-          which: ['closed without emitting an error'],
+          actual: ['a stream that emitted <0>'],
+          which: ['emitted a value instead of an error'],
         );
       });
       test(
@@ -228,7 +225,9 @@ Which: threw 'error' at:
         () async {
           await check(_countingStream(1, errorAt: 0)).isRejectedByAsync(
             .it()..emitsError<StateError>(),
-            actual: ['a stream with error <UnimplementedError: Error at 1>'],
+            actual: [
+              'a stream that emitted error <UnimplementedError: Error at 1>',
+            ],
             which: [
               'emitted an error which is not StateError at:',
               '  fake trace',
@@ -247,13 +246,11 @@ Which: threw 'error' at:
         );
         await check(
           Condition.it<StreamQueue<void>>()..emitsError<StateError>(
-            .it()..has((e) => e.message, 'message').equals('foo'),
+            .it()..has2('message', (e) => e.message).equals('foo'),
           ),
         ).hasAsyncDescriptionWhich(
           .it()..deepEquals([
-            '  emits an error of type StateError that:',
-            '    has message that:',
-            '      equals \'foo\'',
+            "  emits an error of type StateError that has message: 'foo'",
           ]),
         );
       });
@@ -266,7 +263,7 @@ Which: threw 'error' at:
         (await check(
               _countingStream(1, errorAt: 0),
             ).emitsError<UnimplementedError>())
-            .has((e) => e.message, 'message')
+            .has2('message', (e) => e.message)
             .equals('Error at 1');
       });
     });
@@ -283,11 +280,23 @@ Which: threw 'error' at:
         () async {
           await check(_countingStream(4)).isRejectedByAsync(
             .it()..emitsThrough(.it()..equals(5)),
-            actual: ['a stream'],
-            which: ['ended after emitting 4 elements with none matching'],
+            actual: ['a stream that closed after emitting [0, 1, 2, 3]'],
+            which: ['did not emit a matching value'],
           );
         },
       );
+      test('lists only the first 25 values of a long stream', () async {
+        await check(
+          StreamQueue(Stream.fromIterable(List.filled(30, 0))),
+        ).isRejectedByAsync(
+          .it()..emitsThrough(.it()..equals(1)),
+          actual: [
+            'a stream that closed after emitting 30 values, starting with '
+                '${List.filled(25, 0)}',
+          ],
+          which: ['did not emit a matching value'],
+        );
+      });
       test('can be described', () async {
         await check(
           Condition.it<StreamQueue<int>>()..emitsThrough(.it()..equals(42)),
@@ -338,7 +347,9 @@ Which: threw 'error' at:
           which: [
             'satisfied 1 conditions then',
             'failed to satisfy the condition at index 1',
-            'because it closed without emitting enough values',
+            'because it:',
+            '  Actual: a stream that closed',
+            '  Which: did not emit a value',
           ],
         );
       });
@@ -350,7 +361,6 @@ Which: threw 'error' at:
             'satisfied 1 conditions then',
             'failed to satisfy the condition at index 1',
             'because it:',
-            '  Expected: emits <2>',
             '  Actual: emits <1>',
             '  Which: is not equal',
           ],
@@ -395,8 +405,20 @@ Which: threw 'error' at:
       test('fails for a stream that emits a matching value', () async {
         await check(_countingStream(6)).isRejectedByAsync(
           .it()..neverEmits(.it()..equals(5)),
-          actual: ['a stream'],
-          which: ['emitted <5>', 'following 5 other items'],
+          actual: ['a stream that emitted [0, 1, 2, 3, 4, 5]'],
+          which: ['emitted a matching value at index 5: <5>'],
+        );
+      });
+      test('lists only the first 25 values of a long stream', () async {
+        await check(
+          StreamQueue(Stream.fromIterable([...List.filled(29, 0), 1])),
+        ).isRejectedByAsync(
+          .it()..neverEmits(.it()..equals(1)),
+          actual: [
+            'a stream that emitted 30 values, starting with '
+                '${List.filled(25, 0)}',
+          ],
+          which: ['emitted a matching value at index 29: <1>'],
         );
       });
       test('can be described', () async {
@@ -462,7 +484,7 @@ Which: threw 'error' at:
         await (Condition.it<StreamQueue<int>>()..mayEmit(.it()..equals(0)))
             .softCheck(queue);
         await check(queue).emitsError<UnimplementedError>(
-          .it()..has((e) => e.message, 'message').equals('Error at 1'),
+          .it()..has2('message', (e) => e.message).equals('Error at 1'),
         );
       });
       test('can be described', () async {
@@ -515,7 +537,7 @@ Which: threw 'error' at:
               ..mayEmitMultiple(.it()..equals(0)))
             .softCheck(queue);
         await check(queue).emitsError<UnimplementedError>(
-          .it()..has((e) => e.message, 'message').equals('Error at 1'),
+          .it()..has2('message', (e) => e.message).equals('Error at 1'),
         );
       });
       test('consumes a matching async event', () async {
@@ -551,8 +573,8 @@ Which: threw 'error' at:
       test('fails for a stream that emits a value', () async {
         await check(_countingStream(1)).isRejectedByAsync(
           .it()..isDone,
-          actual: ['a stream'],
-          which: ['emitted an unexpected value: <0>'],
+          actual: ['a stream that emitted <0>'],
+          which: ['emitted a value before closing'],
         );
       });
       test('fails for a stream that emits an error', () async {
@@ -560,8 +582,8 @@ Which: threw 'error' at:
         controller.addError('sad', StackTrace.fromString('fake trace'));
         await check(StreamQueue(controller.stream)).isRejectedByAsync(
           .it()..isDone,
-          actual: ['a stream'],
-          which: ['emitted an unexpected error: \'sad\' at:', '  fake trace'],
+          actual: ["a stream that emitted error 'sad'"],
+          which: ['emitted an error before closing at:', '  fake trace'],
         );
       });
       test('uses a transaction', () async {
@@ -590,9 +612,11 @@ Which: threw 'error' at:
           which: [
             'failed to satisfy any condition',
             'failed the condition at index 0 because it:',
-            '  closed without emitting enough values',
+            '  Actual: a stream that closed',
+            '  Which: did not emit a value',
             'failed the condition at index 1 because it:',
-            '  ended after emitting 0 elements with none matching',
+            '  Actual: a stream that closed',
+            '  Which: did not emit a matching value',
           ],
         );
       });
@@ -606,11 +630,11 @@ Which: threw 'error' at:
           which: [
             'failed to satisfy any condition',
             'failed the condition at index 0 because it:',
-            '  Expected: emits <42>',
             '  Actual: emits <0>',
             '  Which: is not equal',
             'failed the condition at index 1 because it:',
-            '  ended after emitting 1 elements with none matching',
+            '  Actual: a stream that closed after emitting [0]',
+            '  Which: did not emit a matching value',
           ],
         );
       });

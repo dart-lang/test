@@ -6,6 +6,7 @@
 
 import 'package:test_api/hooks.dart';
 
+import '../async_matcher_restriction.dart';
 import '../description.dart';
 import '../interfaces.dart';
 import '../util.dart';
@@ -47,6 +48,11 @@ class Throws extends AsyncMatcher {
 
   const Throws([Matcher? matcher]) : _matcher = matcher;
 
+  /// A synchronous callback produces a synchronous result, so this matcher
+  /// can be used inside `isNot` and `anyOf` for those callbacks.
+  @override
+  bool get mayMatchSynchronously => true;
+
   // Avoid async/await so we synchronously fail if we match a synchronous
   // function.
   @override
@@ -56,6 +62,8 @@ class Throws extends AsyncMatcher {
     }
 
     if (item is Future) {
+      // Reject before listening to the future, rather than after.
+      checkAsyncMatcherAllowed(this);
       return _matchFuture(item, 'emitted ');
     }
 

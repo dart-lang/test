@@ -5,6 +5,7 @@
 import 'package:test_api/backend.dart';
 
 import 'environment.dart';
+import 'load_suite.dart' as load_suite;
 import 'runner_suite.dart';
 import 'suite.dart';
 
@@ -23,6 +24,18 @@ import 'suite.dart';
 /// A platform plugin can be registered by passing it to [Loader.new]'s
 /// `plugins` parameter.
 abstract class PlatformPlugin {
+  /// How long remains before the suite load timeout fails the suite being
+  /// loaded.
+  ///
+  /// Returns `null` when the load can't time out, because the suite load timeout
+  /// is `none` or timeouts are ignored, and when not called during [load].
+  ///
+  /// Platforms can read this during [load] to time out a step of loading with a
+  /// more specific error before the suite fails with a generic timeout. The
+  /// value is only meaningful while [load] is running; callbacks a platform
+  /// registers during [load] may see a stale value when they run later.
+  static Duration? get remainingLoadTime => load_suite.remainingLoadTime;
+
   /// Loads the runner suite for the test file at [path] using [platform], with
   /// [suiteConfig] encoding the suite-specific configuration.
   ///
