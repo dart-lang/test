@@ -633,5 +633,94 @@ abstract class _Private {}
         ..not(.it()..contains('_private'))
         ..not(.it()..contains('_Private'));
     });
+
+    test('omits public fields whose types reference private types', () async {
+      await testBuilder(
+        builder,
+        {
+          'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+import 'foo.dart';
+
+@CheckExtensions([Foo])
+import 'some_test.checks.dart';
+''',
+          'a|test/foo.dart': '''
+import 'other.dart';
+
+typedef _PublicAlias = int;
+
+abstract class Foo<T extends _Private> {
+    _PublicAlias get aliasedPublic;
+    _Private get direct;
+    List<_Private> get typeArgument;
+    Map<String, List<Other?>> get fromOther;
+    _Private Function() get fnReturn;
+    void Function(_Private) get fnParam;
+    S Function<S extends _Private>(S) get fnBound;
+    (_Private, int) get positionalRecord;
+    ({_Private named}) get namedRecord;
+    T get bounded;
+}
+
+abstract class _Private {}
+''',
+          'a|test/other.dart': '''
+typedef Other = _OtherPrivate;
+abstract class _OtherPrivate {}
+''',
+        },
+        readerWriter: readerWriter,
+        flattenOutput: true,
+      );
+      final checksOutput = readerWriter.testing.readString(
+        AssetId('a', 'test/some_test.checks.dart'),
+      );
+      check(checksOutput)
+        ..containsInOrder([
+          "import 'package:checks/checks.dart';",
+          "import 'package:checks/context.dart' as _i1;",
+          "import 'foo.dart' as _i2;",
+          'extension FooChecks on _i1.Subject<_i2.Foo> {',
+          '  _i1.Subject<int> get aliasedPublic =>',
+          "      has2('aliasedPublic', (v) => v.aliasedPublic);",
+          '}',
+        ])
+        ..not(.it()..contains('_Private'))
+        ..not(.it()..contains('_OtherPrivate'))
+        ..not(.it()..contains('other.dart'))
+        ..not(.it()..contains('direct'))
+        ..not(.it()..contains('typeArgument'))
+        ..not(.it()..contains('fromOther'))
+        ..not(.it()..contains('fnReturn'))
+        ..not(.it()..contains('fnParam'))
+        ..not(.it()..contains('fnBound'))
+        ..not(.it()..contains('positionalRecord'))
+        ..not(.it()..contains('namedRecord'))
+        ..not(.it()..contains('bounded'));
+    });
+
+    test('fails if a target type is private', () async {
+      final result = await testBuilder(builder, {
+        'a|test/some_test.dart': '''
+import 'package:checks_codegen/checks_codegen.dart';
+
+@CheckExtensions([_Private])
+import 'some_test.checks.dart';
+
+abstract class _Private {
+    int get intField;
+}
+''',
+      }, readerWriter: readerWriter);
+      check(result.errors).any(
+        .it()
+          ..contains(
+            'Private types cannot be used for checks extensions: `_Private`',
+          )
+          ..contains('abstract class _Private {'),
+      );
+    });
   });
 }

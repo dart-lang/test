@@ -475,6 +475,13 @@ final class _CheckTarget {
       );
     }
     final element = type.element;
+    if (element.isPrivate) {
+      throw InvalidGenerationSourceError(
+        'Private types cannot be used for checks extensions: '
+        '`${element.displayName}`',
+        element: element,
+      );
+    }
     final rawType = element.library.typeSystem.instantiateInterfaceToBounds(
       element: element,
       nullabilitySuffix: NullabilitySuffix.none,
@@ -482,7 +489,8 @@ final class _CheckTarget {
     return _CheckTarget._(element, [
       for (final field in element.fields)
         if (_isCheckableField(field))
-          if (rawType.getGetter(field.name!) case final getter?)
+          if (rawType.getGetter(field.name!) case final getter?
+              when !_referencesPrivateType(getter.returnType))
             (field: field, type: getter.returnType),
     ]);
   }
@@ -493,6 +501,25 @@ final class _CheckTarget {
   /// containing [field] from the generated library.
   static bool _isCheckableField(FieldElement field) =>
       field.name != 'hashCode' && !field.isStatic && !field.isPrivate;
+
+  static bool _referencesPrivateType(DartType type) => switch (type) {
+    InterfaceType(:final element, :final typeArguments) =>
+      element.isPrivate || typeArguments.any(_referencesPrivateType),
+    FunctionType(
+      :final typeParameters,
+      :final returnType,
+      :final formalParameters,
+    ) =>
+      typeParameters.any(
+            (p) => p.bound != null && _referencesPrivateType(p.bound!),
+          ) ||
+          _referencesPrivateType(returnType) ||
+          formalParameters.any((p) => _referencesPrivateType(p.type)),
+    RecordType(:final positionalFields, :final namedFields) =>
+      positionalFields.any((f) => _referencesPrivateType(f.type)) ||
+          namedFields.any((f) => _referencesPrivateType(f.type)),
+    _ => false,
+  };
 }
 
 /// Thrown by [ChecksGenerator._typeReference] when a type failed to resolve.
