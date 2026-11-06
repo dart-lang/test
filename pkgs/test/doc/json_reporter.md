@@ -286,13 +286,20 @@ class TestDoneEvent extends Event {
 
   // Whether the test (or some part of it) was skipped.
   bool skipped;
+
+  // Whether the test was run more than once because it is configured with
+  // `retry` and an earlier attempt didn't pass.
+  //
+  // Added in protocol version 0.1.2.
+  bool retried;
 }
 ```
 
 An event emitted when a test completes. The `result` attribute indicates the
 result of the test:
 
-* `"success"` if the test had no errors.
+* `"success"` if the test had no errors, or if its final attempt had no errors
+  after it was retried.
 
 * `"failure"` if the test had a `TestFailure` but no other errors.
 
@@ -301,10 +308,18 @@ result of the test:
 If the test encountered an error, the `TestDoneEvent` will be emitted after the
 corresponding `ErrorEvent`.
 
+If a test is configured with `retry` and an attempt doesn't pass, the test is run
+again and only one `TestDoneEvent` is emitted, after the final attempt. The
+`ErrorEvent`s from the earlier attempts are emitted before it. The `retried`
+attribute is `true` in that case. A test with `retried` set to `true`, a
+`result` of `"success"`, and `skipped` set to `false` passed on retry, which
+usually means it is flaky.
+
 The `hidden` attribute indicates that the test's result should be hidden and not
 counted towards the total number of tests run for the suite. This is true for
 virtual tests created for loading test suites, `setUpAll()`, and
-`tearDownAll()`. Only successful tests will be hidden.
+`tearDownAll()`. Only successful tests will be hidden, including ones that
+passed on retry.
 
 Note that it's possible for a test to encounter an error after completing. In
 that case, it should be considered to have failed, but no additional

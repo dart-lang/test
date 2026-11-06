@@ -4,6 +4,8 @@
 
 import 'dart:convert';
 
+import 'package:meta/meta.dart' show internal;
+
 import 'checks.dart' show Condition;
 
 /// Returns a pretty-printed representation of [object].
@@ -158,6 +160,43 @@ Iterable<String> postfixLast(String postfix, Iterable<String> lines) sync* {
     hasNext = iterator.moveNext();
     yield hasNext ? line : '$line$postfix';
   }
+}
+
+/// A predicate noun combining [prefix] with the description of [condition],
+/// for expectations that embed the description of a [Condition], such as
+/// `IterableChecks.any`.
+///
+/// Returns `null` if the description spans multiple lines, or if the combined
+/// noun is longer than [_maxLineLength]. The same limit applies when a
+/// collapsed description is joined to the label of a root subject, which
+/// these nouns stand in for.
+@internal
+String? describedPredicateNoun(String prefix, Condition<Object?> condition) =>
+    _joinSingleLine(prefix, condition.describeSync());
+
+/// The clause describing an expectation which embeds the description of
+/// [condition], such as `IterableChecks.any`, starting with [label].
+///
+/// When the condition describes in a single line, and joining it to [label]
+/// fits within [_maxLineLength], the clause is that single line, such as
+/// `contains a value that is greater than <7>`. Otherwise the clause is
+/// "[label]:" followed by the indented description of the condition.
+@internal
+Iterable<String> describedClause(String label, Condition<Object?> condition) {
+  final description = condition.describeSync();
+  assert(description.isNotEmpty);
+  if (_joinSingleLine(label, description) case final clause?) return [clause];
+  return ['$label:', ...description];
+}
+
+/// The single line [description] joined to [prefix], or `null` if the
+/// description spans multiple lines or the result is longer than
+/// [_maxLineLength].
+String? _joinSingleLine(String prefix, Iterable<String> description) {
+  final line = description.singleOrNull?.trimLeft();
+  if (line == null) return null;
+  final joined = '$prefix $line';
+  return joined.length <= _maxLineLength ? joined : null;
 }
 
 /// Returns [output] with all whitespace characters represented as their escape

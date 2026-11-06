@@ -1,0 +1,3 @@
+# Without a suite load timeout, a browser that never connects hangs the run
+# instead of failing with a report of what the browser did.
+suite_load_timeout: 2m

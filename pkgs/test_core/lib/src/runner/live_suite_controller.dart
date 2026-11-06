@@ -43,6 +43,9 @@ class _LiveSuite extends LiveSuite {
   Set<LiveTest> get failed => UnmodifiableSetView(_controller._failed);
 
   @override
+  Set<LiveTest> get flaky => UnmodifiableSetView(_controller._flaky);
+
+  @override
   LiveTest? get active => _controller._active;
 
   _LiveSuite(this._controller);
@@ -87,6 +90,9 @@ class LiveSuiteController {
   /// The set that backs [LiveTest.failed].
   final _failed = <LiveTest>{};
 
+  /// The set that backs [LiveSuite.flaky].
+  final _flaky = <LiveTest>{};
+
   /// The test exposed through [LiveTest.active].
   LiveTest? _active;
 
@@ -104,6 +110,11 @@ class LiveSuiteController {
   /// is `true` (the default), the test is put into [passed] if it succeeds.
   /// Otherwise, it's removed from [liveTests] entirely.
   ///
+  /// If the test completes with a failure and then completes successfully,
+  /// which happens when it passes on retry, it is removed from [failed]
+  /// regardless of [countSuccess] and added to [LiveSuite.flaky]. If it is
+  /// skipped on a retry instead, it is moved from [failed] to [skipped].
+  ///
   /// Throws a [StateError] if called after [noMoreLiveTests].
   void reportLiveTest(LiveTest liveTest, {bool countSuccess = true}) {
     if (_onTestStartedController.isClosed) {
@@ -115,19 +126,26 @@ class LiveSuiteController {
 
     _active = liveTest;
 
+    var hadFailedAttempt = false;
     liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _active = null;
 
       if (state.result == Result.skipped) {
+        // A test can fail an attempt and then be skipped on retry. It was
+        // skipped, not failed, so don't count it twice.
+        _failed.remove(liveTest);
         _skipped.add(liveTest);
       } else if (state.result != Result.success) {
+        hadFailedAttempt = true;
         _passed.remove(liveTest);
+        _flaky.remove(liveTest);
         _failed.add(liveTest);
-      } else if (countSuccess) {
-        _passed.add(liveTest);
-        // A passing test that was once failing was retried
+      } else {
+        // A passing test that was once failing was retried.
         _failed.remove(liveTest);
+        if (countSuccess) _passed.add(liveTest);
+        if (hadFailedAttempt) _flaky.add(liveTest);
       }
     });
 

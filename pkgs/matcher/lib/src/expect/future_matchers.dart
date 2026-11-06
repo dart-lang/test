@@ -6,6 +6,7 @@
 
 import 'package:test_api/hooks.dart' show pumpEventQueue;
 
+import '../async_matcher_restriction.dart';
 import '../description.dart';
 import '../interfaces.dart';
 import '../util.dart';
@@ -105,6 +106,7 @@ class _DoesNotComplete extends Matcher {
 
   @override
   bool matches(Object? item, Map matchState) {
+    checkAsyncMatcherAllowed(this);
     if (item is! Future) return false;
     item.then((value) {
       fail(

@@ -15,20 +15,19 @@ void main() {
     ).withQueue.anyOf([.it()..emits(.it()..equals('starting')), .it()..isDone]);
     // Expected: a Stream<String> that:
     //   satisfies one of:
-    //     emits a value that:
-    //       equals 'starting'
+    //     emits 'starting'
     //   or,
     //     is done
     // Actual: a stream
     // Which: failed to satisfy any condition
     // failed the condition at index 0 because it:
-    //   Expected: emits 'starting'
     //   Actual: emits 'ready'
     //   Which: differs at offset 0:
     //     starting
     //     ready
     //     ^
     // failed the condition at index 1 because it:
-    //   emitted an unexpected value: 'ready'
+    //   Actual: a stream that emitted 'ready'
+    //   Which: emitted a value before closing
   });
 }

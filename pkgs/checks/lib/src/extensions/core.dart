@@ -37,7 +37,13 @@ extension CoreChecks<T> on Subject<T> {
   ///
   /// {@example /example/core/subject/has.dart}
   @meta.useResult
-  Subject<R> has<R>(R Function(T) extract, String name) => context.nest(
+  Subject<R> has<R>(R Function(T) extract, String name) =>
+      has2<R>(name, extract);
+
+  /// Intermediate migration holding spot for [has] while argument order is
+  /// switched.
+  @meta.useResult
+  Subject<R> has2<R>(String name, R Function(T) extract) => context.nest(
     () => ['has $name'],
     addPredicate: (predicateNoun) => 'has $name: $predicateNoun',
     (value) {

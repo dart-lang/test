@@ -8,9 +8,7 @@ void main() {
 
     // This check fails.
     check([1, 3, 5, 7]).any(.it()..isGreaterThan(7));
-    // Expected: a List<int> that:
-    //   contains a value that:
-    //     is greater than <7>
+    // Expected: an iterable containing a value that is greater than <7>
     // Actual: [1, 3, 5, 7]
     // Which: contains no matching element
   });

@@ -150,6 +150,35 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test('runs teardown callbacks after a test times out', () async {
+    await d.file('test.dart', '''
+import 'dart:async';
+
+import 'package:test/test.dart';
+
+void main() {
+  tearDown(() {
+    print('tearDown ran');
+  });
+
+  test('timeout', () async {
+    await Completer<void>().future;
+  });
+}
+''').create();
+
+    var test = await runTest(['--timeout=50ms', 'test.dart']);
+    expect(
+      test.stdout,
+      containsInOrder([
+        'Test timed out after 0 seconds.',
+        'tearDown ran',
+        '-1: Some tests failed.',
+      ]),
+    );
+    await test.shouldExit(1);
+  });
+
   test('times out after failing test', () async {
     await d.file('test.dart', '''
 import 'dart:async';

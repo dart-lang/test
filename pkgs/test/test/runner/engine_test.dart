@@ -430,7 +430,127 @@ void main() {
     await engine.close();
     expect(loadStarted, isFalse);
   });
+
+  group('for a test that is retried', () {
+    test('a test that passes on retry is passed and flaky', () async {
+      var attempts = 0;
+      var engine = declareEngine(() {
+        test('flaky', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+        }, retry: 1);
+      });
+
+      expect(await engine.run(), isTrue);
+      expect(attempts, 2);
+      expect(_names(engine.passed), ['flaky']);
+      expect(engine.failed, isEmpty);
+      expect(_names(engine.flaky), ['flaky']);
+    });
+
+    test('a test that fails every attempt is failed and not flaky', () async {
+      var engine = declareEngine(() {
+        test('failure', () => throw TestFailure('oh no'), retry: 1);
+      });
+
+      expect(await engine.run(), isFalse);
+      expect(engine.passed, isEmpty);
+      expect(_names(engine.failed), ['failure']);
+      expect(engine.flaky, isEmpty);
+    });
+
+    test('a test that passes on the first attempt is not flaky', () async {
+      var engine = declareEngine(() {
+        test('success', () {}, retry: 1);
+      });
+
+      expect(await engine.run(), isTrue);
+      expect(_names(engine.passed), ['success']);
+      expect(engine.flaky, isEmpty);
+    });
+
+    test('a test that fails and is skipped on retry is only skipped', () async {
+      var attempts = 0;
+      var engine = declareEngine(() {
+        test('test', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+          markTestSkipped('skipping');
+        }, retry: 1);
+      });
+
+      expect(await engine.run(), isTrue);
+      expect(attempts, 2);
+      expect(engine.failed, isEmpty);
+      expect(_names(engine.skipped), ['test']);
+      expect(engine.flaky, isEmpty);
+    });
+
+    test('a flaky test that fails after completing is failed and not '
+        'flaky', () async {
+      var attempts = 0;
+      var lateError = Completer<void>();
+      var engine = declareEngine(() {
+        test('flaky', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+          lateError.future.then((_) => throw 'late error');
+        }, retry: 1);
+        test('second', () async {
+          lateError.complete();
+          await pumpEventQueue();
+        });
+      });
+
+      expect(await engine.run(), isFalse);
+      expect(_names(engine.failed), ['flaky']);
+      expect(engine.flaky, isEmpty);
+      expect(_names(engine.passed), ['second']);
+    });
+
+    test('a setUpAll that passes on retry is flaky but not failed or passed, '
+        'and the group runs', () async {
+      var attempts = 0;
+      var testRan = false;
+      var engine = declareEngine(() {
+        group('group', () {
+          setUpAll(() {
+            if (++attempts == 1) throw TestFailure('oh no');
+          });
+          test('test', () {
+            testRan = true;
+          });
+        }, retry: 1);
+      });
+
+      expect(await engine.run(), isTrue);
+      expect(attempts, 2);
+      expect(testRan, isTrue);
+      expect(_names(engine.passed), ['group test']);
+      expect(engine.failed, isEmpty);
+      expect(_names(engine.flaky), ['group (setUpAll)']);
+      expect(_names(engine.liveTests), ['group test']);
+    });
+
+    test('a setUpAll that fails every attempt stays failed', () async {
+      var testRan = false;
+      var engine = declareEngine(() {
+        group('group', () {
+          setUpAll(() => throw TestFailure('oh no'));
+          test('test', () {
+            testRan = true;
+          });
+        }, retry: 1);
+      });
+
+      expect(await engine.run(), isFalse);
+      expect(testRan, isFalse);
+      expect(_names(engine.failed), ['group (setUpAll)']);
+      expect(engine.flaky, isEmpty);
+    });
+  });
 }
+
+List<String> _names(Iterable<LiveTest> liveTests) => [
+  for (var liveTest in liveTests) liveTest.test.name,
+];
 
 extension on Iterable<GroupEntry> {
   /// Clones these entries into a new root group, assigning the new parent group

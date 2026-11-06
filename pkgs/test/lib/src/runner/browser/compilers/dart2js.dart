@@ -93,7 +93,12 @@ class Dart2JsSupport extends CompilerSupport with JsHtmlWrapper {
         .addHandler(cascade.handler);
 
     _server.mount(
-      shelf.Cascade().add(createFileHandler(faviconPath)).add(pipeline).handler,
+      requestLog.wrap(
+        shelf.Cascade()
+            .add(createFileHandler(faviconPath))
+            .add(pipeline)
+            .handler,
+      ),
     );
   }
 

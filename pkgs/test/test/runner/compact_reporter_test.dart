@@ -562,6 +562,31 @@ void main() {
       );
     });
   }, testOn: 'windows');
+
+  group('retry:', () {
+    test('reports attempts and flaky tests', () {
+      return _expectReport(
+        '''
+        var attempts = 0;
+        test('flaky', () {
+          if (++attempts == 1) throw TestFailure('oh no');
+        }, retry: 1);
+        test('success', () {});''',
+        '''
+        +0: loading test.dart
+        +0: flaky
+        +0 -1: flaky [E] (attempt 1 of 2)
+          oh no
+          test.dart 8:32  main.<fn>
+
+        Retry: flaky
+        +1: flaky
+        +1: success
+        +2: success
+        +2: All tests passed! (1 flaky)''',
+      );
+    });
+  });
 }
 
 Future<void> _expectReport(

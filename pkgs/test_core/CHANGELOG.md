@@ -1,3 +1,29 @@
+## 0.6.22-wip
+
+* Enable asserts in the `cli` compiler if supported.
+* Fix a `RangeError` crash in the compact reporter when the terminal is too
+  narrow to fit a test's description.
+* Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
+  loading a suite before the suite load timeout cuts it off.
+* Report tests that fail and then pass on retry as flaky. Previously a
+  `setUpAll` that passed on retry was still counted as failed in the summary,
+  even though the run succeeded. `Engine.flaky` and `LiveSuite.flaky` hold the
+  tests that passed on retry. A test that fails and is then skipped on retry
+  is now counted only as skipped.
+* When a test configured with `retry` fails, the compact, expanded, and
+  failures-only reporters show the attempt, for example
+  `[E] (attempt 1 of 2)`, and the final summary counts flaky tests. The
+  expanded reporter also lists them.
+* The GitHub reporter shows a test that passed on retry as
+  `⚠️ <name> (passed on attempt N of M)`, adds a flaky count to the summary,
+  and uses a `::warning::` annotation when the only problems are flaky tests.
+  A test that fails and is then skipped on retry is shown as skipped.
+  Output and errors within each test's group are printed in the order they
+  were emitted, for all tests.
+* The JSON reporter adds a `retried` field to `testDone` events and reports
+  protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
+  the protocol documents.
+
 ## 0.6.21
 
 * Fix a hang when the runner is shut down at the moment a test suite starts
@@ -21,6 +47,7 @@
 * Fail a test suite running in an isolate if the isolate exits, instead of
   hanging. The suite fails to load if the isolate exits while loading, and any
   tests that haven't finished fail if it exits while they run.
+* Add flag `--shard-by-suite` to control sharding strategy.
 
 ## 0.6.20
 
@@ -42,7 +69,6 @@
 * Add support for `-c cli` (the native CLI compiler) to the vm platform.
 * Support using the OS platform selector to configure browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-suite` to control sharding strategy.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
 * Update `parse_metadata.dart` to be compatible with `analyzer >=13.0.0 <15.0.0`.
