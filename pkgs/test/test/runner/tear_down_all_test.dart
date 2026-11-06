@@ -30,6 +30,45 @@ void main() {
     await test.shouldExit(1);
   });
 
+  test('is not retried', () async {
+    await d.file('test.dart', r'''
+        import 'package:test/test.dart';
+
+        void main() {
+          group("group", () {
+            tearDownAll(() => throw "oh no");
+
+            test("test", () {});
+          }, retry: 1);
+        }
+        ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, neverEmits(contains('Retry:')));
+    await test.shouldExit(1);
+  });
+
+  test('is not retried with an on_platform retry', () async {
+    await d.file('dart_test.yaml', r'''
+        on_platform:
+          vm:
+            retry: 1
+        ''').create();
+    await d.file('test.dart', r'''
+        import 'package:test/test.dart';
+
+        void main() {
+          tearDownAll(() => throw "oh no");
+
+          test("test", () {});
+        }
+        ''').create();
+
+    var test = await runTest(['test.dart']);
+    expect(test.stdout, neverEmits(contains('Retry:')));
+    await test.shouldExit(1);
+  });
+
   test("doesn't run if no tests in the group are selected", () async {
     await d.file('test.dart', r'''
         import 'package:test/test.dart';

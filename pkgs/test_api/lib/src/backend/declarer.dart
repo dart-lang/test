@@ -464,7 +464,19 @@ class Declarer {
 
     return LocalTest(
       _prefix('(tearDownAll)'),
-      _metadata.change(timeout: _timeout),
+      // Never retry the tear-downs. `runTearDowns` removes each callback as it
+      // runs, so a retry would have nothing left to run and would always
+      // pass, hiding the failure. Platform-specific metadata, such as
+      // `on_platform` in `dart_test.yaml`, is merged in later, so clear its
+      // retry as well.
+      _metadata.change(
+        timeout: _timeout,
+        retry: 0,
+        onPlatform: {
+          for (var MapEntry(:key, :value) in _metadata.onPlatform.entries)
+            key: value.change(retry: 0),
+        },
+      ),
       () {
         return runZoned(
           () => Invoker.current!.runTearDowns(_tearDownAlls),
