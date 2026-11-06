@@ -461,6 +461,9 @@ final class _CheckTarget {
 
   /// The fields to generate getters for, with their types.
   ///
+  /// Includes public instance fields other than `hashCode` that have a getter
+  /// whose return type does not reference any private types.
+  ///
   /// The extension is on the raw type, so field types are read from the type
   /// instantiated to bounds to match the static type of `v.field`.
   final List<({FieldElement field, DartType type})> fields;
@@ -475,20 +478,44 @@ final class _CheckTarget {
       );
     }
     final element = type.element;
+    if (element.isPrivate) {
+      throw InvalidGenerationSourceError(
+        'Private types cannot be used for checks extensions: '
+        '`${element.displayName}`',
+        element: element,
+      );
+    }
     final rawType = element.library.typeSystem.instantiateInterfaceToBounds(
       element: element,
       nullabilitySuffix: NullabilitySuffix.none,
     );
     return _CheckTarget._(element, [
       for (final field in element.fields)
-        if (_isCheckableField(field))
-          if (rawType.getGetter(field.name!) case final getter?)
+        if (field.name != 'hashCode' && !field.isStatic && !field.isPrivate)
+          if (rawType.getGetter(field.name!) case final getter?
+              when !_referencesPrivateType(getter.returnType))
             (field: field, type: getter.returnType),
     ]);
   }
 
-  static bool _isCheckableField(FieldElement field) =>
-      field.name != 'hashCode' && !field.isStatic;
+  static bool _referencesPrivateType(DartType type) => switch (type) {
+    InterfaceType(:final element, :final typeArguments) =>
+      element.isPrivate || typeArguments.any(_referencesPrivateType),
+    FunctionType(
+      :final typeParameters,
+      :final returnType,
+      :final formalParameters,
+    ) =>
+      typeParameters.any(
+            (p) => p.bound != null && _referencesPrivateType(p.bound!),
+          ) ||
+          _referencesPrivateType(returnType) ||
+          formalParameters.any((p) => _referencesPrivateType(p.type)),
+    RecordType(:final positionalFields, :final namedFields) =>
+      positionalFields.any((f) => _referencesPrivateType(f.type)) ||
+          namedFields.any((f) => _referencesPrivateType(f.type)),
+    _ => false,
+  };
 }
 
 /// Thrown by [ChecksGenerator._typeReference] when a type failed to resolve.

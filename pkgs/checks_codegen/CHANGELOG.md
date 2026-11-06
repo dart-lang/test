@@ -13,6 +13,8 @@
   to the imports of the test library, for a library to import each type from.
   Prefer libraries outside of `src/`, and import types declared in private
   SDK libraries, such as `HttpClient`, through a public SDK library.
+* Skip private fields and fields whose types reference private types, and
+  report an error when `@CheckExtensions` lists a private type.
 
 ## 0.1.0
 
