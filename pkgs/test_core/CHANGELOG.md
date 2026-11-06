@@ -1,5 +1,7 @@
 ## 0.6.22-wip
 
+* Support `globalSetup` and `addGlobalTearDown` host runner execution and
+  caching across test suites.
 * Enable asserts in the `cli` compiler if supported.
 * Fix a `RangeError` crash in the compact reporter when the terminal is too
   narrow to fit a test's description.

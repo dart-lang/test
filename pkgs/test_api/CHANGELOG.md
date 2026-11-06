@@ -1,3 +1,8 @@
+## 0.7.16-wip
+
+* Add `globalSetup` and `addGlobalTearDown` APIs to run setup scripts once on
+  the host runner and cache results across tests and suites.
+
 ## 0.7.15
 
 * export `LocalTest`, `MessageType`, `Status`, `Suite` from `backend.dart`.
