@@ -461,6 +461,9 @@ final class _CheckTarget {
 
   /// The fields to generate getters for, with their types.
   ///
+  /// Includes public instance fields other than `hashCode` that have a getter
+  /// whose return type does not reference any private types.
+  ///
   /// The extension is on the raw type, so field types are read from the type
   /// instantiated to bounds to match the static type of `v.field`.
   final List<({FieldElement field, DartType type})> fields;
@@ -488,19 +491,12 @@ final class _CheckTarget {
     );
     return _CheckTarget._(element, [
       for (final field in element.fields)
-        if (_isCheckableField(field))
+        if (field.name != 'hashCode' && !field.isStatic && !field.isPrivate)
           if (rawType.getGetter(field.name!) case final getter?
               when !_referencesPrivateType(getter.returnType))
             (field: field, type: getter.returnType),
     ]);
   }
-
-  /// Whether [field] should get a `has` getter.
-  ///
-  /// Checks whether the field can be referenced on an instance of the class
-  /// containing [field] from the generated library.
-  static bool _isCheckableField(FieldElement field) =>
-      field.name != 'hashCode' && !field.isStatic && !field.isPrivate;
 
   static bool _referencesPrivateType(DartType type) => switch (type) {
     InterfaceType(:final element, :final typeArguments) =>
