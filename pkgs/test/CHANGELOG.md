@@ -33,6 +33,9 @@
   * The JSON reporter adds a `retried` field to `testDone` events and reports
     protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden,
     as the protocol documents.
+* Never retry `tearDownAll`, even when the group or suite sets `retry`.
+  Previously a retry didn't run any of the `tearDownAll` callbacks again, so it
+  always passed and hid the failure.
 * When a browser fails to connect, report each attempt: how long it waited,
   whether the browser process was still running, the command used to start it,
   the requests it made to the test server, and its output.
