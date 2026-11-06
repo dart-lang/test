@@ -20,12 +20,23 @@ final class _ActiveSetup {
   final String url;
   final Isolate isolate;
   final SendPort commandPort;
+  final RawReceivePort errorPort;
+  final RawReceivePort exitPort;
+  final Completer<void> exitCompleter;
 
   _ActiveSetup({
     required this.url,
     required this.isolate,
     required this.commandPort,
+    required this.errorPort,
+    required this.exitPort,
+    required this.exitCompleter,
   });
+
+  void closePorts() {
+    errorPort.close();
+    exitPort.close();
+  }
 }
 
 /// Manages the lifecycle, caching, and execution of global setup hooks.
@@ -38,6 +49,7 @@ final class GlobalSetupManager {
 
   final _setups = <String, Future<String>>{};
   final _activeSetups = <_ActiveSetup>[];
+  final _inFlightAborts = <void Function()>{};
   final _closeMemo = AsyncMemoizer<void>();
 
   /// Runs [body] in a zone with this manager set as
@@ -48,6 +60,9 @@ final class GlobalSetupManager {
   StreamChannel<Object?> get(String rawUrl, Suite suite) {
     return StreamChannelCompleter.fromFuture(() async {
       try {
+        if (_closeMemo.hasRun) {
+          throw StateError('GlobalSetupManager has already been closed.');
+        }
         final normalizedUrl = _normalizeUrl(rawUrl, suite);
         final resultFuture = _setups.putIfAbsent(
           normalizedUrl,
@@ -72,8 +87,14 @@ final class GlobalSetupManager {
 
   Future<String> _runSetup(String url) async {
     final completer = Completer<String>();
+    final exitCompleter = Completer<void>();
     final responsePort = RawReceivePort();
-    final errorPort = RawReceivePort((Object? errorAndStack) {
+    late final RawReceivePort exitPort;
+    late final RawReceivePort errorPort;
+    Isolate? isolate;
+    var keepPortsOpen = false;
+
+    errorPort = RawReceivePort((Object? errorAndStack) {
       final list = errorAndStack as List<Object?>;
       if (!completer.isCompleted) {
         completer.completeError(
@@ -81,8 +102,39 @@ final class GlobalSetupManager {
             'Global setup "$url" failed:\n${list[0]}\n${list[1]}',
           ),
         );
+      } else {
+        stderr.writeln(
+          'Unhandled error in global setup "$url":\n${list[0]}\n${list[1]}',
+        );
+        exitCode = 1;
       }
     });
+
+    exitPort = RawReceivePort((_) {
+      exitPort.close();
+      errorPort.close();
+      if (!exitCompleter.isCompleted) exitCompleter.complete();
+      if (!completer.isCompleted) {
+        completer.completeError(
+          ApplicationException(
+            'Global setup "$url" exited unexpectedly before completing.',
+          ),
+        );
+      }
+    });
+
+    void abort() {
+      isolate?.kill();
+      if (!completer.isCompleted) {
+        completer.completeError(
+          ApplicationException(
+            'Global setup "$url" was cancelled because the test runner closed.',
+          ),
+        );
+      }
+    }
+
+    _inFlightAborts.add(abort);
 
     try {
       final code =
@@ -95,15 +147,21 @@ import "package:test_core/src/bootstrap/vm.dart";
 import "${url.replaceAll(r'$', '%24')}" as lib;
 
 void main(_, SendPort sendPort) =>
-    internalBootstrapVmHook(() => lib.setUp, [], sendPort);
+    internalBootstrapVmHook(() => lib.setUp, sendPort);
 ''';
 
-      Isolate isolate;
+      if (_closeMemo.hasRun) {
+        throw ApplicationException(
+          'Global setup "$url" was cancelled because the test runner closed.',
+        );
+      }
+
       try {
         isolate = await dart.runInIsolate(
           code,
           responsePort.sendPort,
           onError: errorPort.sendPort,
+          onExit: exitPort.sendPort,
         );
       } on IsolateSpawnException catch (error) {
         throw ApplicationException(
@@ -111,31 +169,46 @@ void main(_, SendPort sendPort) =>
         );
       }
 
+      if (_closeMemo.hasRun) {
+        isolate.kill();
+        throw ApplicationException(
+          'Global setup "$url" was cancelled because the test runner closed.',
+        );
+      }
+
+      final spawnedIsolate = isolate;
       responsePort.handler = (Object? response) {
         if (response case {
           'success': true,
-          'result': var result,
+          'result': String result,
           'hasTearDown': bool hasTearDown,
         }) {
           if (hasTearDown) {
+            keepPortsOpen = true;
             final commandPort = response['commandPort'] as SendPort;
-            _activeSetups.add(
-              _ActiveSetup(
-                url: url,
-                isolate: isolate,
-                commandPort: commandPort,
-              ),
+            final active = _ActiveSetup(
+              url: url,
+              isolate: spawnedIsolate,
+              commandPort: commandPort,
+              errorPort: errorPort,
+              exitPort: exitPort,
+              exitCompleter: exitCompleter,
             );
+            if (_closeMemo.hasRun) {
+              unawaited(_tearDown(active));
+            } else {
+              _activeSetups.add(active);
+            }
           } else {
-            isolate.kill();
+            spawnedIsolate.kill();
           }
-          if (!completer.isCompleted) completer.complete(json.encode(result));
+          if (!completer.isCompleted) completer.complete(result);
         } else if (response case {
           'success': false,
           'error': var error,
           'stackTrace': var stack,
         }) {
-          isolate.kill();
+          spawnedIsolate.kill();
           if (!completer.isCompleted) {
             completer.completeError(
               ApplicationException(
@@ -149,39 +222,73 @@ void main(_, SendPort sendPort) =>
 
       return await completer.future;
     } finally {
+      _inFlightAborts.remove(abort);
       responsePort.close();
-      errorPort.close();
+      if (!keepPortsOpen) {
+        errorPort.close();
+        exitPort.close();
+      }
+    }
+  }
+
+  Future<void> _tearDown(_ActiveSetup active) async {
+    if (active.exitCompleter.isCompleted) {
+      stderr.writeln(
+        'Global teardown for "${active.url}" failed: '
+        'Global setup isolate exited unexpectedly before teardown.',
+      );
+      exitCode = 1;
+      active.closePorts();
+      return;
+    }
+
+    final replyPort = RawReceivePort();
+    final completer = Completer<Map<Object?, Object?>>();
+    replyPort.handler = (Object? response) {
+      if (!completer.isCompleted) {
+        completer.complete(response as Map<Object?, Object?>);
+      }
+    };
+    try {
+      active.commandPort.send([replyPort.sendPort, 'teardown']);
+      final response =
+          await Future.any([
+            completer.future,
+            active.exitCompleter.future.then(
+              (_) => <Object?, Object?>{
+                'success': false,
+                'error':
+                    'Global setup isolate exited unexpectedly during teardown.',
+              },
+            ),
+          ]).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => {'success': false, 'error': 'Teardown timed out'},
+          );
+      if (response['success'] != true) {
+        stderr.writeln(
+          'Global teardown for "${active.url}" failed: ${response["error"]}',
+        );
+        exitCode = 1;
+      }
+    } catch (error) {
+      stderr.writeln('Global teardown for "${active.url}" failed: $error');
+      exitCode = 1;
+    } finally {
+      replyPort.close();
+      active.closePorts();
+      active.isolate.kill();
     }
   }
 
   Future<void> close() => _closeMemo.runOnce(() async {
-    for (var active in _activeSetups.reversed) {
-      final replyPort = RawReceivePort();
-      final completer = Completer<Map<Object?, Object?>>();
-      replyPort.handler = (Object? response) {
-        if (!completer.isCompleted) {
-          completer.complete(response as Map<Object?, Object?>);
-        }
-      };
-      try {
-        active.commandPort.send([replyPort.sendPort, 'teardown']);
-        final response = await completer.future.timeout(
-          const Duration(seconds: 30),
-          onTimeout: () => {'success': false, 'error': 'Teardown timed out'},
-        );
-        if (response['success'] != true) {
-          stderr.writeln(
-            'Global teardown for "${active.url}" failed: ${response["error"]}',
-          );
-          exitCode = 1;
-        }
-      } catch (error) {
-        stderr.writeln('Global teardown for "${active.url}" failed: $error');
-        exitCode = 1;
-      } finally {
-        replyPort.close();
-        active.isolate.kill();
-      }
+    for (final abort in _inFlightAborts.toList()) {
+      abort();
+    }
+    _inFlightAborts.clear();
+
+    for (var active in _activeSetups.reversed.toList()) {
+      await _tearDown(active);
     }
     _activeSetups.clear();
   });

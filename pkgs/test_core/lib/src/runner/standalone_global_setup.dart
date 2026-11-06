@@ -59,7 +59,7 @@ import 'package:test_core/src/bootstrap/vm.dart';
 import '$safeScriptUri' as test;
 
 void main(List<String> args, SendPort sendPort) {
-  internalBootstrapVmHook(() => test.setUp, args, sendPort);
+  internalBootstrapVmHook(() => test.setUp, sendPort);
 }
 ''';
 
@@ -105,7 +105,7 @@ void main(List<String> args, SendPort sendPort) {
         } else {
           isolate.kill();
         }
-        if (!completer.isCompleted) completer.complete(json.encode(result));
+        if (!completer.isCompleted) completer.complete(result as String);
       } else if (response case {
         'success': false,
         'error': var error,

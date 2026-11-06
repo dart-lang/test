@@ -439,34 +439,170 @@ void main() {
           return file.readAsStringSync().length;
         }
       '''),
-        d.file('test_test.dart', '''
+        d.file('suite_1_test.dart', '''
         import 'package:test/scaffolding.dart';
         import 'package:test/test.dart';
 
         void main() {
-          test("concurrent call 1", () async {
-            final result = await globalSetup(Uri.parse('/test/slow_setup.dart'));
+          test("concurrent suite 1", () async {
+            final results = await Future.wait([
+              globalSetup(Uri(path: '/test/slow_setup.dart')),
+              globalSetup(Uri(path: '/test/slow_setup.dart')),
+            ]);
+            expect(results, equals([1, 1]));
+          });
+        }
+      '''),
+        d.file('suite_2_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
+
+        void main() {
+          test("concurrent suite 2", () async {
+            final result = await globalSetup(Uri(path: '/test/slow_setup.dart'));
             expect(result, equals(1));
           });
+        }
+      '''),
+        d.file('suite_3_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
 
-          test("concurrent call 2", () async {
-            final result = await globalSetup(Uri.parse('/test/slow_setup.dart'));
-            expect(result, equals(1));
-          });
-
-          test("concurrent call 3", () async {
-            final result = await globalSetup(Uri.parse('/test/slow_setup.dart'));
+        void main() {
+          test("concurrent suite 3", () async {
+            final result = await globalSetup(Uri(path: '/test/slow_setup.dart'));
             expect(result, equals(1));
           });
         }
       '''),
       ]).create();
 
-      var test = await runTest(['test/test_test.dart'], concurrency: 3);
+      var test = await runTest([
+        'test/suite_1_test.dart',
+        'test/suite_2_test.dart',
+        'test/suite_3_test.dart',
+      ], concurrency: 3);
       expect(test.stdout, emitsThrough(contains('+3: All tests passed!')));
       await test.shouldExit(0);
 
       expect(File('${d.sandbox}/counter.txt').readAsStringSync(), equals('x'));
+    },
+  );
+
+  test('supports return values with toJson()', () async {
+    await d.dir('test', [
+      d.file('to_json_setup.dart', '''
+        class CustomConfig {
+          final int port;
+          CustomConfig(this.port);
+          Map<String, Object?> toJson() => {'port': port};
+        }
+
+        CustomConfig setUp() => CustomConfig(8080);
+      '''),
+      d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
+
+        void main() {
+          test("reads toJson result", () async {
+            final result = await globalSetup(
+              Uri(path: '/test/to_json_setup.dart'),
+            );
+            expect(result, equals({'port': 8080}));
+          });
+        }
+      '''),
+    ]).create();
+
+    var test = await runTest(['test/test_test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
+
+  test(
+    'runs registered addGlobalTearDown callbacks if setUp throws later',
+    () async {
+      await d.dir('test', [
+        d.file('partial_setup.dart', '''
+        import 'dart:io';
+        import 'package:test/global.dart';
+
+        Future<void> setUp() async {
+          File('cleaned_up.txt').writeAsStringSync('started');
+          addGlobalTearDown(() async {
+            File('cleaned_up.txt').writeAsStringSync('cleaned');
+          });
+          throw StateError('failed after registering teardown');
+        }
+      '''),
+        d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
+
+        void main() {
+          test("partial setup fails", () async {
+            await globalSetup(Uri(path: '/test/partial_setup.dart'));
+          });
+        }
+      '''),
+      ]).create();
+
+      var test = await runTest(['test/test_test.dart']);
+      expect(
+        test.stdout,
+        emitsThrough(contains('failed after registering teardown')),
+      );
+      await test.shouldExit(1);
+
+      expect(
+        File('${d.sandbox}/cleaned_up.txt').readAsStringSync(),
+        equals('cleaned'),
+      );
+    },
+  );
+
+  test(
+    'reports failure without timing out if setup isolate exits before teardown',
+    () async {
+      await d.dir('test', [
+        d.file('crashing_setup.dart', '''
+        import 'dart:async';
+        import 'dart:isolate';
+        import 'package:test/global.dart';
+
+        String setUp() {
+          addGlobalTearDown(() {});
+          Timer(const Duration(milliseconds: 20), () {
+            Isolate.exit();
+          });
+          return 'ok';
+        }
+      '''),
+        d.file('test_test.dart', '''
+        import 'package:test/scaffolding.dart';
+        import 'package:test/test.dart';
+
+        void main() {
+          test("waits for background isolate exit", () async {
+            final res = await globalSetup(
+              Uri(path: '/test/crashing_setup.dart'),
+            );
+            expect(res, equals('ok'));
+            await Future<void>.delayed(const Duration(milliseconds: 100));
+          });
+        }
+      '''),
+      ]).create();
+
+      var test = await runTest(['test/test_test.dart']);
+      expect(
+        test.stderr,
+        emitsThrough(
+          contains('Global setup isolate exited unexpectedly before teardown.'),
+        ),
+      );
+      await test.shouldExit(1);
     },
   );
 

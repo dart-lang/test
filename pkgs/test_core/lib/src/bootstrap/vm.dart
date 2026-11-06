@@ -61,7 +61,6 @@ void internalBootstrapNativeTest(
 /// results back over an isolate port.
 void internalBootstrapVmHook(
   Function Function() getMain,
-  List<String> args,
   SendPort sendPort,
 ) async {
   final tearDowns = <FutureOr<void> Function()>[];
@@ -70,23 +69,19 @@ void internalBootstrapVmHook(
   try {
     final mainFn = getMain();
     final result = await runZoned(() async {
-      if (mainFn is FutureOr<Object?> Function(List<String>, SendPort)) {
-        return await mainFn(args, sendPort);
-      } else if (mainFn is FutureOr<Object?> Function(List<String>)) {
-        return await mainFn(args);
-      } else if (mainFn is FutureOr<Object?> Function()) {
+      if (mainFn is FutureOr<Object?> Function()) {
         return await mainFn();
       } else {
         throw ArgumentError(
           'The global setup script must define a top-level `setUp` function '
-          'with zero arguments, one List<String> argument, '
-          'or (List<String>, SendPort).',
+          'with zero arguments.',
         );
       }
     }, zoneValues: {#test.global_teardowns: tearDowns});
 
+    final String encodedResult;
     try {
-      json.encode(result);
+      encodedResult = json.encode(result);
     } on Object catch (error) {
       throw ArgumentError(
         'The global setup script returned a value that is not JSON-encodable: '
@@ -96,7 +91,7 @@ void internalBootstrapVmHook(
 
     sendPort.send({
       'success': true,
-      'result': result,
+      'result': encodedResult,
       'hasTearDown': tearDowns.isNotEmpty,
       'commandPort': tearDowns.isNotEmpty ? commandPort.sendPort : null,
     });
@@ -121,23 +116,26 @@ void internalBootstrapVmHook(
           }
         }
 
-        try {
-          if (errors.isEmpty) {
-            replyPort.send({'success': true});
-          } else {
-            replyPort.send({
-              'success': false,
-              'error': errors.map((e) => e.$1.toString()).join('\n'),
-              'stackTrace': errors.first.$2.toString(),
-            });
-          }
-        } finally {
-          commandPort.close();
+        if (errors.isEmpty) {
+          replyPort.send({'success': true});
+        } else {
+          replyPort.send({
+            'success': false,
+            'error': errors.map((e) => e.$1.toString()).join('\n'),
+            'stackTrace': errors.first.$2.toString(),
+          });
         }
         break;
       }
     }
   } catch (error, stack) {
+    for (var tearDown in tearDowns.reversed) {
+      try {
+        await tearDown();
+      } catch (_) {
+        // Best-effort cleanup of partially initialized resources.
+      }
+    }
     commandPort.close();
     sendPort.send({
       'success': false,
