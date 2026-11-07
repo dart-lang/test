@@ -41,6 +41,8 @@
   before connecting is still replaced, up to 3 attempts, while time remains.
   Without a `suite_load_timeout`, connecting to a browser no longer times out.
 * Print console output from pages in Firefox to the browser output.
+* Fix a crash when a timeout uses upper-case units, such as `--timeout 30S`
+  or `timeout: 30S` in `dart_test.yaml`.
 
 ## 1.33.0
 

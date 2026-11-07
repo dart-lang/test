@@ -90,7 +90,10 @@ final class Timeout {
     var microseconds = 0.0;
     while (true) {
       scanner.expect(_unit, name: 'unit');
-      microseconds += _microsecondsFor(number, scanner.lastMatch![0]!);
+      microseconds += _microsecondsFor(
+        number,
+        scanner.lastMatch![0]!.toLowerCase(),
+      );
 
       scanner.scan(_whitespace);
 

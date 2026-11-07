@@ -58,6 +58,27 @@ void main() {
         );
       });
 
+      test('parses units case-insensitively', () {
+        expect(Timeout.parse('2D'), equals(const Timeout(Duration(days: 2))));
+        expect(Timeout.parse('2H'), equals(const Timeout(Duration(hours: 2))));
+        expect(
+          Timeout.parse('2M'),
+          equals(const Timeout(Duration(minutes: 2))),
+        );
+        expect(
+          Timeout.parse('30S'),
+          equals(const Timeout(Duration(seconds: 30))),
+        );
+        expect(
+          Timeout.parse('2Ms'),
+          equals(const Timeout(Duration(milliseconds: 2))),
+        );
+        expect(
+          Timeout.parse('2US'),
+          equals(const Timeout(Duration(microseconds: 2))),
+        );
+      });
+
       test('supports non-integer units', () {
         expect(
           Timeout.parse('2.73d'),

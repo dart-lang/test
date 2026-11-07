@@ -2,6 +2,8 @@
 
 * Add `globalSetup` and `addGlobalTearDown` APIs to run setup scripts once on
   the host runner and cache results across tests and suites.
+* Fix `Timeout.parse` throwing an `ArgumentError` for upper-case units such as
+  `30S`.
 
 ## 0.7.15
 
