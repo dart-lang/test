@@ -128,6 +128,93 @@ bool get canUseSpecialChars => switch (Platform.environment) {
 /// https://docs.github.com/en/actions/learn-github-actions/environment-variables.
 bool get inGithubContext => Platform.environment['GITHUB_ACTIONS'] == 'true';
 
+/// Detect whether the test runner is being executed by an AI coding agent.
+bool get inAiAgent => isAiAgent(Platform.environment);
+
+/// Whether [environment] indicates execution by an AI coding agent.
+///
+/// Mirrors `AiAgent.detectAgentName` in `package:unified_analytics`.
+bool isAiAgent(Map<String, String> environment) {
+  if (environment.containsKey('CLAUDECODE') ||
+      environment.containsKey('CLAUDE_CODE') ||
+      environment.containsKey('CLAUDE_CODE_IS_COWORK')) {
+    return true;
+  }
+
+  if (environment.containsKey('ANTIGRAVITY_AGENT')) {
+    return true;
+  }
+
+  if (environment.containsKey('GEMINI_AGENT') ||
+      environment.containsKey('GEMINI_CLI')) {
+    return true;
+  }
+
+  final cursorAgent = environment['CURSOR_AGENT']?.trim();
+  if ((cursorAgent != null &&
+          cursorAgent.isNotEmpty &&
+          cursorAgent != '0' &&
+          cursorAgent.toLowerCase() != 'false') ||
+      environment['CURSOR_EXTENSION_HOST_ROLE'] == 'agent-exec') {
+    return true;
+  }
+
+  if (environment.keys.any(
+    (key) => key.startsWith('COPILOT_') || key.startsWith('GITHUB_COPILOT'),
+  )) {
+    return true;
+  }
+
+  if (environment.containsKey('AIDER') ||
+      environment.keys.any((key) => key.startsWith('AIDER_'))) {
+    return true;
+  }
+
+  if (environment.containsKey('DEVIN') ||
+      environment.containsKey('DEVIN_WORKSPACE_ID')) {
+    return true;
+  }
+
+  if (environment.containsKey('AMP_CURRENT_THREAD_ID')) {
+    return true;
+  }
+
+  if (environment.containsKey('AUGMENT_AGENT')) {
+    return true;
+  }
+
+  if (environment.containsKey('CODEX_CI') ||
+      environment.containsKey('CODEX_SANDBOX') ||
+      environment.containsKey('CODEX_THREAD_ID')) {
+    return true;
+  }
+
+  if (environment.containsKey('OPENCODE') ||
+      environment.containsKey('OPENCODE_CLIENT')) {
+    return true;
+  }
+
+  if (environment.containsKey('PI_CODING_AGENT')) {
+    return true;
+  }
+
+  if (environment.containsKey('REPL_ID')) {
+    return true;
+  }
+
+  if (environment['AGENT'] case final agent? when agent.isNotEmpty) {
+    return true;
+  }
+  if (environment['AI_AGENT'] case final agent? when agent.isNotEmpty) {
+    return true;
+  }
+  if (environment.containsKey('SWE_AGENT')) {
+    return true;
+  }
+
+  return false;
+}
+
 /// The single directory which parents every temporary directory created by
 /// [createTempDirectory], created lazily on the first call.
 ///

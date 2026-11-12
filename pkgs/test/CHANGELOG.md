@@ -1,5 +1,7 @@
 ## 1.34.0-wip
 
+* Default to the `failures-only` reporter when executed by an AI coding agent.
+* Print a summary of failing tests at the end of the `failures-only` reporter.
 * Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
   once on the host runner and cache results across all tests and test suites.
 * Support `matcher: ^0.13.0`.

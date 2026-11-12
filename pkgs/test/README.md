@@ -262,17 +262,21 @@ specifying it at all, meaning the test order will remain as-is.
 
 You can adjust the output format of test results using the `--reporter=<option>`
 command line flag. The default format is the `compact` output format - a single
-line, continuously updated as tests are run. When running on the GitHub Actions CI
-however (detected via checking the `GITHUB_ACTIONS` environment variable for `true`),
-the default changes to the `github` output format - a reporter customized
-for that CI/CD system.
+line, continuously updated as tests are run (or `expanded` when stdout is not a
+terminal). When running on GitHub Actions CI (detected via checking the
+`GITHUB_ACTIONS` environment variable for `true`), the default changes to the
+`github` output format - a reporter customized for that CI/CD system. When
+running under an AI coding agent, the default changes to `failures-only`.
 
 The available options for the `--reporter` flag are:
 
 - `compact`: a single, continuously updated line
 - `expanded`: a separate line for each update
+- `failures-only`: a separate line for failing tests with no output for passing
+  tests
 - `github`: a custom reporter for GitHub Actions
 - `json`: a machine-readable format; see https://dart.dev/go/test-docs/json_reporter.md
+- `silent`: no output (useful when only the exit code is meaningful)
 
 ### Collecting Code Coverage
 

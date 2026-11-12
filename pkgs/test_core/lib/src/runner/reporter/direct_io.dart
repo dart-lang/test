@@ -21,7 +21,7 @@ Reporter createDirectReporter(Engine engine) {
     stderr.writeln('Unknown reporter "$envReporter" in DART_TEST_REPORTER.');
   }
 
-  return canUseSpecialChars
+  return canUseSpecialChars && !inAiAgent
       ? CompactReporter.watch(
           engine,
           PrintSink(),
@@ -32,7 +32,7 @@ Reporter createDirectReporter(Engine engine) {
       : FailuresOnlyReporter.watch(
           engine,
           PrintSink(),
-          color: false,
+          color: canUseSpecialChars,
           printPath: false,
           printPlatform: false,
         );
