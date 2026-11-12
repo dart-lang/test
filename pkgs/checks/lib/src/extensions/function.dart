@@ -93,7 +93,7 @@ extension VoidFunctionChecks on Subject<void Function()> {
   /// {@example /example/function/function/prints.dart}
   Subject<String> prints([Condition<String>? that]) {
     return context.nest<String>(
-      () => ['prints'],
+      () => ['prints output'],
       addPredicate: (predicateNoun) => 'prints $predicateNoun',
       (actual) {
         final buffer = StringBuffer();
@@ -143,7 +143,7 @@ extension AsyncFunctionChecks on Subject<Future<void> Function()> {
   @meta.awaitNotRequired
   Future<Subject<String>> prints([Condition<String>? printCondition]) {
     return context.nestAsync<String>(
-      () => ['prints'],
+      () => ['prints output'],
       addPredicate: (predicateNoun) => 'prints $predicateNoun',
       (actual) async {
         final buffer = StringBuffer();
