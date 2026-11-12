@@ -1,9 +1,55 @@
-## 0.6.21-wip
+## 0.6.22-wip
+
+* Support `globalSetup` and `addGlobalTearDown` host runner execution and
+  caching across test suites.
+* Enable asserts in the `cli` compiler if supported.
+* Fix a `RangeError` crash in the compact reporter when the terminal is too
+  narrow to fit a test's description.
+* Add `PlatformPlugin.remainingLoadTime` so platforms can time out a step of
+  loading a suite before the suite load timeout cuts it off.
+* Report tests that fail and then pass on retry as flaky. Previously a
+  `setUpAll` that passed on retry was still counted as failed in the summary,
+  even though the run succeeded. `Engine.flaky` and `LiveSuite.flaky` hold the
+  tests that passed on retry. A test that fails and is then skipped on retry
+  is now counted only as skipped.
+* When a test configured with `retry` fails, the compact, expanded, and
+  failures-only reporters show the attempt, for example
+  `[E] (attempt 1 of 2)`, and the final summary counts flaky tests. The
+  expanded reporter also lists them.
+* The GitHub reporter shows a test that passed on retry as
+  `⚠️ <name> (passed on attempt N of M)`, adds a flaky count to the summary,
+  and uses a `::warning::` annotation when the only problems are flaky tests.
+  A test that fails and is then skipped on retry is shown as skipped.
+  Output and errors within each test's group are printed in the order they
+  were emitted, for all tests.
+* The JSON reporter adds a `retried` field to `testDone` events and reports
+  protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
+  the protocol documents.
+
+## 0.6.21
 
 * Fix a hang when the runner is shut down at the moment a test suite starts
   loading.
 * Fix a `LiveTest.run() may not be called for a closed test` error when the
   runner is shut down at the moment a test suite is about to start loading.
+* Create all temporary directories used by the test runner under a single
+  `dart_test.` directory in the system temp directory, and delete that directory
+  when the run finishes.
+* Delete the test runner's temporary directory synchronously when the run is
+  interrupted by a second signal (e.g. pressing Ctrl-C twice).
+* Bundle skipped tests into a single group at the end of the GitHub reporter
+  output instead of interrupting passing test groups.
+* Delete the kernel file for a test suite once it has finished running, instead
+  of keeping every kernel file until the end of the run.
+* Compile each test suite for the `exe` and `cli` compilers into a directory of
+  its own, and delete it once the test process has exited, instead of keeping
+  every compiled snapshot or bundle until the end of the run.
+* Fail to load a test suite compiled with the `exe` or `cli` compiler if the
+  test process exits before connecting to the runner, instead of hanging.
+* Fail a test suite running in an isolate if the isolate exits, instead of
+  hanging. The suite fails to load if the isolate exits while loading, and any
+  tests that haven't finished fail if it exits while they run.
+* Add flag `--shard-by-suite` to control sharding strategy.
 
 ## 0.6.20
 
@@ -25,7 +71,6 @@
 * Add support for `-c cli` (the native CLI compiler) to the vm platform.
 * Support using the OS platform selector to configure browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-suite` to control sharding strategy.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`
 * Update `parse_metadata.dart` to be compatible with `analyzer >=13.0.0 <15.0.0`.

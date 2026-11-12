@@ -7,15 +7,21 @@ import 'dart:async';
 import 'package:stack_trace/stack_trace.dart';
 import 'package:stream_channel/stream_channel.dart';
 import 'package:test_api/backend.dart'
-    show Metadata, RemoteException, SuitePlatform, TestLocation;
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+    show
+        Group,
+        LiveTest,
+        Message,
+        MessageType,
+        Metadata,
+        RemoteException,
+        Suite,
+        SuitePlatform,
+        Test,
+        TestLocation;
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
+import 'global_setup.dart';
 import 'spawn_hybrid.dart';
 
 /// A test running remotely, controlled by a stream channel.
@@ -98,6 +104,22 @@ class RunnerTest extends Test {
                 ).pipe(
                   testChannel.virtualChannel((msg['channel'] as num).toInt()),
                 );
+                break;
+
+              case 'global-setup':
+                final manager = GlobalSetupManager.current;
+                if (manager == null) {
+                  throw StateError(
+                    'GlobalSetupManager has not been initialized.',
+                  );
+                }
+                manager
+                    .get(msg['url'] as String, suite)
+                    .pipe(
+                      testChannel.virtualChannel(
+                        (msg['channel'] as num).toInt(),
+                      ),
+                    );
                 break;
             }
           },

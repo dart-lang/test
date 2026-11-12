@@ -15,15 +15,12 @@ void main() {
       .it()..emits(.it()..equals('third')),
     ]);
     // Expected: a Stream<String> that:
-    //     emits a value that:
-    //       equals 'first'
-    //     emits a value that:
-    //       equals 'third'
+    //     emits 'first'
+    //     emits 'third'
     // Actual: a stream
     // Which: satisfied 1 conditions then
     // failed to satisfy the condition at index 1
     // because it:
-    //   Expected: emits 'third'
     //   Actual: emits 'second'
     //   Which: differs at offset 0:
     //     third

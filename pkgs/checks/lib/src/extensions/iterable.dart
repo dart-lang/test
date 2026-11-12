@@ -5,6 +5,7 @@
 import '../../context.dart';
 
 import '../collection_equality.dart';
+import '../describe.dart' show describedClause, describedPredicateNoun;
 import 'core.dart';
 
 extension IterableChecks<T> on Subject<Iterable<T>> {
@@ -39,15 +40,10 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
     () => ['has last element'],
     addPredicate: (predicateNoun) => 'has last element: $predicateNoun',
     (actual) {
-      final iterator = actual.iterator;
-      if (!iterator.moveNext()) {
+      if (actual.isEmpty) {
         return Extracted.rejection(which: ['has no elements']);
       }
-      var current = iterator.current;
-      while (iterator.moveNext()) {
-        current = iterator.current;
-      }
-      return Extracted.value(current);
+      return Extracted.value(actual.last);
     },
   );
 
@@ -257,11 +253,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/any.dart}
   void any(Condition<T> elementCondition) {
     context.expect(
-      () {
-        final conditionDescription = elementCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['contains a value that:', ...conditionDescription];
-      },
+      () => describedClause('contains a value that', elementCondition),
+      predicateNoun: () => describedPredicateNoun(
+        'an iterable containing a value that',
+        elementCondition,
+      ),
       (actual) {
         if (actual.isEmpty) return Rejection(actual: ['an empty iterable']);
         for (var e in actual) {
@@ -280,31 +276,21 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
   /// {@example /example/iterable/iterable/every.dart}
   void every(Condition<T> elementCondition) {
     context.expect(
-      () {
-        final conditionDescription = elementCondition.describeSync();
-        assert(conditionDescription.isNotEmpty);
-        return ['only has values that:', ...conditionDescription];
-      },
+      () => describedClause('only has elements where each', elementCondition),
+      predicateNoun: () => describedPredicateNoun(
+        'an iterable where every element',
+        elementCondition,
+      ),
       (actual) {
         final iterator = actual.iterator;
         for (var i = 0; iterator.moveNext(); i++) {
           final element = iterator.current;
           final failure = elementCondition.softCheckSync(element);
           if (failure == null) continue;
-          final which = failure.rejection.which;
           return Rejection(
             which: [
               'has an element at index $i that:',
-              ...indent(failure.detail.actual.skip(1)),
-              ...indent(
-                prefixFirst('Actual: ', failure.rejection.actual),
-                failure.detail.depth + 1,
-              ),
-              if (which != null && which.isNotEmpty)
-                ...indent(
-                  prefixFirst('Which: ', which),
-                  failure.detail.depth + 1,
-                ),
+              ...indent(failure.describeNested()),
             ],
           );
         }
@@ -457,19 +443,11 @@ extension IterableChecks<T> on Subject<Iterable<T>> {
           final condition = elementCondition(expectedValue);
           final failure = condition.softCheckSync(actualValue);
           if (failure == null) continue;
-          final innerDescription = condition.describeSync();
-          final which = failure.rejection.which;
           return Rejection(
             which: [
               'does not have an element at index $i that:',
-              ...innerDescription,
-              ...indent(
-                prefixFirst(
-                  'Actual element at index $i: ',
-                  failure.rejection.actual,
-                ),
-              ),
-              if (which != null) ...indent(prefixFirst('Which: ', which)),
+              ...condition.describeSync(),
+              ...indent(failure.describeNested()),
             ],
           );
         }

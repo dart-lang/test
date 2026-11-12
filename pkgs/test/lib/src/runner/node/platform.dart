@@ -46,7 +46,7 @@ class NodePlatform extends PlatformPlugin
   final _wasmCompilers = WasmCompilerPool(['-Dnode=true']);
 
   /// The temporary directory in which compiled JS is emitted.
-  final _compiledDir = createTempDir();
+  final _compiledDir = createTempDirectory('node.').path;
 
   /// Executable settings for [Runtime.nodeJS] and runtimes that extend
   /// it.

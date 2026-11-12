@@ -8,13 +8,9 @@ import 'dart:math';
 import 'package:async/async.dart' hide Result;
 import 'package:collection/collection.dart';
 import 'package:pool/pool.dart';
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/live_test_controller.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/message.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 
 import 'coverage_stub.dart' if (dart.library.io) 'coverage.dart';
 import 'live_suite.dart';
@@ -181,6 +177,15 @@ class Engine {
   /// The set of tests that have completed and been marked as failing or error.
   Set<LiveTest> get failed => _failedGroup.set;
   final _failedGroup = UnionSetController<LiveTest>(disjoint: true);
+
+  /// The set of tests that failed at least one attempt and then passed on
+  /// retry.
+  ///
+  /// This includes synthetic tests such as `setUpAll` and `tearDownAll`, which
+  /// are not counted in [passed]. Regular tests in this set are also in
+  /// [passed], so it is not part of [liveTests].
+  Set<LiveTest> get flaky => _flakyGroup.set;
+  final _flakyGroup = UnionSetController<LiveTest>(disjoint: true);
 
   /// The tests that are still running, in the order they began running.
   List<LiveTest> get active => UnmodifiableListView(_active);
@@ -569,6 +574,7 @@ class Engine {
     _passedGroup.add(liveSuite.passed);
     _skippedGroup.add(liveSuite.skipped);
     _failedGroup.add(liveSuite.failed);
+    _flakyGroup.add(liveSuite.flaky);
   }
 
   /// Pauses the engine.

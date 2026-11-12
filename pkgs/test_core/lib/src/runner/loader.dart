@@ -9,16 +9,13 @@ import 'package:async/async.dart';
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_span/source_span.dart';
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/invoker.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:yaml/yaml.dart';
 
 import '../util/io.dart';
 import 'compiler_selection.dart';
 import 'configuration.dart';
+import 'global_setup.dart';
 import 'hack_register_platform.dart';
 import 'load_exception.dart';
 import 'load_suite.dart';
@@ -125,6 +122,9 @@ class Loader {
 
   /// The test runner configuration.
   final _config = Configuration.current;
+
+  /// Manages global setup hooks.
+  late final globalSetupManager = GlobalSetupManager();
 
   /// All suites that have been created by the loader.
   final _suites = <RunnerSuite>{};
@@ -383,6 +383,7 @@ class Loader {
 
   /// Closes the loader and releases all resources allocated by it.
   Future close() => _closeMemo.runOnce(() async {
+    await globalSetupManager.close();
     await Future.wait([
       Future.wait(
         _platformPlugins.values.map((memo) async {

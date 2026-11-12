@@ -75,6 +75,8 @@ void main() {
       await Future<void>.delayed(const Duration(seconds: 1));
 
       await signalAndQuit(test);
+
+      expectTempDirEmpty();
     });
   });
 
@@ -183,6 +185,8 @@ void main() {
       // one. Remove this hack when issue 23047 is fixed.
       await Future<void>.delayed(const Duration(seconds: 1));
       await signalAndQuit(test);
+
+      expectTempDirEmpty();
     });
 
     test('causes expectAsync() to always throw an error immediately', () async {
@@ -236,5 +240,7 @@ Future<void> signalAndQuit(TestProcess test) async {
 }
 
 void expectTempDirEmpty() {
-  expect(Directory(_tempDir).listSync(), isEmpty);
+  var dir = Directory(_tempDir);
+  var entries = dir.existsSync() ? dir.listSync() : const <FileSystemEntity>[];
+  expect(entries, isEmpty);
 }

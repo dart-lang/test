@@ -1,10 +1,82 @@
-## 1.33.0-wip
+## 1.34.0-wip
+
+* Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
+  once on the host runner and cache results across all tests and test suites.
+* Support `matcher: ^0.13.0`.
+* Enable asserts in the `cli` compiler if supported.
+* Fix a `RangeError` crash in the compact reporter when the terminal is too
+  narrow to fit a test's description.
+* Fix loading precompiled browser tests when the precompiled directory contains
+  symlinks to files outside of it, such as the output of `build_runner test`.
+  Requests whose path would resolve outside the precompiled directory are
+  still rejected.
+* Give a browser until shortly before the `suite_load_timeout` to load a test
+  suite, so the failure includes the browser output. Previously the browser
+  waited as long as the test timeout, or 30 seconds if that was longer,
+  regardless of `suite_load_timeout`. Without a `suite_load_timeout`, loading a
+  browser suite no longer times out, matching other platforms.
+* Report tests that fail and then pass on retry as flaky in every reporter.
+  Previously a `setUpAll` that passed on retry was still counted as failed in
+  the summary, even though the run succeeded. A test that fails and is then
+  skipped on retry is now counted only as skipped.
+  * The compact, expanded, and failures-only reporters show which attempt
+    failed, for example `[E] (attempt 1 of 2)`, and add a flaky count to the
+    final line. The expanded reporter also lists the flaky tests.
+  * The GitHub reporter shows a test that passed on retry as
+    `⚠️ <name> (passed on attempt N of M)`, adds a flaky count to the summary,
+    and uses a `::warning::` annotation when the only problems are flaky tests.
+    A test that fails and is then skipped on retry is shown as skipped.
+  * The GitHub reporter prints the output and errors within each test's group
+    in the order they were emitted, for all tests. Previously all printed
+    output came first, so output from `printOnFailure` and `tearDown` appeared
+    before the error that caused it.
+  * The JSON reporter adds a `retried` field to `testDone` events and reports
+    protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden,
+    as the protocol documents.
+* Never retry `tearDownAll`, even when the group or suite sets `retry`.
+  Previously a retry didn't run any of the `tearDownAll` callbacks again, so it
+  always passed and hid the failure.
+* When a browser fails to connect, report each attempt: how long it waited,
+  whether the browser process was still running, the command used to start it,
+  the requests it made to the test server, and its output.
+* Give a browser until shortly before the `suite_load_timeout` to connect,
+  instead of 30 seconds for each of up to 3 attempts. A browser that exits
+  before connecting is still replaced, up to 3 attempts, while time remains.
+  Without a `suite_load_timeout`, connecting to a browser no longer times out.
+* Print console output from pages in Firefox to the browser output.
+
+## 1.33.0
 
 * Replace the Safari launch mechanism to use `safaridriver`.
 * Fix a hang when the runner is interrupted at the moment a test suite starts
   loading.
 * Fix a `LiveTest.run() may not be called for a closed test` error when the
   runner is interrupted at the moment a test suite is about to start loading.
+* Create all temporary directories used by the test runner, including browser
+  profiles and compiler output, under a single `dart_test.` directory which is
+  deleted when the run finishes.
+* Delete the temporary directory when the test runner is interrupted with
+  Control-C twice.
+* Bundle skipped tests into a single group at the end of the GitHub reporter
+  output instead of interrupting passing test groups.
+* Delete the kernel file compiled for a test suite once that suite has finished
+  running, and delete the snapshot or bundle compiled with the `exe` and `cli`
+  compilers once the test process has exited, instead of retaining every
+  compiled artifact until the end of the run.
+* Fail to load a test suite compiled with the `exe` or `cli` compiler if the
+  test process exits before connecting to the runner, instead of hanging.
+* Wait longer for Chrome to open the test page when running with `--debug` or
+  `--coverage`, and list the open tabs if the page is never found.
+* Fail a test suite running in an isolate if the isolate exits, instead of
+  hanging. The suite fails to load if the isolate exits while loading, and any
+  tests that haven't finished fail if it exits while they run.
+* Include Chrome's stderr, which has its logging, in the browser output when
+  running with `--debug` or `--coverage`. Previously it was missing from the
+  error when Chrome failed or a suite timed out while loading.
+* Let Chrome choose its own remote debugging port when running with `--debug`
+  or `--coverage`, instead of picking a port that another process could take
+  before Chrome binds it.
+* Add flag `--shard-by-suite` to control sharding strategy.
 
 ## 1.32.0
 
@@ -54,7 +126,6 @@
   all tests with OS `'windows'` would previously still run browser tests on
   windows, but will now skip all tests including browser tests.
 * Use a DevTools URL instead of a defunct observatory URL.
-* Add flag `--shard-by-suite` to control sharding strategy.
 * Disable throttling in chrome launch arguments.
 * Allow package_config `3.x.x`.
 * Require `analyzer: '>=13.0.0 <15.0.0'`

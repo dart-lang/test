@@ -5,11 +5,8 @@
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:collection/collection.dart';
 import 'package:source_span/source_span.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_api/scaffolding.dart' show Timeout;
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/platform_selector.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite_platform.dart'; // ignore: implementation_imports
 
 import 'compiler_selection.dart';
 import 'runtime_selection.dart';

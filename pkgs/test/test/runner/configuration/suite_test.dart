@@ -7,8 +7,7 @@ library;
 
 import 'package:boolean_selector/boolean_selector.dart';
 import 'package:test/test.dart';
-import 'package:test_api/src/backend/platform_selector.dart';
-import 'package:test_api/src/backend/runtime.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_core/src/runner/compiler_selection.dart';
 import 'package:test_core/src/runner/runtime_selection.dart';
 

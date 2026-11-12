@@ -9,15 +9,11 @@ import 'dart:io' show pid;
 import 'package:collection/collection.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
-import 'package:test_api/backend.dart' show SuitePlatform;
+import 'package:test_api/backend.dart'
+    show Group, LiveTest, Metadata, Suite, SuitePlatform, TestLocation;
 import 'package:test_api/hooks.dart' show TestFailure;
 import 'package:test_api/src/backend/compiler.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/metadata.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test_location.dart'; // ignore: implementation_imports
 
 import '../engine.dart';
 import '../load_suite.dart';
@@ -25,6 +21,7 @@ import '../reporter.dart';
 import '../runner_suite.dart' show RunnerSuite;
 import '../suite.dart' show SuiteConfiguration;
 import '../version.dart';
+import 'attempt_counter.dart';
 
 /// A reporter that prints machine-readable JSON-formatted test results.
 class JsonReporter implements Reporter {
@@ -61,6 +58,9 @@ class JsonReporter implements Reporter {
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
 
+  /// The number of attempts each test has started, for tests with `retry`.
+  final _attempts = AttemptCounter();
+
   final StringSink _sink;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
@@ -90,7 +90,7 @@ class JsonReporter implements Reporter {
     );
 
     _emit('start', {
-      'protocolVersion': '0.1.1',
+      'protocolVersion': '0.1.2',
       'runnerVersion': testVersion,
       'pid': pid,
     });
@@ -145,6 +145,7 @@ class JsonReporter implements Reporter {
     var suiteConfig = _configFor(liveTest.suite);
     var id = _nextID++;
     _liveTestIDs[liveTest] = id;
+    _subscriptions.add(_attempts.watch(liveTest));
     _emit('testStart', {
       'test': {
         'id': id,
@@ -275,6 +276,7 @@ class JsonReporter implements Reporter {
       'result': _normalizeTestResult(liveTest),
       'skipped': liveTest.state.result == Result.skipped,
       'hidden': !_engine.liveTests.contains(liveTest),
+      'retried': _attempts.attemptsFor(liveTest) > 1,
     });
   }
 

@@ -24,6 +24,7 @@ import 'compilers/dart2js.dart';
 import 'compilers/dart2wasm.dart';
 import 'compilers/precompiled.dart';
 import 'default_settings.dart';
+import 'load_timeout.dart';
 
 class BrowserPlatform extends PlatformPlugin
     implements CustomizablePlatform<ExecutableSettings> {
@@ -212,14 +213,18 @@ class BrowserPlatform extends PlatformPlugin
 
     if (_closed) return null;
 
+    // Connecting to the browser and loading the suite in it are consecutive
+    // steps of loading this suite, and each times out shortly before the suite
+    // load timeout with an error that includes the browser's output. Each
+    // step computes its timeout from the time remaining when it starts, so
+    // they share one deadline and loading gets whatever connecting left.
+    //
+    // The browser manager is shared between suites, so only the suite that
+    // starts the browser times out connecting. Other suites wait on that
+    // connection and its deadline.
     var browserManager = await _browserManagerFor(browser, compiler);
     if (_closed || browserManager == null) return null;
 
-    var timeout = const Duration(seconds: 30);
-    if (suiteConfig.metadata.timeout.apply(timeout) case final suiteTimeout?
-        when suiteTimeout > timeout) {
-      timeout = suiteTimeout;
-    }
     var suite = await browserManager.load(
       path,
       suiteUrl,
@@ -227,7 +232,7 @@ class BrowserPlatform extends PlatformPlugin
       message,
       platform.compiler,
       mapper: (await compilerSupport(compiler)).stackTraceMapperForPath(path),
-      timeout: timeout,
+      timeout: browserLoadTimeout(PlatformPlugin.remainingLoadTime),
     );
     if (_closed) return null;
     return suite;
@@ -284,6 +289,8 @@ class BrowserPlatform extends PlatformPlugin
       socketFuture,
       _browserSettings[browser]!,
       _config,
+      requestLog: support.requestLog,
+      connectTimeout: browserLoadTimeout(PlatformPlugin.remainingLoadTime),
     );
   }
 

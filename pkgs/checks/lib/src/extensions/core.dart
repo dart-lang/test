@@ -57,6 +57,12 @@ extension CoreChecks<T> on Subject<T> {
     },
   );
 
+  /// Intermediate migration holding spot for [has] while argument order is
+  /// switched.
+  @meta.useResult
+  Subject<R> has2<R>(String name, R Function(T) extract) =>
+      has<R>(name, extract);
+
   /// Applies the expectations invoked in [condition] to this subject.
   ///
   /// Use this method when it would otherwise not be possible to check multiple

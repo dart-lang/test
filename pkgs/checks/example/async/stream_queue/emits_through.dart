@@ -15,7 +15,7 @@ void main() {
     // Expected: a Stream<String> that:
     //   emits any values then emits a value that:
     //     equals 'd'
-    // Actual: a stream
-    // Which: ended after emitting 3 elements with none matching
+    // Actual: a stream that closed after emitting ['a', 'b', 'c']
+    // Which: did not emit a matching value
   });
 }

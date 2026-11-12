@@ -32,6 +32,19 @@ abstract class Browser {
   Future<Process> get _process => _processCompleter.future;
   final _processCompleter = Completer<Process>();
 
+  /// The underlying process, or `null` if it hasn't started yet.
+  Process? get process => _startedProcess;
+  Process? _startedProcess;
+
+  /// The exit code of the underlying process, or `null` if it hasn't exited.
+  int? get exitCode => _exitCode;
+  int? _exitCode;
+
+  /// The command line used to start the browser, or `null` if it hasn't
+  /// started yet.
+  String? get commandLine => _commandLine;
+  String? _commandLine;
+
   /// Whether [close] has been called.
   var _closed = false;
 
@@ -45,39 +58,103 @@ abstract class Browser {
   /// Standard IO streams for the underlying browser process.
   final _ioSubscriptions = <StreamSubscription<String>>[];
 
-  final output = <String>[];
+  /// The lines the browser process has written to stdout and stderr so far.
+  final accumulatedOutput = <String>[];
+
+  /// The lines the browser process writes to stdout and stderr.
+  ///
+  /// Each listener receives every line already in [accumulatedOutput],
+  /// followed by each new line as it is written. The stream closes once both
+  /// stdout and stderr have closed, or the browser is closed.
+  late final Stream<String> output = Stream.multi((controller) {
+    accumulatedOutput.forEach(controller.add);
+    if (_outputDone) {
+      controller.close();
+      return;
+    }
+    _outputListeners.add(controller);
+    controller.onCancel = () {
+      _outputListeners.remove(controller);
+    };
+  });
+
+  /// The active listeners on [output].
+  final _outputListeners = <MultiStreamController<String>>{};
+
+  /// Whether the browser output has ended and [output] is closed.
+  var _outputDone = false;
+
+  /// Completes once all of the browser's stdout and stderr is in
+  /// [accumulatedOutput], or the browser is closed.
+  ///
+  /// Unlike [output], this doesn't complete early when the browser fails, so
+  /// it can be used to wait for the output of a browser that exited.
+  Future<void> get outputDrained => _outputDrainedCompleter.future;
+  final _outputDrainedCompleter = Completer<void>();
+
+  void _completeOutputDrained() {
+    if (!_outputDrainedCompleter.isCompleted) {
+      _outputDrainedCompleter.complete();
+    }
+  }
+
+  void _addOutput(String line) {
+    accumulatedOutput.add(line);
+    for (var listener in _outputListeners) {
+      listener.add(line);
+    }
+  }
+
+  void _closeOutput() {
+    if (_outputDone) return;
+    _outputDone = true;
+    var listeners = [..._outputListeners];
+    _outputListeners.clear();
+    for (var listener in listeners) {
+      listener.close();
+    }
+  }
 
   /// Creates a new browser.
   ///
   /// This is intended to be called by subclasses. They pass in [startBrowser],
-  /// which asynchronously returns the browser process. Any errors in
-  /// [startBrowser] (even those raised asynchronously after it returns) are
-  /// piped to [onExit] and will cause the browser to be killed.
-  Browser(Future<Process> Function() startBrowser) {
+  /// which asynchronously returns the browser process and the command line
+  /// used to start it, for diagnostics. Any errors in [startBrowser] (even
+  /// those raised asynchronously after it returns) are piped to [onExit] and
+  /// will cause the browser to be killed.
+  Browser(Future<(Process, String)> Function() startBrowser) {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
     runZonedGuarded(
       () async {
-        var process = await startBrowser();
+        var (process, commandLine) = await startBrowser();
+        _startedProcess = process;
+        _commandLine = commandLine;
         _processCompleter.complete(process);
 
-        void drainOutput(Stream<List<int>> stream) {
-          try {
-            _ioSubscriptions.add(
-              stream
-                  .transform(utf8.decoder)
-                  .transform(const LineSplitter())
-                  .listen(output.add, cancelOnError: true),
-            );
-          } on StateError catch (_) {}
+        Future<void> drainOutput(Stream<List<int>> stream) {
+          final sub = stream
+              .transform(utf8.decoder)
+              .transform(const LineSplitter())
+              .listen(_addOutput);
+          _ioSubscriptions.add(sub);
+          return sub.asFuture();
         }
 
-        // If we don't drain the stdout and stderr the process can hang.
-        drainOutput(process.stdout);
-        drainOutput(process.stderr);
+        // If we don't drain the stdout and stderr the process can hang. An error
+        // on either stream is reported to the zone right away, which kills the
+        // browser.
+        Future.wait([
+          drainOutput(process.stdout),
+          drainOutput(process.stderr),
+        ], eagerError: true).whenComplete(() {
+          _closeOutput();
+          _completeOutputDrained();
+        });
 
         var exitCode = await process.exitCode;
+        _exitCode = exitCode;
 
         // This hack dodges an otherwise intractable race condition. When the user
         // presses Control-C, the signal is sent to the browser and the test
@@ -94,7 +171,7 @@ abstract class Browser {
         }
 
         if (!_closed && exitCode != 0) {
-          var outputString = output.join('\n');
+          var outputString = accumulatedOutput.join('\n');
           var message = '$name failed with exit code $exitCode.';
           if (outputString.isNotEmpty) {
             message += '\nStandard output:\n$outputString';
@@ -106,6 +183,8 @@ abstract class Browser {
         _onExitCompleter.complete();
       },
       (error, stackTrace) {
+        _closeOutput();
+
         // Ignore any errors after the browser has been closed.
         if (_closed) return;
 
@@ -136,6 +215,8 @@ abstract class Browser {
     for (var stream in _ioSubscriptions) {
       unawaited(stream.cancel());
     }
+    _closeOutput();
+    _completeOutputDrained();
 
     (await _process).kill();
 

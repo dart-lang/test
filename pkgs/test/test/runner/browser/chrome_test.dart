@@ -139,4 +139,92 @@ echo "\$@" > "$argsFile"
     expect(argsText, isNot(contains('secret_token_12345')));
     expect(argsText, contains('redirect.html'));
   }, testOn: '!windows');
+
+  test('keeps all output when connecting to DevTools', () async {
+    // Stands in for the DevTools HTTP server. Responding with something other
+    // than JSON makes the connection fail once the tab list is requested.
+    var devTools = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(devTools.close);
+    var requestedPaths = <String>[];
+    devTools.listen((request) {
+      requestedPaths.add(request.uri.path);
+      request.response
+        ..write('not json')
+        ..close();
+    });
+    var devToolsLine =
+        'DevTools listening on '
+        'ws://127.0.0.1:${devTools.port}/devtools/browser/fake';
+
+    var argsFile = p.join(d.sandbox, 'args.txt');
+    var scriptFile = p.join(d.sandbox, 'fake_chrome.sh');
+    await d.file('fake_chrome.sh', '''
+#!/bin/sh
+echo "\$@" > "$argsFile"
+echo "$devToolsLine" >&2
+echo "stderr after DevTools" >&2
+echo "stdout line"
+''').create();
+    await Process.run('chmod', ['+x', scriptFile]);
+
+    var chrome = Chrome(
+      Uri.parse('http://localhost:12345/'),
+      configuration(debug: true),
+      settings: ExecutableSettings(
+        linuxExecutable: scriptFile,
+        macOSExecutable: scriptFile,
+        windowsExecutable: scriptFile,
+      ),
+    );
+    addTearDown(chrome.close);
+
+    var expected = unorderedEquals([
+      devToolsLine,
+      'stderr after DevTools',
+      'stdout line',
+    ]);
+    expect(await chrome.output.toList(), expected);
+    expect(
+      await File(argsFile).readAsString(),
+      contains('--remote-debugging-port=0'),
+    );
+    // Connecting starts only now, after the output has ended, so the port has
+    // to come from the "DevTools listening" line in the replayed output.
+    await expectLater(chrome.remoteDebuggerUrl, throwsA(isA<IOException>()));
+    expect(requestedPaths, ['/json']);
+    expect(chrome.accumulatedOutput, expected);
+  }, testOn: '!windows');
+
+  test('fails to connect if the DevTools line has no port', () async {
+    var devToolsLine =
+        'DevTools listening on ws://127.0.0.1/devtools/browser/fake';
+    var scriptFile = p.join(d.sandbox, 'fake_chrome.sh');
+    await d.file('fake_chrome.sh', '''
+#!/bin/sh
+echo "$devToolsLine" >&2
+''').create();
+    await Process.run('chmod', ['+x', scriptFile]);
+
+    var chrome = Chrome(
+      Uri.parse('http://localhost:12345/'),
+      configuration(debug: true),
+      settings: ExecutableSettings(
+        linuxExecutable: scriptFile,
+        macOSExecutable: scriptFile,
+        windowsExecutable: scriptFile,
+      ),
+    );
+    addTearDown(chrome.close);
+
+    await expectLater(
+      chrome.remoteDebuggerUrl,
+      throwsA(
+        isStateError.having(
+          (e) => e.message,
+          'message',
+          'Could not find the DevTools port in: $devToolsLine',
+        ),
+      ),
+    );
+  }, testOn: '!windows');
 }

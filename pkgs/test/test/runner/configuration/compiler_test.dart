@@ -44,7 +44,7 @@ void main() {
         ]),
       );
       await test.shouldExit(0);
-    });
+    }, tags: 'chrome');
 
     test('supports platform selectors with compilers', () async {
       await d
@@ -74,6 +74,6 @@ void main() {
         ]),
       );
       await test.shouldExit(0);
-    });
+    }, tags: 'chrome');
   });
 }

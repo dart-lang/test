@@ -33,7 +33,7 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
   bool _closed = false;
 
   /// The temporary directory in which compiled JS is emitted.
-  final _compiledDir = createTempDir();
+  final _compiledDir = createTempDirectory('dart2wasm.').path;
 
   /// A map from test suite paths to Futures that will complete once those
   /// suites are finished compiling.
@@ -96,7 +96,12 @@ class Dart2WasmSupport extends CompilerSupport with WasmHtmlWrapper {
         .addHandler(cascade.handler);
 
     _server.mount(
-      shelf.Cascade().add(createFileHandler(faviconPath)).add(pipeline).handler,
+      requestLog.wrap(
+        shelf.Cascade()
+            .add(createFileHandler(faviconPath))
+            .add(pipeline)
+            .handler,
+      ),
     );
   }
 

@@ -6,14 +6,14 @@
 
 import 'dart:async';
 
-import 'package:test_api/src/backend/live_test.dart';
-import 'package:test_api/src/backend/message.dart';
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/state.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart';
 
 import '../engine.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'attempt_counter.dart';
 
 /// A reporter that prints test output using formatting for Github Actions.
 ///
@@ -40,12 +40,23 @@ class GithubReporter implements Reporter {
 
   final StringSink _sink;
 
-  final Map<LiveTest, List<Message>> _testMessages = {};
+  /// The messages and errors from each test that hasn't completed yet, in the
+  /// order they were emitted.
+  ///
+  /// Each entry is either a [Message] or an [AsyncError]. Keeping them in one
+  /// list preserves the order of output across retries, so that a `Retry:`
+  /// message follows the error that caused it.
+  final Map<LiveTest, List<Object>> _testOutput = {};
+
+  /// The number of attempts each test has started, for tests with `retry`.
+  final _attempts = AttemptCounter();
 
   final Set<LiveTest> _completedTests = {};
 
-  /// The github markdown `::group::` that is currently open.
-  var _activeGroup = _ReportGroup.ungrouped;
+  final List<LiveTest> _skippedTests = [];
+
+  /// Whether a `::group::` for passing tests is currently open.
+  var _inPassingGroup = false;
 
   /// Watches the tests run by [engine] and prints their results as JSON.
   static GithubReporter watch(
@@ -97,6 +108,8 @@ class GithubReporter implements Reporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
+    _subscriptions.add(_attempts.watch(liveTest));
+
     // Convert the future to a stream so that the subscription can be paused or
     // canceled.
     _subscriptions.add(
@@ -104,35 +117,48 @@ class GithubReporter implements Reporter {
     );
 
     _subscriptions.add(
-      liveTest.onError.listen(
-        (error) => _onError(liveTest, error.error, error.stackTrace),
-      ),
+      liveTest.onError.listen((error) => _onError(liveTest, error)),
     );
 
     // Collect messages from tests as they are emitted.
     _subscriptions.add(
       liveTest.onMessage.listen((message) {
-        if (_completedTests.contains(liveTest)) {
-          // The test has already completed and it's previous messages were
+        if (_completedTests.contains(liveTest) &&
+            liveTest.state.result != Result.skipped) {
+          // The test has already completed and its previous messages were
           // written out; ensure this post-completion output is not lost.
-          if (!_activeGroup.isUngrouped) {
+          if (_inPassingGroup) {
             _sink.writeln(_GithubMarkup.endGroup);
-            _activeGroup = _ReportGroup.ungrouped;
+            _inPassingGroup = false;
           }
           _sink.writeln(message.text);
         } else {
-          _testMessages.putIfAbsent(liveTest, () => []).add(message);
+          _testOutput.putIfAbsent(liveTest, () => []).add(message);
         }
       }),
     );
   }
 
+  String _testName(LiveTest test) {
+    var name = test.test.name;
+    if (test.suite is! LoadSuite) {
+      if (_printPath && test.suite.path != null) {
+        name = '${test.suite.path}: $name';
+      }
+    }
+    if (_printPlatform) {
+      name =
+          '[${test.suite.platform.runtime.name}, '
+          '${test.suite.platform.compiler.name}] $name';
+    }
+    return name;
+  }
+
   /// A callback called when [liveTest] finishes running.
   void _onComplete(LiveTest test) {
     final errors = test.errors;
-    final messages = _testMessages[test] ?? [];
+    final output = _testOutput[test] ?? const <Object>[];
     final skipped = test.state.result == Result.skipped;
-    final failed = errors.isNotEmpty;
     final loadSuite = test.suite is LoadSuite;
     final synthetic =
         loadSuite ||
@@ -144,124 +170,129 @@ class GithubReporter implements Reporter {
 
     // Don't emit any info for loadSuite, setUpAll, or tearDownAll tests
     // unless they contain errors or other info.
-    if (synthetic && (errors.isEmpty && messages.isEmpty)) {
+    if (synthetic && (errors.isEmpty && output.isEmpty)) {
+      return;
+    }
+
+    if (skipped && errors.isEmpty) {
+      _skippedTests.add(test);
       return;
     }
 
     // For now, we use the same icon for both tests and test-like structures
     // (loadSuite, setUpAll, tearDownAll).
-    var defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
-    final prefix = failed
-        ? _GithubMarkup.failed
-        : skipped
-        ? _GithubMarkup.skipped
-        : defaultIcon;
-    final statusSuffix = failed
-        ? ' (failed)'
-        : skipped
-        ? ' (skipped)'
-        : '';
+    final defaultIcon = synthetic ? _GithubMarkup.passed : _GithubMarkup.passed;
+    final name = _testName(test);
 
-    var name = test.test.name;
-    if (!loadSuite) {
-      if (_printPath && test.suite.path != null) {
-        name = '${test.suite.path}: $name';
-      }
-    }
-    if (_printPlatform) {
-      name =
-          '[${test.suite.platform.runtime.name}, '
-          '${test.suite.platform.compiler.name}] $name';
-    }
-    if (skipped) {
-      if (_activeGroup.isPassing) {
-        _sink.writeln(_GithubMarkup.endGroup);
-      }
-      if (!_activeGroup.isSkipped) {
-        _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
-        _activeGroup = _ReportGroup.skipped;
-      }
-      _sink.writeln('$prefix $name$statusSuffix');
-      for (var message in messages) {
-        _sink.writeln(message.text);
-      }
-    } else if (errors.isEmpty) {
-      if (_activeGroup.isSkipped) {
-        _sink.writeln(_GithubMarkup.endGroup);
-      }
-      if (!_activeGroup.isPassing) {
+    if (errors.isEmpty) {
+      if (!_inPassingGroup) {
         _sink.writeln(_GithubMarkup.startGroup('✅ Passing tests'));
-        _activeGroup = _ReportGroup.passing;
+        _inPassingGroup = true;
       }
-      _sink.writeln('$prefix $name$statusSuffix');
-      for (var message in messages) {
-        _sink.writeln(message.text);
-      }
+      _sink.writeln('$defaultIcon $name');
+      _writeOutput(output);
     } else {
-      if (!_activeGroup.isUngrouped) {
+      if (_inPassingGroup) {
         _sink.writeln(_GithubMarkup.endGroup);
-        _activeGroup = _ReportGroup.ungrouped;
+        _inPassingGroup = false;
       }
-      _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
-      for (var message in messages) {
-        _sink.writeln(message.text);
+      // A test that passed or was skipped on retry still has the errors from
+      // its failed attempts. Show them, but don't present the test as a
+      // failure.
+      final attempts = _attempts.attemptsFor(test);
+      final maxAttempts = test.test.metadata.retry + 1;
+      final String title;
+      if (skipped) {
+        // The attempt count is only missing if the reporter missed the test's
+        // first state change, for example while paused.
+        title = attempts == 0
+            ? '${_GithubMarkup.skipped} $name (skipped on retry)'
+            : '${_GithubMarkup.skipped} $name '
+                  '(skipped on attempt $attempts of $maxAttempts)';
+      } else if (_engine.flaky.contains(test)) {
+        title = attempts == 0
+            ? '${_GithubMarkup.flaky} $name (passed on retry)'
+            : '${_GithubMarkup.flaky} $name '
+                  '(passed on attempt $attempts of $maxAttempts)';
+      } else if (attempts > 1) {
+        title =
+            '${_GithubMarkup.failed} $name (failed after $attempts attempts)';
+      } else {
+        title = '${_GithubMarkup.failed} $name (failed)';
       }
-      for (var error in errors) {
-        _sink.writeln('${error.error}');
-        _sink.writeln(error.stackTrace.toString().trimRight());
-      }
+      _sink.writeln(_GithubMarkup.startGroup(title));
+      _writeOutput(output);
       _sink.writeln(_GithubMarkup.endGroup);
     }
   }
 
-  /// A callback called when [test] throws [error].
-  void _onError(LiveTest test, Object error, StackTrace stackTrace) {
-    if (_completedTests.contains(test)) {
-      final loadSuite = test.suite is LoadSuite;
-
-      final prefix = _GithubMarkup.failed;
-      final statusSuffix = ' (failed after test completion)';
-
-      var name = test.test.name;
-      if (!loadSuite) {
-        if (_printPath && test.suite.path != null) {
-          name = '${test.suite.path}: $name';
-        }
+  /// Writes the messages and errors in [output] in the order they were
+  /// emitted.
+  void _writeOutput(List<Object> output) {
+    for (var entry in output) {
+      if (entry is Message) {
+        _sink.writeln(entry.text);
+      } else if (entry is AsyncError) {
+        _sink.writeln('${entry.error}');
+        _sink.writeln(entry.stackTrace.toString().trimRight());
       }
-      if (_printPlatform) {
-        name =
-            '[${test.suite.platform.runtime.name}, '
-            '${test.suite.platform.compiler.name}] $name';
-      }
-
-      if (!_activeGroup.isUngrouped) {
-        _sink.writeln(_GithubMarkup.endGroup);
-        _activeGroup = _ReportGroup.ungrouped;
-      }
-      _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
-      _sink.writeln('$error');
-      _sink.writeln(stackTrace.toString().trimRight());
-      _sink.writeln(_GithubMarkup.endGroup);
     }
+  }
+
+  /// A callback called when [test] throws [error].
+  void _onError(LiveTest test, AsyncError error) {
+    if (!_completedTests.contains(test)) {
+      _testOutput.putIfAbsent(test, () => []).add(error);
+      return;
+    }
+
+    final prefix = _GithubMarkup.failed;
+    final statusSuffix = ' (failed after test completion)';
+    final name = _testName(test);
+
+    if (_inPassingGroup) {
+      _sink.writeln(_GithubMarkup.endGroup);
+      _inPassingGroup = false;
+    }
+    _sink.writeln(_GithubMarkup.startGroup('$prefix $name$statusSuffix'));
+    _sink.writeln('${error.error}');
+    _sink.writeln(error.stackTrace.toString().trimRight());
+    _sink.writeln(_GithubMarkup.endGroup);
   }
 
   void _onDone(bool? success) {
     _cancel();
 
-    if (!_activeGroup.isUngrouped) {
+    if (_inPassingGroup) {
       _sink.writeln(_GithubMarkup.endGroup);
-      _activeGroup = _ReportGroup.ungrouped;
+      _inPassingGroup = false;
+    }
+
+    if (_skippedTests.isNotEmpty) {
+      _sink.writeln(_GithubMarkup.startGroup('⏭️ Skipped tests'));
+      for (var test in _skippedTests) {
+        final name = _testName(test);
+        _sink.writeln('${_GithubMarkup.skipped} $name (skipped)');
+        _writeOutput(_testOutput[test] ?? const <Object>[]);
+      }
+      _sink.writeln(_GithubMarkup.endGroup);
     }
 
     _sink.writeln();
 
+    // Flaky tests are reported separately from passing tests, so that the
+    // counts in the summary don't overlap.
+    final flaky = _engine.flaky;
+    final passedCount = _engine.passed.where((t) => !flaky.contains(t)).length;
     final hadFailures = _engine.failed.isNotEmpty;
     final message = StringBuffer(
-      '${_engine.passed.length} '
-      '${pluralize('test', _engine.passed.length)} passed',
+      '$passedCount ${pluralize('test', passedCount)} passed',
     );
     if (_engine.failed.isNotEmpty) {
       message.write(', ${_engine.failed.length} failed');
+    }
+    if (flaky.isNotEmpty) {
+      message.write(', ${flaky.length} flaky');
     }
     if (_engine.skipped.isNotEmpty) {
       message.write(', ${_engine.skipped.length} skipped');
@@ -270,6 +301,8 @@ class GithubReporter implements Reporter {
     _sink.writeln(
       hadFailures
           ? _GithubMarkup.error(message.toString())
+          : flaky.isNotEmpty
+          ? _GithubMarkup.warning(message.toString())
           : '${_GithubMarkup.success} $message',
     );
   }
@@ -280,6 +313,7 @@ abstract class _GithubMarkup {
   static const String passed = '✅';
   static const String skipped = '⏭️';
   static const String failed = '❌';
+  static const String flaky = '⚠️';
   // The 'synthetic' icon is currently not used but is something to consider in
   // order to draw a distinction between user tests and test-like supporting
   // infrastructure.
@@ -292,14 +326,6 @@ abstract class _GithubMarkup {
   static final String endGroup = '::endgroup::';
 
   static String error(String message) => '::error::$message';
-}
 
-enum _ReportGroup {
-  passing,
-  skipped,
-  ungrouped;
-
-  bool get isPassing => this == _ReportGroup.passing;
-  bool get isSkipped => this == _ReportGroup.skipped;
-  bool get isUngrouped => this == _ReportGroup.ungrouped;
+  static String warning(String message) => '::warning::$message';
 }

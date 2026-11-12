@@ -114,6 +114,9 @@ two possible formats:
 suite_load_timeout: 1m
 ```
 
+Browser platforms give up on the browser shortly before the suite load timeout,
+so that the failure includes the browser's output.
+
 ###  `ignore-timeouts`
 
 This field disables all timeouts for all tests. This can be useful when

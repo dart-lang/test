@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
 import '../executable_settings.dart';
@@ -18,6 +18,8 @@ final _preferences = '''
 user_pref("browser.shell.checkDefaultBrowser", false);
 user_pref("dom.disable_open_during_load", false);
 user_pref("dom.max_script_run_time", 0);
+user_pref("devtools.console.stdout.content", true);
+user_pref("browser.dom.window.dump.enabled", true);
 ''';
 
 /// A class for running an instance of Firefox.
@@ -38,11 +40,13 @@ class Firefox extends Browser {
 
   /// Starts a new instance of Firefox open to the given [url], which may be a
   /// [Uri] or a [String].
-  static Future<Process> _startBrowser(
+  ///
+  /// Returns the process and the command line used to start it.
+  static Future<(Process, String)> _startBrowser(
     Uri url,
     ExecutableSettings settings,
   ) async {
-    var dir = createTempDir();
+    var dir = createTempDirectory('firefox.').path;
     File(p.join(dir, 'prefs.js')).writeAsStringSync(_preferences);
 
     var redirect = p.join(dir, 'redirect.html');
@@ -50,14 +54,21 @@ class Firefox extends Browser {
       '<script>location = ${jsonEncode(url.toString())}</script>',
     );
 
+    var args = [
+      '--profile',
+      dir,
+      redirect,
+      '--no-remote',
+      ...settings.arguments,
+    ];
     var process = await Process.start(
       settings.executable,
-      ['--profile', dir, redirect, '--no-remote', ...settings.arguments],
+      args,
       environment: {'MOZ_CRASHREPORTER_DISABLE': '1', 'MOZ_AUTOMATION': '1'},
     );
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
-    return process;
+    return (process, [settings.executable, ...args].join(' '));
   }
 }

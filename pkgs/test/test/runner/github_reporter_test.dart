@@ -52,7 +52,7 @@ void main() {
       ],
       args: ['-p', 'vm,chrome'],
     );
-  });
+  }, tags: 'chrome');
 
   test('runs several failing tests and reports when each fails', () {
     return _expectReport(
@@ -194,6 +194,27 @@ void main() {
     );
   });
 
+  test('prints output and errors in the order they were emitted', () {
+    return _expectReport(
+      '''
+      tearDown(() => print('in tearDown'));
+      test('failure', () {
+        print('before');
+        printOnFailure('on failure');
+        throw TestFailure('boom');
+      });''',
+      '''
+        ::group::❌ failure (failed)
+        before
+        boom
+        test.dart 10:9  main.<fn>
+        on failure
+        in tearDown
+        ::endgroup::
+        ::error::0 tests passed, 1 failed.''',
+    );
+  });
+
   group('print:', () {
     test('handles multiple prints', () {
       return _expectReport(
@@ -316,17 +337,13 @@ void main() {
           test('skip 2', () {}, skip: true);
           test('success 2', () {});''',
         '''
-          ::group::⏭️ Skipped tests
-          ⏭️ skip 1 (skipped)
-          ::endgroup::
           ::group::✅ Passing tests
           ✅ success 1
+          ✅ success 2
           ::endgroup::
           ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
           ⏭️ skip 2 (skipped)
-          ::endgroup::
-          ::group::✅ Passing tests
-          ✅ success 2
           ::endgroup::
           🎉 2 tests passed, 2 skipped.''',
       );
@@ -346,9 +363,6 @@ void main() {
           oh no
           test.dart 6:35  main.<fn>
           ::endgroup::
-          ::group::⏭️ Skipped tests
-          ⏭️ skip 1 (skipped)
-          ::endgroup::
           ::group::✅ Passing tests
           ✅ success 1
           ::endgroup::
@@ -356,11 +370,12 @@ void main() {
           oh no
           test.dart 9:35  main.<fn>
           ::endgroup::
-          ::group::⏭️ Skipped tests
-          ⏭️ skip 2 (skipped)
-          ::endgroup::
           ::group::✅ Passing tests
           ✅ success 2
+          ::endgroup::
+          ::group::⏭️ Skipped tests
+          ⏭️ skip 1 (skipped)
+          ⏭️ skip 2 (skipped)
           ::endgroup::
           ::error::2 tests passed, 2 failed, 2 skipped.''',
       );
@@ -432,6 +447,118 @@ void main() {
           ::endgroup::
           🎉 1 test passed.''',
     );
+  });
+
+  group('retry:', () {
+    test('reports a test that passes on retry as flaky with a warning', () {
+      return _expectReport(
+        '''
+          var attempts = 0;
+          test('flaky', () {
+            if (++attempts == 1) throw 'oh no';
+          }, retry: 2);
+          test('stable', () {});''',
+        '''
+          ::group::⚠️ flaky (passed on attempt 2 of 3)
+          oh no
+          test.dart 8:34  main.<fn>
+          Retry: flaky
+          ::endgroup::
+          ::group::✅ Passing tests
+          ✅ stable
+          ::endgroup::
+          ::warning::1 test passed, 1 flaky.''',
+      );
+    });
+
+    test('reports a setUpAll that passes on retry as flaky', () {
+      return _expectReport(
+        '''
+          var attempts = 0;
+          group('group', () {
+            setUpAll(() {
+              if (++attempts == 1) throw 'oh no';
+            });
+            test('test', () {});
+          }, retry: 1);''',
+        '''
+          ::group::⚠️ group (setUpAll) (passed on attempt 2 of 2)
+          oh no
+          test.dart 9:36  main.<fn>.<fn>
+          Retry: group (setUpAll)
+          ::endgroup::
+          ::group::✅ Passing tests
+          ✅ group test
+          ::endgroup::
+          ::warning::1 test passed, 1 flaky.''',
+      );
+    });
+
+    test('reports flaky tests alongside failing tests', () {
+      return _expectReport(
+        '''
+          var attempts = 0;
+          test('flaky', () {
+            if (++attempts == 1) throw 'oh no';
+          }, retry: 1);
+          test('failure', () => throw 'still no', retry: 1);
+          test('stable', () {});
+          test('skipped', () {}, skip: true);''',
+        '''
+          ::group::⚠️ flaky (passed on attempt 2 of 2)
+          oh no
+          test.dart 8:34  main.<fn>
+          Retry: flaky
+          ::endgroup::
+          ::group::❌ failure (failed after 2 attempts)
+          still no
+          test.dart 10:33  main.<fn>
+          Retry: failure
+          still no
+          test.dart 10:33  main.<fn>
+          ::endgroup::
+          ::group::✅ Passing tests
+          ✅ stable
+          ::endgroup::
+          ::group::⏭️ Skipped tests
+          ⏭️ skipped (skipped)
+          ::endgroup::
+          ::error::1 test passed, 1 failed, 1 flaky, 1 skipped.''',
+      );
+    });
+
+    test('does not report attempts with --no-retry', () {
+      return _expectReport(
+        '''
+          test('failure', () => throw 'oh no', retry: 1);''',
+        '''
+          ::group::❌ failure (failed)
+          oh no
+          test.dart 6:33  main.<fn>
+          ::endgroup::
+          ::error::0 tests passed, 1 failed.''',
+        args: ['--no-retry'],
+      );
+    });
+
+    test('reports a test that fails and is skipped on retry as skipped', () {
+      return _expectReport(
+        '''
+          var attempts = 0;
+          test('skipped on retry', () {
+            if (++attempts == 1) throw 'oh no';
+            markTestSkipped('not this time');
+          }, retry: 1);''',
+        '''
+          ::group::⏭️ skipped on retry (skipped on attempt 2 of 2)
+          oh no
+          test.dart 8:34  main.<fn>
+          Retry: skipped on retry
+          not this time
+          ::endgroup::
+          🎉 0 tests passed, 1 skipped.''',
+      );
+    });
   });
 }
 

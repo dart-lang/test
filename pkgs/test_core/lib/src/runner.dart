@@ -10,12 +10,15 @@ import 'package:boolean_selector/boolean_selector.dart';
 import 'package:path/path.dart' as p;
 import 'package:stack_trace/stack_trace.dart';
 import 'package:test_api/backend.dart'
-    show PlatformSelector, Runtime, SuitePlatform;
-import 'package:test_api/src/backend/group.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/group_entry.dart'; // ignore: implementation_imports
+    show
+        Group,
+        GroupEntry,
+        PlatformSelector,
+        Runtime,
+        Suite,
+        SuitePlatform,
+        Test;
 import 'package:test_api/src/backend/operating_system.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/test.dart'; // ignore: implementation_imports
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import 'runner/configuration.dart';
@@ -109,62 +112,64 @@ class Runner {
   ///
   /// This starts running tests and printing their progress. It returns whether
   /// or not they ran successfully.
-  Future<bool> run() => _config.asCurrent(() async {
-    if (_closed) {
-      throw StateError('run() may not be called on a closed Runner.');
-    }
-
-    _warnForUnsupportedPlatforms();
-
-    var suites = _loadSuites();
-
-    if (_config.coverage != null) {
-      await Directory(_config.coverage!).create(recursive: true);
-    }
-
-    bool? success;
-    if (_config.pauseAfterLoad) {
-      success = await _loadThenPause(suites);
-    } else {
-      var subscription = _suiteSubscription = suites.listen(
-        _engine.suiteSink.add,
-      );
-      var results = await Future.wait(<Future>[
-        subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
-        _engine.run(),
-      ], eagerError: true);
-      success = results.last as bool?;
-    }
-
-    if (_closed) return false;
-
-    if (_engine.passed.isEmpty &&
-        _engine.failed.isEmpty &&
-        _engine.skipped.isEmpty) {
-      if (_config.globalPatterns.isNotEmpty) {
-        var patterns = toSentence(
-          _config.globalPatterns.map(
-            (pattern) => pattern is RegExp
-                ? 'regular expression "${pattern.pattern}"'
-                : '"$pattern"',
-          ),
-        );
-        throw NoTestsFoundException('No tests match $patterns.');
-      } else if (_config.includeTags != BooleanSelector.all ||
-          _config.excludeTags != BooleanSelector.none) {
-        throw NoTestsFoundException(
-          'No tests match the requested tag selectors:\n'
-          '  include: "${_config.includeTags}"\n'
-          '  exclude: "${_config.excludeTags}"',
-        );
-      } else {
-        throw NoTestsFoundException('No tests were found.');
+  Future<bool> run() => _config.asCurrent(
+    () => _loader.globalSetupManager.asCurrent(() async {
+      if (_closed) {
+        throw StateError('run() may not be called on a closed Runner.');
       }
-    }
 
-    return (success ?? false) &&
-        (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
-  });
+      _warnForUnsupportedPlatforms();
+
+      var suites = _loadSuites();
+
+      if (_config.coverage != null) {
+        await Directory(_config.coverage!).create(recursive: true);
+      }
+
+      bool? success;
+      if (_config.pauseAfterLoad) {
+        success = await _loadThenPause(suites);
+      } else {
+        var subscription = _suiteSubscription = suites.listen(
+          _engine.suiteSink.add,
+        );
+        var results = await Future.wait(<Future>[
+          subscription.asFuture<void>().then((_) => _engine.suiteSink.close()),
+          _engine.run(),
+        ], eagerError: true);
+        success = results.last as bool?;
+      }
+
+      if (_closed) return false;
+
+      if (_engine.passed.isEmpty &&
+          _engine.failed.isEmpty &&
+          _engine.skipped.isEmpty) {
+        if (_config.globalPatterns.isNotEmpty) {
+          var patterns = toSentence(
+            _config.globalPatterns.map(
+              (pattern) => pattern is RegExp
+                  ? 'regular expression "${pattern.pattern}"'
+                  : '"$pattern"',
+            ),
+          );
+          throw NoTestsFoundException('No tests match $patterns.');
+        } else if (_config.includeTags != BooleanSelector.all ||
+            _config.excludeTags != BooleanSelector.none) {
+          throw NoTestsFoundException(
+            'No tests match the requested tag selectors:\n'
+            '  include: "${_config.includeTags}"\n'
+            '  exclude: "${_config.excludeTags}"',
+          );
+        } else {
+          throw NoTestsFoundException('No tests were found.');
+        }
+      }
+
+      return (success ?? false) &&
+          (_engine.passed.isNotEmpty || _engine.skipped.isNotEmpty);
+    }),
+  );
 
   /// Emits a warning if the user is trying to run on a platform that's
   /// unsupported for the entire package.
@@ -256,12 +261,19 @@ class Runner {
     // We close the loader's browsers while we're closing the engine because
     // browser tests don't store any state we care about and we want them to
     // shut down without waiting for their tear-downs.
-    await Future.wait([_loader.closeEphemeral(), _engine.close()]);
-    timer?.cancel();
-    await _loader.close();
+    try {
+      await [_loader.closeEphemeral(), _engine.close()].wait;
+      timer?.cancel();
+      await _loader.close();
+    } finally {
+      // Every platform has been closed, so nothing should be using any
+      // temporary files any more. If closing failed, delete them anyway, since
+      // the runner is exiting.
+      await deleteRunnerTempDirectory();
+    }
 
     // Flush any IOSinks created for file reporters.
-    await Future.wait(_sinks.map((s) => s.flush().then((_) => s.close())));
+    await _sinks.map((s) => s.flush().then((_) => s.close())).wait;
     _sinks.clear();
   });
 

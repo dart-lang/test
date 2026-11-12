@@ -4,8 +4,7 @@
 
 import 'dart:async';
 
-import 'package:test_api/src/backend/live_test.dart'; // ignore: implementation_imports
-import 'package:test_api/src/backend/state.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_api/src/backend/util/pretty_print.dart'; // ignore: implementation_imports
 
 import '../../util/pretty_print.dart';
@@ -13,6 +12,8 @@ import '../engine.dart';
 import '../load_exception.dart';
 import '../load_suite.dart';
 import '../reporter.dart';
+import 'attempt_counter.dart';
+import 'failure_summary.dart';
 
 /// A reporter that only prints when a test fails.
 class FailuresOnlyReporter implements Reporter {
@@ -79,6 +80,9 @@ class FailuresOnlyReporter implements Reporter {
 
   /// The set of all subscriptions to various streams.
   final _subscriptions = <StreamSubscription>{};
+
+  /// The number of attempts each test has started, for tests with `retry`.
+  final _attempts = AttemptCounter();
 
   final StringSink _sink;
 
@@ -153,6 +157,8 @@ class FailuresOnlyReporter implements Reporter {
 
   /// A callback called when the engine begins running [liveTest].
   void _onTestStarted(LiveTest liveTest) {
+    _subscriptions.add(_attempts.watch(liveTest));
+
     _subscriptions.add(
       liveTest.onError.listen(
         (error) => _onError(liveTest, error.error, error.stackTrace),
@@ -178,7 +184,10 @@ class FailuresOnlyReporter implements Reporter {
 
     if (liveTest.state.status != Status.complete) return;
 
-    _progressLine(_description(liveTest), suffix: ' $_bold$_red[E]$_noColor');
+    _progressLine(
+      _description(liveTest),
+      suffix: ' $_bold$_red[E]$_noColor${_attempts.describe(liveTest)}',
+    );
 
     if (error is! LoadException) {
       _sink
@@ -216,11 +225,14 @@ class FailuresOnlyReporter implements Reporter {
           suffix: ' - did not complete $_bold$_red[E]$_noColor',
         );
       }
-      _progressLine('Some tests failed.', color: _red);
+      _progressLine('Some tests failed.', color: _red, suffix: _flakySuffix);
     } else if (_engine.passed.isEmpty) {
-      _progressLine('${_yellow}All tests skipped.$_noColor');
+      _progressLine(
+        '${_yellow}All tests skipped.$_noColor',
+        suffix: _flakySuffix,
+      );
     } else if (_engine.skipped.isEmpty) {
-      _progressLine('All tests passed!');
+      _progressLine('All tests passed!', suffix: _flakySuffix);
     } else {
       final skippedCount = _engine.skipped.length;
       _progressLine(
@@ -228,7 +240,7 @@ class FailuresOnlyReporter implements Reporter {
         '$skippedCount skipped ${pluralize('test', skippedCount)}.'
         '$_noColor',
       );
-      _progressLine('All other tests passed!');
+      _progressLine('All other tests passed!', suffix: _flakySuffix);
     }
 
     if (_shouldPrintStackTraceChainingNotice) {
@@ -241,6 +253,11 @@ class FailuresOnlyReporter implements Reporter {
         );
     }
   }
+
+  /// The suffix for the final progress line describing flaky tests, or `null`
+  /// if no test passed on retry.
+  String? get _flakySuffix =>
+      flakySuffix(_engine.flaky.length, yellow: _yellow, noColor: _noColor);
 
   /// Prints a line representing the current state of the tests.
   ///

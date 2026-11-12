@@ -1,3 +1,15 @@
+## 0.7.16-wip
+
+* Add `globalSetup` and `addGlobalTearDown` APIs to run setup scripts once on
+  the host runner and cache results across tests and suites.
+* Never retry `tearDownAll`, even when the group or suite sets `retry`.
+  Previously a retry didn't run any of the `tearDownAll` callbacks again, so it
+  always passed and hid the failure.
+
+## 0.7.15
+
+* export `LocalTest`, `MessageType`, `Status`, `Suite` from `backend.dart`.
+
 ## 0.7.14
 
 * Allow the `vmAsan`, `vmMsan`, and `vmTsan` runtimes to use the native CLI

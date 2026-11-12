@@ -120,7 +120,110 @@ void main() {
       expect(response.errorCount, 1);
       expect(response.compilerOutput, contains('Compiler no longer active'));
     });
+
+    test('release deletes kernel files which are not cached', () async {
+      final (fakeClient, clientStarter) = FakeFrontendServerClient.create;
+      final compiler = TestCompiler(
+        p.join(d.sandbox, 'dill_cache'),
+        clientFactory: clientStarter,
+      );
+      addTearDown(compiler.dispose);
+
+      // The largest dill is the one that gets cached, so the second compile
+      // here is the one that has to survive until the compiler is disposed.
+      final small = await _compile(
+        compiler,
+        fakeClient,
+        testPath,
+        name: 'small',
+        dillSize: 32,
+      );
+      final large = await _compile(
+        compiler,
+        fakeClient,
+        testPath,
+        name: 'large',
+        dillSize: 64,
+      );
+      final smallKernel = File.fromUri(small.kernelOutputUri!);
+      final largeKernel = File.fromUri(large.kernelOutputUri!);
+
+      await compiler.release(small.kernelOutputUri!);
+      expect(smallKernel.existsSync(), isFalse);
+      expect(largeKernel.existsSync(), isTrue);
+
+      await compiler.release(large.kernelOutputUri!);
+      expect(
+        largeKernel.existsSync(),
+        isTrue,
+        reason: 'the dill to cache should be kept until dispose',
+      );
+
+      await compiler.dispose();
+      expect(largeKernel.existsSync(), isFalse);
+      expect(
+        Directory(
+          d.sandbox,
+        ).listSync().map((entity) => p.basename(entity.path)),
+        contains(startsWith('dill_cache.')),
+        reason: 'the dill to cache should be copied on dispose',
+      );
+    });
+
+    test(
+      'a released kernel file is deleted once a larger one replaces it',
+      () async {
+        final (fakeClient, clientStarter) = FakeFrontendServerClient.create;
+        final compiler = TestCompiler(
+          p.join(d.sandbox, 'dill_cache'),
+          clientFactory: clientStarter,
+        );
+        addTearDown(compiler.dispose);
+
+        final small = await _compile(
+          compiler,
+          fakeClient,
+          testPath,
+          name: 'small',
+          dillSize: 32,
+        );
+        final smallKernel = File.fromUri(small.kernelOutputUri!);
+        await compiler.release(small.kernelOutputUri!);
+        expect(smallKernel.existsSync(), isTrue);
+
+        await _compile(
+          compiler,
+          fakeClient,
+          testPath,
+          name: 'large',
+          dillSize: 64,
+        );
+        expect(smallKernel.existsSync(), isFalse);
+      },
+    );
   });
+}
+
+/// Compiles [testPath] with [compiler], responding through [fakeClient] with a
+/// dill file of [dillSize] bytes.
+Future<CompilationResponse> _compile(
+  TestCompiler compiler,
+  FakeFrontendServerClient fakeClient,
+  String testPath, {
+  required String name,
+  required int dillSize,
+}) async {
+  final outputDill = p.join(d.sandbox, '$name.dill');
+  File(outputDill).writeAsBytesSync(List.filled(dillSize, 0));
+  final nextCompile = fakeClient.compileCalls.first;
+  final compileFuture = compiler.compile(
+    Uri.file(testPath),
+    Metadata(languageVersionComment: '// @dart=3.0'),
+  );
+  (await nextCompile).complete(
+    FakeCompileResult(dillOutput: outputDill, errorCount: 0),
+  );
+  return await compileFuture;
 }
 
 class FakeCompileResult extends Fake implements CompileResult {

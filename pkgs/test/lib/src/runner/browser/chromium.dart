@@ -7,7 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:test_api/src/backend/runtime.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart';
 import 'package:test_core/src/runner/configuration.dart'; // ignore: implementation_imports
 import 'package:test_core/src/util/io.dart'; // ignore: implementation_imports
 
@@ -22,7 +22,10 @@ enum ChromiumBasedBrowser {
 
   const ChromiumBasedBrowser(this.runtime);
 
-  Future<Process> spawn(
+  /// Starts the browser open to [url].
+  ///
+  /// Returns the process and the command line used to start it.
+  Future<(Process, String)> spawn(
     Uri url,
     Configuration configuration, {
     ExecutableSettings? settings,
@@ -30,7 +33,7 @@ enum ChromiumBasedBrowser {
   }) async {
     settings ??= defaultSettings[runtime];
 
-    var dir = createTempDir();
+    var dir = createTempDirectory('chromium.').path;
     var redirect = p.join(dir, 'redirect.html');
     File(redirect).writeAsStringSync(
       '<script>location = ${jsonEncode(url.toString())}</script>',
@@ -66,6 +69,6 @@ enum ChromiumBasedBrowser {
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
-    return process;
+    return (process, [settings.executable, ...args].join(' '));
   }
 }

@@ -317,6 +317,25 @@ $_usage''');
       await test.shouldExit(1);
     });
 
+    test('a test isolate exits before the suite loads', () async {
+      await d.file('test.dart', '''
+import 'dart:isolate';
+
+void main() => Isolate.exit();
+''').create();
+      var test = await runTest(['test.dart']);
+
+      expect(
+        test.stdout,
+        containsInOrder([
+          '-1: loading test.dart [E]',
+          'Failed to load "test.dart": '
+              'Connection closed before test suite loaded.',
+        ]),
+      );
+      await test.shouldExit(1);
+    });
+
     test('multiple load errors occur', () async {
       await d.file('test.dart', 'invalid Dart file').create();
       var test = await runTest(['test.dart', 'nonexistent.dart']);
@@ -832,56 +851,49 @@ void main() {
     await test.shouldExit();
   });
 
-  group(
-    'runs tests successfully more than once when calling runTests',
-    () {
-      test('defined in a single file', () async {
-        await d.file('test.dart', _success).create();
-        await d.file('runner.dart', '''
+  group('runs tests successfully more than once', () {
+    test('defined in a single file', () async {
+      await d.file('test.dart', _success).create();
+      await d.file('runner.dart', '''
 import 'package:test_core/src/executable.dart' as test;
 
 void main(List<String> args) async {
-  await test.runTests(args);
-  await test.runTests(args);
-  test.completeShutdown();
+  await test.main(args);
+  await test.main(args);
 }''').create();
-        var test = await runDart([
-          'runner.dart',
-          '--no-color',
-          '--reporter',
-          'compact',
-          '--',
-          'test.dart',
-        ], description: 'dart runner.dart -- test.dart');
-        expect(
-          test.stdout,
-          emitsThrough(
-            containsInOrder([
-              '+0: loading test.dart',
-              '+0: success',
-              '+1: success',
-              'All tests passed!',
-            ]),
-          ),
-        );
-        expect(
-          test.stdout,
-          emitsThrough(
-            containsInOrder([
-              '+0: loading test.dart',
-              '+0: success',
-              '+1: success',
-              '+1: All tests passed!',
-            ]),
-          ),
-        );
-        await test.shouldExit(0);
-      });
-    },
-    onPlatform: const {
-      'windows': Skip('https://github.com/dart-lang/test/issues/1615'),
-    },
-  );
+      var test = await runDart([
+        'runner.dart',
+        '--no-color',
+        '--reporter',
+        'compact',
+        '--',
+        'test.dart',
+      ], description: 'dart runner.dart -- test.dart');
+      expect(
+        test.stdout,
+        emitsThrough(
+          containsInOrder([
+            '+0: loading test.dart',
+            '+0: success',
+            '+1: success',
+            'All tests passed!',
+          ]),
+        ),
+      );
+      expect(
+        test.stdout,
+        emitsThrough(
+          containsInOrder([
+            '+0: loading test.dart',
+            '+0: success',
+            '+1: success',
+            '+1: All tests passed!',
+          ]),
+        ),
+      );
+      await test.shouldExit(0);
+    });
+  });
 
   group('language experiments', () {
     group('are inherited from the executable arguments', () {

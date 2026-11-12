@@ -10,8 +10,7 @@ import 'package:async/async.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/isolate_channel.dart';
 import 'package:stream_channel/stream_channel.dart';
-import 'package:test_api/backend.dart' show RemoteException;
-import 'package:test_api/src/backend/suite.dart'; // ignore: implementation_imports
+import 'package:test_api/backend.dart' show RemoteException, Suite;
 
 import '../util/dart.dart' as dart;
 import '../util/package_config.dart';

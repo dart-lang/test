@@ -47,8 +47,11 @@ tags:
   pub:
     timeout: 2x
 
+    # Pub can stall resolving dependencies when the network is slow.
+    presets: {travis: {retry: 3}}
+
   # Tests that use Node.js. These tests may need to be excluded on systems that
   # don't have Node installed.
   node:
     timeout: 2x
-    test_on: linux
+    test_on: linux || mac-os

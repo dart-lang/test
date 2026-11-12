@@ -73,28 +73,14 @@ Subject<T> check<T>(T value, {String? because}) => Subject._(
     // TODO - switch between "a" and "an"
     label: 'a $T',
     fail: (f) {
-      final which = f.rejection.which;
       final collapsed = f.detail.collapsedDetails;
-      final (depth, expectedLines, actualLines) = collapsed != null
-          ? (0, ['Expected: ${collapsed.$1}'], ['Actual: ${collapsed.$2}'])
-          : (
-              f.detail.depth,
-              prefixFirst('Expected: ', f.detail.expected),
-              [
-                ...prefixFirst('Actual: ', f.detail.actual),
-                if (!f.detail.hasCustomActual)
-                  ...indent(
-                    prefixFirst('Actual: ', f.rejection.actual),
-                    f.detail.depth,
-                  ),
-              ],
-            );
       throw TestFailure(
         [
-          ...expectedLines,
-          ...actualLines,
-          if (which != null && which.isNotEmpty)
-            ...indent(prefixFirst('Which: ', which), depth),
+          ...prefixFirst(
+            'Expected: ',
+            collapsed != null ? [collapsed.$1] : f.detail.expected,
+          ),
+          ...f._actualAndWhich(rootLabel: true),
           if (because != null) 'Reason: $because',
         ].join('\n'),
       );
@@ -302,9 +288,9 @@ extension ContextExtension<T> on Subject<T> {
 /// ```
 ///
 /// A nesting context can optionally provide an [addPredicate] callback.
-/// [addPredicate] takes a single-line `predicateNoun` string (produced by a
-/// nested expectation or deeper child nesting context) and returns a combined
-/// single-line description attaching that predicate to this parent subject.
+/// [addPredicate] takes a single-line `predicateNoun` string produced by an
+/// expectation on the nested subject, and returns a combined single-line
+/// predicate attaching that noun to this parent subject.
 ///
 /// For example:
 /// - `has` uses `(predicateNoun) => 'has $name: $predicateNoun'`
@@ -314,6 +300,19 @@ extension ContextExtension<T> on Subject<T> {
 ///
 /// If this level cannot be collapsed (for example, if a property name, key, or
 /// value is multiline), [addPredicate] should return `null`.
+///
+/// When the single expectation on the nested subject is itself a further
+/// nesting (for instance `.has(...).has(...)`), it collapses to a predicate
+/// rather than a noun, and is not passed to [addPredicate]. Instead it is
+/// joined to the label with "that", the same as the "<label> that:" line in the
+/// multi-line format:
+///
+/// ```
+/// Expected: a () => void that throws an error of type StateError that has message: 'foo'
+/// ```
+///
+/// A context which does not provide an [addPredicate] callback is never
+/// collapsed.
 /// {@endtemplate}
 ///
 ///
@@ -362,9 +361,10 @@ extension ContextExtension<T> on Subject<T> {
 ///      do not count against this limit).
 ///    - The leaf expectation provides a [predicateNoun] callback that returns a
 ///      non-null single-line string.
-///    - All parent nesting contexts provide an [addPredicate] callback that
-///      successfully combines the nested predicate noun into a single-line
-///      description.
+///    - All parent nesting contexts provide an [addPredicate] callback. The
+///      innermost context must successfully combine the predicate noun into a
+///      single-line description, and outer contexts must have single-line
+///      labels to join with "that".
 ///    - The combined description at the root context does not exceed the
 ///      length limit (80 characters for labeled roots).
 ///
@@ -850,12 +850,13 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     Rejection? Function(T) predicate, {
     String? Function()? predicateNoun,
   }) {
-    _clauses.add(_ExpectationClause(clause, predicateNoun));
+    final expectation = _ExpectationClause(clause, predicateNoun);
+    _clauses.add(expectation);
     final rejection = _value.apply(
       (actual) => predicate(actual)?._fillActual(actual),
     );
     if (rejection != null) {
-      _fail(_failure(rejection));
+      _fail(_failure(rejection, expectation));
     }
   }
 
@@ -874,14 +875,19 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     FutureOr<Rejection?> Function(T) predicate, {
     String? Function()? predicateNoun,
   }) async {
-    _clauses.add(_ExpectationClause(clause, predicateNoun));
+    final expectation = _ExpectationClause(clause, predicateNoun);
+    // Keep this expectation's place among the clauses while it is checked,
+    // without describing it as satisfied before it has finished.
+    final pending = _PendingClause();
+    _clauses.add(pending);
     final outstandingWork = TestHandle.current.markPending();
     try {
       final rejection = await _value.apply(
         (actual) async => (await predicate(actual))?._fillActual(actual),
       );
+      _clauses[_clauses.indexOf(pending)] = expectation;
       if (rejection == null) return;
-      _fail(_failure(rejection));
+      _fail(_failure(rejection, expectation));
     } finally {
       outstandingWork.complete();
     }
@@ -894,9 +900,13 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     String? Function()? predicateNoun,
   }) {
     if (!_allowUnawaited) throw AsyncConditionDisallowed._('Unawaited');
-    _clauses.add(_ExpectationClause(clause, predicateNoun));
+    final expectation = _ExpectationClause(clause, predicateNoun);
+    _clauses.add(expectation);
     _value.apply((actual) {
-      predicate(actual, (r) => _fail(_failure(r._fillActual(actual))));
+      predicate(
+        actual,
+        (r) => _fail(_failure(r._fillActual(actual), expectation)),
+      );
     });
   }
 
@@ -911,16 +921,18 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     final result = _value.map((actual) => extract(actual)._fillActual(actual));
     final rejection = result._rejection;
     if (rejection != null) {
-      _clauses.add(_ExpectationClause(label));
-      _fail(_failure(rejection));
+      final expectation = _ExpectationClause(label);
+      _clauses.add(expectation);
+      _fail(_failure(rejection, expectation));
     }
     final value = result._value ?? _Absent<R>();
     final _TestContext<R> context;
     if (atSameLevel) {
       context = _TestContext._alias(this, value);
       _aliases.add(context);
-      if (label().isNotEmpty) {
-        _clauses.add(_GuardClause(label));
+      // A rejected guard is already described by the failing expectation.
+      if (rejection == null && label().isNotEmpty) {
+        _clauses.add(_GuardClause(label, satisfied: value is _Present));
       }
     } else {
       context = _TestContext._child(value, label, addPredicate, this);
@@ -953,6 +965,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     Condition<R>? nestedCondition, {
     String? Function(String predicateNoun)? addPredicate,
   }) async {
+    // Keep this expectation's place among the clauses while waiting for the
+    // value, so that expectations made in the meantime come after it.
+    final pending = _PendingClause();
+    _clauses.add(pending);
     final outstandingWork = TestHandle.current.markPending();
     try {
       final result = await _value.mapAsync(
@@ -960,12 +976,17 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       );
       final rejection = result._rejection;
       if (rejection != null) {
-        _clauses.add(_ExpectationClause(label));
-        _fail(_failure(rejection));
+        final expectation = _ExpectationClause(label);
+        _clauses[_clauses.indexOf(pending)] = expectation;
+        _fail(_failure(rejection, expectation));
       }
       final value = result._value ?? _Absent<R>();
       final context = _TestContext<R>._child(value, label, addPredicate, this);
-      _clauses.add(context);
+      if (rejection == null) {
+        _clauses[_clauses.indexOf(pending)] = context;
+      } else {
+        _clauses.add(context);
+      }
       final subject = Subject<R>._(context);
       await nestedCondition?.apply(subject);
       return subject;
@@ -974,8 +995,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
   }
 
-  CheckFailure _failure(Rejection rejection) =>
-      CheckFailure(rejection, () => _root.detail(this, rejection));
+  /// A [CheckFailure] for a [rejection] of the [expectation] on this context.
+  ///
+  /// The [expectation] is not always the last clause on this context. Within
+  /// a soft check a failure does not stop further clauses being added, and an
+  /// unawaited expectation may fail after later clauses are added.
+  CheckFailure _failure(Rejection rejection, _ClauseDescription expectation) =>
+      CheckFailure._(
+        rejection,
+        () => _root.detail(this, rejection, failingClause: expectation),
+      );
 
   _TestContext get _root {
     _TestContext<dynamic> current = this;
@@ -1006,40 +1035,97 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   bool get isLeaf => false;
 
   @override
-  FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
+  FailureDetail detail(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+  }) {
     final thisContextFailed =
         identical(failingContext, this) || _aliases.contains(failingContext);
-    return _collapsedDetails(failingContext, rejection) ??
-        _fullDetails(
+    final clauses = _clausesThroughFailure(
+      failingContext,
+      rejection,
+      failingClause: failingClause,
+      thisContextFailed: thisContextFailed,
+    );
+    return _collapsedDetails(
+          clauses,
           failingContext,
           rejection,
+          failingClause: failingClause,
+        ) ??
+        _fullDetails(
+          clauses,
+          failingContext,
+          rejection,
+          failingClause: failingClause,
           thisContextFailed: thisContextFailed,
         );
   }
 
-  _ClauseDescription? get _singleClause =>
-      _clauses.where((c) => c is! _GuardClause).singleOrNull;
+  /// The clauses to describe for a failure of [failingContext].
+  ///
+  /// When there is a [rejection], these are the clauses up to and including
+  /// the one on the path to the failure: [failingClause] when this context
+  /// failed, otherwise the nested context which [failingContext] is nested
+  /// under.
+  ///
+  /// Later clauses are not described. A failure from `check` throws before
+  /// they are added, but they are still added after a failure within a soft
+  /// check, and after an unawaited expectation which fails later.
+  Iterable<_ClauseDescription> _clausesThroughFailure(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+    required bool thisContextFailed,
+  }) {
+    final clauses = _describedClauses.toList();
+    if (rejection == null) return clauses;
+    final index = clauses.indexWhere(
+      (clause) => thisContextFailed
+          ? identical(clause, failingClause)
+          : failingContext._nestsUnder(clause),
+    );
+    return index < 0 ? clauses : clauses.take(index + 1);
+  }
+
+  /// The clauses which can be described, leaving out asynchronous
+  /// expectations which have not finished.
+  Iterable<_ClauseDescription> get _describedClauses =>
+      _clauses.where((c) => c is! _PendingClause);
+
+  _ClauseDescription? get _singleClause => _singleClauseOf(_describedClauses);
+
+  static _ClauseDescription? _singleClauseOf(
+    Iterable<_ClauseDescription> clauses,
+  ) => clauses.where((c) => c is! _GuardClause || !c.satisfied).singleOrNull;
 
   /// A collapsed single-line [FailureDetail], or `null` if this context cannot
   /// be collapsed.
   ///
-  /// If this context has exactly one clause, and that child clause produces a
-  /// collapsed representation (`childCollapsed`), this method attempts to
-  /// expand that child representation into a single-line failure detail for
-  /// this context level.
+  /// If this context has exactly one clause in [clauses], and that child
+  /// clause produces a collapsed representation (`childCollapsed`), this
+  /// method attempts to expand that child representation into a single-line
+  /// failure detail for this context level.
   ///
   /// Returns `null` if there is not exactly one clause, if the child clause did
   /// not collapse, or if expanding the child representation at this level fails
   /// (e.g., if `_addPredicate` returns `null` or the resulting root string
   /// exceeds length limits).
   FailureDetail? _collapsedDetails(
+    Iterable<_ClauseDescription> clauses,
     _TestContext failingContext,
-    Rejection? rejection,
-  ) {
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+  }) {
     if (rejection == null) return null;
-    final clause = _singleClause;
+    final clause = _singleClauseOf(clauses);
     if (clause == null) return null;
-    final details = clause.detail(failingContext, rejection);
+    final details = clause.detail(
+      failingContext,
+      rejection,
+      failingClause: failingClause,
+    );
     final childCollapsed = details.collapsedDetails;
     if (childCollapsed == null) return null;
     assert(clause.isLeaf ? details.depth == -1 : details.depth == 0);
@@ -1047,8 +1133,8 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     final (childExpected, childActual) = childCollapsed;
     (String, String)? expandedCollapsed;
     if (_addPredicate != null) {
-      final exp = _addPredicate(childExpected);
-      final act = _addPredicate(childActual);
+      final exp = _expandChild(childExpected, childIsLeaf: clause.isLeaf);
+      final act = _expandChild(childActual, childIsLeaf: clause.isLeaf);
       if (exp != null && act != null) expandedCollapsed = (exp, act);
     } else if (_parent == null) {
       if (clause.isLeaf) {
@@ -1061,12 +1147,35 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     }
     if (expandedCollapsed == null) return null;
 
-    return FailureDetail(
+    return FailureDetail._(
       [expandedCollapsed.$1],
       -1,
       0,
       collapsedDetails: expandedCollapsed,
     );
+  }
+
+  /// Expands the collapsed single-line description of the single clause under
+  /// this context into a predicate describing this context.
+  ///
+  /// A leaf expectation collapses to a noun phrase (such as `<2>`), which is
+  /// passed to [_addPredicate] (giving, for instance, `has length: <2>`).
+  ///
+  /// A nested context collapses to a predicate (such as `has length: <2>`)
+  /// which cannot be used as a noun phrase. It is joined to the label for this
+  /// context with "that", mirroring the "<label> that:" line in the multi-line
+  /// format (giving, for instance, `has name that has length: <2>`).
+  ///
+  /// Returns `null` if this context does not support collapsing, if
+  /// [_addPredicate] rejects the noun phrase, or if the label for this context
+  /// spans multiple lines.
+  String? _expandChild(String child, {required bool childIsLeaf}) {
+    final addPredicate = _addPredicate;
+    if (addPredicate == null) return null;
+    if (childIsLeaf) return addPredicate(child);
+    final label = _labelCallback().singleOrNull;
+    if (label == null) return null;
+    return '$label that $child';
   }
 
   String? _collapseWithRootLabel(String child) {
@@ -1079,9 +1188,10 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
 
   @override
   String? get collapsedExpected {
-    final child = _singleClause?.collapsedExpected;
+    final clause = _singleClause;
+    final child = clause?.collapsedExpected;
     if (child == null) return null;
-    return _addPredicate?.call(child);
+    return _expandChild(child, childIsLeaf: clause!.isLeaf);
   }
 
   /// The [FailureDetail] for this context when the overall expectation cannot
@@ -1102,14 +1212,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
   /// - Otherwise, formats `actual` hierarchically with indentation, retaining
   ///   any collapsed child property descriptions.
   FailureDetail _fullDetails(
+    Iterable<_ClauseDescription> clauses,
     _TestContext failingContext,
     Rejection? rejection, {
+    required _ClauseDescription? failingClause,
     required bool thisContextFailed,
   }) {
     var foundOverlap = thisContextFailed ? 0 : -1;
     var foundDepth = thisContextFailed ? 0 : -1;
-    if (_clauses.isEmpty) {
-      return FailureDetail(_labelCallback(), foundOverlap, foundDepth);
+    if (clauses.isEmpty) {
+      return FailureDetail._(_labelCallback(), foundOverlap, foundDepth);
     }
 
     final expected = [...postfixLast(' that:', _labelCallback())];
@@ -1117,14 +1229,21 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
     final labelLines = expected.length;
     var canCollapse = true;
     var didCollapse = false;
+    var actualHasLabel = true;
 
     var successfulOverlap = 0;
-    for (var clause in _clauses) {
-      final isFailingClause = thisContextFailed
-          ? identical(clause, _clauses.last)
-          : failingContext._nestsUnder(clause);
+    for (var clause in clauses) {
+      final isFailingClause =
+          rejection != null &&
+          (thisContextFailed
+              ? identical(clause, failingClause)
+              : failingContext._nestsUnder(clause));
       final clauseRejection = isFailingClause ? rejection : null;
-      final details = clause.detail(failingContext, clauseRejection);
+      final details = clause.detail(
+        failingContext,
+        clauseRejection,
+        failingClause: failingClause,
+      );
 
       final Iterable<String> clauseExpected;
       var didCollapseRootActual = false;
@@ -1143,6 +1262,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
             ..add(collapsedRootActual);
           didCollapse = true;
           didCollapseRootActual = true;
+          actualHasLabel = false;
         } else if (childActual != null) {
           actual.addAll(indent([childActual]));
           didCollapse = true;
@@ -1153,9 +1273,7 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
           canCollapse = false;
         }
       } else {
-        final collapsed = rejection != null && !clause.isLeaf
-            ? clause.collapsedExpected
-            : null;
+        final collapsed = !clause.isLeaf ? clause.collapsedExpected : null;
         clauseExpected = collapsed != null ? [collapsed] : details.expected;
         actual.addAll(indent(clauseExpected));
         if (collapsed != null) didCollapse = true;
@@ -1185,14 +1303,16 @@ final class _TestContext<T> implements Context<T>, _ClauseDescription {
       if (rejection?.actual.singleOrNull case final actualValue?) {
         if (_addPredicate(actualValue) case final collapsed?) {
           actualResult = [collapsed];
+          actualHasLabel = false;
         }
       }
     }
-    return FailureDetail(
+    return FailureDetail._(
       expected,
       foundOverlap,
       foundDepth,
       actual: actualResult,
+      actualHasLabel: actualHasLabel,
     );
   }
 }
@@ -1312,9 +1432,12 @@ final class _ReplayContext<T> implements Context<T> {
     );
     final result = apply(Subject._(context));
     if (result is Future) {
-      return result.then((_) => context.detail(context, null).expected.skip(1));
+      return result.then(
+        (_) =>
+            context.detail(context, null, failingClause: null).expected.skip(1),
+      );
     }
-    return context.detail(context, null).expected.skip(1);
+    return context.detail(context, null, failingClause: null).expected.skip(1);
   }
 
   @override
@@ -1394,7 +1517,16 @@ final class _ReplayContext<T> implements Context<T> {
 }
 
 abstract interface class _ClauseDescription {
-  FailureDetail detail(_TestContext failingContext, Rejection? rejection);
+  /// The [FailureDetail] for this clause.
+  ///
+  /// The [rejection] is non-null for clauses on the path to a failure. The
+  /// [failingClause] is the expectation that was rejected on the
+  /// [failingContext], or `null` when describing a condition.
+  FailureDetail detail(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+  });
   String? get collapsedExpected;
   bool get isLeaf;
 }
@@ -1406,14 +1538,18 @@ class _ExpectationClause implements _ClauseDescription {
   @override
   String? get collapsedExpected => _predicateNoun?.call();
   @override
-  FailureDetail detail(_TestContext failingContext, Rejection? rejection) {
+  FailureDetail detail(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+  }) {
     (String, String)? collapsedDetails;
     if (_predicateNoun?.call() case final collapsedExpected?) {
       if (rejection?.actual.singleOrNull case final collapsedActual?) {
         collapsedDetails = (collapsedExpected, collapsedActual);
       }
     }
-    return FailureDetail(
+    return FailureDetail._(
       _expected(),
       -1,
       -1,
@@ -1429,12 +1565,43 @@ class _ExpectationClause implements _ClauseDescription {
 /// `atSameLevel` (such as `isNotNull()` or `isA<T>()`).
 ///
 /// When value extraction succeeds, the clause represents a satisfied
-/// precondition. Succeeded guard clauses are included in uncollapsed
+/// precondition. Satisfied guard clauses are included in uncollapsed
 /// multi-line failure descriptions, but do not disqualify a context from
 /// collapsing when only a single expectation is otherwise checked on the
 /// subject.
+///
+/// When there is no value to extract from, such as within
+/// [Condition.describe] or after an earlier rejection within a soft check, the
+/// guard is not [satisfied] and counts as an expectation like any other. A
+/// guard which is itself rejected is described by the failing expectation
+/// clause instead.
 final class _GuardClause extends _ExpectationClause {
-  _GuardClause(super.expected);
+  /// Whether the value was extracted, so the precondition is known to hold.
+  final bool satisfied;
+  _GuardClause(super.expected, {required this.satisfied});
+}
+
+/// A placeholder for the clause of an asynchronous expectation which has not
+/// finished, such as `completes` while it waits for the value, or an
+/// expectation from [Context.expectAsync] while its predicate runs.
+///
+/// It keeps the place of the expectation in the order the expectations were
+/// made, so that expectations made while it waits come after it. It is
+/// replaced once the expectation finishes, and is not described before then,
+/// so an expectation which has not finished is never described as satisfied.
+final class _PendingClause implements _ClauseDescription {
+  @override
+  FailureDetail detail(
+    _TestContext failingContext,
+    Rejection? rejection, {
+    required _ClauseDescription? failingClause,
+  }) => throw StateError('A pending clause is not described');
+
+  @override
+  String? get collapsedExpected => null;
+
+  @override
+  bool get isLeaf => true;
 }
 
 /// The result of an expectation that failed for a subject.
@@ -1452,7 +1619,60 @@ final class CheckFailure {
 
   final FailureDetail Function() _readDetail;
 
-  CheckFailure(this.rejection, this._readDetail);
+  CheckFailure._(this.rejection, this._readDetail);
+
+  /// The "Actual:" and "Which:" lines describing this failure, for use within
+  /// the `which` of another [Rejection], nested under a line which describes
+  /// the value that failed.
+  ///
+  /// This failure is formatted the same way as a failure message from `check`,
+  /// except that the condition which failed has no label for its root subject.
+  /// The caller provides a line describing the value instead, and where a
+  /// failure message from `check` would have `Actual: <label> that:`, the
+  /// description has a line with only `Actual:`.
+  ///
+  /// For example, an expectation that every element of an iterable satisfies a
+  /// condition can describe the first element that does not:
+  ///
+  /// ```dart
+  /// final failure = elementCondition.softCheckSync(element);
+  /// if (failure != null) {
+  ///   return Rejection(which: [
+  ///     'has an element at index $index that:',
+  ///     ...indent(failure.describeNested()),
+  ///   ]);
+  /// }
+  /// ```
+  Iterable<String> describeNested() => _actualAndWhich(rootLabel: false);
+
+  /// The "Actual:" and "Which:" lines of a failure message for this failure.
+  ///
+  /// When [rootLabel] is true, the description of the actual value starts with
+  /// the line for the label of the root subject, prefixed with "Actual: ", as
+  /// in a failure message from `check`. Otherwise "Actual:" replaces that line.
+  Iterable<String> _actualAndWhich({required bool rootLabel}) {
+    final which = rejection.which;
+    final Iterable<String> actual;
+    final int depth;
+    if (detail.collapsedDetails case (_, final collapsedActual)) {
+      actual = ['Actual: $collapsedActual'];
+      depth = 0;
+    } else {
+      depth = detail.depth;
+      final described = detail.actual;
+      final rejected = detail.hasCustomActual
+          ? const <String>[]
+          : indent(prefixFirst('Actual: ', rejection.actual), depth);
+      actual = !rootLabel && detail._actualHasLabel && described.isNotEmpty
+          ? ['Actual:', ...described.skip(1), ...rejected]
+          : [...prefixFirst('Actual: ', described), ...rejected];
+    }
+    return [
+      ...actual,
+      if (which != null && which.isNotEmpty)
+        ...indent(prefixFirst('Which: ', which), depth),
+    ];
+  }
 }
 
 /// The context for a failed expectation.
@@ -1541,13 +1761,22 @@ final class FailureDetail {
   /// on the default overlap prefix derived from [expected].
   bool get hasCustomActual => _actual != null;
 
-  FailureDetail(
+  /// Whether a non-empty [actual] starts with the line for the label of the
+  /// subject, the same as [expected].
+  ///
+  /// False when the actual description collapsed onto a single line which
+  /// replaces the label line.
+  final bool _actualHasLabel;
+
+  FailureDetail._(
     this.expected,
     this._actualOverlap,
     this.depth, {
     this.collapsedDetails,
     Iterable<String>? actual,
-  }) : _actual = actual;
+    bool actualHasLabel = true,
+  }) : _actual = actual,
+       _actualHasLabel = actualHasLabel;
 }
 
 /// A description of a value that failed an expectation.
