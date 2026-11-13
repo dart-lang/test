@@ -11,6 +11,7 @@ import 'dart:math' as math;
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_core/src/util/exit_codes.dart' as exit_codes;
+import 'package:test_core/src/util/io.dart' show isAiAgent;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../io.dart';
@@ -447,6 +448,127 @@ void main() => Isolate.exit();
         ),
       );
       await test.shouldExit(0);
+    });
+
+    group('when run by an AI coding agent', () {
+      Map<String, String> cleanEnvironment([
+        Map<String, String> overrides = const {},
+      ]) {
+        const strippedKeys = {
+          'GITHUB_ACTIONS',
+          '_DART_TEST_TESTING',
+          'DART_TEST_REPORTER',
+          'NO_COLOR',
+          'FORCE_COLOR',
+          'CLICOLOR',
+          'CLICOLOR_FORCE',
+          'TERM',
+        };
+        return {
+          for (final entry in Platform.environment.entries)
+            if (!strippedKeys.contains(entry.key) &&
+                !isAiAgent({entry.key: entry.value}))
+              entry.key: entry.value,
+          '_DART_TEST_TESTING': 'false',
+          ...overrides,
+        };
+      }
+
+      test('defaults to expanded without an agent or terminal', () async {
+        await d.file('test.dart', _success).create();
+        var test = await runTest(
+          ['test.dart'],
+          environment: cleanEnvironment(),
+          includeParentEnvironment: false,
+        );
+
+        expect(
+          test.stdout,
+          containsInOrder(['+0: success', '+1: All tests passed!']),
+        );
+        await test.shouldExit(0);
+      });
+
+      test('defaults to failures-only when an agent is detected', () async {
+        await d.file('test.dart', _success).create();
+        var test = await runTest(
+          ['test.dart'],
+          environment: cleanEnvironment({'CLAUDECODE': '1'}),
+          includeParentEnvironment: false,
+        );
+
+        expect(
+          test.stdout,
+          allOf(
+            neverEmits(contains('success')),
+            emitsThrough(contains('+1: All tests passed!')),
+          ),
+        );
+        await test.shouldExit(0);
+      });
+
+      test(
+        'defaults to failures-only even when special chars are enabled',
+        () async {
+          await d.file('test.dart', _success).create();
+          var test = await runTest(
+            ['test.dart'],
+            environment: cleanEnvironment({
+              'FORCE_COLOR': '1',
+              'ANTIGRAVITY_AGENT': '1',
+            }),
+            includeParentEnvironment: false,
+          );
+
+          expect(
+            test.stdout,
+            allOf(
+              neverEmits(contains('success')),
+              emitsThrough(contains('All tests passed!')),
+            ),
+          );
+          await test.shouldExit(0);
+        },
+      );
+
+      test('explicit --reporter overrides agent default', () async {
+        await d.file('test.dart', _success).create();
+        var test = await runTest(
+          ['test.dart', '-r', 'expanded'],
+          environment: cleanEnvironment({'CLAUDECODE': '1'}),
+          includeParentEnvironment: false,
+        );
+
+        expect(
+          test.stdout,
+          containsInOrder(['+0: success', '+1: All tests passed!']),
+        );
+        await test.shouldExit(0);
+      });
+
+      test(
+        'directly defaults to failures-only when special chars are enabled',
+        () async {
+          await d.file('test.dart', _success).create();
+          var test = await runDart(
+            ['test.dart'],
+            environment: cleanEnvironment({
+              'FORCE_COLOR': '1',
+              'ANTIGRAVITY_AGENT': '1',
+            }),
+            includeParentEnvironment: false,
+          );
+
+          expect(
+            test.stdout,
+            allOf(
+              neverEmits(contains('success')),
+              emitsThrough(contains('All tests passed!')),
+            ),
+          );
+          await test.shouldExit(0);
+        },
+      );
     });
 
     // Regression test; this broke in 0.12.0-beta.9.
