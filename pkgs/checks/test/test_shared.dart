@@ -35,18 +35,18 @@ extension RejectionChecks<T> on Subject<T> {
     );
     if (didRunCallback) {
       rejection
-          .has2('actual', (r) => r.actual)
+          .has('actual', (r) => r.actual)
           .deepEquals(actual ?? literal(actualValue));
     } else {
       rejection
-          .has2('actual', (r) => r.actual)
+          .has('actual', (r) => r.actual)
           .context
           .expect(() => ['is left default'], (_) => null);
     }
     if (which == null) {
-      rejection.has2('which', (r) => r.which).isNull;
+      rejection.has('which', (r) => r.which).isNull;
     } else {
-      rejection.has2('which', (r) => r.which).isNotNull().deepEquals(which);
+      rejection.has('which', (r) => r.which).isNotNull().deepEquals(which);
     }
   }
 
@@ -77,18 +77,18 @@ extension RejectionChecks<T> on Subject<T> {
     );
     if (didRunCallback) {
       rejection
-          .has2('actual', (r) => r.actual)
+          .has('actual', (r) => r.actual)
           .deepEquals(actual ?? literal(actualValue));
     } else {
       rejection
-          .has2('actual', (r) => r.actual)
+          .has('actual', (r) => r.actual)
           .context
           .expect(() => ['is left default'], (_) => null);
     }
     if (which == null) {
-      rejection.has2('which', (r) => r.which).isNull;
+      rejection.has('which', (r) => r.which).isNull;
     } else {
-      rejection.has2('which', (r) => r.which).isNotNull().deepEquals(which);
+      rejection.has('which', (r) => r.which).isNotNull().deepEquals(which);
     }
   }
 }
@@ -96,7 +96,7 @@ extension RejectionChecks<T> on Subject<T> {
 extension ConditionChecks<T> on Subject<Condition<T>> {
   @useResult
   Subject<Iterable<String>> hasSyncDescription() =>
-      has2('description', (c) => c.describeSync());
+      has('description', (c) => c.describeSync());
 }
 
 extension AsyncConditionChecks<T> on Subject<Condition<T>> {

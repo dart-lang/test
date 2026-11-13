@@ -59,8 +59,8 @@ abstract class Bar {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<_i3.Bar> get barField => '
-            "has2('barField', (v) => v.barField);",
-        "  _i1.Subject<int> get intField => has2('intField', (v) => "
+            "has('barField', (v) => v.barField);",
+        "  _i1.Subject<int> get intField => has('intField', (v) => "
             'v.intField);',
         '}',
       ]);
@@ -103,9 +103,9 @@ abstract class Bar {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<_i3.Bar> get barField => '
-            "has2('barField', (v) => v.barField);",
+            "has('barField', (v) => v.barField);",
         '  _i1.Subject<int> get intField => '
-            "has2('intField', (v) => v.intField);",
+            "has('intField', (v) => v.intField);",
         '}',
       ]);
     });
@@ -232,15 +232,15 @@ abstract class Bar {}
             "import 'bar.dart' as _i3;",
             "import 'foo.dart' as _i2;",
             'extension FooChecks on _i1.Subject<_i2.Foo> {',
-            "  _i1.Subject<int> get intField => has2('intField', (v) => "
+            "  _i1.Subject<int> get intField => has('intField', (v) => "
                 'v.intField);',
             '  _i1.Subject<void Function()> get callback =>',
-            "      has2('callback', (v) => v.callback);",
+            "      has('callback', (v) => v.callback);",
             '  _i1.Subject<_i3.Bar Function(_i3.Bar, [_i3.Bar?])> get positional =>',
-            "      has2('positional', (v) => v.positional);",
+            "      has('positional', (v) => v.positional);",
             '  _i1.Subject<void Function({required _i3.Bar bar, int? count})?> '
                 'get named =>',
-            "      has2('named', (v) => v.named);",
+            "      has('named', (v) => v.named);",
             '}',
           ])
           ..not(.it()..contains('method'))
@@ -287,13 +287,13 @@ abstract class Bar {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<_i3.Bar> get bounded => '
-            "has2('bounded', (v) => v.bounded);",
+            "has('bounded', (v) => v.bounded);",
         '  _i1.Subject<dynamic> get unbounded => '
-            "has2('unbounded', (v) => v.unbounded);",
+            "has('unbounded', (v) => v.unbounded);",
         '  _i1.Subject<List<_i3.Bar>> get list => '
-            "has2('list', (v) => v.list);",
+            "has('list', (v) => v.list);",
         '  _i1.Subject<void Function(_i3.Bar)> get callback =>',
-        "      has2('callback', (v) => v.callback);",
+        "      has('callback', (v) => v.callback);",
         '}',
       ]);
     });
@@ -336,10 +336,10 @@ abstract class Bar {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<(_i3.Bar, {_i3.Bar? named})> get record =>',
-        "      has2('record', (v) => v.record);",
+        "      has('record', (v) => v.record);",
         '  _i1.Subject<T Function<T extends _i3.Bar>(T)> get generic =>',
-        "      has2('generic', (v) => v.generic);",
-        "  _i1.Subject<Never> get never => has2('never', (v) => v.never);",
+        "      has('generic', (v) => v.generic);",
+        "  _i1.Subject<Never> get never => has('never', (v) => v.never);",
         '}',
       ]);
     });
@@ -386,9 +386,9 @@ abstract class Baz {}
         "import 'foo.dart' as _i2;",
         'extension FooChecks on _i1.Subject<_i2.Foo> {',
         '  _i1.Subject<Map<_i3.Bar, List<_i4.Baz?>>> get nested =>',
-        "      has2('nested', (v) => v.nested);",
+        "      has('nested', (v) => v.nested);",
         '  _i1.Subject<List<void Function()>> get callbacks =>',
-        "      has2('callbacks', (v) => v.callbacks);",
+        "      has('callbacks', (v) => v.callbacks);",
         '}',
       ]);
     });
@@ -437,9 +437,9 @@ abstract class Bar {}
           "import 'foo.dart' as _i2;",
           'extension FooChecks on _i1.Subject<_i2.Foo> {',
           '  _i1.Subject<_i3.HttpClient> get client => '
-              "has2('client', (v) => v.client);",
+              "has('client', (v) => v.client);",
           '  _i1.Subject<List<_i4.Bar>> get bars => '
-              "has2('bars', (v) => v.bars);",
+              "has('bars', (v) => v.bars);",
           '}',
         ])
         ..not(.it()..contains('dart:_http'))
@@ -626,7 +626,7 @@ abstract class _Private {}
           "import 'package:checks/context.dart' as _i1;",
           "import 'foo.dart' as _i2;",
           'extension FooChecks on _i1.Subject<_i2.Foo> {',
-          "  _i1.Subject<int> get intField => has2('intField', (v) => "
+          "  _i1.Subject<int> get intField => has('intField', (v) => "
               'v.intField);',
           '}',
         ])
@@ -684,7 +684,7 @@ abstract class _OtherPrivate {}
           "import 'foo.dart' as _i2;",
           'extension FooChecks on _i1.Subject<_i2.Foo> {',
           '  _i1.Subject<int> get aliasedPublic =>',
-          "      has2('aliasedPublic', (v) => v.aliasedPublic);",
+          "      has('aliasedPublic', (v) => v.aliasedPublic);",
           '}',
         ])
         ..not(.it()..contains('_Private'))

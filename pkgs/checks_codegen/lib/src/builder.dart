@@ -152,7 +152,7 @@ final class ChecksGenerator extends GeneratorForAnnotation<CheckExtensions> {
             ..types.add(typeReference),
         )
         ..lambda = true
-        ..body = refer('has2').call([
+        ..body = refer('has').call([
           literalString(name),
           Method(
             (b) => b

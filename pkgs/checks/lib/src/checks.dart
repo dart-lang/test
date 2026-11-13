@@ -438,7 +438,7 @@ extension ContextExtension<T> on Subject<T> {
 ///       });
 ///
 ///   // for field reads that will not get rejected, use `has`
-///   Subject<Bar> get someField => has((a) => a.someField, 'someField');
+///   Subject<Bar> get someField => has('someField', (a) => a.someField);
 /// }
 /// ```
 ///

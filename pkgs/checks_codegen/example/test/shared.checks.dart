@@ -13,13 +13,13 @@ import 'package:checks/context.dart' as _i1;
 
 extension TypedDataChecks on _i1.Subject<_i2.TypedData> {
   _i1.Subject<int> get elementSizeInBytes =>
-      has2('elementSizeInBytes', (v) => v.elementSizeInBytes);
+      has('elementSizeInBytes', (v) => v.elementSizeInBytes);
 
   _i1.Subject<int> get offsetInBytes =>
-      has2('offsetInBytes', (v) => v.offsetInBytes);
+      has('offsetInBytes', (v) => v.offsetInBytes);
 
   _i1.Subject<int> get lengthInBytes =>
-      has2('lengthInBytes', (v) => v.lengthInBytes);
+      has('lengthInBytes', (v) => v.lengthInBytes);
 
-  _i1.Subject<_i2.ByteBuffer> get buffer => has2('buffer', (v) => v.buffer);
+  _i1.Subject<_i2.ByteBuffer> get buffer => has('buffer', (v) => v.buffer);
 }

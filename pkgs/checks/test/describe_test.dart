@@ -39,7 +39,7 @@ void main() {
     test('keeps unevaluated preconditions on nested subjects', () {
       check(
         Condition.it<Object?>()
-          ..has((o) => o, 'self').isA<String>().length.equals(1),
+          ..has('self', (o) => o).isA<String>().length.equals(1),
       ).hasSyncDescription().deepEquals([
         '  has self that:',
         '    is a String',

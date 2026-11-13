@@ -10,6 +10,12 @@
     `Condition.it<SomeType>()..someCheck()`.
   - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
     top level methods in favor of the instance members on `Condition`.
+  - Swap the positional arguments to `has` so the name comes first:
+    `has((v) => v.property, 'property')` becomes
+    `has('property', (v) => v.property)`. A data driven fix is included, so
+    `dart fix --apply` will update most call sites. Call sites where the
+    extractor argument is statically `dynamic` produce no analysis error and
+    will not be updated by the fix; these need to be found manually.
   - Expectation extension methods which take no arguments have been changed to
     getters:
     - `doesNotComplete`
@@ -65,7 +71,7 @@
 - Improve collapsed failure messages when the only expectation on a nested
   subject is a further nested subject. The inner description is joined to the
   label for the outer subject with "that", so
-  `.throws<StateError>().has((e) => e.message, 'message').equals('foo')` reads
+  `.throws<StateError>().has('message', (e) => e.message).equals('foo')` reads
   as `throws an error of type StateError that has message: 'foo'` instead of
   `throws has message: 'foo'`, and chained `has` calls read as
   `has value that has field: 'foo'` instead of `has value: has field: 'foo'`.

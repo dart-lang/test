@@ -56,7 +56,7 @@ Expected: a List<int> that:
       final checkFuture = check(future).completes(.it()..equals(2));
       await check(checkFuture).throws<TestFailure>(
         .it()
-          ..has2('message', (f) => f.message).isNotNull().equals('''
+          ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<int> that completes to <2>
 Actual: a Future<int> that completes to <1>
 Which: is not equal'''),
@@ -514,7 +514,7 @@ Which: is not equal''');
         final checkStream = check(stream).withQueue.emits(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has2('message', (f) => f.message).isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<int> that emits <2>
 Actual: a Stream<int> that emits <1>
 Which: is not equal'''),
@@ -528,7 +528,7 @@ Which: is not equal'''),
         ).withQueue.emitsError<int>(.it()..equals(2));
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has2('message', (f) => f.message).isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<int> that emits error <2>
 Actual: a Stream<int> that emits error <1>
 Which: is not equal'''),
@@ -540,7 +540,7 @@ Which: is not equal'''),
         final checkFuture = check(future).throws<int>(.it()..equals(2));
         await check(checkFuture).throws<TestFailure>(
           .it()
-            ..has2('message', (f) => f.message).isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<void> that throws <2>
 Actual: a Future<void> that throws <1>
 Which: is not equal'''),
@@ -610,8 +610,8 @@ Which: contains no matching element''');
           check([Foo('foo')]).any(
             .it()
               ..has(
-                (f) => f.field,
                 'a long property name',
+                (f) => f.field,
               ).equals('a long expected value'),
           );
         }).throwsFailure().equals('''
@@ -626,8 +626,8 @@ Which: contains no matching element''');
           check([Foo('foo')]).any(
             .it()
               ..has(
-                (f) => f.field,
                 'a much longer property name for testing',
+                (f) => f.field,
               ).equals('a long expected value'),
           );
         }).throwsFailure().equals('''
@@ -752,7 +752,7 @@ Which: differs at offset 0:
         check(() {
           check(
             () => throw StateError('foo'),
-          ).throws<StateError>().has((e) => e.message, 'message').equals('bar');
+          ).throws<StateError>().has('message', (e) => e.message).equals('bar');
         }).throwsFailure().equals('''
 Expected: a () => Never that throws an error of type StateError that has message: 'bar'
 Actual: a () => Never that throws an error of type StateError that has message: 'foo'
@@ -765,11 +765,11 @@ Which: differs at offset 0:
       test('has within Future.throws over the length limit', () async {
         final future = Future<void>.error(StateError('foo'));
         final checkFuture = check(future).throws<StateError>(
-          .it()..has((e) => e.message, 'message').equals('bar'),
+          .it()..has('message', (e) => e.message).equals('bar'),
         );
         await check(checkFuture).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<void> that:
   completes to an error of type StateError that has message: 'bar'
 Actual: a Future<void> that:
@@ -784,11 +784,11 @@ Actual: a Future<void> that:
       test('has within emitsError keeps the error type', () async {
         final queue = check(Stream<void>.error(StateError('foo'))).withQueue;
         final checkStream = queue.emitsError<StateError>(
-          .it()..has((e) => e.message, 'message').equals('bar'),
+          .it()..has('message', (e) => e.message).equals('bar'),
         );
         await check(checkStream).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Stream<void> that emits an error of type StateError that has message: 'bar'
 Actual: a Stream<void> that emits an error of type StateError that has message: 'foo'
 Which: differs at offset 0:
@@ -805,7 +805,7 @@ Which: differs at offset 0:
         ).completes(.it()..someField.equals('bar'));
         await check(checkFuture).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<Foo> that completes to a value that has someField: 'bar'
 Actual: a Future<Foo> that completes to a value that has someField: 'foo'
 Which: differs at offset 0:
@@ -878,7 +878,7 @@ class Wrapper {
 }
 
 extension on Subject<Wrapper> {
-  Subject<Object?> get value => has((w) => w.value, 'value');
+  Subject<Object?> get value => has('value', (w) => w.value);
 }
 
 class Foo {
@@ -887,10 +887,10 @@ class Foo {
 }
 
 extension on Subject<Foo> {
-  Subject<String> get someField => has2('someField', (f) => f.field);
+  Subject<String> get someField => has('someField', (f) => f.field);
 }
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
-      throws<TestFailure>().has2('message', (f) => f.message).isNotNull();
+      throws<TestFailure>().has('message', (f) => f.message).isNotNull();
 }

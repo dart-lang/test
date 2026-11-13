@@ -15,6 +15,8 @@
   SDK libraries, such as `HttpClient`, through a public SDK library.
 * Skip private fields and fields whose types reference private types, and
   report an error when `@CheckExtensions` lists a private type.
+* Generate `has` calls with the field name argument before the extractor
+  callback, matching `checks` `0.4.0`.
 
 ## 0.1.0
 

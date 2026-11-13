@@ -36,12 +36,12 @@ void main() {
   group('HasField', () {
     group('has', () {
       test('happy case', () {
-        check(1).has2('isOdd', (v) => v.isOdd).isTrue;
+        check(1).has('isOdd', (v) => v.isOdd).isTrue;
       });
       test('failure case', () {
         check(null).isRejectedBy(
           .it()
-            ..has2('foo', (v) {
+            ..has('foo', (v) {
               Error.throwWithStackTrace(
                 UnimplementedError(),
                 StackTrace.fromString('fake trace'),
@@ -54,7 +54,7 @@ void main() {
         );
       });
       test('returns valid subject', () {
-        check(1).has2('isOdd', (v) => v.isOdd).isTrue;
+        check(1).has('isOdd', (v) => v.isOdd).isTrue;
       });
     });
 

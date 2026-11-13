@@ -4,7 +4,7 @@ import 'package:test/scaffolding.dart';
 void main() {
   test('throws', () async {
     await check(Future<int>.error(StateError('nope'))).throws<StateError>(
-      .it()..has2('message', (e) => e.message).equals('nope'),
+      .it()..has('message', (e) => e.message).equals('nope'),
     );
   });
 

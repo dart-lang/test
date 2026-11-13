@@ -46,17 +46,16 @@ void main() {
       test('evaluates condition', () {
         check(() => throw StateError('oops!')).isRejectedBy(
           .it()..throws<StateError>(
-            .it()..has2('message', (e) => e.message).equals('wrong'),
+            .it()..has('message', (e) => e.message).equals('wrong'),
           ),
           actual: ["'oops!'"],
           which: ['differs at offset 0:', '  wrong', '  oops!', '  ^'],
         );
       });
       test('returns valid subject', () {
-        check(() => throw StateError('oops!'))
-            .throws<StateError>()
-            .has2('message', (e) => e.message)
-            .equals('oops!');
+        check(
+          () => throw StateError('oops!'),
+        ).throws<StateError>().has('message', (e) => e.message).equals('oops!');
       });
     });
 

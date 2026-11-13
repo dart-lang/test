@@ -102,7 +102,7 @@ Which: is not equal''');
     test('succeeded child context followed by failing check on parent', () {
       check(() {
         check([1])
-          ..has2('first', (l) => l.first).equals(1)
+          ..has('first', (l) => l.first).equals(1)
           ..equals([2]);
       }).throwsFailure().equals('''
 Expected: a List<int> that:
@@ -115,10 +115,10 @@ Which: is not equal''');
         'expectation fails', () async {
       final subject = check(Future.value(1));
       final completion = subject.completes(.it()..equals(2));
-      subject.has((f) => 0, 'zero').equals(0);
+      subject.has('zero', (f) => 0).equals(0);
       await check(completion).throws<TestFailure>(
         .it()
-          ..has((f) => f.message, 'message').isNotNull().equals('''
+          ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a Future<int> that completes to <2>
 Actual: a Future<int> that completes to <1>
 Which: is not equal'''),
@@ -130,7 +130,7 @@ Which: is not equal'''),
       check(() {
         check(completer.future)
           ..completes()
-          ..has((f) => 0, 'zero').equals(1);
+          ..has('zero', (f) => 0).equals(1);
       }).throwsFailure().equals('''
 Expected: a Future<int> that has zero: <1>
 Actual: a Future<int> that has zero: <0>
@@ -143,7 +143,7 @@ Which: is not equal''');
       check(() {
         check(0)
           ..context.expectAsync(() => ['waits'], (_) => completer.future)
-          ..has((v) => v, 'self').equals(1);
+          ..has('self', (v) => v).equals(1);
       }).throwsFailure().equals('''
 Expected: a int that has self: <1>
 Actual: a int that has self: <0>
@@ -158,7 +158,7 @@ Which: is not equal''');
         () {
           check(completer.future)
             ..doesNotComplete
-            ..has((f) => 0, 'zero').equals(0);
+            ..has('zero', (f) => 0).equals(0);
           completer.complete(1);
         },
         (e, _) {
@@ -168,7 +168,7 @@ Which: is not equal''');
       await pumpEventQueue();
       check(failure)
           .isA<TestFailure>()
-          .has((f) => f.message, 'message')
+          .has('message', (f) => f.message)
           .isNotNull()
           .equals('''
 Expected: a Future<int> that:
@@ -180,7 +180,7 @@ Actual: a future that completed to <1>''');
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
-      throws<TestFailure>().has2('message', (f) => f.message).isNotNull();
+      throws<TestFailure>().has('message', (f) => f.message).isNotNull();
 }
 
 class EmptyToString {
