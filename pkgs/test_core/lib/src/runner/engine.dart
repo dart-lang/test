@@ -614,12 +614,15 @@ class Engine {
   Future close() async {
     _closed = true;
     if (_closedBeforeDone != null) _closedBeforeDone = true;
+    // Take the live tests before the first `await`. A `tearDownAll` that starts
+    // while we wait still has to run, and `_runGroup` closes it once it's done.
+    // Closing it here before it runs makes `LiveTest.run()` throw.
+    var allLiveTests = liveTests.toSet()..addAll(_activeSuiteLoads);
     await _suiteController.close();
     await _onSuiteAddedController.close();
 
     // Close the running tests first so that we're sure to wait for them to
     // finish before we close their suites and cause them to become unloaded.
-    var allLiveTests = liveTests.toSet()..addAll(_activeSuiteLoads);
     var futures = allLiveTests.map((liveTest) => liveTest.close()).toList();
 
     // Closing the run pool will close the test suites as soon as their tests

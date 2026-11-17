@@ -25,6 +25,9 @@
 * The JSON reporter adds a `retried` field to `testDone` events and reports
   protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
   the protocol documents.
+* Fix a `LiveTest.run() may not be called for a closed test` crash with
+  `--fail-fast` when the last test in a group with a `tearDownAll` fails. The
+  `tearDownAll` now runs.
 
 ## 0.6.21
 

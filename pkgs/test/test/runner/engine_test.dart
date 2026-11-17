@@ -155,6 +155,23 @@ void main() {
     },
   );
 
+  test(
+    '.run() runs tearDownAll after the last test fails for stopOnFirstFailure',
+    () async {
+      var tearDownAllRan = false;
+      var engine = declareEngine(() {
+        group('group', () {
+          tearDownAll(() {
+            tearDownAllRan = true;
+          });
+          test('failure', () => throw 'oh no');
+        });
+      }, stopOnFirstFailure: true);
+      await expectLater(engine.run(), completion(isFalse));
+      expect(tearDownAllRan, isTrue);
+    },
+  );
+
   test('.run() may not be called more than once', () {
     var engine = Engine.withSuites([]);
     expect(engine.run(), completes);

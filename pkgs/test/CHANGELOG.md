@@ -44,6 +44,9 @@
   before connecting is still replaced, up to 3 attempts, while time remains.
   Without a `suite_load_timeout`, connecting to a browser no longer times out.
 * Print console output from pages in Firefox to the browser output.
+* Fix a `LiveTest.run() may not be called for a closed test` crash with
+  `--fail-fast` when the last test in a group with a `tearDownAll` fails. The
+  `tearDownAll` now runs.
 
 ## 1.33.0
 
