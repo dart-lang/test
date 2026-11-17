@@ -1,5 +1,8 @@
 ## 0.6.22-wip
 
+* Clear `LiveSuite.active` when a running test is closed. With `--fail-fast`,
+  a suite that then ran a `tearDownAll` failed the `_active == null`
+  assertion.
 * Support `globalSetup` and `addGlobalTearDown` host runner execution and
   caching across test suites.
 * Enable asserts in the `cli` compiler if supported.

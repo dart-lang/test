@@ -341,6 +341,22 @@ void main() {
   });
 
   group('concurrency', () {
+    test('stopOnFirstFailure closes a running test in another suite', () async {
+      var failing = declare(() => test('failure', () => throw 'oh no'));
+      var other = declare(() {
+        group('group', () {
+          tearDownAll(() {});
+          test('async', () => Future<void>.delayed(Duration.zero));
+        });
+      });
+      var engine = Engine.withSuites(
+        [runnerSuite(failing.asRootGroup()), runnerSuite(other.asRootGroup())],
+        concurrency: 2,
+        stopOnFirstFailure: true,
+      );
+      await expectLater(engine.run(), completion(isFalse));
+    });
+
     test('is shared between runner and load suites', () async {
       for (var concurrency = 1; concurrency < 5; concurrency++) {
         var testsLoaded = 0;
