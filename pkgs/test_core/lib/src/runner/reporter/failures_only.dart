@@ -226,6 +226,14 @@ class FailuresOnlyReporter implements Reporter {
         );
       }
       _progressLine('Some tests failed.', color: _red, suffix: _flakySuffix);
+
+      writeFailureSummary(
+        _sink,
+        failed: _engine.failed,
+        active: _engine.active,
+        red: _red,
+        noColor: _noColor,
+      );
     } else if (_engine.passed.isEmpty) {
       _progressLine(
         '${_yellow}All tests skipped.$_noColor',

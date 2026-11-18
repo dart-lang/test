@@ -1,5 +1,7 @@
 ## 0.6.22-wip
 
+* Default to the `failures-only` reporter when executed by an AI coding agent.
+* Print a summary of failing tests at the end of the `failures-only` reporter.
 * Clear `LiveSuite.active` when a running test is closed. With `--fail-fast`,
   a suite that then ran a `tearDownAll` failed the `_active == null`
   assertion.
