@@ -1,4 +1,4 @@
-## 0.4.0-wip
+## 0.4.0
 
 - **Breaking Changes**
   - Replace the `typedef Condition` and `AsyncCondition` function type callback
