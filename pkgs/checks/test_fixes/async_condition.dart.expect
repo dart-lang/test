@@ -1,0 +1,9 @@
+import 'package:checks/checks.dart';
+
+void takeCondition(
+  Condition<int> cond,
+  Condition<String>? nullableCond,
+  List<Condition<int>> nested,
+) {}
+
+Condition<int> castCondition(Object value) => value as Condition<int>;
