@@ -9,6 +9,8 @@
   matcher such as `completes`, directly or nested in other matchers. These
   operators can't combine asynchronous results correctly. The `throws`
   matchers are still allowed when matched against a synchronous callback.
+* When a matcher throws, `expect` reports the exception instead of failing
+  with an unrelated `TypeError` from describing the mismatch.
 
 ## 0.12.20
 
