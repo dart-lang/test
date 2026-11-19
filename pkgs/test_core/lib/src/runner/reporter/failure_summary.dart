@@ -7,6 +7,18 @@ import 'package:test_api/backend.dart';
 /// The maximum number of individual failing tests to list in the summary.
 const maxFailureSummaryCount = 5;
 
+/// The suffix for a reporter's final progress line describing [flakyCount]
+/// tests that passed on retry, such as ` (2 flaky)`, or `null` if
+/// [flakyCount] is 0.
+String? flakySuffix(
+  int flakyCount, {
+  required String yellow,
+  required String noColor,
+}) {
+  if (flakyCount == 0) return null;
+  return ' $yellow($flakyCount flaky)$noColor';
+}
+
 /// Writes a summary of failed and incomplete tests to [sink].
 ///
 /// [failed] are tests that completed with a failure or error. [active] are
@@ -30,12 +42,46 @@ void writeFailureSummary(
       _SummaryEntry(test.suite.path, test.test.name, didNotComplete: true),
   ];
 
+  _writeSummary(sink, 'Failing tests:', entries, color: red, noColor: noColor);
+}
+
+/// Writes a summary of tests that failed at least one attempt and then passed
+/// on retry to [sink].
+///
+/// The list is sorted and truncated the same way as [writeFailureSummary].
+void writeFlakySummary(
+  StringSink sink, {
+  required Iterable<LiveTest> flaky,
+  required String yellow,
+  required String noColor,
+}) {
+  final entries = <_SummaryEntry>[
+    for (final test in flaky)
+      _SummaryEntry(test.suite.path, test.test.name, didNotComplete: false),
+  ];
+
+  _writeSummary(
+    sink,
+    'Flaky tests (passed on retry):',
+    entries,
+    color: yellow,
+    noColor: noColor,
+  );
+}
+
+void _writeSummary(
+  StringSink sink,
+  String title,
+  List<_SummaryEntry> entries, {
+  required String color,
+  required String noColor,
+}) {
   if (entries.isEmpty) return;
 
   entries.sort();
 
   sink.writeln('');
-  sink.writeln('${red}Failing tests:$noColor');
+  sink.writeln('$color$title$noColor');
 
   final displayCount = entries.length > maxFailureSummaryCount
       ? maxFailureSummaryCount - 1

@@ -102,6 +102,8 @@ final _allReporters = <String, ReporterDetails>{
 
 final defaultReporter = inTestTests
     ? 'expanded'
+    : inAiAgent
+    ? 'failures-only'
     : inGithubContext
     ? 'github'
     : canUseSpecialChars

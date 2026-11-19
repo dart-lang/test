@@ -1,4 +1,4 @@
-## 0.4.0-wip
+## 0.4.0
 
 - **Breaking Changes**
   - Replace the `typedef Condition` and `AsyncCondition` function type callback
@@ -10,6 +10,12 @@
     `Condition.it<SomeType>()..someCheck()`.
   - Remove the `describe`, `describeAsync`, `softCheck`, and `softCheckAsync`
     top level methods in favor of the instance members on `Condition`.
+  - Swap the positional arguments to `has` so the name comes first:
+    `has((v) => v.property, 'property')` becomes
+    `has('property', (v) => v.property)`. A data driven fix is included, so
+    `dart fix --apply` will update most call sites. Call sites where the
+    extractor argument is statically `dynamic` produce no analysis error and
+    will not be updated by the fix; these need to be found manually.
   - Expectation extension methods which take no arguments have been changed to
     getters:
     - `doesNotComplete`
@@ -27,6 +33,7 @@
     - `isNotNegative`
     - `isNull`
     - `isTrue`
+  - Remove the public constructors for `CheckFailure` and `FailureDetail`.
 - Updated `Context.nest` to accept an optional named `nestedCondition` argument
   which is executed against the nested subject.
 - Updated `Subject.isA`, `Subject.isNotNull`, `Subject.throws` (sync), and
@@ -60,7 +67,7 @@
 - Improve collapsed failure messages when the only expectation on a nested
   subject is a further nested subject. The inner description is joined to the
   label for the outer subject with "that", so
-  `.throws<StateError>().has((e) => e.message, 'message').equals('foo')` reads
+  `.throws<StateError>().has('message', (e) => e.message).equals('foo')` reads
   as `throws an error of type StateError that has message: 'foo'` instead of
   `throws has message: 'foo'`, and chained `has` calls read as
   `has value that has field: 'foo'` instead of `has value: has field: 'foo'`.
@@ -78,7 +85,55 @@
   `MapChecks.containsValueThat` to a single line when the condition describes
   in a single line and the result fits within 80 columns, for example
   `Expected: an iterable containing a value that is greater than <7>`.
+- Describe `IterableChecks.any`, `IterableChecks.every`,
+  `MapChecks.containsKeyThat`, and `MapChecks.containsValueThat` in a single
+  line when the condition describes in a single line and the result fits
+  within 80 columns, such as `contains a value that is greater than <7>`.
+  This applies where they are one of several expectations, or are nested
+  inside the condition of another of these expectations.
+- Describe the condition for `IterableChecks.every` as
+  `only has elements where each` instead of `only has values that`, for
+  example `only has elements where each is less than <10>`, so that it reads
+  as a sentence when nested in another condition.
+- Fix the failure details from `Condition.softCheck` when a precondition such
+  as `isA<T>()` is rejected and further expectations follow it. The last
+  expectation was treated as the one that failed, which triggered an assertion
+  error, or attributed the rejection to the wrong expectation. This could be
+  seen in the failure message for `IterableChecks.every`.
+- Omit the expectations after the one that failed from failure messages.
+  Within a soft check, such as the condition for `IterableChecks.every`, and
+  after an unawaited expectation which fails later, the later expectations
+  were described as if the value satisfied them. This includes expectations
+  made while an asynchronous expectation such as `completes` was waiting for
+  its value. An asynchronous expectation which has not finished when a later
+  expectation fails is also left out, instead of being described as
+  satisfied.
+- Fix the failure messages for `IterableChecks.every` and for `Condition`
+  elements in `IterableChecks.deepEquals` to keep the nested property for the
+  element that failed, for example `Actual: has field: 'foo'` instead of
+  `Actual: 'foo'`. `deepEquals` now uses the same format as `every`, with
+  `Which:` in place of `which`.
+- Add `CheckFailure.describeNested` to describe a failure from soft checking
+  a condition within the `which` of another `Rejection`, in the same format
+  as a failure message from `check`.
+- Use the format of a failure message from `check` for the conditions that
+  failed in `StreamChecks.inOrder`, `StreamChecks.anyOf`, and
+  `IterableChecks.pairwiseMatches`. Each failure now has an `Actual:` line,
+  which `inOrder` and `anyOf` previously omitted when the condition failed
+  without collapsing to a single line, and `inOrder` and `anyOf` no longer
+  repeat the `Expected:` description of the condition.
+- Describe what the stream did in the `Actual:` line of failures from
+  `StreamChecks.emits`, `emitsError`, `emitsThrough`, `neverEmits`, and
+  `isDone`, instead of `a stream`. For example `emitsThrough` reports
+  `Actual: a stream that closed after emitting ['a', 'b', 'c']` and
+  `neverEmits` reports the values up to and including the matching one. Up to
+  the first 25 values are listed, along with the total count for a longer
+  stream.
+- Fix the failure message for `StreamChecks.emitsError` when the stream emits
+  a value, which said `closed without emitting an error`.
 - Require `package:meta` `^1.17.0`.
+- Use the `Iterable.last` member of the iterable for `IterableChecks.last`
+  instead of iterating to the final element.
 
 ## 0.3.2
 

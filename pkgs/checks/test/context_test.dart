@@ -47,7 +47,7 @@ void main() {
       await monitor.onDone;
       check(monitor)
         ..state.equals(State.failed)
-        ..errors.single.has((e) => e.error, 'error').equals('oh no!');
+        ..errors.single.has('error', (e) => e.error).equals('oh no!');
     });
 
     test('nestAsync holds test open', () async {
@@ -98,7 +98,7 @@ void main() {
       await monitor.onDone;
       check(monitor)
         ..state.equals(State.failed)
-        ..errors.single.has((e) => e.error, 'error').equals('oh no!');
+        ..errors.single.has('error', (e) => e.error).equals('oh no!');
     });
 
     test('expectUnawaited can fail the test after it completes', () async {
@@ -119,13 +119,13 @@ void main() {
         ..state.equals(State.failed)
         ..errors.unorderedMatches([
           .it()
-            ..has((e) => e.error, 'error')
+            ..has('error', (e) => e.error)
                 .isA<TestFailure>()
-                .has((f) => f.message, 'message')
+                .has('message', (f) => f.message)
                 .isNotNull()
                 .endsWith('Which: foo'),
           .it()
-            ..has((e) => e.error, 'error').isA<String>().startsWith(
+            ..has('error', (e) => e.error).isA<String>().startsWith(
               'This test failed after it had already completed.',
             ),
         ]);
@@ -143,10 +143,10 @@ void main() {
 }
 
 extension _MonitorChecks on Subject<TestCaseMonitor> {
-  Subject<State> get state => has((m) => m.state, 'state');
-  Subject<Iterable<AsyncError>> get errors => has((m) => m.errors, 'errors');
+  Subject<State> get state => has('state', (m) => m.state);
+  Subject<Iterable<AsyncError>> get errors => has('errors', (m) => m.errors);
   Subject<StreamQueue<AsyncError>> get onError =>
-      has((m) => m.onError, 'onError').withQueue;
+      has('onError', (m) => m.onError).withQueue;
 
   /// Expects that the monitored test is completed as success with no errors.
   ///

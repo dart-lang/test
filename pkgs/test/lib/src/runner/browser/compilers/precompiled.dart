@@ -84,7 +84,12 @@ abstract class PrecompiledSupport extends CompilerSupport {
         .addHandler(cascade.handler);
 
     _server.mount(
-      shelf.Cascade().add(createFileHandler(faviconPath)).add(pipeline).handler,
+      requestLog.wrap(
+        shelf.Cascade()
+            .add(createFileHandler(faviconPath))
+            .add(pipeline)
+            .handler,
+      ),
     );
   }
 

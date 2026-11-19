@@ -13,6 +13,8 @@ import 'package:test_core/src/runner/configuration.dart'; // ignore: implementat
 import 'package:test_core/src/runner/suite.dart'; // ignore: implementation_imports
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../request_log.dart';
+
 /// The shared interface for all compiler support libraries.
 abstract class CompilerSupport {
   /// The global test runner configuration.
@@ -22,6 +24,12 @@ abstract class CompilerSupport {
   final String defaultTemplatePath;
 
   CompilerSupport(this.config, this.defaultTemplatePath);
+
+  /// Records the requests browsers make while connecting to this compiler's
+  /// server.
+  ///
+  /// Implementations wrap their server's handler with this log.
+  final requestLog = BrowserRequestLog();
 
   /// The URL at which this compiler serves its tests.
   ///

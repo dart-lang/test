@@ -72,6 +72,18 @@ abstract class LiveSuite {
   /// failing or error.
   Set<LiveTest> get failed;
 
+  /// The set of tests in this suite that failed at least one attempt and then
+  /// passed on retry.
+  ///
+  /// This includes synthetic tests such as `setUpAll` and `tearDownAll`, which
+  /// are not counted in [passed]. Regular tests in this set are also in
+  /// [passed], so it is not part of [liveTests].
+  ///
+  /// Defaults to an empty set so that existing subclasses that extend
+  /// [LiveSuite] continue to compile. Classes that implement [LiveSuite] must
+  /// override it.
+  Set<LiveTest> get flaky => const {};
+
   /// The currently running test in this suite, or `null` if no test is running.
   LiveTest? get active;
 }

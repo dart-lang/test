@@ -16,8 +16,7 @@ void main() {
     // Expected: a Stream<int> that:
     //   never emits a value that:
     //     is less than <0>
-    // Actual: a stream
-    // Which: emitted <-3>
-    // following 2 other items
+    // Actual: a stream that emitted [1, 2, -3]
+    // Which: emitted a matching value at index 2: <-3>
   });
 }

@@ -21,7 +21,6 @@ void main() {
     // Which: satisfied 1 conditions then
     // failed to satisfy the condition at index 1
     // because it:
-    //   Expected: emits 'third'
     //   Actual: emits 'second'
     //   Which: differs at offset 0:
     //     third

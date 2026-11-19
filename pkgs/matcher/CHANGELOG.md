@@ -1,5 +1,6 @@
-## 0.12.21-wip
+## 0.13.0-wip
 
+* **BREAKING**: Remove the deprecated `mirror_matchers.dart` library.
 * Add a runnable example for every matcher, linked from its documentation, and
   a test that keeps the failure output recorded in those examples in sync with
   the output the matchers actually produce.

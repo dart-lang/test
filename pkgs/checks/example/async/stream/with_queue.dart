@@ -16,7 +16,7 @@ void main() {
     await check(Stream.fromIterable([1, 2])).withQueue.isDone;
     // Expected: a Stream<int> that:
     //   is done
-    // Actual: a stream
-    // Which: emitted an unexpected value: <1>
+    // Actual: a stream that emitted <1>
+    // Which: emitted a value before closing
   });
 }

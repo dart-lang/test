@@ -151,7 +151,7 @@ void main() {
       ).isNotNull().deepEquals([
         'has an element at [<0>] that:',
         '  Actual: <0>',
-        '  which is not greater than <0>',
+        '  Which: is not greater than <0>',
       ]);
     });
 
@@ -164,7 +164,43 @@ void main() {
       ).isNotNull().deepEquals([
         "has an element at ['a'] that:",
         "  Actual: 'b'",
-        "  which does not start with 'a'",
+        "  Which: does not start with 'a'",
+      ]);
+    });
+
+    test('reports the property for unmet conditions on a property', () {
+      check(
+        deepCollectionEquals(
+          ['abc'],
+          [Condition.it<dynamic>()..isA<String>().length.equals(2)],
+        ),
+      ).isNotNull().deepEquals([
+        'has an element at [<0>] that:',
+        '  Actual: has length: <3>',
+        '  Which: is not equal',
+      ]);
+    });
+
+    test('reports satisfied conditions before an unmet condition', () {
+      check(
+        deepCollectionEquals(
+          ['abc'],
+          [
+            Condition.it<dynamic>()
+              ..isA<String>().which(
+                Condition.it()
+                  ..startsWith('a')
+                  ..length.equals(2),
+              ),
+          ],
+        ),
+      ).isNotNull().deepEquals([
+        'has an element at [<0>] that:',
+        '  Actual:',
+        '    is a String',
+        "    starts with 'a'",
+        '    has length: <3>',
+        '    Which: is not equal',
       ]);
     });
 

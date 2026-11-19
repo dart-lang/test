@@ -32,6 +32,19 @@ abstract class Browser {
   Future<Process> get _process => _processCompleter.future;
   final _processCompleter = Completer<Process>();
 
+  /// The underlying process, or `null` if it hasn't started yet.
+  Process? get process => _startedProcess;
+  Process? _startedProcess;
+
+  /// The exit code of the underlying process, or `null` if it hasn't exited.
+  int? get exitCode => _exitCode;
+  int? _exitCode;
+
+  /// The command line used to start the browser, or `null` if it hasn't
+  /// started yet.
+  String? get commandLine => _commandLine;
+  String? _commandLine;
+
   /// Whether [close] has been called.
   var _closed = false;
 
@@ -71,6 +84,20 @@ abstract class Browser {
   /// Whether the browser output has ended and [output] is closed.
   var _outputDone = false;
 
+  /// Completes once all of the browser's stdout and stderr is in
+  /// [accumulatedOutput], or the browser is closed.
+  ///
+  /// Unlike [output], this doesn't complete early when the browser fails, so
+  /// it can be used to wait for the output of a browser that exited.
+  Future<void> get outputDrained => _outputDrainedCompleter.future;
+  final _outputDrainedCompleter = Completer<void>();
+
+  void _completeOutputDrained() {
+    if (!_outputDrainedCompleter.isCompleted) {
+      _outputDrainedCompleter.complete();
+    }
+  }
+
   void _addOutput(String line) {
     accumulatedOutput.add(line);
     for (var listener in _outputListeners) {
@@ -91,16 +118,19 @@ abstract class Browser {
   /// Creates a new browser.
   ///
   /// This is intended to be called by subclasses. They pass in [startBrowser],
-  /// which asynchronously returns the browser process. Any errors in
-  /// [startBrowser] (even those raised asynchronously after it returns) are
-  /// piped to [onExit] and will cause the browser to be killed.
-  Browser(Future<Process> Function() startBrowser) {
+  /// which asynchronously returns the browser process and the command line
+  /// used to start it, for diagnostics. Any errors in [startBrowser] (even
+  /// those raised asynchronously after it returns) are piped to [onExit] and
+  /// will cause the browser to be killed.
+  Browser(Future<(Process, String)> Function() startBrowser) {
     // Don't return a Future here because there's no need for the caller to wait
     // for the process to actually start. They should just wait for the HTTP
     // request instead.
     runZonedGuarded(
       () async {
-        var process = await startBrowser();
+        var (process, commandLine) = await startBrowser();
+        _startedProcess = process;
+        _commandLine = commandLine;
         _processCompleter.complete(process);
 
         Future<void> drainOutput(Stream<List<int>> stream) {
@@ -118,9 +148,13 @@ abstract class Browser {
         Future.wait([
           drainOutput(process.stdout),
           drainOutput(process.stderr),
-        ], eagerError: true).whenComplete(_closeOutput);
+        ], eagerError: true).whenComplete(() {
+          _closeOutput();
+          _completeOutputDrained();
+        });
 
         var exitCode = await process.exitCode;
+        _exitCode = exitCode;
 
         // This hack dodges an otherwise intractable race condition. When the user
         // presses Control-C, the signal is sent to the browser and the test
@@ -182,6 +216,7 @@ abstract class Browser {
       unawaited(stream.cancel());
     }
     _closeOutput();
+    _completeOutputDrained();
 
     (await _process).kill();
 

@@ -22,6 +22,7 @@ Future<Isolate> runInIsolate(
   String code,
   Object message, {
   SendPort? onExit,
+  SendPort? onError,
 }) async => Isolate.spawnUri(
   Uri.dataFromString(code, mimeType: 'application/dart', encoding: utf8),
   [],
@@ -29,6 +30,7 @@ Future<Isolate> runInIsolate(
   packageConfig: await packageConfigUri,
   checked: true,
   onExit: onExit,
+  onError: onError,
 );
 
 /// Takes a span whose source is the value of a string that has been parsed from

@@ -10,15 +10,15 @@ void main() {
     await check(Stream.fromIterable([1, 2, 3])).withQueue.isDone;
     // Expected: a Stream<int> that:
     //   is done
-    // Actual: a stream
-    // Which: emitted an unexpected value: <1>
+    // Actual: a stream that emitted <1>
+    // Which: emitted a value before closing
   });
 
   test('isDone when the stream emits an error', () async {
     await check(Stream<int>.error(StateError('nope'))).withQueue.isDone;
     // Expected: a Stream<int> that:
     //   is done
-    // Actual: a stream
-    // Which: emitted an unexpected error: <Bad state: nope> at:
+    // Actual: a stream that emitted error <Bad state: nope>
+    // Which: emitted an error before closing at:
   });
 }

@@ -22,7 +22,10 @@ enum ChromiumBasedBrowser {
 
   const ChromiumBasedBrowser(this.runtime);
 
-  Future<Process> spawn(
+  /// Starts the browser open to [url].
+  ///
+  /// Returns the process and the command line used to start it.
+  Future<(Process, String)> spawn(
     Uri url,
     Configuration configuration, {
     ExecutableSettings? settings,
@@ -66,6 +69,6 @@ enum ChromiumBasedBrowser {
 
     unawaited(process.exitCode.then((_) => Directory(dir).deleteWithRetry()));
 
-    return process;
+    return (process, [settings.executable, ...args].join(' '));
   }
 }

@@ -112,6 +112,7 @@ Future<TestProcess> runTest(
   String? fileReporter,
   int? concurrency,
   Map<String, String>? environment,
+  bool includeParentEnvironment = true,
   bool forwardStdio = false,
   String? packageConfig,
   Iterable<String>? vmArgs,
@@ -140,6 +141,7 @@ Future<TestProcess> runTest(
   return await runDart(
     allArgs,
     environment: environment,
+    includeParentEnvironment: includeParentEnvironment,
     description: 'dart bin/test.dart',
     forwardStdio: forwardStdio,
     packageConfig: packageConfig,
@@ -154,6 +156,7 @@ Future<TestProcess> runTest(
 Future<TestProcess> runDart(
   Iterable<String> args, {
   Map<String, String>? environment,
+  bool includeParentEnvironment = true,
   String? description,
   bool forwardStdio = false,
   String? packageConfig,
@@ -169,6 +172,7 @@ Future<TestProcess> runDart(
     allArgs,
     workingDirectory: workingDirectory ?? d.sandbox,
     environment: environment,
+    includeParentEnvironment: includeParentEnvironment,
     description: description,
     forwardStdio: forwardStdio,
   );
