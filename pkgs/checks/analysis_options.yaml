@@ -1,6 +1,8 @@
 include: ../../analysis_options.yaml
 
 analyzer:
+  exclude:
+    - test_fixes/**
   errors:
     # Not all SDK versions used on CI support @example
     doc_directive_unknown: ignore
