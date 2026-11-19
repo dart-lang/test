@@ -27,14 +27,9 @@ void main() {
     ], workingDirectory: packageDir.path);
     final stdout = result.stdout as String;
     final stderr = result.stderr as String;
-    check(
-      because: 'stdout:\n$stdout\nstderr:\n$stderr',
-      result.exitCode,
-    ).equals(0);
-    check(
-        because: 'at least one fix golden test should run\nstdout:\n$stdout',
-        stdout,
-      )
+    printOnFailure('stdout:\n$stdout\nstderr:\n$stderr');
+    check(result.exitCode).equals(0);
+    check(because: 'at least one fix golden test should run', stdout)
       ..contains('Passed: ')
       ..not(.it()..contains('Passed: 0'));
   });
