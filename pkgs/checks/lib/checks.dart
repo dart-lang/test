@@ -7,6 +7,7 @@ export 'src/extensions/async.dart'
     show FutureChecks, FutureSubjectExtension, StreamChecks, WithQueueExtension;
 export 'src/extensions/core.dart'
     show BoolChecks, ComparableChecks, CoreChecks, NullableChecks;
+export 'src/extensions/date_time.dart' show DateTimeChecks, DurationChecks;
 export 'src/extensions/function.dart'
     show AsyncFunctionChecks, FunctionChecks, VoidFunctionChecks;
 export 'src/extensions/iterable.dart' show IterableChecks;

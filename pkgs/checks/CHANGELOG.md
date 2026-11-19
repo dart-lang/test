@@ -1,3 +1,9 @@
+## 0.4.1-wip
+
+- Add `DateTimeChecks` with `isAtSameMomentAs`, `isCloseTo`, `isUtc` and
+  `isLocal`.
+- Add `DurationChecks` with `isCloseTo`.
+
 ## 0.4.0
 
 - **Breaking Changes**
