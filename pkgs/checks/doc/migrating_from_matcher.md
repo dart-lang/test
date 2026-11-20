@@ -175,9 +175,11 @@ check(because: 'some explanation', actual).isNotEmpty;
 Where tests previously stored a `Matcher` in a variable or passed a `Matcher`
 into a helper function, use `Condition<T>`. Create a condition with `.it()` when
 the type is inferred from context (such as a typed helper parameter) or
-`Condition.it<T>()` otherwise, and apply it with `.which(condition)` (or
-`await condition.apply(check(actual))` when the condition may include
-asynchronous checks):
+`Condition.it<T>()` otherwise. Combinators and expectation methods that extract
+a derived subject (such as `isA`, `completes`, `throws`, and `emits`, though not
+`has` or property getters) take a `Condition` argument, and conditions with
+synchronous expectations can be applied to a `Subject<T>` with
+`.which(condition)`:
 
 ```dart
 // matcher:
@@ -192,6 +194,10 @@ void checkUser(String id, Condition<User> condition) {
 }
 checkUser('42', .it()..has('name', (u) => u.name).equals('Alice'));
 ```
+
+Conditions with asynchronous expectations can only be passed to asynchronous
+expectations that accept a `Condition` (such as `completes`, `emits`, or
+`inOrder`), not to `Subject.which` or other synchronous expectations.
 
 ### Differences in behavior from matcher
 
@@ -290,6 +296,7 @@ checkUser('42', .it()..has('name', (u) => u.name).equals('Alice'));
     or `isA<List>()`, and similarly `throws<ArgumentError>()` over
     `throwsArgumentError`.
 -   `anything`: When a condition is needed that accepts any value, pass `.it()`.
+    Typically a condition argument can be omitted instead.
 -   Sign and zero comparisons (`isPositive`, `isNonPositive`, `isZero`,
     `isNonZero`, `isNonNegative`): Use `isGreaterThan(0)`, `isLessOrEqual(0)`,
     `equals(0)`, `not(.it()..equals(0))`, and `isGreaterOrEqual(0)`.

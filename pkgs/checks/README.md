@@ -142,10 +142,12 @@ check(someList)
 ### Passing expectations around as values
 
 A `Condition<T>` is an object representing a set of recorded expectations that
-can be stored, passed around, and applied later to a `Subject<T>`. Built-in
-combinators like `any`, `every`, `not`, `anyOf`, and `which` accept `Condition`
-arguments created with the `.it()` dot shorthand (or `Condition.it<T>()` when
-the target type cannot be inferred from context).
+can be stored, passed around, and applied later to a `Subject<T>`. Create a
+condition with the `.it()` dot shorthand when the target type is inferred from
+context, or `Condition.it<T>()` otherwise. Combinators (such as `any`, `every`,
+`not`, `anyOf`, and `inOrder`) and expectation methods that extract a derived
+subject (such as `isA`, `completes`, `throws`, and `emits`, though not `has` or
+property getters) accept `Condition` arguments:
 
 ```dart
 check(someList).any(.it()..isGreaterThan(0));
@@ -154,10 +156,8 @@ final isPositive = Condition.it<int>()..isGreaterThan(0);
 check(someList).every(isPositive);
 ```
 
-Your own test helpers and table-driven tests can also accept or store
-`Condition<T>` values and run them against a subject with `.which(condition)`
-(or `await condition.apply(check(value))` when the condition may include
-asynchronous expectations):
+Conditions with synchronous expectations can be applied to any `Subject<T>` with
+`.which(condition)`, including in test helpers and table-driven tests:
 
 ```dart
 void checkUser(String id, Condition<User> condition) {
@@ -166,6 +166,10 @@ void checkUser(String id, Condition<User> condition) {
 
 checkUser('42', .it()..has('name', (u) => u.name).equals('Alice'));
 ```
+
+Conditions with asynchronous expectations can only be passed to asynchronous
+expectations that accept a `Condition` (such as `completes`, `emits`, or
+`inOrder`), not to `Subject.which` or other synchronous expectations.
 
 ### Checking asynchronous expectations
 
