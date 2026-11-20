@@ -471,11 +471,11 @@ class _Wrapper {
 }
 
 extension on Subject<_Foo> {
-  Subject<String> get field => has((f) => f.field, 'field');
+  Subject<String> get field => has('field', (f) => f.field);
 }
 
 extension on Subject<_Wrapper> {
-  Subject<Object?> get value => has((w) => w.value, 'value');
+  Subject<Object?> get value => has('value', (w) => w.value);
 }
 
 /// An iterable whose [last] member returns a value which is not the final

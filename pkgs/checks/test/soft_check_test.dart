@@ -24,11 +24,11 @@ void main() {
           .softCheckSync(1);
       check(failure).isNotNull()
         ..has(
-          (f) => f.rejection.which,
           'which',
+          (f) => f.rejection.which,
         ).isNotNull().deepEquals(['is a int'])
-        ..has((f) => f.detail, 'detail')
-            .has((d) => d.expected, 'expected')
+        ..has('detail', (f) => f.detail)
+            .has('expected', (d) => d.expected)
             .deepEquals([' that:', '  is a String']);
     });
   });
@@ -47,11 +47,11 @@ void main() {
       final failure =
           await (Condition.it<Future<int>>()
                 ..completes(.it()..equals(2))
-                ..has((f) => 0, 'zero').equals(0))
+                ..has('zero', (f) => 0).equals(0))
               .softCheck(Future.value(1));
       check(failure)
           .isNotNull()
-          .has((f) => f.describeNested(), 'describeNested')
+          .has('describeNested', (f) => f.describeNested())
           .deepEquals(['Actual: completes to <1>', 'Which: is not equal']);
     });
   });

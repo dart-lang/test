@@ -1,5 +1,9 @@
 ## 1.34.0-wip
 
+* Default to the `failures-only` reporter when executed by an AI coding agent.
+* Print a summary of failing tests at the end of the `failures-only` reporter.
+* Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
+  once on the host runner and cache results across all tests and test suites.
 * Support `matcher: ^0.13.0`.
 * Enable asserts in the `cli` compiler if supported.
 * Fix a `RangeError` crash in the compact reporter when the terminal is too
@@ -31,6 +35,9 @@
   * The JSON reporter adds a `retried` field to `testDone` events and reports
     protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden,
     as the protocol documents.
+* Never retry `tearDownAll`, even when the group or suite sets `retry`.
+  Previously a retry didn't run any of the `tearDownAll` callbacks again, so it
+  always passed and hid the failure.
 * When a browser fails to connect, report each attempt: how long it waited,
   whether the browser process was still running, the command used to start it,
   the requests it made to the test server, and its output.

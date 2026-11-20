@@ -1,0 +1,392 @@
+// Copyright (c) 2026, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:async/async.dart';
+import 'package:path/path.dart' as p;
+import 'package:stream_channel/stream_channel.dart';
+import 'package:test_api/backend.dart' show RemoteException, Suite;
+import '../util/dart.dart' as dart;
+import '../util/package_config.dart';
+import 'application_exception.dart';
+import 'package_version.dart';
+
+final class _ActiveSetup {
+  final String url;
+  final Isolate isolate;
+  final SendPort commandPort;
+  final RawReceivePort errorPort;
+  final RawReceivePort exitPort;
+  final Completer<void> exitCompleter;
+
+  _ActiveSetup({
+    required this.url,
+    required this.isolate,
+    required this.commandPort,
+    required this.errorPort,
+    required this.exitPort,
+    required this.exitCompleter,
+  });
+
+  void closePorts() {
+    errorPort.close();
+    exitPort.close();
+  }
+}
+
+/// Manages the lifecycle, caching, and execution of global setup hooks.
+final class GlobalSetupManager {
+  static final _currentKey = #test.global_setup_manager;
+
+  /// The current global setup manager set using [asCurrent].
+  static GlobalSetupManager? get current =>
+      Zone.current[_currentKey] as GlobalSetupManager?;
+
+  final _setups = <String, Future<String>>{};
+  final _activeSetups = <_ActiveSetup>[];
+  final _inFlightAborts = <void Function()>{};
+  final _closeMemo = AsyncMemoizer<void>();
+
+  /// Runs [body] in a zone with this manager set as
+  /// [GlobalSetupManager.current].
+  T asCurrent<T>(T Function() body) =>
+      runZoned(body, zoneValues: {_currentKey: this});
+
+  StreamChannel<Object?> get(String rawUrl, Suite suite) {
+    return StreamChannelCompleter.fromFuture(() async {
+      try {
+        if (_closeMemo.hasRun) {
+          throw StateError('GlobalSetupManager has already been closed.');
+        }
+        final normalizedUrl = _normalizeUrl(rawUrl, suite);
+        final resultFuture = _setups.putIfAbsent(
+          normalizedUrl,
+          () => _runSetup(normalizedUrl),
+        );
+        final resultJson = await resultFuture;
+        return StreamChannel<Object?>.withGuarantees(
+          Stream.value({'type': 'data', 'data': json.decode(resultJson)}),
+          NullStreamSink<Object?>(),
+        );
+      } catch (error, stackTrace) {
+        return StreamChannel<Object?>.withGuarantees(
+          Stream.value({
+            'type': 'error',
+            'error': RemoteException.serialize(error, stackTrace),
+          }),
+          NullStreamSink<Object?>(),
+        );
+      }
+    }());
+  }
+
+  Future<String> _runSetup(String url) async {
+    final completer = Completer<String>();
+    final exitCompleter = Completer<void>();
+    final responsePort = RawReceivePort();
+    late final RawReceivePort exitPort;
+    late final RawReceivePort errorPort;
+    Isolate? isolate;
+    var keepPortsOpen = false;
+
+    errorPort = RawReceivePort((Object? errorAndStack) {
+      final list = errorAndStack as List<Object?>;
+      if (!completer.isCompleted) {
+        completer.completeError(
+          ApplicationException(
+            'Global setup "$url" failed:\n${list[0]}\n${list[1]}',
+          ),
+        );
+      } else {
+        stderr.writeln(
+          'Unhandled error in global setup "$url":\n${list[0]}\n${list[1]}',
+        );
+        exitCode = 1;
+      }
+    });
+
+    exitPort = RawReceivePort((_) {
+      exitPort.close();
+      errorPort.close();
+      if (!exitCompleter.isCompleted) exitCompleter.complete();
+      if (!completer.isCompleted) {
+        completer.completeError(
+          ApplicationException(
+            'Global setup "$url" exited unexpectedly before completing.',
+          ),
+        );
+      }
+    });
+
+    void abort() {
+      isolate?.kill();
+      if (!completer.isCompleted) {
+        completer.completeError(
+          ApplicationException(
+            'Global setup "$url" was cancelled because the test runner closed.',
+          ),
+        );
+      }
+    }
+
+    _inFlightAborts.add(abort);
+
+    try {
+      final code =
+          '''
+${await _languageVersionCommentFor(url)}
+
+import "dart:isolate";
+import "package:test_core/src/bootstrap/vm.dart";
+
+import "${url.replaceAll(r'$', '%24')}" as lib;
+
+void main(_, SendPort sendPort) =>
+    internalBootstrapVmHook(() => lib.setUp, sendPort);
+''';
+
+      if (_closeMemo.hasRun) {
+        throw ApplicationException(
+          'Global setup "$url" was cancelled because the test runner closed.',
+        );
+      }
+
+      try {
+        isolate = await dart.runInIsolate(
+          code,
+          responsePort.sendPort,
+          onError: errorPort.sendPort,
+          onExit: exitPort.sendPort,
+        );
+      } on IsolateSpawnException catch (error) {
+        throw ApplicationException(
+          'Global setup "$url" failed to compile:\n$error',
+        );
+      }
+
+      if (_closeMemo.hasRun) {
+        isolate.kill();
+        throw ApplicationException(
+          'Global setup "$url" was cancelled because the test runner closed.',
+        );
+      }
+
+      final spawnedIsolate = isolate;
+      responsePort.handler = (Object? response) {
+        if (response case {
+          'success': true,
+          'result': String result,
+          'hasTearDown': bool hasTearDown,
+        }) {
+          if (hasTearDown) {
+            keepPortsOpen = true;
+            final commandPort = response['commandPort'] as SendPort;
+            final active = _ActiveSetup(
+              url: url,
+              isolate: spawnedIsolate,
+              commandPort: commandPort,
+              errorPort: errorPort,
+              exitPort: exitPort,
+              exitCompleter: exitCompleter,
+            );
+            if (_closeMemo.hasRun) {
+              unawaited(_tearDown(active));
+            } else {
+              _activeSetups.add(active);
+            }
+          } else {
+            spawnedIsolate.kill();
+          }
+          if (!completer.isCompleted) completer.complete(result);
+        } else if (response case {
+          'success': false,
+          'error': var error,
+          'stackTrace': var stack,
+        }) {
+          spawnedIsolate.kill();
+          if (!completer.isCompleted) {
+            completer.completeError(
+              ApplicationException(
+                'Global setup "$url" failed:\n$error'
+                '${stack != null && "$stack".isNotEmpty ? "\n$stack" : ""}',
+              ),
+            );
+          }
+        }
+      };
+
+      return await completer.future;
+    } finally {
+      _inFlightAborts.remove(abort);
+      responsePort.close();
+      if (!keepPortsOpen) {
+        errorPort.close();
+        exitPort.close();
+      }
+    }
+  }
+
+  Future<void> _tearDown(_ActiveSetup active) async {
+    if (active.exitCompleter.isCompleted) {
+      stderr.writeln(
+        'Global teardown for "${active.url}" failed: '
+        'Global setup isolate exited unexpectedly before teardown.',
+      );
+      exitCode = 1;
+      active.closePorts();
+      return;
+    }
+
+    final replyPort = RawReceivePort();
+    final completer = Completer<Map<Object?, Object?>>();
+    replyPort.handler = (Object? response) {
+      if (!completer.isCompleted) {
+        completer.complete(response as Map<Object?, Object?>);
+      }
+    };
+    try {
+      active.commandPort.send([replyPort.sendPort, 'teardown']);
+      final response =
+          await Future.any([
+            completer.future,
+            active.exitCompleter.future.then(
+              (_) => <Object?, Object?>{
+                'success': false,
+                'error':
+                    'Global setup isolate exited unexpectedly during teardown.',
+              },
+            ),
+          ]).timeout(
+            const Duration(seconds: 30),
+            onTimeout: () => {'success': false, 'error': 'Teardown timed out'},
+          );
+      if (response['success'] != true) {
+        stderr.writeln(
+          'Global teardown for "${active.url}" failed: ${response["error"]}',
+        );
+        exitCode = 1;
+      }
+    } catch (error) {
+      stderr.writeln('Global teardown for "${active.url}" failed: $error');
+      exitCode = 1;
+    } finally {
+      replyPort.close();
+      active.closePorts();
+      active.isolate.kill();
+    }
+  }
+
+  Future<void> close() => _closeMemo.runOnce(() async {
+    for (final abort in _inFlightAborts.toList()) {
+      abort();
+    }
+    _inFlightAborts.clear();
+
+    for (var active in _activeSetups.reversed.toList()) {
+      await _tearDown(active);
+    }
+    _activeSetups.clear();
+  });
+
+  String _normalizeUrl(String url, Suite suite) {
+    final parsedUri = Uri.parse(url);
+
+    final normalized = switch (parsedUri) {
+      Uri(hasScheme: false) when parsedUri.authority.isNotEmpty =>
+        throw ArgumentError.value(
+          url,
+          'uri',
+          'relative URIs cannot have an authority',
+        ),
+      Uri(hasScheme: false, hasAbsolutePath: true, hasQuery: true) =>
+        throw ArgumentError.value(
+          url,
+          'uri',
+          'root-relative URIs cannot have query parameters',
+        ),
+      Uri(hasScheme: false, hasAbsolutePath: true) => () {
+        // Uri.parse normalizes absolute paths (RFC 3986), clamping '..' at '/'.
+        assert(!parsedUri.pathSegments.contains('..'));
+        return p.url.join(
+          p.toUri(p.current).toString(),
+          parsedUri.pathSegments.join('/'),
+        );
+      }(),
+      Uri(hasScheme: false, hasQuery: true) => throw ArgumentError.value(
+        url,
+        'uri',
+        'relative URIs cannot have query parameters',
+      ),
+      Uri(hasScheme: false) => () {
+        var suitePath = suite.path!;
+        return p.url.join(
+          p.url.dirname(p.toUri(p.absolute(suitePath)).toString()),
+          parsedUri.path,
+        );
+      }(),
+      Uri(scheme: 'file', hasQuery: true) => throw ArgumentError.value(
+        url,
+        'uri',
+        'file: URIs cannot have query parameters',
+      ),
+      Uri(scheme: 'file') => parsedUri.toString(),
+      Uri(scheme: 'package') => () {
+        final resolvedUri = Isolate.resolvePackageUriSync(parsedUri);
+        if (resolvedUri == null) {
+          throw ArgumentError.value(
+            url,
+            'uri',
+            'Could not resolve the package URI',
+          );
+        }
+        return resolvedUri.toString();
+      }(),
+      _ => url,
+    };
+
+    return Uri.parse(normalized).removeFragment().toString();
+  }
+}
+
+Future<String> _readUri(Uri uri) async => switch (uri) {
+  Uri(hasScheme: false) ||
+  Uri(scheme: 'file') => await File.fromUri(uri).readAsString(),
+  Uri(:final data?) => data.contentAsString(),
+  _ => throw ArgumentError.value(
+    uri,
+    'uri',
+    'Only data and file uris (as well as relative paths) are supported',
+  ),
+};
+
+Future<String> _languageVersionCommentFor(String url) async {
+  var parsedUri = Uri.parse(url);
+
+  var result = parseString(
+    content: await _readUri(parsedUri),
+    path: parsedUri.isScheme('data') ? null : p.fromUri(parsedUri),
+    throwIfDiagnostics: false,
+  );
+  if (result.unit.languageVersionToken?.value() case final versionComment?) {
+    return versionComment.toString();
+  }
+
+  if (!parsedUri.hasScheme || parsedUri.isScheme('file')) {
+    var packageConfig = await currentPackageConfig;
+    var package = packageConfig.packageOf(parsedUri);
+    if (package?.languageVersion case var version?) {
+      return '// @dart=$version';
+    }
+  }
+
+  if (parsedUri.isScheme('data')) {
+    return await rootPackageLanguageVersionComment;
+  }
+
+  return '';
+}

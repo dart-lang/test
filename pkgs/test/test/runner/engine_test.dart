@@ -545,6 +545,23 @@ void main() {
       expect(_names(engine.failed), ['group (setUpAll)']);
       expect(engine.flaky, isEmpty);
     });
+
+    test('a tearDownAll is not retried', () async {
+      var attempts = 0;
+      var engine = declareEngine(() {
+        group('group', () {
+          tearDownAll(() {
+            if (++attempts == 1) throw TestFailure('oh no');
+          });
+          test('test', () {});
+        }, retry: 1);
+      });
+
+      expect(await engine.run(), isFalse);
+      expect(attempts, 1);
+      expect(_names(engine.failed), ['group (tearDownAll)']);
+      expect(engine.flaky, isEmpty);
+    });
   });
 }
 
