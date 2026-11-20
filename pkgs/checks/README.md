@@ -65,6 +65,13 @@ check(someList).deepEquals(expectedList);
 check(someString).contains('expected pattern');
 ```
 
+When an expectation fails, `check` throws a `TestFailure` with `Expected:` and
+`Actual:` descriptions and, when applicable, a `Which:` description of the
+mismatch. Simple checks collapse onto single lines, while composed or multiline
+checks use an indented hierarchy. Failure messages are intended for human
+readers, and the specific details of failure messages will change over time
+without a major version bump.
+
 If a failure may not have enough context about the actual or expected values
 from the expectation calls alone, add a "Reason" in the failure message by
 passing a `because:` argument to `check()`.
