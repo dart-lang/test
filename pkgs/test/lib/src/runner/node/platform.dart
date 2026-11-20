@@ -267,7 +267,9 @@ class NodePlatform extends PlatformPlugin
     // compatible. Use the minified version so the source map remains valid.
     var jsFile = File(jsPath);
     await jsFile.writeAsString(
-      preamble.getPreamble(minified: true) + await jsFile.readAsString(),
+      preamble.getPreamble(minified: true) +
+          _selfCryptoFix +
+          await jsFile.readAsString(),
     );
 
     StackTraceMapper? mapper;
@@ -431,6 +433,20 @@ Future<List<ServerSocket>> _loopback({int remainingRetries = 5}) async {
     return await _loopback(remainingRetries: remainingRetries - 1);
   }
 }
+
+/// Gives the node preamble's `self` its own `crypto`.
+///
+/// The preamble makes `self` an `Object.create(globalThis)`, and the Node.js
+/// `crypto` getter throws `ERR_INVALID_THIS` when read through it, which breaks
+/// `Random.secure()` in dart2js output
+/// (https://github.com/mbullington/node_preamble.dart/issues/14).
+///
+/// Added right after the minified preamble: it must not contain a newline, so
+/// that the source map still matches.
+const _selfCryptoFix =
+    'if(self!==globalThis&&"crypto"in globalThis)'
+    'Object.defineProperty(self,"crypto",{get:function(){'
+    'return globalThis.crypto},configurable:true,enumerable:true});';
 
 /// Whether this computer supports binding to IPv6 addresses.
 final Future<bool> _supportsIPv6 = () async {

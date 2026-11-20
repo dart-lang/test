@@ -198,6 +198,24 @@ void main() {
     await test.shouldExit(0);
   });
 
+  test('supports Random.secure()', () async {
+    await d.file('test.dart', '''
+        import 'dart:math';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("test", () {
+            expect(Random.secure().nextInt(10), inInclusiveRange(0, 9));
+          });
+        }
+      ''').create();
+
+    var test = await runTest(['-p', 'node', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
+
   test('runs failing tests that fail only on node', () async {
     await d.file('test.dart', '''
         import 'package:path/path.dart' as p;
