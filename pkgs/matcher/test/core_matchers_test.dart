@@ -95,6 +95,188 @@ void main() {
     );
   });
 
+  test('equals with a set requires distinct matching elements', () {
+    shouldFail(
+      {1, -1},
+      equals({greaterThan(0), equals(1)}),
+      endsWith(
+        'cannot pair each expected element with a distinct actual element',
+      ),
+    );
+    shouldFail(
+      {
+        [1],
+        [2],
+      },
+      equals({
+        [1],
+        [1],
+      }),
+      endsWith(
+        'cannot pair each expected element with a distinct actual element',
+      ),
+    );
+    shouldFail(
+      {
+        [1],
+      },
+      equals({
+        [1],
+        [1],
+      }),
+      endsWith('smaller than expected'),
+    );
+  });
+
+  test('equals with a set reassigns overlapping matches', () {
+    shouldPass({1, 2}, equals({greaterThan(0), equals(1)}));
+    shouldPass({2, 1}, equals({greaterThan(0), equals(1)}));
+    shouldPass([1, 2, 1], equals({greaterThan(0), equals(1)}));
+    shouldPass({1, 2, 3}, equals({lessThan(3), greaterThan(1), equals(1)}));
+  });
+
+  test('equals with a set compares each pair at most once', () {
+    var calls = <String, int>{};
+    Matcher countingMatcher(int index, bool Function(int) accepts) =>
+        predicate<int>((item) {
+          var key = '$index:$item';
+          calls.update(key, (count) => count + 1, ifAbsent: () => 1);
+          return accepts(item);
+        });
+    shouldPass(
+      {1, 2, 3},
+      equals({
+        countingMatcher(0, (item) => item < 3),
+        countingMatcher(1, (item) => item > 1),
+        countingMatcher(2, (item) => item == 1),
+      }),
+    );
+    expect(calls.values, everyElement(1));
+  });
+
+  test('equals with unequal set sizes scans only for membership', () {
+    var calls = 0;
+    var matcher = equals({
+      for (var i = 0; i < 64; i++)
+        predicate<int>((item) {
+          calls++;
+          return true;
+        }),
+    });
+    for (var size in [32, 4096]) {
+      calls = 0;
+      var actual = List.generate(size, (i) => i);
+      var state = <Object?, Object?>{};
+      expect(matcher.matches(actual, state), isFalse);
+      expect(calls, 64);
+      expect(
+        matcher
+            .describeMismatch(actual, StringDescription(), state, false)
+            .toString(),
+        size < 64 ? 'smaller than expected' : 'larger than expected',
+      );
+    }
+    // Missing elements still take precedence over either size diagnostic.
+    shouldFail({1, 2, 3}, equals({4}), endsWith('does not contain <4>'));
+    shouldFail({1}, equals({1, 2}), endsWith('does not contain <2>'));
+  });
+
+  test('equals with a wide shallow set pairs structural duplicates', () {
+    shouldPass(
+      {
+        for (var i = 0; i < 256; i++) [0],
+      },
+      equals({
+        for (var i = 0; i < 256; i++) [0],
+      }),
+    );
+  });
+
+  test('equals with a set reassigns a long chain without repeating pairs', () {
+    const size = 128;
+    var calls = <String>{};
+    var expected = <Matcher>{
+      for (var i = 0; i < size - 1; i++)
+        predicate<int>((item) {
+          expect(calls.add('$i:$item'), isTrue);
+          return item == i || item == i + 1;
+        }),
+      equals(0),
+    };
+    // The last element displaces every earlier assignment along the chain.
+    shouldPass(List.generate(size, (i) => i), equals(expected));
+  });
+
+  test('equals with a set rejects a collective shortage of candidates', () {
+    shouldFail(
+      {0, 1, 2, 3},
+      equals({lessThan(2), lessThan(2), lessThan(2), anything}),
+      endsWith(
+        'cannot pair each expected element with a distinct actual element',
+      ),
+    );
+  });
+
+  test('equals reports the location of a nested set pairing failure', () {
+    shouldFail(
+      [
+        {
+          'values': {1, -1},
+        },
+      ],
+      equals([
+        {
+          'values': {greaterThan(0), equals(1)},
+        },
+      ]),
+      allOf(
+        contains("at location [0]['values']"),
+        endsWith(
+          'cannot pair each expected element with a distinct actual element',
+        ),
+      ),
+    );
+  });
+
+  test('equals with a set pairs nested matchers', () {
+    var listMatcher = equals({
+      [greaterThan(0)],
+      [equals(1)],
+    });
+    shouldPass({
+      [1],
+      [2],
+    }, listMatcher);
+    shouldFail(
+      {
+        [1],
+        [-1],
+      },
+      listMatcher,
+      endsWith(
+        'cannot pair each expected element with a distinct actual element',
+      ),
+    );
+    var mapMatcher = equals({
+      {'value': greaterThan(0)},
+      {'value': equals(1)},
+    });
+    shouldPass({
+      {'value': 1},
+      {'value': 2},
+    }, mapMatcher);
+    shouldFail(
+      {
+        {'value': 1},
+        {'value': -1},
+      },
+      mapMatcher,
+      endsWith(
+        'cannot pair each expected element with a distinct actual element',
+      ),
+    );
+  });
+
   test('equals with NaN', () {
     final a = double.nan;
     final b = 0;

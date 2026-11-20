@@ -1,5 +1,8 @@
 ## 0.13.0-wip
 
+* Fix `equals` on sets to require distinct matching elements, including when
+  nested matchers overlap.
+* Fix integer overflow and loss of integer precision in `closeTo` comparisons.
 * **BREAKING**: Remove the deprecated `mirror_matchers.dart` library.
 * Add a runnable example for every matcher, linked from its documentation, and
   a test that keeps the failure output recorded in those examples in sync with

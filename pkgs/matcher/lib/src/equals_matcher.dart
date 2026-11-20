@@ -160,30 +160,108 @@ class _DeepMatcher extends Matcher {
     String location,
   ) {
     if (actual is Iterable) {
-      var other = actual.toSet();
+      var other = actual.toSet().toList();
+      if (other.length != expected.length) {
+        // Preserve missing-element diagnostics before reporting the size,
+        // without allocating a comparison cache for a guaranteed mismatch.
+        for (var expectedElement in expected) {
+          if (other.every(
+            (actualElement) =>
+                matcher(expectedElement, actualElement, location, depth) !=
+                null,
+          )) {
+            return _Mismatch(
+              location,
+              actual,
+              (description, verbose) => description
+                  .add('does not contain ')
+                  .addDescriptionOf(expectedElement),
+            );
+          }
+        }
+        return _Mismatch.simple(
+          location,
+          actual,
+          other.length > expected.length
+              ? 'larger than expected'
+              : 'smaller than expected',
+        );
+      }
 
-      for (var expectedElement in expected) {
-        if (other.every(
-          (actualElement) =>
-              matcher(expectedElement, actualElement, location, depth) != null,
-        )) {
+      var elements = expected.toList();
+      var comparisons = List<List<bool?>?>.filled(elements.length, null);
+      bool matches(int expectedIndex, int actualIndex) {
+        var row = comparisons[expectedIndex] ??= List<bool?>.filled(
+          other.length,
+          null,
+        );
+        return row[actualIndex] ??=
+            matcher(
+              elements[expectedIndex],
+              other[actualIndex],
+              location,
+              depth,
+            ) ==
+            null;
+      }
+
+      for (var i = 0; i < elements.length; i++) {
+        if (!Iterable<int>.generate(other.length).any((j) => matches(i, j))) {
           return _Mismatch(
             location,
             actual,
             (description, verbose) => description
                 .add('does not contain ')
-                .addDescriptionOf(expectedElement),
+                .addDescriptionOf(elements[i]),
           );
         }
       }
 
-      if (other.length > expected.length) {
-        return _Mismatch.simple(location, actual, 'larger than expected');
-      } else if (other.length < expected.length) {
-        return _Mismatch.simple(location, actual, 'smaller than expected');
-      } else {
-        return null;
+      // Find a one-to-one pairing, moving earlier matches when necessary.
+      // Cache comparisons so moving a match does not invoke matchers again.
+      // For n elements this uses O(n^2) candidate comparisons and storage,
+      // and O(n^3) pairing overhead, excluding the cost of each comparison.
+      var assignments = List<int?>.filled(other.length, null);
+      var assignedActual = List<int?>.filled(elements.length, null);
+      bool assign(int expectedIndex) {
+        // Search iteratively so shallow, wide sets do not grow the call stack.
+        var pending = <int>[expectedIndex];
+        var predecessors = List<int?>.filled(other.length, null);
+        for (var next = 0; next < pending.length; next++) {
+          var current = pending[next];
+          for (var j = 0; j < other.length; j++) {
+            if (predecessors[j] != null || !matches(current, j)) continue;
+            predecessors[j] = current;
+            var previous = assignments[j];
+            if (previous != null) {
+              pending.add(previous);
+              continue;
+            }
+            // Reverse the augmenting path from this free actual element.
+            int? actualIndex = j;
+            while (actualIndex != null) {
+              var expectedIndex = predecessors[actualIndex]!;
+              var previousActual = assignedActual[expectedIndex];
+              assignments[actualIndex] = expectedIndex;
+              assignedActual[expectedIndex] = actualIndex;
+              actualIndex = previousActual;
+            }
+            return true;
+          }
+        }
+        return false;
       }
+
+      for (var i = 0; i < elements.length; i++) {
+        if (!assign(i)) {
+          return _Mismatch.simple(
+            location,
+            actual,
+            'cannot pair each expected element with a distinct actual element',
+          );
+        }
+      }
+      return null;
     } else {
       return _Mismatch.simple(location, actual, 'is not Iterable');
     }
