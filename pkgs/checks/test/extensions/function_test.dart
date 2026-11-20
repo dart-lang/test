@@ -230,7 +230,7 @@ Which: does not end with 'x\'''');
         ).prints(.it()..length.equals(3));
         await check(result).throws<TestFailure>(
           .it()
-            ..has((f) => f.message, 'message').isNotNull().equals('''
+            ..has('message', (f) => f.message).isNotNull().equals('''
 Expected: a () => Future<void> that prints output that has length: <3>
 Actual: a () => Future<void> that prints output that has length: <4>
 Which: is not equal'''),
@@ -242,5 +242,5 @@ Which: is not equal'''),
 
 extension on Subject<void Function()> {
   Subject<String> throwsFailure() =>
-      throws<TestFailure>().has((f) => f.message, 'message').isNotNull();
+      throws<TestFailure>().has('message', (f) => f.message).isNotNull();
 }
