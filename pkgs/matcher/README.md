@@ -263,3 +263,93 @@ determined by a single "description" argument. Using `isA<SomeType>()` and the
 way brings the context of that structure through to failure messages, so
 failures for different reasons will have distinguishable and actionable failure
 messages.
+
+### Prefer TypeMatcher to building an expected value from production constants
+
+When a test checks a value object, such as one built with `built_value` or any
+class that overrides `operator ==`, it is tempting to build a complete
+`expected` instance and compare with `equals`. If some of the fields of the
+expected instance can only be filled in by reading them from the code under
+test, the test confirms only that the code returns the value it returns. A bug
+in those fields cannot fail the test, and every field, interesting or not, must
+be filled in for the objects to compare as equal.
+
+For example, given production code like:
+
+```dart
+class ReportService {
+  static const defaultColumns = ['name', 'status', 'clicks'];
+
+  Future<Report> load(String reportId) async {
+    // ...
+    return Report(
+      id: reportId,
+      title: response.title,
+      columns: defaultColumns,
+      rows: response.rows.map(_toRow).toList(),
+    );
+  }
+}
+```
+
+Avoid copying the production constant into the expected value:
+
+```dart
+test('loads the report title', () async {
+  final report = await service.load('some-id');
+
+  final expected = Report(
+    id: 'some-id',
+    title: 'Quarterly summary',
+    // Copied from the code under test, so this can never fail.
+    columns: ReportService.defaultColumns,
+    rows: [],
+  );
+  expect(report, expected);
+});
+```
+
+Instead, use `isA<SomeType>()` and `TypeMatcher.having` to check the fields
+which are interesting for the test, and leave out the rest. A top level utility
+which only checks the fields it is passed can be shared across tests:
+
+```dart
+Matcher matchesReport({
+  Object? id,
+  Object? title,
+  Object? columns,
+  Object? rows,
+}) {
+  var matcher = isA<Report>();
+  if (id != null) matcher = matcher.having((r) => r.id, 'id', id);
+  if (title != null) matcher = matcher.having((r) => r.title, 'title', title);
+  if (columns != null) {
+    matcher = matcher.having((r) => r.columns, 'columns', columns);
+  }
+  if (rows != null) matcher = matcher.having((r) => r.rows, 'rows', rows);
+  return matcher;
+}
+
+test('loads the report title', () async {
+  final report = await service.load('some-id');
+
+  expect(report, matchesReport(id: 'some-id', title: 'Quarterly summary'));
+});
+```
+
+Each argument may be a value or another `Matcher`, such as
+`matchesReport(rows: isNotEmpty)`.
+
+The test now states which behavior it covers, does not need updates when
+unrelated fields change, and when it fails the message names the field that did
+not match instead of printing two large objects that must be compared by eye.
+If a field like `columns` is worth testing, check it against a literal value so
+that an unintended change to the production constant fails the test:
+
+```dart
+expect(report, matchesReport(columns: ['name', 'status', 'clicks']));
+```
+
+See also [Prefer Narrow Assertions in Unit Tests][narrow-assertions].
+
+[narrow-assertions]: https://testing.googleblog.com/2024/04/prefer-narrow-assertions-in-unit-tests.html
