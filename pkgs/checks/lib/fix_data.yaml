@@ -43,3 +43,14 @@ transforms:
       name:
         kind: 'fragment'
         value: 'arguments[1]'
+
+  - title: "Replace 'AsyncCondition' with 'Condition'"
+    date: 2026-11-19
+    element:
+      uris: ['package:checks/checks.dart', 'package:checks/context.dart']
+      typedef: 'AsyncCondition'
+    changes:
+      - kind: 'replacedBy'
+        newElement:
+          uris: ['package:checks/checks.dart', 'package:checks/context.dart']
+          class: 'Condition'
