@@ -10,6 +10,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:test/src/runner/executable_settings.dart';
+import 'package:test/src/runner/node/preamble.dart';
 import 'package:test/test.dart';
 import 'package:test_core/src/util/io.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -196,6 +197,53 @@ void main() {
     var test = await runTest(['-p', 'node', 'test.dart']);
     expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
     await test.shouldExit(0);
+  });
+
+  test('supports Random.secure()', () async {
+    await d.file('test.dart', '''
+        import 'dart:math';
+
+        import 'package:test/test.dart';
+
+        void main() {
+          test("Random.secure", () {
+            expect(Random.secure().nextInt(10), inInclusiveRange(0, 9));
+          });
+        }
+      ''').create();
+
+    var test = await runTest(['-p', 'node', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
+
+  test('supports Uri.base', () async {
+    var expectedBase = Uri.directory(
+      Directory(d.sandbox).resolveSymbolicLinksSync(),
+    );
+    await d.file('test.dart', '''
+        import 'package:test/test.dart';
+
+        void main() {
+          test("Uri.base", () {
+            expect(Uri.base.scheme, equals('file'));
+            expect(Uri.base.path, endsWith('/'));
+            expect(
+              Uri.base.toString().toLowerCase(),
+              equals('${expectedBase.toString().toLowerCase()}'),
+            );
+          });
+        }
+      ''').create();
+
+    var test = await runTest(['-p', 'node', 'test.dart']);
+    expect(test.stdout, emitsThrough(contains('+1: All tests passed!')));
+    await test.shouldExit(0);
+  });
+
+  test('nodePreamble contains no newlines', () {
+    expect(nodePreamble, isNot(contains('\n')));
+    expect(nodePreamble, isNot(contains('\r')));
   });
 
   test('runs failing tests that fail only on node', () async {
