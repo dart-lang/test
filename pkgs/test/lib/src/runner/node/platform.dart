@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:node_preamble/preamble.dart' as preamble;
 import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 import 'package:stream_channel/stream_channel.dart';
@@ -34,6 +33,7 @@ import 'package:yaml/yaml.dart';
 import '../../util/math.dart';
 import '../../util/package_map.dart';
 import '../executable_settings.dart';
+import 'preamble.dart';
 
 /// A platform that loads tests in Node.js processes.
 class NodePlatform extends PlatformPlugin
@@ -264,11 +264,10 @@ class NodePlatform extends PlatformPlugin
     );
 
     // Add the Node.js preamble to ensure that the dart2js output is
-    // compatible. Use the minified version so the source map remains valid.
+    // compatible. It must not contain newlines so the source map remains valid.
+    assert(!nodePreamble.contains('\n') && !nodePreamble.contains('\r'));
     var jsFile = File(jsPath);
-    await jsFile.writeAsString(
-      preamble.getPreamble(minified: true) + await jsFile.readAsString(),
-    );
+    await jsFile.writeAsString(nodePreamble + await jsFile.readAsString());
 
     StackTraceMapper? mapper;
     if (!suiteConfig.jsTrace) {
