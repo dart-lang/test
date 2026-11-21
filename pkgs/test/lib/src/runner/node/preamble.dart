@@ -11,14 +11,14 @@ const nodePreamble =
     // Create a module-scoped `self` inheriting from `globalThis` so dart2js
     // globals (such as `location` and CommonJS locals) do not pollute
     // `globalThis`.
-    'var self=Object.create(globalThis);'
+    'const self=Object.create(globalThis);'
     // Forward `globalThis.crypto` with the right `this` receiver; on Node 19+,
     // `globalThis.crypto` is a WebIDL accessor that throws `ERR_INVALID_THIS`
     // when accessed via an object inheriting from `globalThis` (breaking
     // `Random.secure()`).
     'if("crypto"in globalThis)'
     'Object.defineProperty(self,"crypto",{'
-    'get:function(){return globalThis.crypto;},'
+    'get(){return globalThis.crypto;},'
     'configurable:true,enumerable:true'
     '});'
     // Expose CommonJS module-wrapper locals on `self` so Dart JS interop
@@ -29,9 +29,7 @@ const nodePreamble =
     'if(typeof __filename!=="undefined")self.__filename=__filename;'
     // Provide `self.location.href` for `Uri.base`, ensuring a trailing slash
     // without doubling it when `process.cwd()` is the filesystem root.
-    'Object.defineProperty(self,"location",{'
-    'value:{get href(){'
-    'var h=require("url").pathToFileURL(process.cwd()).href;'
+    'self.location={get href(){'
+    'const h=require("node:url").pathToFileURL(process.cwd()).href;'
     'return h.endsWith("/")?h:h+"/";'
-    '}}'
-    '});';
+    '}};';
