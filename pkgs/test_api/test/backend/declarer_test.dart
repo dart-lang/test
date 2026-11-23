@@ -273,6 +273,26 @@ void main() {
       expect(outstandingCallbackRemoved, isTrue);
     });
 
+    test("doesn't complete until there are no outstanding callbacks registered "
+        'asynchronously', () async {
+      var outstandingCallbackRemoved = false;
+      var tests = declare(() {
+        tearDown(() async {
+          await pumpEventQueue();
+          Invoker.current!.addOutstandingCallback();
+          pumpEventQueue().then((_) {
+            outstandingCallbackRemoved = true;
+            Invoker.current!.removeOutstandingCallback();
+          });
+        });
+
+        test('description', () {});
+      });
+
+      await _runTest(tests.single as Test);
+      expect(outstandingCallbackRemoved, isTrue);
+    });
+
     test('runs in reverse call order within a group', () async {
       var firstTearDownRun = false;
       var secondTearDownRun = false;
