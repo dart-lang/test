@@ -10,6 +10,7 @@ import 'dart:isolate';
 
 import 'package:async/async.dart';
 import 'package:coverage/coverage.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:stream_channel/isolate_channel.dart';
@@ -806,15 +807,26 @@ Future<Set<String>> _filterCoveragePackages(
 
 // TODO(https://github.com/dart-lang/sdk/issues/64166) remove along with the
 // integration test when the min SDK does not leak sockets to subproceesses.
-extension<T> on Stream<T> {
+@visibleForTesting
+extension FastFirst<T> on Stream<T> {
   /// Like [first] but does not wait for the Future returned when cancelling the
   /// stream subscription.
   Future<T> get fastFirst {
     final completer = Completer<T>();
-    final subscription = listen(
-      completer.complete,
-      onError: completer.completeError,
+    late final StreamSubscription<T> subscription;
+    subscription = listen(
+      (value) {
+        unawaited(subscription.cancel());
+        completer.complete(value);
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        unawaited(subscription.cancel());
+        completer.completeError(error, stackTrace);
+      },
+      onDone: () {
+        completer.completeError(StateError('No element'));
+      },
     );
-    return completer.future..whenComplete(subscription.cancel);
+    return completer.future;
   }
 }
