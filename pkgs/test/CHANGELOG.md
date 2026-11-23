@@ -46,6 +46,8 @@
   before connecting is still replaced, up to 3 attempts, while time remains.
   Without a `suite_load_timeout`, connecting to a browser no longer times out.
 * Print console output from pages in Firefox to the browser output.
+* Inline a minimal Node.js preamble and drop the `node_preamble` dependency,
+  fixing `Random.secure()` on Node.js 19+.
 
 ## 1.33.0
 
