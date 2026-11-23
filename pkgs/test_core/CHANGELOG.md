@@ -27,6 +27,8 @@
 * The JSON reporter adds a `retried` field to `testDone` events and reports
   protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
   the protocol documents.
+* Avoid reporting an unhandled zone error from `DetachingFuture` when the
+  wrapped future completes with an error.
 
 ## 0.6.21
 
