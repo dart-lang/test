@@ -5,6 +5,8 @@
 * Never retry `tearDownAll`, even when the group or suite sets `retry`.
   Previously a retry didn't run any of the `tearDownAll` callbacks again, so it
   always passed and hid the failure.
+* Wait for asynchronous callbacks (such as `expectAsync0`) registered after an
+  `await` in `tearDown`, `addTearDown`, and `tearDownAll`.
 
 ## 0.7.15
 

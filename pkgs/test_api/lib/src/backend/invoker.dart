@@ -290,11 +290,19 @@ class Invoker {
     return runZoned(() async {
       while (tearDowns.isNotEmpty) {
         var completer = Completer<void>();
+        void complete() {
+          if (!completer.isCompleted) completer.complete();
+        }
 
         addOutstandingCallback();
-        _waitForOutstandingCallbacks(() {
-          Future.sync(tearDowns.removeLast()).whenComplete(completer.complete);
-        }).then((_) => removeOutstandingCallback()).unawaited;
+        unawaited(
+          _waitForOutstandingCallbacks(
+            () => Future.sync(tearDowns.removeLast()).whenComplete(complete),
+          ).whenComplete(() {
+            complete();
+            removeOutstandingCallback();
+          }),
+        );
 
         await completer.future;
       }
@@ -531,8 +539,4 @@ class _AsyncCounter {
   void complete() {
     if (!_completer.isCompleted) _completer.complete();
   }
-}
-
-extension<T> on Future<T> {
-  void get unawaited {}
 }

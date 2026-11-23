@@ -48,6 +48,8 @@
 * Print console output from pages in Firefox to the browser output.
 * Inline a minimal Node.js preamble and drop the `node_preamble` dependency,
   fixing `Random.secure()` on Node.js 19+.
+* Wait for asynchronous callbacks (such as `expectAsync0`) registered after an
+  `await` in `tearDown`, `addTearDown`, and `tearDownAll`.
 
 ## 1.33.0
 
