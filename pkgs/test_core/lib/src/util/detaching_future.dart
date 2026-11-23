@@ -25,7 +25,7 @@ class DetachingFuture<T> {
     inProgress.then((result) {
       _value = result;
       _inProgress = null;
-    });
+    }).ignore();
   }
 
   Future<T> get asFuture => _inProgress ?? Future.value(_value);
