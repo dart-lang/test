@@ -425,4 +425,18 @@ void main() {
     await done;
     await controller.close();
   });
+
+  test(
+    "A custom StreamController doesn't hang on close after an error",
+    () async {
+      var controller = StreamController<void>();
+      var done = expectLater(
+        expectLater(controller.stream, emits(null)),
+        throwsA('oh no'),
+      );
+      controller.addError('oh no');
+      await done;
+      await controller.close();
+    },
+  );
 }

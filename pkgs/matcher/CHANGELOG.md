@@ -9,6 +9,8 @@
   matcher such as `completes`, directly or nested in other matchers. These
   operators can't combine asynchronous results correctly. The `throws`
   matchers are still allowed when matched against a synchronous callback.
+* Cancel the temporary `StreamQueue` created when matching a `Stream` if the
+  stream emits an unexpected error, and wait for cancellation to complete.
 
 ## 0.12.20
 
