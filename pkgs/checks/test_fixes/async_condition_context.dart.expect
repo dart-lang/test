@@ -1,0 +1,6 @@
+import 'package:checks/context.dart' as checks_context;
+
+void takePrefixed(
+  checks_context.Condition<int> cond,
+  checks_context.Condition<String>? nullableCond,
+) {}

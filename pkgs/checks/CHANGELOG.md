@@ -1,5 +1,7 @@
 ## 0.4.1-wip
 
+- Add a data driven fix to replace `AsyncCondition` with `Condition`.
+
 ## 0.4.0
 
 - **Breaking Changes**
