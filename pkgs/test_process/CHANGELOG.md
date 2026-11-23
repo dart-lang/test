@@ -1,3 +1,8 @@
+## 2.1.2-wip
+
+* Fix a race condition where process stdout and stderr could be omitted from
+  failure output when a test fails immediately after the process exits.
+
 ## 2.1.1
 
 * Require Dart 3.1.

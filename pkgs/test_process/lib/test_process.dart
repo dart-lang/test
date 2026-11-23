@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -48,8 +49,8 @@ class TestProcess {
   /// A buffer of mixed stdout and stderr lines.
   final List<String> _log = <String>[];
 
-  /// Whether [_log] has been passed to [printOnFailure] yet.
-  bool _loggedOutput = false;
+  /// Memoizer for [_logOutput] so output is passed to [printOnFailure] once.
+  final _logOutputMemo = AsyncMemoizer<void>();
 
   /// Returns a [Future] which completes to the exit code of the process, once
   /// it completes.
@@ -120,7 +121,7 @@ class TestProcess {
             .transform(const LineSplitter())) {
     addTearDown(_tearDown);
 
-    _process.exitCode.whenComplete(_logOutput);
+    unawaited(_process.exitCode.whenComplete(_logOutput));
 
     // Listen eagerly so that the lines are interleaved properly between the two
     // streams.
@@ -142,38 +143,35 @@ class TestProcess {
 
   /// A callback that's run when the test completes.
   Future<void> _tearDown() async {
-    // If the process is already dead, do nothing.
-    if (await _exitCodeOrNull != null) return;
-
-    _process.kill(ProcessSignal.sigkill);
+    if (await _exitCodeOrNull == null) {
+      _process.kill(ProcessSignal.sigkill);
+    }
 
     // Log output now rather than waiting for the exitCode callback so that
-    // it's visible even if we time out waiting for the process to die.
+    // it's visible even if we time out waiting for the process to die, and
+    // wait for any in-flight logging to finish before the test completes.
     await _logOutput();
   }
 
   /// Formats the contents of [_log] and passes them to [printOnFailure].
-  Future<void> _logOutput() async {
-    if (_loggedOutput) return;
-    _loggedOutput = true;
+  Future<void> _logOutput() => _logOutputMemo.runOnce(() async {
+        var exitCodeOrNull = await _exitCodeOrNull;
 
-    var exitCodeOrNull = await _exitCodeOrNull;
+        // Wait a timer tick to ensure that all available lines have been
+        // flushed to [_log].
+        await Future<void>.delayed(Duration.zero);
 
-    // Wait a timer tick to ensure that all available lines have been flushed to
-    // [_log].
-    await Future<void>.delayed(Duration.zero);
+        var buffer = StringBuffer();
+        buffer.write('Process `$description` ');
+        if (exitCodeOrNull == null) {
+          buffer.writeln('was killed with SIGKILL in a tear-down. Output:');
+        } else {
+          buffer.writeln('exited with exitCode $exitCodeOrNull. Output:');
+        }
 
-    var buffer = StringBuffer();
-    buffer.write('Process `$description` ');
-    if (exitCodeOrNull == null) {
-      buffer.writeln('was killed with SIGKILL in a tear-down. Output:');
-    } else {
-      buffer.writeln('exited with exitCode $exitCodeOrNull. Output:');
-    }
-
-    buffer.writeln(_log.join('\n'));
-    printOnFailure(buffer.toString());
-  }
+        buffer.writeln(_log.join('\n'));
+        printOnFailure(buffer.toString());
+      });
 
   /// Returns a copy of [stdout] as a single-subscriber stream.
   ///
