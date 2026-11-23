@@ -27,6 +27,8 @@
 * The JSON reporter adds a `retried` field to `testDone` events and reports
   protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
   the protocol documents.
+* Avoid printing an extra blank line when closing the debugging console after
+  it has already stopped.
 
 ## 0.6.21
 

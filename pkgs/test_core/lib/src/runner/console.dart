@@ -88,9 +88,10 @@ class Console {
   /// Stops the console running.
   void stop() {
     _running = false;
-    if (_nextLine != null) {
+    if (_nextLine case final nextLine?) {
+      _nextLine = null;
       stdout.writeln();
-      _nextLine!.cancel();
+      unawaited(nextLine.cancel());
     }
   }
 
