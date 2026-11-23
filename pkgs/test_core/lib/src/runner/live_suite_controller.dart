@@ -127,7 +127,7 @@ class LiveSuiteController {
     _active = liveTest;
 
     var hadFailedAttempt = false;
-    liveTest.onStateChange.listen((state) {
+    var subscription = liveTest.onStateChange.listen((state) {
       if (state.status != Status.complete) return;
       _active = null;
 
@@ -147,6 +147,10 @@ class LiveSuiteController {
         if (countSuccess) _passed.add(liveTest);
         if (hadFailedAttempt) _flaky.add(liveTest);
       }
+    });
+    // A test that's closed while it runs never reports that it's complete.
+    subscription.onDone(() {
+      if (_active == liveTest) _active = null;
     });
 
     _onTestStartedController.add(liveTest);
