@@ -63,6 +63,9 @@ extension SkipExtension<T> on Subject<T> {
 /// If [because] is passed it will be included as a "Reason:" line in failure
 /// messages.
 ///
+/// Failure messages are intended for human readers, and the specific details of
+/// failure messages will change over time without a major version bump.
+///
 /// ```dart
 /// check(actual).equals(expected);
 /// ```
@@ -342,6 +345,10 @@ extension ContextExtension<T> on Subject<T> {
 ///    partial version of the "Expected" description up to the label for the
 ///    nesting subject that saw a failure, then the "actual" from the rejection.
 /// -  A "Which" description from the rejection, if it was included.
+///
+/// Failure messages are intended for human readers. The specific details of
+/// failure messages, including wording, indentation, and collapsing rules, will
+/// change over time without a major version bump.
 ///
 /// Failure messages can be presented in one of two formats:
 ///

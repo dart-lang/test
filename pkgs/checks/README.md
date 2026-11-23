@@ -1,18 +1,16 @@
 [![pub package](https://img.shields.io/pub/v/checks.svg)](https://pub.dev/packages/checks)
 [![package publisher](https://img.shields.io/pub/publisher/checks.svg)](https://pub.dev/packages/checks/publisher)
 
-`package:checks` is a library for expressing test expectations and it features
-a literate API.
+`package:checks` is a library for expressing test expectations with a
+statically typed, literate API.
 
-## package:checks (experimental)
+## Package status
 
-`package:checks` is still experimental. For production use cases, please use
-`package:test` and `package:matcher`.
-
-For packages in the `labs.dart.dev` publisher we generally plan to either
-graduate the package into a supported publisher (`dart.dev`, `tools.dart.dev`)
-after a period of feedback and iteration, or discontinue the package. These
-packages have a much higher expected rate of API and breaking changes.
+`package:checks` is currently in preview under the `labs.dart.dev` publisher
+while we gather final feedback ahead of a `1.0.0` release and graduation to
+`dart.dev`. The current API is expected to be close to its stable `1.0.0` shape
+and is ready for use in test suites, though breaking changes remain possible
+before `1.0.0`.
 
 To provide feedback on the API, please file [an issue][] with questions,
 suggestions, feature requests, or general feedback.
@@ -20,18 +18,24 @@ suggestions, feature requests, or general feedback.
 For documentation about converting your usage of `package:matcher` to `checks`,
 see the [migration guide][].
 
-[an issue]:https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=03_checks_feedback.md
-[migration guide]:https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
+[an issue]: https://github.com/dart-lang/test/issues/new?labels=package%3Achecks&template=checks.md
+[migration guide]: https://github.com/dart-lang/test/blob/master/pkgs/checks/doc/migrating_from_matcher.md
 
 ## Quickstart
 
-1. Add a `dev_dependency` on `checks` (`dart pub add dev:checks`).
+1. Add a `dev_dependency` on `checks` (`dart pub add dev:checks`). `checks`
+   `^0.4.0` requires Dart `^3.11.0`.
 
-1. Add an import for `package:checks/checks.dart`.
+1. Import `package:checks/checks.dart`. For a complete migration, eliminating
+   uses of `expect`, replace the import of `package:test/test.dart` with
+   `package:test/scaffolding.dart`.
 
 1. Use `checks` in your test code:
 
 ```dart
+import 'package:checks/checks.dart';
+import 'package:test/scaffolding.dart';
+
 void main() {
   test('sample test', () {
     // test code here
@@ -40,7 +44,10 @@ void main() {
     check(actual).equals(expected);
     check(someList).isNotEmpty;
     check(someObject).isA<Map>();
-    check(someString)..startsWith('a')..endsWith('z')..contains('lmno');
+    check(someString)
+      ..startsWith('a')
+      ..endsWith('z')
+      ..contains('lmno');
   });
 }
 ```
@@ -49,14 +56,21 @@ void main() {
 
 Expectations start with `check`. This utility returns a `Subject`, and
 expectations can be checked against the subject. Expectations are defined as
-extension methods, and different expectations will be available for subjects
-with different value types.
+extension methods and getters, and different expectations are available for
+subjects with different value types.
 
 ```dart
 check(someValue).equals(expectedValue);
 check(someList).deepEquals(expectedList);
 check(someString).contains('expected pattern');
 ```
+
+When an expectation fails, `check` throws a `TestFailure` with `Expected:` and
+`Actual:` descriptions and, when applicable, a `Which:` description of the
+mismatch. Simple checks collapse onto single lines, while composed or multiline
+checks use an indented hierarchy. Failure messages are intended for human
+readers, and the specific details of failure messages will change over time
+without a major version bump.
 
 If a failure may not have enough context about the actual or expected values
 from the expectation calls alone, add a "Reason" in the failure message by
@@ -76,13 +90,11 @@ check(
 );
 ```
 
-
 ### Composing expectations
-
 
 Multiple expectations can be checked against the same value using cascade
 syntax. When multiple expectations are checked against a single value, a failure
-will included descriptions of the expectations that already passed.
+will include descriptions of the expectations that already passed.
 
 ```dart
 check(someString)
@@ -91,8 +103,8 @@ check(someString)
   ..contains('lmno');
 ```
 
-Some nested checks may be not be possible to write with cascade syntax.
-There is a `which` utility for this use case which takes a `Condition`.
+Some nested checks may not be possible to write with cascade syntax. There is a
+`which` utility for this use case which takes a `Condition`.
 
 ```dart
 check(someString)
@@ -105,58 +117,95 @@ check(someString)
   );
 ```
 
-
-Some expectations return a `Subject` for another value derived from the original
-value, such as the `length` extension.
+Some expectations narrow the `Subject` type or return a `Subject` for a value
+derived from the original value, such as `isA<T>()`, `isNotNull()`, or `length`.
+Fields or arbitrary derived values can be extracted with the `has` utility.
 
 ```dart
+check(someObject).isA<String>().startsWith('a');
+check(nullableString).isNotNull().isNotEmpty;
 check(someString).length.equals(expectedLength);
+check(someValue)
+    .has('property', (value) => value.property)
+    .equals(expectedPropertyValue);
 ```
 
-Fields or derived values can be extracted from objects for checking further
-properties with the `has` utility.
+Narrowing expectations such as `isA` and `isNotNull` also accept an optional
+`Condition` argument for checking nested expectations inside a cascade:
 
 ```dart
-check(someValue)
-  .has('property', (value) => value.property)
-  .equals(expectedPropertyValue);
+check(someList)
+  ..isNotEmpty
+  ..first.isA<String>(.it()..startsWith('prefix'));
 ```
 
-### Passing a set of expectations as an argument
+### Passing expectations around as values
 
-Some expectations take arguments which are themselves expectations to apply to
-other values. These expectations take `Condition` arguments created with the
-`.it()` dot shorthand. The conditions check expectations when they are applied
-to a `Subject`.
+A `Condition<T>` is an object representing a set of recorded expectations that
+can be stored, passed around, and applied later to a `Subject<T>`. Create a
+condition with the `.it()` dot shorthand when the target type is inferred from
+context, or `Condition.it<T>()` otherwise. Combinators (such as `any`, `every`,
+`not`, `anyOf`, and `inOrder`) and expectation methods that extract a derived
+subject (such as `isA`, `completes`, `throws`, and `emits`, though not `has` or
+property getters) accept `Condition` arguments:
 
 ```dart
 check(someList).any(.it()..isGreaterThan(0));
+
+final isPositive = Condition.it<int>()..isGreaterThan(0);
+check(someList).every(isPositive);
 ```
+
+Conditions with synchronous expectations can be applied to any `Subject<T>` with
+`.which(condition)`, including in test helpers and table-driven tests:
+
+```dart
+void checkUser(String id, Condition<User> condition) {
+  check(fetchUser(id)).which(condition);
+}
+
+checkUser('42', .it()..has('name', (u) => u.name).equals('Alice'));
+```
+
+Conditions with asynchronous expectations can only be passed to asynchronous
+expectations that accept a `Condition` (such as `completes`, `emits`, or
+`inOrder`), not to `Subject.which` or other synchronous expectations.
 
 ### Checking asynchronous expectations
 
 Expectation extension methods checking asynchronous behavior return a `Future`.
-The future should typically be awaited within the test body, however
-asynchronous expectations will also ensure that the test is not considered
-complete before the expectation is complete.
-Expectations with no concrete end conditions, such as any expectation that a
-future never completes, cannot be awaited and may cause a failure after the test
-has already appeared to complete.
+The future should typically be awaited within the test body when subsequent
+steps depend on it, however asynchronous expectations also mark the test as
+pending so it is not considered complete before the expectation finishes.
+Expectations with no concrete end conditions, such as `doesNotComplete`, return
+immediately and cannot be awaited; if the future later completes, they report a
+failure even after the test has appeared to complete.
 
-Asynchronous expectations do not return a `Subject`. When an expectation
-extracts a derived value further expectations can be checked by passing a
-`Condition`.
+Asynchronous expectations that extract a value (such as `completes`, `throws`,
+`emits`, `emitsError`, and `prints`) accept an optional `Condition` argument and
+also return a `Future<Subject<T>>`. Further expectations can be checked by
+passing a `Condition`, chaining `.which(...)`, or awaiting the returned
+`Subject`:
 
 ```dart
 await check(someFuture).completes(.it()..isGreaterThan(0));
+
+await check(someFuture).completes().which(
+  .it()
+    ..isGreaterThan(0)
+    ..isLessThan(100),
+);
+
+final value = await check(someFuture).completes();
+value.isGreaterThan(0);
 ```
 
-Subjects for `Stream` instances must first be wrapped into a `StreamQueue` to
-allow multiple expectations to test against the stream from the same state.
-The `withQueue` extension can be used when a given stream instance only needs to
-be checked once, or if it is a broadcast stream, but if single subscription
-stream needs to have multiple expectations checked separately it should be
-wrapped with a `StreamQueue`.
+Subjects for `Stream` instances must first be wrapped into a `StreamQueue`
+(from `package:async/async.dart`) to allow multiple expectations to test against
+the stream from the same state. The `withQueue` extension can be used when a
+given stream instance only needs to be checked once, or if it is a broadcast
+stream, but if a single-subscription stream needs to have multiple expectations
+checked separately it should be wrapped with a `StreamQueue`.
 
 ```dart
 await check(someStream).withQueue.inOrder([
@@ -173,25 +222,43 @@ await check(someQueue).emits(.it()..equals(2));
 // do something
 ```
 
-
 ## Writing custom expectations
 
-Expectations are written as extensions on `Subject` with specific generics. The
-library `package:checks/context.dart` gives access to a `context` getter on
-`Subject` which offers capabilities for defining expectations on the subject's
-value.
+Expectations are written as extensions on `Subject` with specific generics. Many
+domain-specific expectations can be written using only
+`package:checks/checks.dart` by composing existing expectations and `has`. When
+composed expectations fail, the test output refers to the underlying
+expectations that were called.
 
-The `Context` allows checking an expectation with `expect`, `expectAsync` and
+```dart
+extension ComposedChecks on Subject<Iterable<Object?>> {
+  void hasLengthInRange(int min, int max) {
+    length
+      ..isGreaterThan(min)
+      ..isLessThan(max);
+  }
+}
+
+extension CustomFieldChecks on Subject<CustomType> {
+  // For field reads that will not get rejected, use `has`.
+  Subject<Bar> get someField => has('someField', (a) => a.someField);
+}
+```
+
+For expectations with custom predicates or failure descriptions, import
+`package:checks/context.dart` to access the `context` getter on `Subject`. The
+`Context` allows checking an expectation with `expect`, `expectAsync`, and
 `expectUnawaited`, or extracting a derived value for performing other checks
-with `nest` and `nestAsync`. Failures are reported by returning a `Rejection`,
-or an `Extracted.rejection`, extensions should avoid throwing exceptions.
+with `nest` and `nestAsync`. Failures are reported by returning a `Rejection` or
+an `Extracted.rejection`; extensions should avoid throwing exceptions.
 
-Descriptions of the clause checked by an expectation are passed through a
-separate callback from the predicate which checks the value. Nesting calls are
-made with a label directly. When there are no failures the clause callbacks are
-not called. When a condition is described with `describe()`, the clause
-callbacks are called, but the predicate callbacks are not called. Conditions can
-be checked against values without throwing an exception using `softCheck()`.
+Descriptions of the clause checked by `expect` or the label for `nest` are
+passed as callbacks separately from the predicate or extractor. When there are
+no failures the description callbacks are not called. When a condition is
+described with `Condition.describe()` or `Condition.describeSync()`, the
+description callbacks are called without running the predicates. Conditions can
+also be checked against values without throwing a test failure using
+`Condition.softCheck()` or `Condition.softCheckSync()`.
 
 ```dart
 extension CustomChecks on Subject<CustomType> {
@@ -209,22 +276,5 @@ extension CustomChecks on Subject<CustomType> {
         }
         return Extracted.value(_readDerivedValue(actual));
       });
-
-  // for field reads that will not get rejected, use `has`
-  Subject<Bar> get someField => has('someField', (a) => a.someField);
-}
-```
-
-Extensions may also compose existing expectations under a single name. When
-such expectations fail, the test output will refer to the individual
-expectations that were called.
-
-```dart
-extension ComposedChecks on Subject<Iterable> {
-  void hasLengthInRange(int min, int max) {
-    length
-      ..isGreaterThan(min)
-      ..isLessThan(max);
-  }
 }
 ```
