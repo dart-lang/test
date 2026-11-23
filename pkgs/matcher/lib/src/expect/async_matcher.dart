@@ -4,6 +4,8 @@
 
 // ignore_for_file: deprecated_member_use_from_same_package
 
+import 'dart:async';
+
 import 'package:test_api/hooks.dart';
 
 import '../async_matcher_restriction.dart';
@@ -69,12 +71,15 @@ abstract class AsyncMatcher extends Matcher {
         }
       }
       final outstandingWork = TestHandle.current.markPending();
-      result.then((realResult) {
-        if (realResult != null) {
-          fail(formatFailure(this, item, realResult as String));
-        }
-        outstandingWork.complete();
-      });
+      unawaited(
+        result
+            .then((realResult) {
+              if (realResult != null) {
+                fail(formatFailure(this, item, realResult as String));
+              }
+            })
+            .whenComplete(outstandingWork.complete),
+      );
     } else if (result is String) {
       matchState[this] = result;
       return false;

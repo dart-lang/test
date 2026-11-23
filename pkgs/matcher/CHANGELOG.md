@@ -9,6 +9,8 @@
   matcher such as `completes`, directly or nested in other matchers. These
   operators can't combine asynchronous results correctly. The `throws`
   matchers are still allowed when matched against a synchronous callback.
+* Fix a hang when an `AsyncMatcher` nested in a synchronous matcher such as
+  `allOf` fails or matches a `Future` that completes with an error.
 
 ## 0.12.20
 
