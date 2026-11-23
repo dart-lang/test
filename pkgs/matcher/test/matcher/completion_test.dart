@@ -201,4 +201,40 @@ void main() {
       expect(fired, isTrue);
     });
   });
+
+  group('nested inside allOf', () {
+    test('with an incorrect value', () async {
+      var monitor = await TestCaseMonitor.run(() {
+        expect(Future.value('a'), allOf([completion(equals('b'))]));
+      });
+
+      expectTestFailed(
+        monitor,
+        allOf([
+          startsWith(
+            "Expected: completes to a value that 'b'\n"
+            '  Actual: <',
+          ),
+          endsWith(
+            '>\n'
+            "   Which: emitted 'a'\n"
+            '            which is different.\n'
+            '                  Expected: b\n'
+            '                    Actual: a\n'
+            '                            ^\n'
+            '                   Differ at offset 0\n',
+          ),
+        ]),
+      );
+    });
+
+    test('with an error', () async {
+      var monitor = await TestCaseMonitor.run(() {
+        expect(Future<Never>.error('X'), allOf([completes]));
+      });
+
+      expect(monitor.state, equals(State.failed));
+      expect(monitor.errors, [isAsyncError(equals('X'))]);
+    });
+  });
 }
