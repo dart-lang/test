@@ -813,20 +813,35 @@ extension FastFirst<T> on Stream<T> {
   /// stream subscription.
   Future<T> get fastFirst {
     final completer = Completer<T>();
-    late final StreamSubscription<T> subscription;
+    StreamSubscription<T>? subscription;
+    var needsCancel = false;
+    void cancel() {
+      if (subscription case final subscription?) {
+        unawaited(subscription.cancel());
+      } else {
+        needsCancel = true;
+      }
+    }
+
     subscription = listen(
       (value) {
-        unawaited(subscription.cancel());
+        if (completer.isCompleted) return;
+        cancel();
         completer.complete(value);
       },
       onError: (Object error, StackTrace stackTrace) {
-        unawaited(subscription.cancel());
+        if (completer.isCompleted) return;
+        cancel();
         completer.completeError(error, stackTrace);
       },
       onDone: () {
+        if (completer.isCompleted) return;
         completer.completeError(StateError('No element'));
       },
     );
+    if (needsCancel) {
+      unawaited(subscription.cancel());
+    }
     return completer.future;
   }
 }

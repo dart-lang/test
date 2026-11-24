@@ -89,6 +89,50 @@ void main() {
     test('throws StateError on an empty stream', () async {
       await expectLater(const Stream<int>.empty().fastFirst, throwsStateError);
     });
+
+    test('handles synchronous event emitted during listen', () async {
+      var cancelCalled = false;
+      late final StreamController<int> controller;
+      controller = StreamController<int>.broadcast(
+        sync: true,
+        onListen: () {
+          controller
+            ..add(1)
+            ..add(2);
+        },
+        onCancel: () {
+          cancelCalled = true;
+        },
+      );
+
+      expect(await controller.stream.fastFirst, 1);
+      expect(cancelCalled, isTrue);
+    });
+
+    test('handles synchronous error emitted during listen', () async {
+      var cancelCalled = false;
+      final result = await _runFastFirstInGuardedZone(() {
+        late final StreamController<int> controller;
+        controller = StreamController<int>.broadcast(
+          sync: true,
+          onListen: () {
+            controller.addError(
+              StateError('boom'),
+              StackTrace.fromString('sync listen trace'),
+            );
+          },
+          onCancel: () {
+            cancelCalled = true;
+          },
+        );
+        return controller.stream;
+      });
+
+      expect(cancelCalled, isTrue);
+      expect(result.error, isStateError);
+      expect(result.stackTrace.toString(), contains('sync listen trace'));
+      expect(result.unhandled, isEmpty);
+    });
   });
 }
 
