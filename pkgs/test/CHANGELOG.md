@@ -1,5 +1,7 @@
 ## 1.34.0-wip
 
+* Default to the `failures-only` reporter when executed by an AI coding agent.
+* Print a summary of failing tests at the end of the `failures-only` reporter.
 * Support `globalSetup` and `addGlobalTearDown` to execute global setup scripts
   once on the host runner and cache results across all tests and test suites.
 * Support `matcher: ^0.13.0`.
@@ -44,6 +46,8 @@
   before connecting is still replaced, up to 3 attempts, while time remains.
   Without a `suite_load_timeout`, connecting to a browser no longer times out.
 * Print console output from pages in Firefox to the browser output.
+* Inline a minimal Node.js preamble and drop the `node_preamble` dependency,
+  fixing `Random.secure()` on Node.js 19+.
 * Fix a `LiveTest.run() may not be called for a closed test` crash with
   `--fail-fast` when the last test in a group with a `tearDownAll` fails. The
   `tearDownAll` now runs.

@@ -1,0 +1,14 @@
+import 'package:checks/checks.dart';
+
+void main() {
+  check('abc').has('length', (v) => v.length).equals(3);
+  check('abc').has<int>('length', (v) => v.length).equals(3);
+  check('abc')
+    ..has('length', (v) => v.length).equals(3)
+    ..has('isEmpty', (v) => v.isEmpty).isFalse;
+  check(['abc']).any(.it()..has('length', (v) => v.length).equals(3));
+}
+
+extension CustomChecks on Subject<String> {
+  Subject<int> get customLength => has('length', (v) => v.length);
+}

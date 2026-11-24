@@ -1,5 +1,7 @@
 ## 0.6.22-wip
 
+* Default to the `failures-only` reporter when executed by an AI coding agent.
+* Print a summary of failing tests at the end of the `failures-only` reporter.
 * Support `globalSetup` and `addGlobalTearDown` host runner execution and
   caching across test suites.
 * Enable asserts in the `cli` compiler if supported.
