@@ -48,6 +48,9 @@
 * Print console output from pages in Firefox to the browser output.
 * Inline a minimal Node.js preamble and drop the `node_preamble` dependency,
   fixing `Random.secure()` on Node.js 19+.
+* Fix a `LiveTest.run() may not be called for a closed test` crash with
+  `--fail-fast` when the last test in a group with a `tearDownAll` fails. The
+  `tearDownAll` now runs.
 
 ## 1.33.0
 
