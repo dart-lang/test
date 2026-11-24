@@ -27,6 +27,9 @@
 * The JSON reporter adds a `retried` field to `testDone` events and reports
   protocol version 0.1.2. A `setUpAll` that passes on retry is now hidden, as
   the protocol documents.
+* Fix unhandled zone errors, duplicate-completion crashes on synchronous
+  streams, and hangs on empty streams when awaiting a VM test socket
+  connection.
 
 ## 0.6.21
 
