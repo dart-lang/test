@@ -195,9 +195,8 @@ class _StreamMatcher extends AsyncMatcher implements StreamMatcher {
             throw error;
           },
         )
-        .then((result) {
-          if (shouldCancelQueue) queue.cancel();
-          return result;
+        .whenComplete(() {
+          if (shouldCancelQueue) return queue.cancel();
         });
   }
 
