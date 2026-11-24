@@ -101,4 +101,23 @@ void main() {
       stdout: () => fakeStdout,
     ),
   );
+
+  test(
+    'stopping after restarting synchronously still cancels the new prompt',
+    () => IOOverrides.runZoned(
+      () async {
+        var console = Console(color: false);
+
+        console.start();
+        console.stop();
+        console.start();
+        await pumpEventQueue();
+
+        console.stop();
+        expect(fakeStdout.buffer.toString(), '> \n> \n');
+      },
+      stdin: () => fakeStdin,
+      stdout: () => fakeStdout,
+    ),
+  );
 }
