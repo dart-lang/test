@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -29,6 +30,68 @@ void main() {
       var process = await startDartProcess('exitCode = 1;');
       expect(process.exitCode, completion(equals(1)));
       await process.shouldExit();
+    });
+
+    test('logs stdout and stderr on failure when process just exited',
+        () async {
+      var innerPath = p.join(d.sandbox, 'inner.dart');
+      File(innerPath).writeAsStringSync('''
+        import 'dart:io';
+
+        void main() {
+          print('inner stdout line');
+          stderr.writeln('inner stderr line');
+          exitCode = 1;
+        }
+      ''');
+
+      var outerTestPath = p.join(d.sandbox, 'outer_test.dart');
+      File(outerTestPath).writeAsStringSync(r'''
+        import 'dart:io';
+
+        import 'package:test/test.dart';
+        import 'package:test_process/test_process.dart';
+
+        void main() {
+          test('inner failure', () async {
+            var process = await TestProcess.start(
+              Platform.executable,
+              [Platform.environment['INNER_SCRIPT']!],
+            );
+            await process.shouldExit(0);
+          });
+        }
+      ''');
+
+      var packageConfig = (await Isolate.packageConfig)!.toFilePath();
+      var testExecutable = (await Isolate.resolvePackageUri(
+        Uri.parse('package:test/src/executable.dart'),
+      ))!
+          .toFilePath();
+      var outer = await TestProcess.start(
+        Platform.executable,
+        [
+          '--packages=$packageConfig',
+          testExecutable,
+          '--reporter=compact',
+          '--no-color',
+          '--compiler=source',
+          outerTestPath,
+        ],
+        environment: {'INNER_SCRIPT': innerPath},
+      );
+      var output = (await outer.stdout.rest.toList()).join('\n');
+      await outer.shouldExit(1);
+
+      expect(
+        output,
+        stringContainsInOrder([
+          'exited with exitCode 1. Output:',
+          '    inner stdout line',
+          '[e] inner stderr line',
+          'To run this test again:',
+        ]),
+      );
     });
   });
 
