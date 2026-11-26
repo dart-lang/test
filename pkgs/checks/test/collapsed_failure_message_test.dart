@@ -273,7 +273,10 @@ Which: is empty''');
         }).throwsFailure().equals("""
 Expected: a string starting with 'bar'
 Actual: 'foo'
-Which: does not start with 'bar'""");
+Which: differs at offset 0:
+  bar
+  foo
+  ^""");
       });
 
       test('endsWith', () {

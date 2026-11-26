@@ -27,12 +27,54 @@ void main() {
       check('bob').isNotEmpty;
       check('').isRejectedBy(.it()..isNotEmpty, which: ['is empty']);
     });
-    test('startsWith', () {
-      check('bob').startsWith('bo');
-      check('bob').isRejectedBy(
-        .it()..startsWith('kayleb'),
-        which: ["does not start with 'kayleb'"],
+    group('startsWith', () {
+      test('succeeds for happy case', () {
+        check('bob').startsWith('bo');
+        check('bob').startsWith(RegExp('b+'));
+      });
+      test('reports index of different character', () {
+        check('bob').isRejectedBy(
+          .it()..startsWith('kayleb'),
+          which: ['differs at offset 0:', '  kayleb', '  bob', '  ^'],
+        );
+        check('hit and run away').isRejectedBy(
+          .it()..startsWith('hat'),
+          which: ['differs at offset 1:', '  hat', '  hit and run ...', '   ^'],
+        );
+      });
+      test(
+        'reports truncated index of different character in large string',
+        () {
+          check('blah blah blah hit blah blah blah').isRejectedBy(
+            .it()..startsWith('blah blah blah hat'),
+            which: [
+              'differs at offset 16:',
+              '  ... lah blah hat',
+              '  ... lah blah hit blah bl ...',
+              '                ^',
+            ],
+          );
+        },
       );
+      test('reports missing trailing characters', () {
+        check('bob').isRejectedBy(
+          .it()..startsWith('bobby'),
+          which: ['is too short with missing trailing characters:', 'by'],
+        );
+      });
+      test('reports an empty string', () {
+        check('').isRejectedBy(
+          .it()..startsWith('bob'),
+          actual: ['an empty string'],
+          which: ['is missing all expected characters:', 'bob'],
+        );
+      });
+      test('reports a non-String pattern without offset', () {
+        check('bob').isRejectedBy(
+          .it()..startsWith(RegExp('o')),
+          which: ['does not start with <RegExp: pattern=o flags=>'],
+        );
+      });
     });
     test('endsWith', () {
       check('bob').endsWith('ob');
